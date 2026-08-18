@@ -11,4 +11,4 @@
 | [04-strength-model.md](04-strength-model.md) | 初期シード（V）用の作者評価モデル |
 | [05-rejected.md](05-rejected.md) | 見送った案と理由（再発明防止） |
 | [06-scoring-practice.md](06-scoring-practice.md) | 体感を点数にする手順（数学前提なし） |
-| [07-strength-mix.md](07-strength-mix.md) | Strength の2つの混ぜ方（絶対点→相対化 vs 枠ごとに場内相対化） |
+| [07-strength-mix.md](07-strength-mix.md) | Strength 混ぜは B 採用。A との比較 |
