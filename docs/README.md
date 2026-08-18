@@ -10,3 +10,4 @@
 | [03-odds.md](03-odds.md) | 投票・オッズ表示・ポイント発行 |
 | [04-strength-model.md](04-strength-model.md) | 初期シード（V）用の作者評価モデル |
 | [05-rejected.md](05-rejected.md) | 見送った案と理由（再発明防止） |
+| [06-scoring-practice.md](06-scoring-practice.md) | 体感を点数にする手順（数学前提なし） |
