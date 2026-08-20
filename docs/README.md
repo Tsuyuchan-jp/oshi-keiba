@@ -12,3 +12,4 @@
 | [05-rejected.md](05-rejected.md) | 見送った案と理由（再発明防止） |
 | [06-scoring-practice.md](06-scoring-practice.md) | 体感を点数にする手順（数学前提なし） |
 | [07-strength-mix.md](07-strength-mix.md) | Strength 混ぜは B 採用。A との比較 |
+| [08-mvp-consult.md](08-mvp-consult.md) | 動く MVP を手土産に相談する。作る／聞く／抱える |
