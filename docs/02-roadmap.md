@@ -38,10 +38,12 @@
 - 禁止事項の明文化（飛び入り禁止を含む）
 - アイビーさんへの事前共有、Neko長明さんへの見せ方
 
-## ⑥ 技術実装方針
+## ⑥ 技術実装方針（デモは仮置き）
 
-- 既存個人開発（例: renso の Cloudflare Workers/D1、Tampermonkey 資産など）の流用範囲
-- 認証、docs 駆動開発
+- **Web アプリ**。見せるデモは **Cloudflare ＋ 共有 DB（D1 相当）**。GitHub Pages は使わない
+- 認証は仮パスワード。本番のメンバーシップ認証は後
+- 既存個人開発（renso の Workers/D1、U-tools / inherit-skill-list 資産）をデモレギュに限り流用
+- docs 駆動開発。詳細は [08-mvp-consult.md](08-mvp-consult.md)
 
 ## ⑦ パイロット
 
