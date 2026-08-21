@@ -2,3 +2,9 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 *.log
+node_modules/
+.wrangler/
+.dev.vars
+.mf/
+dist/
+*.tsbuildinfo

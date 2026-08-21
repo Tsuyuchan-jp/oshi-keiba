@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "oshi-keiba",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-21",
+  "vars": {
+    // 仮パスワード。本番は wrangler secret put に差し替える
+    "MEMBER_PASSWORD": "demo-member",
+    "ADMIN_PASSWORD": "demo-admin",
+    "SESSION_SECRET": "local-dev-session-secret-change-me"
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "oshi-keiba",
+      // ローカル開発用。本番は wrangler d1 create のあと差し替える
+      "database_id": "00000000-0000-0000-0000-000000000001",
+      "migrations_dir": "./migrations"
+    }
+  ]
+}

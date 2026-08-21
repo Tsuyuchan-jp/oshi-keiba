@@ -1,0 +1,17 @@
+{
+  "name": "oshi-keiba",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --local",
+    "dev:setup": "wrangler d1 migrations apply oshi-keiba --local",
+    "deploy": "wrangler deploy",
+    "types": "wrangler types",
+    "test": "node --experimental-strip-types --test src/lib/odds.test.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "wrangler": "^4.125.0"
+  }
+}

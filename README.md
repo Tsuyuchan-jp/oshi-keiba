@@ -2,7 +2,7 @@
 
 Neko長明さんのウマ娘メンバーシップにおける、推し活イベントレース向けの**仮想馬券（ポイント）システム**の設計・実装リポジトリです。
 
-現時点の主目的は、要件と評価ロジックを Docs に固定し、会話をまたいでも方針を復元できるようにすることです。デモは Web アプリを Cloudflare 上で動かす（[docs/08-mvp-consult.md](docs/08-mvp-consult.md)）。
+現時点は手土産 MVP をローカル（Cloudflare Workers + D1）で回している途中です。方針の正本は Docs（[docs/08-mvp-consult.md](docs/08-mvp-consult.md)）。GitHub Pages は使いません。
 
 ## 読む順
 
@@ -15,3 +15,21 @@ Neko長明さんのウマ娘メンバーシップにおける、推し活イベ�
 - 仮想ポイントのみ。換金・現物のやり取りはしない
 - メンバーシップ外に出さない
 - 主催者（Neko長明さん）の既存儀式（note の予想・実況・結果）を邪魔しない
+
+## ローカルで動かす（手土産 MVP）
+
+仮パスワードは `.dev.vars.example` を `.dev.vars` にコピーして使います。コミットしない。
+
+```powershell
+copy .dev.vars.example .dev.vars
+npm install
+npm run dev:setup
+npm test
+npm run dev
+```
+
+- 板: http://localhost:8787/
+- メンバー仮パス: `demo-member`（表示名を変えれば複数人）
+- 管理者: http://localhost:8787/admin 仮パス `demo-admin`
+
+Seed は直置き。U-tools のデモレギと本番 URL はまだです。
