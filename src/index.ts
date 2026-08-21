@@ -247,7 +247,7 @@ export default {
                 <h2>メンバー01〜10</h2>
                 <div class="chips">${chips}</div>
                 <table>
-                  <thead><tr><th>名前</th><th>残高</th><th>単勝</th></tr></thead>
+                  <thead><tr><th>名前</th><th>所持額</th><th>単勝</th></tr></thead>
                   <tbody>${rows}</tbody>
                 </table>
               </div>
@@ -333,14 +333,14 @@ export default {
 
         const oddsName =
           board.event.status === "closed" || board.event.status === "published"
-            ? "確定配当（実票のみ。この数字で払う）"
+            ? "確定配当（実際の投票額のみ。この数字で払う）"
             : "参考オッズ（払う約束ではない）";
 
         const resultNote =
           board.event.status === "closed"
             ? `<p class="note">着順は note 公開に合わせるため、ここではまだ出しません。確定配当だけ見えます。</p>`
             : board.event.status === "published" && board.winVoid
-              ? `<p class="note">1着に実票が無かったため、この賭式は不成立・返還です。</p>`
+              ? `<p class="note">1着に実際の投票額が無かったため、この賭式は不成立・返還です。</p>`
               : "";
 
         const myList = myBets.length
@@ -354,7 +354,7 @@ export default {
 
         return html(
           layout({
-            title: "板（仮）",
+            title: "オッズ表（仮）",
             user,
             body: `${flashHtml(m.text, m.error)}
               <div class="card">
@@ -442,10 +442,10 @@ export default {
                 <form method="post" action="/admin/params">
                   <div class="row">
                     <label>タイトル <input name="title" value="${escapeHtml(e.title)}"></label>
-                    <label>G 毎週配布 <input name="grant_g" type="number" min="0" step="1" value="${e.grant_g}"></label>
+                    <label>G 毎週配る仮想ポイント <input name="grant_g" type="number" min="0" step="1" value="${e.grant_g}"></label>
                     <label>単位 <input name="bet_unit" type="number" min="1" step="1" value="${e.bet_unit}"></label>
-                    <label>S Seed の山 <input name="seed_pool_s" type="number" min="0" step="1" value="${e.seed_pool_s}"></label>
-                    <label>E 実票に寄せる目安 <input name="pull_e" type="number" min="0" step="1" value="${e.pull_e}"></label>
+                    <label>S 仮想の初期投票額の合計 <input name="seed_pool_s" type="number" min="0" step="1" value="${e.seed_pool_s}"></label>
+                    <label>E 実際の投票額に寄せ始める目安 <input name="pull_e" type="number" min="0" step="1" value="${e.pull_e}"></label>
                     <label>D 控除 <input name="takeout_d" type="number" min="0" max="0.99" step="0.01" value="${e.takeout_d}"></label>
                     <label>w時 下限 <input name="w_time_floor" type="number" min="0" max="0.99" step="0.05" value="${e.w_time_floor}"></label>
                     <label>w時 指数 <input name="w_time_exp" type="number" min="0.2" max="4" step="0.1" value="${e.w_time_exp}"></label>
@@ -476,7 +476,7 @@ export default {
                 }
                 <form id="places-form" method="post" action="/admin/places"></form>
                 <table>
-                  <thead><tr><th>ウマ娘</th><th>参考</th><th>確定</th><th>実票</th><th>着順</th><th></th></tr></thead>
+                  <thead><tr><th>ウマ娘</th><th>参考オッズ</th><th>確定配当</th><th>実際の投票額</th><th>着順</th><th></th></tr></thead>
                   <tbody>${horseRows}</tbody>
                 </table>
                 ${

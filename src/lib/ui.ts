@@ -81,7 +81,7 @@ header.app a { color: var(--accent); }
   font-family: sans-serif;
   font-weight: 700;
 }
-main { max-width: 860px; margin: 0 auto; padding: 1.25rem; }
+main { max-width: 920px; margin: 0 auto; padding: 1.25rem; }
 .card {
   background: var(--paper);
   border: 1px solid var(--line);
@@ -148,6 +148,9 @@ tr.desk-focus { outline: 2px solid var(--accent); background: #eef6ee; }
 .eq { font-family: ui-monospace, "Cascadia Code", "Yu Gothic", monospace; font-size: .9rem; line-height: 1.45; }
 .plug { font-size: .82rem; margin-top: .25rem; font-variant-numeric: tabular-nums; }
 .flow-arrow { text-align: center; color: var(--muted); font-size: .8rem; line-height: 1; }
+.terms { width: 100%; margin: 0 0 1rem; font-size: .82rem; }
+.terms th { white-space: nowrap; }
+.terms td:first-child { min-width: 9rem; }
 `;
 
 export function layout(opts: {
@@ -176,7 +179,7 @@ export function layout(opts: {
     <div>
       <div class="muted">${who}</div>
       <nav class="links">
-        <a href="/">板</a>
+        <a href="/">オッズ表</a>
         <a href="/demo">デモ卓</a>
         ${opts.user ? `<a href="/logout">ログアウト</a>` : `<a href="/login">ログイン</a>`}
         <a href="/admin">${opts.admin ? "管理" : "管理者"}</a>
@@ -222,7 +225,7 @@ export function boardTable(board: Board, opts: { showPlaces: boolean }): string 
   return `<table>
     <thead>
       <tr>
-        <th>#</th><th>ウマ娘</th><th>${label}</th><th>実票</th><th>Seed</th><th>着順</th>
+        <th>#</th><th>ウマ娘</th><th>${label}</th><th>実際の投票額</th><th>初期投票額</th><th>着順</th>
       </tr>
     </thead>
     <tbody>${rows}</tbody>
@@ -230,7 +233,7 @@ export function boardTable(board: Board, opts: { showPlaces: boolean }): string 
 }
 
 export function wCaption(board: Board): string {
-  return `w=${board.w.toFixed(2)}（時間 ${board.wTime.toFixed(2)} × 票量 ${board.wVolume.toFixed(2)}）　実票合計 ${formatPt(board.realTotal)}　S=${board.event.seed_pool_s}　E=${board.event.pull_e}　D=${Math.round(board.event.takeout_d * 100)}%`;
+  return `w=${board.w.toFixed(2)}（時間 ${board.wTime.toFixed(2)} × 実際の投票額 ${board.wVolume.toFixed(2)}）　実際の投票額の合計 ${formatPt(board.realTotal)}　S=${board.event.seed_pool_s}　E=${board.event.pull_e}　D=${Math.round(board.event.takeout_d * 100)}%`;
 }
 
 function fmt(n: number, digits = 2): string {
@@ -241,7 +244,7 @@ function fmt(n: number, digits = 2): string {
   });
 }
 
-/** 管理画面: いまの数値を式に埋め込んで流れを見せる */
+/** 管理画面: 定義 → 式 → いまの 1 頭 */
 export function formulaPanel(board: Board): string {
   const e = board.event;
   const live = board.horses.filter((h) => !h.horse.scratched);
@@ -264,70 +267,97 @@ export function formulaPanel(board: Board): string {
       )
     : 1;
   const clockPlug = hasClock
-    ? `残り ${fmt(remain, 2)}　w時 = ${fmt(e.w_time_floor, 2)} + (1 − ${fmt(e.w_time_floor, 2)}) × ${fmt(remain, 2)}<sup>${fmt(e.w_time_exp, 1)}</sup> = ${fmt(board.wTime, 3)}`
-    : `締切なし → 残り = 1 → w時 = ${fmt(board.wTime, 3)}（時計だけでは 0 にしない）`;
+    ? `残り ${fmt(remain, 2)}　→ w時 = ${fmt(board.wTime, 3)}`
+    : `日時締切なし → 残り = 1 → w時 = ${fmt(board.wTime, 3)}（時計だけでは 0 にしない）`;
 
-  const sampleBlock = sample
-    ? `<div class="plug">例: ${escapeHtml(sample.horse.name)}　Strength ${fmt(sample.horse.strength, 1)}　実票 ${fmt(sample.real, 0)}</div>`
-    : `<div class="plug">出走を入れると、1 頭分の数字がここに入ります</div>`;
+  const who = sample
+    ? escapeHtml(sample.horse.name)
+    : "（出走を入れるとここに名前が入ります）";
 
   const seedPlug = sample
-    ? `Seed = ${fmt(e.seed_pool_s, 0)} × ${fmt(sample.horse.strength, 1)} / ${fmt(strSum, 1)} = ${fmt(sample.seed, 1)}`
-    : `ΣStrength = ${fmt(strSum, 1)}`;
+    ? `仮想の初期投票額 = ${fmt(e.seed_pool_s, 0)} × ${fmt(sample.horse.strength, 1)} / ${fmt(strSum, 1)} = ${fmt(sample.seed, 1)}`
+    : `Strength の合計 = ${fmt(strSum, 1)}`;
 
-  const dispPlug = sample
-    ? `Display = ${fmt(sample.seed, 1)} × ${fmt(board.w, 3)} + ${fmt(sample.real, 0)} = ${fmt(sample.display, 1)}`
+  const mixPlug = sample
+    ? `足した額 = ${fmt(sample.seed, 1)} × ${fmt(board.w, 3)} + ${fmt(sample.real, 0)} = ${fmt(sample.display, 1)}`
     : "";
 
   const refPlug = sample
-    ? `参考 = (${fmt(board.displayTotal, 1)} × (1 − ${fmt(e.takeout_d, 2)})) / ${fmt(sample.display, 1)} = ${formatOdds(sample.referenceOdds)}`
-    : `ΣDisplay = ${fmt(board.displayTotal, 1)}`;
+    ? `参考オッズ = (${fmt(board.displayTotal, 1)} × (1 − ${fmt(e.takeout_d, 2)})) / ${fmt(sample.display, 1)} = ${formatOdds(sample.referenceOdds)}`
+    : `足した額の合計 = ${fmt(board.displayTotal, 1)}`;
 
+  const pool = board.realTotal * (1 - e.takeout_d);
   const confPlug = sample
     ? sample.real > 0
-      ? `確定 = (${fmt(board.realTotal, 0)} × (1 − ${fmt(e.takeout_d, 2)})) / ${fmt(sample.real, 0)} = ${formatOdds(sample.confirmedOdds)}`
-      : `この頭の実票が 0 → 確定は出せない`
-    : `Σ実票 TV = ${fmt(board.realTotal, 0)}`;
+      ? `確定配当 = ${fmt(pool, 1)} / ${fmt(sample.real, 0)} = ${formatOdds(sample.confirmedOdds)}　払戻しの原資 = ${fmt(pool, 1)}`
+      : `この頭の実際の投票額が 0 → 確定配当は出せない`
+    : `実際の投票額の合計 = ${fmt(board.realTotal, 0)}　払戻しの原資 = ${fmt(pool, 1)}`;
 
-  return `<div class="flow">
+  const nowLine = refNow
+    ? `今オッズ表に出しているのは参考オッズです。払う約束ではありません。`
+    : payNow
+      ? `今払うのは確定配当です。仮想の初期投票額は入れません。`
+      : "";
+
+  return `<table class="terms">
+      <thead>
+        <tr><th>画面で言うこと</th><th>記号</th><th>何の数字か</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>仮想のユーザー所持額</td><td>残高</td><td>今持っているポイント</td></tr>
+        <tr><td>毎週配る仮想ポイント</td><td>G</td><td>口座に足す額。オッズの式には入らない。G を変えても S と E は動かない</td></tr>
+        <tr><td>投票の刻み</td><td>単位</td><td>一度に賭けられる最小のポイント</td></tr>
+        <tr><td>当アプリが算出した仮想の初期投票額</td><td>Seed</td><td>誰も買っていなくても乗せる分。払わない。頭ごと</td></tr>
+        <tr><td>仮想の初期投票額の合計</td><td>S</td><td>開始直後の仮想の初期投票額を何ポイント分置くか</td></tr>
+        <tr><td>メンバーが実際に賭けた投票額</td><td>Real / V</td><td>口座から減った分。頭ごと。締切後はこれで払う</td></tr>
+        <tr><td>実際の投票額の合計</td><td>TV</td><td>取消していない頭の、実際の投票額を足したもの</td></tr>
+        <tr><td>初期投票額をどれだけ残すか</td><td>w</td><td>1 に近いほど仮想の初期投票額が残る。0 なら実際の投票額だけ</td></tr>
+        <tr><td>実際の投票額に寄せ始める目安</td><td>E</td><td>賭け上限ではない。実際の投票額の合計がこれに近づくと、初期投票額を薄くする</td></tr>
+        <tr><td>参考オッズを出すために足した額</td><td>（内部 Display）</td><td>初期投票額×w ＋ 実際の投票額。倍率そのものではない</td></tr>
+        <tr><td>控除</td><td>D</td><td>払うとき、合計から除く割合（0.2 なら 2 割引き、8 割を分ける）</td></tr>
+        <tr><td>払戻しの原資</td><td>TV × (1 − D)</td><td>実際の投票額の合計から控除したあと、分け合うまとまり</td></tr>
+      </tbody>
+    </table>
+    <p class="note">${nowLine}例に使う頭は、仮想の初期投票額が一番大きい ${who} です。</p>
+    <div class="flow">
     <div class="flow-step">
-      <div class="flow-k">口座（式に入れない）</div>
+      <div class="flow-k">口座（オッズの式に入れない）</div>
       <div class="eq">G = ${fmt(e.grant_g, 0)}　単位 = ${fmt(e.bet_unit, 0)}</div>
-      <div class="plug">残高へ足すだけ。G を変えても S・E は動かない</div>
+      <div class="plug">仮想のユーザー所持額（残高）へ足す</div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step">
-      <div class="flow-k">1　Seed</div>
+      <div class="flow-k">1　仮想の初期投票額</div>
       <div class="eq">Seed<sub>i</sub> = S × Strength<sub>i</sub> / Σ Strength</div>
-      <div class="plug">S = ${fmt(e.seed_pool_s, 0)}　${seedPlug}</div>
-      ${sampleBlock}
+      <div class="plug">${seedPlug}</div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step">
-      <div class="flow-k">2　w（作者並びを残す割合）</div>
+      <div class="flow-k">2　初期投票額をどれだけ残すか（w）</div>
       <div class="eq">w<sub>時</sub> = 下限 + (1 − 下限) × 残り<sup>指数</sup></div>
-      <div class="eq">w<sub>票</sub> = max(0, 1 − 実票合計 / E)</div>
+      <div class="eq">w<sub>票</sub> = max(0, 1 − 実際の投票額の合計 / E)</div>
       <div class="eq">w = w<sub>時</sub> × w<sub>票</sub></div>
       <div class="plug">${clockPlug}</div>
-      <div class="plug">E = ${fmt(e.pull_e, 0)}　実票合計 = ${fmt(board.realTotal, 0)}　→ w<sub>票</sub> = ${fmt(board.wVolume, 3)}　→ w = ${fmt(board.wTime, 3)} × ${fmt(board.wVolume, 3)} = ${fmt(board.w, 3)}</div>
-      <div class="plug">票量は E の半分でだいたい半分。下限 0。時間側の下限は厚め</div>
+      <div class="plug">E = ${fmt(e.pull_e, 0)}　実際の投票額の合計 = ${fmt(board.realTotal, 0)}　→ w<sub>票</sub> = ${fmt(board.wVolume, 3)}</div>
+      <div class="plug">w = ${fmt(board.wTime, 3)} × ${fmt(board.wVolume, 3)} = ${fmt(board.w, 3)}　／　実際の投票額の合計が E の半分なら、票の側はだいたい半分。票の側の下限は 0。時間の下限は厚め</div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step ${refNow ? "on" : "dim"}">
       <div class="flow-k">3　参考オッズ（投票中に出す。払わない）</div>
-      <div class="eq">Display<sub>i</sub> = Seed<sub>i</sub> × w + Real<sub>i</sub></div>
-      <div class="eq">参考<sub>i</sub> = (Σ Display × (1 − D)) / Display<sub>i</sub></div>
-      <div class="plug">${dispPlug}</div>
+      <div class="eq">足した額<sub>i</sub> = Seed<sub>i</sub> × w + Real<sub>i</sub></div>
+      <div class="eq">参考オッズ<sub>i</sub> = (足した額の合計 × (1 − D)) / 足した額<sub>i</sub></div>
+      <div class="plug">${mixPlug}</div>
       <div class="plug">${refPlug}</div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step ${payNow ? "pay" : "dim"}">
-      <div class="flow-k">4　確定配当（締切後に払う。Seed を入れない）</div>
-      <div class="eq">確定<sub>i</sub> = (Σ Real × (1 − D)) / Real<sub>i</sub></div>
-      <div class="eq">払戻 = ⌊ 投票額 × 確定 ⌋</div>
+      <div class="flow-k">4　確定配当（締切後に払う。仮想の初期投票額は入れない）</div>
+      <div class="eq">払戻しの原資 = TV × (1 − D)</div>
+      <div class="eq">確定配当<sub>i</sub> = 払戻しの原資 / Real<sub>i</sub></div>
+      <div class="eq">払戻 = ⌊ 実際の投票額 × 確定配当 ⌋</div>
       <div class="plug">D = ${fmt(e.takeout_d, 2)}　${confPlug}</div>
     </div>
   </div>`;
 }
 
-export const HINT = `画面の数字はすべて仮です。毎週配布 G=${DEFAULTS.grantG}、最低単位 ${DEFAULTS.betUnit}、典型一張りは ${DEFAULTS.typicalBet} を本命。G を変えても E と S は自動では動きません。`;
+export const HINT = `画面の数字はすべて仮です。毎週配る仮想ポイント G=${DEFAULTS.grantG}、単位 ${DEFAULTS.betUnit}、典型一張りは ${DEFAULTS.typicalBet} を本命。G を変えても S と E は自動では動きません。`;

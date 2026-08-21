@@ -57,7 +57,7 @@ export function wCombined(wT: number, wV: number): number {
   return wT * wV;
 }
 
-/** Strength 比で Seed の山 S を配る */
+/** Strength 比で仮想の初期投票額の合計 S を配る */
 export function allocateSeed(strengths: number[], seedPoolS: number): number[] {
   const positive = strengths.map((s) => Math.max(0, s));
   const sum = positive.reduce((a, b) => a + b, 0);

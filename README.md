@@ -28,7 +28,7 @@ npm test
 npm run dev
 ```
 
-- 板: http://localhost:8787/
+- オッズ表: http://localhost:8787/
 - デモ卓（10人分を同じ画面で投票）: http://localhost:8787/demo （管理者で入室）
 - メンバー仮パス: `demo-member`（一人ログイン用。デモ卓とは別）
 - 管理者: http://localhost:8787/admin 仮パス `demo-admin`
