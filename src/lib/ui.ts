@@ -141,9 +141,6 @@ tr.desk-focus { outline: 2px solid var(--accent); background: #eef6ee; }
   padding: .5rem .75rem;
   background: #f7f3ea;
 }
-.flow-step.on { border-left-color: var(--accent); background: #eef6ee; }
-.flow-step.pay { border-left-color: var(--stamp); background: #f8eee8; }
-.flow-step.dim { opacity: .48; }
 .flow-k { font-size: .72rem; letter-spacing: .08em; color: var(--muted); margin-bottom: .2rem; }
 .eq, .plug {
   font-family: ui-monospace, "Cascadia Code", "Yu Gothic", "Hiragino Sans", sans-serif;
@@ -258,13 +255,12 @@ export function wCaption(board: Board): string {
 /** 管理画面: 定義 → 物語（記号つき）→ 式だけ */
 export function formulaPanel(board: Board): string {
   const e = board.event;
-  const refNow = e.status === "setup" || e.status === "voting";
-  const payNow = e.status === "closed" || e.status === "published";
-  const nowLine = refNow
-    ? `今オッズ表に出しているのは参考オッズです。払う約束ではありません。`
-    : payNow
-      ? `今払うのは確定配当です。仮想の初期投票額は入れません。`
-      : "";
+  const nowLine =
+    e.status === "setup" || e.status === "voting"
+      ? `今オッズ表に出しているのは参考オッズです。確定配当ではありません。`
+      : e.status === "closed" || e.status === "published"
+        ? `今オッズ表に出しているのは確定配当です。仮想の初期投票額は計算に入れません。`
+        : "";
 
   return `<details class="terms-box">
       <summary>定義表（参考）</summary>
@@ -328,19 +324,19 @@ export function formulaPanel(board: Board): string {
       <div class="eq">w = w<sub>時</sub> × w<sub>票</sub></div>
     </div>
     <div class="flow-arrow">↓</div>
-    <div class="flow-step ${refNow ? "on" : "dim"}">
-      <div class="flow-k">3　参考オッズ（投票中に出す。払わない）</div>
+    <div class="flow-step">
+      <div class="flow-k">3　参考オッズ（投票中に出す。確定配当ではない）</div>
       <div class="story">
-        <p>そのウマ娘について、仮想の初期投票額【Seed<sub>i</sub>】を【w】で薄め、実際の投票額【Real<sub>i</sub>】と足す。この混ぜた値を【Display<sub>i</sub>】と呼ぶ（参考オッズを出すために足した額。倍率そのものではない）。取消していないウマ娘の Display を足したものが【Σ Display】。これと控除【D】から参考オッズ（倍率）を出す。払う約束ではない。</p>
+        <p>そのウマ娘について、仮想の初期投票額【Seed<sub>i</sub>】を【w】で薄め、実際の投票額【Real<sub>i</sub>】と足す。この混ぜた値を【Display<sub>i</sub>】と呼ぶ（参考オッズを出すために足した額。倍率そのものではない）。取消していないウマ娘の Display を足したものが【Σ Display】。これと控除【D】から参考オッズ（倍率）を出す。確定配当ではない。</p>
       </div>
       <div class="eq">Display<sub>i</sub> = Seed<sub>i</sub> × w + Real<sub>i</sub></div>
       <div class="eq">参考オッズ<sub>i</sub> = (Σ Display × (1 − D)) / Display<sub>i</sub></div>
     </div>
     <div class="flow-arrow">↓</div>
-    <div class="flow-step ${payNow ? "pay" : "dim"}">
-      <div class="flow-k">4　確定配当（締切後に払う。仮想の初期投票額は入れない）</div>
+    <div class="flow-step">
+      <div class="flow-k">4　確定配当（締切後。仮想の初期投票額は計算に入れない）</div>
       <div class="story">
-        <p>払うのは実際の投票額だけ。実際の投票額の合計【TV】から控除【D】を除いたものが払戻しの原資。それを、そのウマ娘の実際の投票額【Real<sub>i</sub>】で割ると確定配当。払戻は、その投票額に確定配当を掛けて小数を切り捨てる。</p>
+        <p>確定配当は、実際の投票額だけで決める。仮想の初期投票額は計算に入れない。実際の投票額の合計【TV】から控除【D】を除いたものが払戻しの原資。それを、そのウマ娘の実際の投票額【Real<sub>i</sub>】で割ると確定配当。口座に戻す額（払戻）は、賭けた投票額に確定配当を掛けて、小数を切り捨てる。</p>
       </div>
       <div class="eq">払戻しの原資 = TV × (1 − D)</div>
       <div class="eq">確定配当<sub>i</sub> = 払戻しの原資 / Real<sub>i</sub></div>
