@@ -415,7 +415,7 @@ export default {
                   </form>`
                 : "";
             return `<tr class="${h.horse.scratched ? "scr" : ""}">
-              <td>${escapeHtml(h.horse.name)}<div class="muted">直置き Strength ${h.horse.strength}</div></td>
+              <td>${escapeHtml(h.horse.name)}<div class="muted">相対評価点 ${h.horse.strength}（直置き）</div></td>
               <td class="num">${formatOdds(h.referenceOdds)}</td>
               <td class="num">${formatOdds(h.confirmedOdds)}</td>
               <td class="num">${formatPt(h.real)}</td>
@@ -469,7 +469,7 @@ export default {
                   e.status === "setup"
                     ? `<form method="post" action="/admin/horse" class="row">
                         <label>名前 <input name="name" required maxlength="40"></label>
-                        <label>Strength（直置き） <input name="strength" type="number" min="0" step="0.1" value="10" required></label>
+                        <label>相対評価点（直置き） <input name="strength" type="number" min="0" step="0.1" value="10" required></label>
                         <button type="submit">登録</button>
                       </form>`
                     : `<p class="note">名簿は閉じています。飛び入りはルールで禁止です。</p>`

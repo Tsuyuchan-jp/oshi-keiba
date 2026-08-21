@@ -236,63 +236,11 @@ export function wCaption(board: Board): string {
   return `w=${board.w.toFixed(2)}（時間 ${board.wTime.toFixed(2)} × 実際の投票額 ${board.wVolume.toFixed(2)}）　実際の投票額の合計 ${formatPt(board.realTotal)}　S=${board.event.seed_pool_s}　E=${board.event.pull_e}　D=${Math.round(board.event.takeout_d * 100)}%`;
 }
 
-function fmt(n: number, digits = 2): string {
-  if (!Number.isFinite(n)) return "—";
-  return n.toLocaleString("ja-JP", {
-    maximumFractionDigits: digits,
-    minimumFractionDigits: 0,
-  });
-}
-
-/** 管理画面: 定義 → 式 → いまの 1 頭 */
+/** 管理画面: 定義 → 記号の式 → 日本語【記号】 */
 export function formulaPanel(board: Board): string {
   const e = board.event;
-  const live = board.horses.filter((h) => !h.horse.scratched);
-  const sample = [...live].sort((a, b) => b.seed - a.seed)[0];
-  const strSum = live.reduce((a, h) => a + Math.max(0, h.horse.strength), 0);
   const refNow = e.status === "setup" || e.status === "voting";
   const payNow = e.status === "closed" || e.status === "published";
-  const hasClock =
-    e.voting_opened_at != null &&
-    e.voting_closes_at != null &&
-    e.voting_closes_at > e.voting_opened_at;
-  const remain = hasClock
-    ? Math.min(
-        1,
-        Math.max(
-          0,
-          (e.voting_closes_at! - Date.now()) /
-            (e.voting_closes_at! - e.voting_opened_at!),
-        ),
-      )
-    : 1;
-  const clockPlug = hasClock
-    ? `残り ${fmt(remain, 2)}　→ w時 = ${fmt(board.wTime, 3)}`
-    : `日時締切なし → 残り = 1 → w時 = ${fmt(board.wTime, 3)}（時計だけでは 0 にしない）`;
-
-  const who = sample
-    ? escapeHtml(sample.horse.name)
-    : "（出走を入れるとここに名前が入ります）";
-
-  const seedPlug = sample
-    ? `仮想の初期投票額 = ${fmt(e.seed_pool_s, 0)} × ${fmt(sample.horse.strength, 1)} / ${fmt(strSum, 1)} = ${fmt(sample.seed, 1)}`
-    : `Strength の合計 = ${fmt(strSum, 1)}`;
-
-  const mixPlug = sample
-    ? `足した額 = ${fmt(sample.seed, 1)} × ${fmt(board.w, 3)} + ${fmt(sample.real, 0)} = ${fmt(sample.display, 1)}`
-    : "";
-
-  const refPlug = sample
-    ? `参考オッズ = (${fmt(board.displayTotal, 1)} × (1 − ${fmt(e.takeout_d, 2)})) / ${fmt(sample.display, 1)} = ${formatOdds(sample.referenceOdds)}`
-    : `足した額の合計 = ${fmt(board.displayTotal, 1)}`;
-
-  const pool = board.realTotal * (1 - e.takeout_d);
-  const confPlug = sample
-    ? sample.real > 0
-      ? `確定配当 = ${fmt(pool, 1)} / ${fmt(sample.real, 0)} = ${formatOdds(sample.confirmedOdds)}　払戻しの原資 = ${fmt(pool, 1)}`
-      : `この頭の実際の投票額が 0 → 確定配当は出せない`
-    : `実際の投票額の合計 = ${fmt(board.realTotal, 0)}　払戻しの原資 = ${fmt(pool, 1)}`;
-
   const nowLine = refNow
     ? `今オッズ表に出しているのは参考オッズです。払う約束ではありません。`
     : payNow
@@ -307,55 +255,65 @@ export function formulaPanel(board: Board): string {
         <tr><td>仮想のユーザー所持額</td><td>残高</td><td>今持っているポイント</td></tr>
         <tr><td>毎週配る仮想ポイント</td><td>G</td><td>口座に足す額。オッズの式には入らない。G を変えても S と E は動かない</td></tr>
         <tr><td>投票の刻み</td><td>単位</td><td>一度に賭けられる最小のポイント</td></tr>
-        <tr><td>当アプリが算出した仮想の初期投票額</td><td>Seed</td><td>誰も買っていなくても乗せる分。払わない。頭ごと</td></tr>
+        <tr><td>この出走メンバーの中での相対評価点</td><td>Strength</td><td>ウマ娘 1 頭あたり。場の外の点数ではない。デモでは直置き</td></tr>
+        <tr><td>評価点合計</td><td>Σ Strength</td><td>取消していないウマ娘の相対評価点を足したもの</td></tr>
+        <tr><td>当アプリが算出した仮想の初期投票額</td><td>Seed</td><td>誰も買っていなくても乗せる分。払わない。ウマ娘 1 頭あたり</td></tr>
         <tr><td>仮想の初期投票額の合計</td><td>S</td><td>開始直後の仮想の初期投票額を何ポイント分置くか</td></tr>
-        <tr><td>メンバーが実際に賭けた投票額</td><td>Real / V</td><td>口座から減った分。頭ごと。締切後はこれで払う</td></tr>
-        <tr><td>実際の投票額の合計</td><td>TV</td><td>取消していない頭の、実際の投票額を足したもの</td></tr>
+        <tr><td>メンバーが実際に賭けた投票額</td><td>Real / V</td><td>口座から減った分。ウマ娘 1 頭あたり。締切後はこれで払う</td></tr>
+        <tr><td>実際の投票額の合計</td><td>TV</td><td>取消していないウマ娘の、実際の投票額を足したもの</td></tr>
         <tr><td>初期投票額をどれだけ残すか</td><td>w</td><td>1 に近いほど仮想の初期投票額が残る。0 なら実際の投票額だけ</td></tr>
+        <tr><td>時間による残り方</td><td>w時</td><td>投票時間の経過で、初期投票額をどれだけ残すか。時計だけでは 0 にしない</td></tr>
+        <tr><td>時間側の下限</td><td>下限</td><td>時間だけ進んでも残す割合。厚め</td></tr>
+        <tr><td>投票時間の残り割合</td><td>残り</td><td>1 が開始直後、0 が日時締切。締切未設定なら 1 のまま</td></tr>
+        <tr><td>曲線の指数</td><td>指数</td><td>残り方の曲がり。1 なら直線</td></tr>
+        <tr><td>実際の投票額による薄め</td><td>w票</td><td>実際の投票額の合計が E に近づくほど小さくなる。下限 0</td></tr>
         <tr><td>実際の投票額に寄せ始める目安</td><td>E</td><td>賭け上限ではない。実際の投票額の合計がこれに近づくと、初期投票額を薄くする</td></tr>
-        <tr><td>参考オッズを出すために足した額</td><td>（内部 Display）</td><td>初期投票額×w ＋ 実際の投票額。倍率そのものではない</td></tr>
+        <tr><td>参考オッズを出すために足した額</td><td>足した額</td><td>初期投票額×w ＋ 実際の投票額。ウマ娘 1 頭あたり。倍率そのものではない</td></tr>
+        <tr><td>足した額の合計</td><td>足した額の合計</td><td>取消していないウマ娘について足した額を足したもの</td></tr>
         <tr><td>控除</td><td>D</td><td>払うとき、合計から除く割合（0.2 なら 2 割引き、8 割を分ける）</td></tr>
         <tr><td>払戻しの原資</td><td>TV × (1 − D)</td><td>実際の投票額の合計から控除したあと、分け合うまとまり</td></tr>
       </tbody>
     </table>
-    <p class="note">${nowLine}例に使う頭は、仮想の初期投票額が一番大きい ${who} です。</p>
+    <p class="note">${nowLine}</p>
     <div class="flow">
     <div class="flow-step">
       <div class="flow-k">口座（オッズの式に入れない）</div>
-      <div class="eq">G = ${fmt(e.grant_g, 0)}　単位 = ${fmt(e.bet_unit, 0)}</div>
-      <div class="plug">仮想のユーザー所持額（残高）へ足す</div>
+      <div class="eq">G　／　単位</div>
+      <div class="plug">毎週配る仮想ポイント【G】を、仮想のユーザー所持額【残高】へ足す。投票の刻み【単位】は一度に賭けられる最小のポイント</div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step">
       <div class="flow-k">1　仮想の初期投票額</div>
       <div class="eq">Seed<sub>i</sub> = S × Strength<sub>i</sub> / Σ Strength</div>
-      <div class="plug">${seedPlug}</div>
+      <div class="plug">仮想の初期投票額【Seed<sub>i</sub>】＝ 仮想の初期投票額の合計【S】× この出走メンバーの中での相対評価点【Strength<sub>i</sub>】 / 評価点合計【Σ Strength】</div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step">
       <div class="flow-k">2　初期投票額をどれだけ残すか（w）</div>
       <div class="eq">w<sub>時</sub> = 下限 + (1 − 下限) × 残り<sup>指数</sup></div>
-      <div class="eq">w<sub>票</sub> = max(0, 1 − 実際の投票額の合計 / E)</div>
+      <div class="plug">時間による残り方【w<sub>時</sub>】＝ 時間側の下限【下限】＋ (1 − 下限) × 投票時間の残り割合【残り】の、曲線の指数【指数】乗</div>
+      <div class="eq">w<sub>票</sub> = max(0, 1 − TV / E)</div>
+      <div class="plug">実際の投票額による薄め【w<sub>票</sub>】＝ 0 と（1 − 実際の投票額の合計【TV】 / 実際の投票額に寄せ始める目安【E】）のうち大きい方</div>
       <div class="eq">w = w<sub>時</sub> × w<sub>票</sub></div>
-      <div class="plug">${clockPlug}</div>
-      <div class="plug">E = ${fmt(e.pull_e, 0)}　実際の投票額の合計 = ${fmt(board.realTotal, 0)}　→ w<sub>票</sub> = ${fmt(board.wVolume, 3)}</div>
-      <div class="plug">w = ${fmt(board.wTime, 3)} × ${fmt(board.wVolume, 3)} = ${fmt(board.w, 3)}　／　実際の投票額の合計が E の半分なら、票の側はだいたい半分。票の側の下限は 0。時間の下限は厚め</div>
+      <div class="plug">初期投票額をどれだけ残すか【w】＝ 時間による残り方【w<sub>時</sub>】× 実際の投票額による薄め【w<sub>票</sub>】</div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step ${refNow ? "on" : "dim"}">
       <div class="flow-k">3　参考オッズ（投票中に出す。払わない）</div>
       <div class="eq">足した額<sub>i</sub> = Seed<sub>i</sub> × w + Real<sub>i</sub></div>
+      <div class="plug">参考オッズを出すために足した額【足した額<sub>i</sub>】＝ 仮想の初期投票額【Seed<sub>i</sub>】× 初期投票額をどれだけ残すか【w】＋ メンバーが実際に賭けた投票額【Real<sub>i</sub>】</div>
       <div class="eq">参考オッズ<sub>i</sub> = (足した額の合計 × (1 − D)) / 足した額<sub>i</sub></div>
-      <div class="plug">${mixPlug}</div>
-      <div class="plug">${refPlug}</div>
+      <div class="plug">参考オッズ【参考オッズ<sub>i</sub>】＝ (足した額の合計 × (1 − 控除【D】)) / そのウマ娘について足した額【足した額<sub>i</sub>】</div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step ${payNow ? "pay" : "dim"}">
       <div class="flow-k">4　確定配当（締切後に払う。仮想の初期投票額は入れない）</div>
       <div class="eq">払戻しの原資 = TV × (1 − D)</div>
+      <div class="plug">払戻しの原資 ＝ 実際の投票額の合計【TV】× (1 − 控除【D】)</div>
       <div class="eq">確定配当<sub>i</sub> = 払戻しの原資 / Real<sub>i</sub></div>
+      <div class="plug">確定配当【確定配当<sub>i</sub>】＝ 払戻しの原資 / そのウマ娘の実際の投票額【Real<sub>i</sub>】</div>
       <div class="eq">払戻 = ⌊ 実際の投票額 × 確定配当 ⌋</div>
-      <div class="plug">D = ${fmt(e.takeout_d, 2)}　${confPlug}</div>
+      <div class="plug">払戻 ＝ その投票の実際の投票額 × 確定配当、の小数切り捨て</div>
     </div>
   </div>`;
 }

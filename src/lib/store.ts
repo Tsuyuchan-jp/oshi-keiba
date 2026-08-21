@@ -362,7 +362,7 @@ export async function addHorse(
   }
   const trimmed = name.trim();
   if (!trimmed) throw new Error("名前を入れてください");
-  if (!(strength >= 0)) throw new Error("Strength が不正です");
+  if (!(strength >= 0)) throw new Error("相対評価点が不正です");
   const horses = await listHorses(db, event.id);
   const live = horses.filter((h) => h.scratched === 0).length;
   if (live >= 8) throw new Error("デモの頭数は 8 まで");
