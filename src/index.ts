@@ -487,7 +487,7 @@ export default {
                         <label>相対評価点（直置き） <input name="strength" type="number" min="0" step="0.1" value="10" required></label>
                         <button type="submit">登録</button>
                       </form>`
-                    : `<p class="note">名簿は閉じています。飛び入りはルールで禁止です。</p>`
+                    : `<p class="note">出走登録完了。飛び入りはルールで禁止です。</p>`
                 }
                 <form id="places-form" method="post" action="/admin/places"></form>
                 <table>
