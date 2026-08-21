@@ -93,9 +93,11 @@ export default {
 
       if (method === "GET" && path === "/login") {
         const m = msg(url);
+        const board = await loadBoard(env.DB);
         return html(
           layout({
             title: "ログイン（仮）",
+            eventStatus: board.event.status,
             body: `${flashHtml(m.text, m.error)}
               <div class="card">
                 <h1>メンバーログイン<span class="stamp">仮</span></h1>
@@ -136,10 +138,12 @@ export default {
 
       if (method === "GET" && path === "/admin/login") {
         const m = msg(url);
+        const board = await loadBoard(env.DB);
         return html(
           layout({
             title: "管理者ログイン（仮）",
             admin: true,
+            eventStatus: board.event.status,
             body: `${flashHtml(m.text, m.error)}
               <div class="card">
                 <h1>管理者ログイン<span class="stamp">仮</span></h1>
@@ -236,11 +240,11 @@ export default {
             title: "デモ用投票画面（仮）",
             user: gate.user,
             admin: true,
+            eventStatus: board.event.status,
             body: `${flashHtml(m.text, m.error)}
               <div class="card">
                 <h1>デモ用投票画面<span class="stamp">仮</span></h1>
                 <p class="note">運営が 10 人分を代行する画面です。会員向けのログインではありません。チップまたは行で強調、投票は各行から直接できます。</p>
-                <p>${statusLabel(board.event.status)}</p>
                 ${boardTable(board, { showPlaces })}
               </div>
               <div class="card">
@@ -373,10 +377,11 @@ export default {
             title: "オッズ表（仮）",
             user,
             loginNav: "text",
+            eventStatus: board.event.status,
             body: `${flashHtml(m.text, m.error)}
               <div class="card">
                 <h1>${escapeHtml(board.event.title)}<span class="stamp">仮</span></h1>
-                <p>${statusLabel(board.event.status)}　／　${oddsName}</p>
+                <p>${oddsName}</p>
                 ${boardTable(board, { showPlaces })}
                 ${resultNote}
               </div>
@@ -452,10 +457,11 @@ export default {
             title: "管理（仮）",
             user: gate.user,
             admin: true,
+            eventStatus: e.status,
             body: `${flashHtml(m.text, m.error)}
               <div class="card">
                 <h1>管理者<span class="stamp">仮</span></h1>
-                <p>${statusLabel(e.status)}　頭数（取消前） ${liveCount}</p>
+                <p>頭数（取消前） ${liveCount}</p>
               </div>
               <div class="card">
                 <h2>数値</h2>

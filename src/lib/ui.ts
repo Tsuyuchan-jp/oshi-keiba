@@ -15,12 +15,17 @@ export function statusLabel(status: EventStatus): string {
     case "setup":
       return "出走登録中";
     case "voting":
-      return "投票中（参考オッズ）";
+      return "投票中";
     case "closed":
-      return "締切済み（確定配当）";
     case "published":
-      return "結果公開";
+      return "レース終了/配当確定";
   }
+}
+
+export function headerPhaseKind(status: EventStatus): "setup" | "voting" | "done" {
+  if (status === "setup") return "setup";
+  if (status === "voting") return "voting";
+  return "done";
 }
 
 export function toJstInput(ms: number | null): string {
@@ -61,7 +66,7 @@ body {
 header.app {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 1rem;
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--line);
@@ -80,6 +85,20 @@ header.app a { color: var(--accent); }
   font-family: sans-serif;
   font-weight: 700;
 }
+.phase {
+  display: inline-block;
+  margin-top: .45rem;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: .95rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  padding: .28rem .7rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+.phase.setup { background: #efe6d4; color: var(--ink); }
+.phase.voting { background: #e4f0e6; color: var(--accent); border-color: var(--accent); }
+.phase.done { background: #f8eee8; color: var(--stamp); border-color: var(--stamp); }
 main { max-width: 920px; margin: 0 auto; padding: 1.25rem; }
 .card {
   background: var(--paper);
@@ -213,6 +232,7 @@ export function layout(opts: {
   admin?: boolean;
   /** オッズ表は会員ログインを出さない（文言だけ残してよい） */
   loginNav?: "link" | "text";
+  eventStatus?: EventStatus;
 }): string {
   const who = opts.user
     ? `${escapeHtml(opts.user.display_name)}　${formatPt(opts.user.balance)}`
@@ -222,6 +242,9 @@ export function layout(opts: {
     : opts.loginNav === "text"
       ? `<span>ログイン</span>`
       : `<a href="/login">ログイン</a>`;
+  const phase = opts.eventStatus
+    ? `<div class="phase ${headerPhaseKind(opts.eventStatus)}">${escapeHtml(statusLabel(opts.eventStatus))}</div>`
+    : "";
   return `<!doctype html>
 <html lang="ja">
 <head>
@@ -235,6 +258,7 @@ export function layout(opts: {
     <div>
       <strong>oshi-keiba</strong><span class="stamp">仮</span>
       <div class="muted">仮想ポイント馬券　換金しません</div>
+      ${phase}
     </div>
     <div>
       <div class="muted">${who}</div>
