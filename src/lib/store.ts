@@ -84,13 +84,13 @@ export type Board = {
 const DEMO_EVENT_ID = "demo-week";
 
 const DEMO_HORSES: { name: string; strength: number }[] = [
-  { name: "仮・朝焼け", strength: 28 },
-  { name: "仮・青嵐", strength: 22 },
-  { name: "仮・薄月", strength: 18 },
-  { name: "仮・金泥", strength: 14 },
-  { name: "仮・白波", strength: 10 },
-  { name: "仮・朱雀", strength: 8 },
-  { name: "仮・欠場候補", strength: 6 },
+  { name: "仮・スペシャルウィーク", strength: 28 },
+  { name: "仮・サイレンススズカ", strength: 22 },
+  { name: "仮・トウカイテイオー", strength: 18 },
+  { name: "仮・ゴールドシップ", strength: 14 },
+  { name: "仮・メジロマックイーン", strength: 10 },
+  { name: "仮・オグリキャップ", strength: 8 },
+  { name: "仮・ダイワスカーレット", strength: 6 },
 ];
 
 export async function ensureEvent(db: D1Database): Promise<EventRow> {
