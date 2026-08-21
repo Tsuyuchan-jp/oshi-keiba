@@ -28,6 +28,7 @@ import {
   upsertUser,
 } from "./lib/store";
 import {
+  formulaPanel,
   HINT,
   boardTable,
   flashHtml,
@@ -436,20 +437,20 @@ export default {
                 <p class="note">馬券締切はゲーム内で着順が見える前。日時指定と強制ボタンの両方。着順の公開は note に合わせ、締切とは別です。</p>
               </div>
               <div class="card">
-                <h2>数値（G を変えても E と S は自動では動きません）</h2>
+                <h2>数値</h2>
+                ${formulaPanel(board)}
                 <form method="post" action="/admin/params">
                   <div class="row">
                     <label>タイトル <input name="title" value="${escapeHtml(e.title)}"></label>
-                    <label>毎週配布 G <input name="grant_g" type="number" min="0" step="1" value="${e.grant_g}"></label>
-                    <label>最低単位 <input name="bet_unit" type="number" min="1" step="1" value="${e.bet_unit}"></label>
-                    <label>Seed の山 S <input name="seed_pool_s" type="number" min="0" step="1" value="${e.seed_pool_s}"></label>
-                    <label>実票に寄せる目安 E <input name="pull_e" type="number" min="0" step="1" value="${e.pull_e}"></label>
-                    <label>控除 D（0.2=20%） <input name="takeout_d" type="number" min="0" max="0.99" step="0.01" value="${e.takeout_d}"></label>
-                    <label>時間 w 下限 <input name="w_time_floor" type="number" min="0" max="0.99" step="0.05" value="${e.w_time_floor}"></label>
-                    <label>時間 w 曲線（指数） <input name="w_time_exp" type="number" min="0.2" max="4" step="0.1" value="${e.w_time_exp}"></label>
+                    <label>G 毎週配布 <input name="grant_g" type="number" min="0" step="1" value="${e.grant_g}"></label>
+                    <label>単位 <input name="bet_unit" type="number" min="1" step="1" value="${e.bet_unit}"></label>
+                    <label>S Seed の山 <input name="seed_pool_s" type="number" min="0" step="1" value="${e.seed_pool_s}"></label>
+                    <label>E 実票に寄せる目安 <input name="pull_e" type="number" min="0" step="1" value="${e.pull_e}"></label>
+                    <label>D 控除 <input name="takeout_d" type="number" min="0" max="0.99" step="0.01" value="${e.takeout_d}"></label>
+                    <label>w時 下限 <input name="w_time_floor" type="number" min="0" max="0.99" step="0.05" value="${e.w_time_floor}"></label>
+                    <label>w時 指数 <input name="w_time_exp" type="number" min="0.2" max="4" step="0.1" value="${e.w_time_exp}"></label>
                     <label>日時締切（JST） <input name="closes_at" type="datetime-local" value="${toJstInput(e.voting_closes_at)}"></label>
                   </div>
-                  <p class="note">内部: Seed＝作者モデルの山。実票＝ユーザーの投票。E＝参考オッズを実票へ寄せる目安（賭け上限ではない）。確定配当＝(TV×(1−D))/V。</p>
                   <button type="submit">保存</button>
                 </form>
               </div>
