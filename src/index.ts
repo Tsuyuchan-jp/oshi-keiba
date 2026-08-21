@@ -250,6 +250,7 @@ export default {
                   <thead><tr><th>名前</th><th>所持額</th><th>単勝</th></tr></thead>
                   <tbody>${rows}</tbody>
                 </table>
+                <p class="note">デモは単勝賭けのみ。他のかけ方は検討中。</p>
               </div>
               <script>
                 const apply = (who) => {
