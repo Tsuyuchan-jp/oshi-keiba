@@ -471,7 +471,7 @@ export default {
                 <h2>週次操作</h2>
                 <div class="row">
                   <form method="post" action="/admin/seed-demo"><button type="submit">仮ウマ娘 7 頭を入れる</button></form>
-                  <form method="post" action="/admin/open"><button type="submit">投票開始（名簿を閉じる）</button></form>
+                  <form method="post" action="/admin/open"><button type="submit">投票開始</button></form>
                   <form method="post" action="/admin/close"><button class="danger" type="submit">強制締切 → 確定配当</button></form>
                   <form method="post" action="/admin/reset"><button class="secondary" type="submit">デモ初期化</button></form>
                 </div>
@@ -576,7 +576,7 @@ export default {
         try {
           const board = await loadBoard(env.DB);
           await openVoting(env.DB, board.event, board.event.voting_closes_at);
-          return bounce("/admin", "投票を開始し、名簿を閉じました");
+          return bounce("/admin", "投票を開始しました");
         } catch (err) {
           return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
         }
