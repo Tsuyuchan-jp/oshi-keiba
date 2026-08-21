@@ -1,5 +1,4 @@
 import { escapeHtml } from "./http";
-import { DEFAULTS } from "./odds";
 import type { Board, EventStatus, UserRow } from "./store";
 
 export function formatOdds(n: number | null): string {
@@ -168,6 +167,43 @@ details.terms-box summary {
   font-size: .9rem;
   padding: .35rem 0;
 }
+@keyframes pulse-row {
+  0% { background: #ffe08a; }
+  100% { background: transparent; }
+}
+tr.pulse-row { animation: pulse-row 1.4s ease-out; }
+tr.pulse-hit { animation: pulse-row 1.4s ease-out; background: #fff3c4; }
+.odds-cell { white-space: nowrap; }
+.odds-delta {
+  display: inline-block;
+  margin-left: .35rem;
+  font-size: .78rem;
+  font-weight: 700;
+  transition: opacity .6s ease;
+}
+.odds-delta.down { color: var(--ok); }
+.odds-delta.up { color: var(--stamp); }
+.odds-delta.gone { opacity: 0; }
+button.text-btn {
+  background: none;
+  color: var(--accent);
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  text-decoration: underline;
+}
+dialog.modal {
+  max-width: 38rem;
+  width: calc(100% - 2rem);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1.1rem 1.2rem;
+  background: var(--paper);
+  color: var(--ink);
+}
+dialog.modal::backdrop { background: rgba(28, 36, 22, .45); }
+dialog.modal h2 { margin-top: 0; }
+dialog.modal .eq { margin: .2rem 0 .55rem; }
 `;
 
 export function layout(opts: {
@@ -236,10 +272,10 @@ export function boardTable(board: Board, opts: { showPlaces: boolean }): string 
           ? `${h.horse.finish_place}着`
           : "—";
       const mark = h.horse.scratched ? "取消" : `${i + 1}`;
-      return `<tr class="${h.horse.scratched ? "scr" : ""}">
+      return `<tr class="${h.horse.scratched ? "scr" : ""}" data-horse-id="${escapeHtml(h.horse.id)}">
         <td>${mark}</td>
         <td>${escapeHtml(h.horse.name)}</td>
-        <td class="num">${h.horse.scratched ? "—" : formatOdds(odds)}</td>
+        <td class="num odds-cell"><span class="odds-now">${h.horse.scratched ? "—" : formatOdds(odds)}</span><span class="odds-delta" hidden></span></td>
         <td class="num">${formatPt(h.real)}</td>
         <td class="num">${h.horse.scratched ? "—" : h.seed.toFixed(0)}</td>
         <td>${place}</td>
@@ -255,6 +291,53 @@ export function boardTable(board: Board, opts: { showPlaces: boolean }): string 
     <tbody>${rows}</tbody>
   </table>`;
 }
+
+/** 画面に出している倍率（投票中は参考、締切後は確定） */
+export function shownOdds(board: Board, horseId: string): number | null {
+  const h = board.horses.find((x) => x.horse.id === horseId);
+  if (!h || h.horse.scratched) return null;
+  if (board.event.status === "voting" || board.event.status === "setup") {
+    return h.referenceOdds;
+  }
+  return h.confirmedOdds;
+}
+
+/** 投票直後の行光と倍率差。クエリ b を読んで消す */
+export const BOARD_FLASH_SCRIPT = `<script>
+(() => {
+  const p = new URLSearchParams(location.search);
+  const raw = p.get("b");
+  if (!raw) return;
+  let data;
+  try { data = JSON.parse(raw); } catch { return; }
+  const deltas = data.deltas || {};
+  const hit = data.hit;
+  for (const tr of document.querySelectorAll("tr[data-horse-id]")) {
+    const id = tr.getAttribute("data-horse-id");
+    const d = deltas[id];
+    if (typeof d === "number" && Number.isFinite(d) && Math.abs(d) >= 0.05) {
+      tr.classList.add("pulse-row");
+      const el = tr.querySelector(".odds-delta");
+      if (el) {
+        el.hidden = false;
+        el.textContent = (d > 0 ? "+" : "") + d.toFixed(1) + "倍";
+        el.classList.toggle("up", d > 0);
+        el.classList.toggle("down", d < 0);
+      }
+    }
+    if (id === hit) tr.classList.add("pulse-hit");
+  }
+  p.delete("b");
+  const q = p.toString();
+  history.replaceState(null, "", location.pathname + (q ? "?" + q : ""));
+  setTimeout(() => {
+    document.querySelectorAll(".odds-delta").forEach((el) => el.classList.add("gone"));
+    document.querySelectorAll("tr.pulse-row, tr.pulse-hit").forEach((el) => {
+      el.classList.remove("pulse-row", "pulse-hit");
+    });
+  }, 2800);
+})();
+</script>`;
 
 export function wCaption(board: Board): string {
   return `w=${board.w.toFixed(2)}（時間 ${board.wTime.toFixed(2)} × 実際の投票額 ${board.wVolume.toFixed(2)}）　実際の投票額の合計 ${formatPt(board.realTotal)}　S=${board.event.seed_pool_s}　E=${board.event.pull_e}　D=${Math.round(board.event.takeout_d * 100)}%`;
@@ -353,4 +436,25 @@ export function formulaPanel(board: Board): string {
   </div>`;
 }
 
-export const HINT = `画面の数字はすべて仮です。毎週配る仮想ポイント G=${DEFAULTS.grantG}、単位 ${DEFAULTS.betUnit}、典型一張りは ${DEFAULTS.typicalBet} を本命。G を変えても S と E は自動では動きません。`;
+/** ステータススクショ算出は未搭載。確定している混ぜ方だけモーダルで示す */
+export function strengthCalcModal(): string {
+  return `<dialog class="modal" id="strength-modal">
+    <h2>ステータススクショからの算出</h2>
+    <p class="note">いまは未搭載です。デモの相対評価点は管理者が直置きしています。下は、方針として確定している範囲だけです。数字の曲線（1% ごとなど）はまだ置いていません。</p>
+    <div class="story">
+      <p>スクショから読む予定の入力は、対象コースのスキル（バ身）と、適正をステに吸収した有効ステ（温存リスク込み）です。適正を別枠で足すと二重になるので足しません。</p>
+      <p>スキル枠は U-tools のコース別バ身を採用する、という選択です。固有は effects の合計バ身、継承は同じコースの有効スキルバ身。単位はバ身に揃えるので、スキル枠の中では足してよい。対象が 36 コース内ならそのコースを使う。温存ツールが金回復込みなら、回復バ身はスキル枠から除く。</p>
+      <p>スタミナは温存の発生確率。低いほどよい。0〜8% は減点ゼロ、16% 程度で 1 段落、40% 超で大減点。超過（十分低いこと）への加点はしない。減点はスタミナ枠だけ。8〜16% と 16〜40% の間の折れ線は未確定です。</p>
+      <p>混ぜ方は B。バ身とステは単位が違うので足さない。出走メンバーの中だけでスキル枠を相対化し、ステ枠もその中だけで相対化する。そのあと仮の 3:1 で Strength にする。Strength の比が Seed です。</p>
+    </div>
+    <div class="eq">Strength<sub>i</sub> = 3 × スキル相対<sub>i</sub> + 1 × ステ相対<sub>i</sub></div>
+    <div class="eq">Seed<sub>i</sub> = S × Strength<sub>i</sub> / Σ Strength</div>
+    <p class="note">3:1 は仮。他ステの距離帯の厚み（パワー・賢さなど）は言葉の錨だけで、式は未確定。36 コース外の近傍流用も未実装です。</p>
+    <form method="dialog"><button type="submit">閉じる</button></form>
+  </dialog>
+  <script>
+    const dlg = document.getElementById("strength-modal");
+    const openBtn = document.getElementById("strength-detail");
+    if (dlg && openBtn) openBtn.addEventListener("click", () => dlg.showModal());
+  </script>`;
+}

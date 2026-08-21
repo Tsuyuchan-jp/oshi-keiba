@@ -28,15 +28,17 @@ import {
   upsertUser,
 } from "./lib/store";
 import {
+  BOARD_FLASH_SCRIPT,
   formulaPanel,
-  HINT,
   boardTable,
   flashHtml,
   formatOdds,
   formatPt,
   layout,
   parseJstInput,
+  shownOdds,
   statusLabel,
+  strengthCalcModal,
   toJstInput,
   wCaption,
 } from "./lib/ui";
@@ -239,8 +241,6 @@ export default {
                 <h1>デモ用投票画面<span class="stamp">仮</span></h1>
                 <p class="note">運営が 10 人分を代行する画面です。会員向けのログインではありません。チップまたは行で強調、投票は各行から直接できます。</p>
                 <p>${statusLabel(board.event.status)}</p>
-                <p class="note">${HINT}</p>
-                <p class="note">${wCaption(board)}</p>
                 ${boardTable(board, { showPlaces })}
               </div>
               <div class="card">
@@ -266,7 +266,8 @@ export default {
                     apply(el.getAttribute("data-who"));
                   });
                 });
-              </script>`,
+              </script>
+              ${BOARD_FLASH_SCRIPT}`,
           }),
         );
       }
@@ -277,19 +278,33 @@ export default {
         const form = await readForm(request);
         const who = form.get("who") ?? "メンバー01";
         try {
-          const board = await loadBoard(env.DB);
+          const horseId = form.get("horse_id") ?? "";
+          const before = await loadBoard(env.DB);
           const user = await getUser(env.DB, form.get("user_id") ?? "");
           if (!user || !isDemoMemberName(user.display_name)) {
             throw new Error("デモ用投票画面のメンバーではありません");
           }
           await placeBet(
             env.DB,
-            board.event,
+            before.event,
             user,
-            form.get("horse_id") ?? "",
+            horseId,
             Number(form.get("amount") ?? "0"),
           );
-          return bounce(`/demo?who=${encodeURIComponent(who)}`, `${user.display_name} が投票しました`);
+          const after = await loadBoard(env.DB);
+          const deltas: Record<string, number> = {};
+          for (const h of after.horses) {
+            const next = shownOdds(after, h.horse.id);
+            const prev = shownOdds(before, h.horse.id);
+            if (next != null && prev != null && Number.isFinite(next) && Number.isFinite(prev)) {
+              deltas[h.horse.id] = next - prev;
+            }
+          }
+          const flash = encodeURIComponent(JSON.stringify({ hit: horseId, deltas }));
+          return bounce(
+            `/demo?who=${encodeURIComponent(who)}&b=${flash}`,
+            `${user.display_name} が投票しました`,
+          );
         } catch (e) {
           return bounce(
             `/demo?who=${encodeURIComponent(who)}`,
@@ -462,7 +477,9 @@ export default {
                 </div>
               </div>
               <div class="card">
-                <h2>出走（直置き Seed。U-tools は後）</h2>
+                <h2>出走（直置き Seed）</h2>
+                <p class="note">ステータススクショからの算出機能は未搭載 → <button type="button" class="text-btn" id="strength-detail">詳細</button></p>
+                ${strengthCalcModal()}
                 ${
                   e.status === "setup"
                     ? `<form method="post" action="/admin/horse" class="row">
