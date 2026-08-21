@@ -145,8 +145,12 @@ tr.desk-focus { outline: 2px solid var(--accent); background: #eef6ee; }
 .flow-step.pay { border-left-color: var(--stamp); background: #f8eee8; }
 .flow-step.dim { opacity: .48; }
 .flow-k { font-size: .72rem; letter-spacing: .08em; color: var(--muted); margin-bottom: .2rem; }
-.eq { font-family: ui-monospace, "Cascadia Code", "Yu Gothic", monospace; font-size: .9rem; line-height: 1.45; }
-.plug { font-size: .82rem; margin-top: .25rem; font-variant-numeric: tabular-nums; }
+.eq, .plug {
+  font-family: ui-monospace, "Cascadia Code", "Yu Gothic", "Hiragino Sans", sans-serif;
+  font-size: .9rem;
+  line-height: 1.55;
+}
+.plug { font-size: .82rem; margin-top: .25rem; }
 .flow-arrow { text-align: center; color: var(--muted); font-size: .8rem; line-height: 1; }
 .terms { width: 100%; margin: 0 0 1rem; font-size: .82rem; }
 .terms th { white-space: nowrap; }
@@ -285,35 +289,35 @@ export function formulaPanel(board: Board): string {
     <div class="flow-step">
       <div class="flow-k">1　仮想の初期投票額</div>
       <div class="eq">Seed<sub>i</sub> = S × Strength<sub>i</sub> / Σ Strength</div>
-      <div class="plug">仮想の初期投票額【Seed<sub>i</sub>】＝ 仮想の初期投票額の合計【S】× この出走メンバーの中での相対評価点【Strength<sub>i</sub>】 / 評価点合計【Σ Strength】</div>
+      <div class="plug">仮想の初期投票額【Seed<sub>i</sub>】 =  仮想の初期投票額の合計【S】× この出走メンバーの中での相対評価点【Strength<sub>i</sub>】 / 評価点合計【Σ Strength】</div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step">
       <div class="flow-k">2　初期投票額をどれだけ残すか（w）</div>
       <div class="eq">w<sub>時</sub> = 下限 + (1 − 下限) × 残り<sup>指数</sup></div>
-      <div class="plug">時間による残り方【w<sub>時</sub>】＝ 時間側の下限【下限】＋ (1 − 下限) × 投票時間の残り割合【残り】の、曲線の指数【指数】乗</div>
+      <div class="plug">時間による残り方【w<sub>時</sub>】 =  時間側の下限【下限】＋ (1 − 下限) × 投票時間の残り割合【残り】の、曲線の指数【指数】乗</div>
       <div class="eq">w<sub>票</sub> = max(0, 1 − TV / E)</div>
-      <div class="plug">実際の投票額による薄め【w<sub>票</sub>】＝ 0 と（1 − 実際の投票額の合計【TV】 / 実際の投票額に寄せ始める目安【E】）のうち大きい方</div>
+      <div class="plug">実際の投票額による薄め【w<sub>票</sub>】 =  0 と（1 − 実際の投票額の合計【TV】 / 実際の投票額に寄せ始める目安【E】）のうち大きい方</div>
       <div class="eq">w = w<sub>時</sub> × w<sub>票</sub></div>
-      <div class="plug">初期投票額をどれだけ残すか【w】＝ 時間による残り方【w<sub>時</sub>】× 実際の投票額による薄め【w<sub>票</sub>】</div>
+      <div class="plug">初期投票額をどれだけ残すか【w】 =  時間による残り方【w<sub>時</sub>】× 実際の投票額による薄め【w<sub>票</sub>】</div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step ${refNow ? "on" : "dim"}">
       <div class="flow-k">3　参考オッズ（投票中に出す。払わない）</div>
       <div class="eq">足した額<sub>i</sub> = Seed<sub>i</sub> × w + Real<sub>i</sub></div>
-      <div class="plug">参考オッズを出すために足した額【足した額<sub>i</sub>】＝ 仮想の初期投票額【Seed<sub>i</sub>】× 初期投票額をどれだけ残すか【w】＋ メンバーが実際に賭けた投票額【Real<sub>i</sub>】</div>
+      <div class="plug">参考オッズを出すために足した額【足した額<sub>i</sub>】 =  仮想の初期投票額【Seed<sub>i</sub>】× 初期投票額をどれだけ残すか【w】＋ メンバーが実際に賭けた投票額【Real<sub>i</sub>】</div>
       <div class="eq">参考オッズ<sub>i</sub> = (足した額の合計 × (1 − D)) / 足した額<sub>i</sub></div>
-      <div class="plug">参考オッズ【参考オッズ<sub>i</sub>】＝ (足した額の合計 × (1 − 控除【D】)) / そのウマ娘について足した額【足した額<sub>i</sub>】</div>
+      <div class="plug">参考オッズ【参考オッズ<sub>i</sub>】 =  (足した額の合計 × (1 − 控除【D】)) / そのウマ娘について足した額【足した額<sub>i</sub>】</div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step ${payNow ? "pay" : "dim"}">
       <div class="flow-k">4　確定配当（締切後に払う。仮想の初期投票額は入れない）</div>
       <div class="eq">払戻しの原資 = TV × (1 − D)</div>
-      <div class="plug">払戻しの原資 ＝ 実際の投票額の合計【TV】× (1 − 控除【D】)</div>
+      <div class="plug">払戻しの原資  =  実際の投票額の合計【TV】× (1 − 控除【D】)</div>
       <div class="eq">確定配当<sub>i</sub> = 払戻しの原資 / Real<sub>i</sub></div>
-      <div class="plug">確定配当【確定配当<sub>i</sub>】＝ 払戻しの原資 / そのウマ娘の実際の投票額【Real<sub>i</sub>】</div>
+      <div class="plug">確定配当【確定配当<sub>i</sub>】 =  払戻しの原資 / そのウマ娘の実際の投票額【Real<sub>i</sub>】</div>
       <div class="eq">払戻 = ⌊ 実際の投票額 × 確定配当 ⌋</div>
-      <div class="plug">払戻 ＝ その投票の実際の投票額 × 確定配当、の小数切り捨て</div>
+      <div class="plug">払戻  =  その投票の実際の投票額 × 確定配当、の小数切り捨て</div>
     </div>
   </div>`;
 }

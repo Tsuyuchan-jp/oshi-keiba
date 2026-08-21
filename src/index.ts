@@ -438,7 +438,6 @@ export default {
               </div>
               <div class="card">
                 <h2>数値</h2>
-                ${formulaPanel(board)}
                 <form method="post" action="/admin/params">
                   <div class="row">
                     <label>タイトル <input name="title" value="${escapeHtml(e.title)}"></label>
@@ -492,6 +491,10 @@ export default {
                        </form>`
                     : ""
                 }
+              </div>
+              <div class="card">
+                <h2>内部計算</h2>
+                ${formulaPanel(board)}
               </div>`,
           }),
         );
