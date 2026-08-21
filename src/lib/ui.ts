@@ -120,6 +120,21 @@ th { font-size: .78rem; color: var(--muted); font-weight: 600; }
 nav.links { display: flex; gap: .8rem; flex-wrap: wrap; font-family: sans-serif; font-size: .85rem; }
 .note { font-size: .85rem; color: var(--muted); line-height: 1.5; }
 .scr { opacity: .55; text-decoration: line-through; }
+.chips { display: flex; flex-wrap: wrap; gap: .35rem; margin: .5rem 0 1rem; }
+.chip {
+  font-family: sans-serif;
+  font-size: .8rem;
+  padding: .25rem .5rem;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.chip.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+tr.desk-focus { outline: 2px solid var(--accent); background: #eef6ee; }
+.desk-row td { vertical-align: middle; }
+.desk-row form { margin: 0; }
 `;
 
 export function layout(opts: {
@@ -149,6 +164,7 @@ export function layout(opts: {
       <div class="muted">${who}</div>
       <nav class="links">
         <a href="/">板</a>
+        <a href="/demo">デモ卓</a>
         ${opts.user ? `<a href="/logout">ログアウト</a>` : `<a href="/login">ログイン</a>`}
         <a href="/admin">${opts.admin ? "管理" : "管理者"}</a>
       </nav>

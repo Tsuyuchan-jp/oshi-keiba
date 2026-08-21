@@ -297,6 +297,36 @@ export async function getUser(
   return db.prepare("SELECT * FROM users WHERE id = ?").bind(userId).first<UserRow>();
 }
 
+/** デモ卓の 10 人。会員ログインとは別画面で使う */
+export const DEMO_MEMBER_NAMES = [
+  "メンバー01",
+  "メンバー02",
+  "メンバー03",
+  "メンバー04",
+  "メンバー05",
+  "メンバー06",
+  "メンバー07",
+  "メンバー08",
+  "メンバー09",
+  "メンバー10",
+] as const;
+
+export function isDemoMemberName(name: string): boolean {
+  return (DEMO_MEMBER_NAMES as readonly string[]).includes(name);
+}
+
+export async function ensureDemoMembers(
+  db: D1Database,
+  event: EventRow,
+): Promise<UserRow[]> {
+  const out: UserRow[] = [];
+  for (const name of DEMO_MEMBER_NAMES) {
+    const user = await grantIfNeeded(db, event, await upsertUser(db, name, "member"));
+    out.push(user);
+  }
+  return out;
+}
+
 export async function grantIfNeeded(
   db: D1Database,
   event: EventRow,

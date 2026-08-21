@@ -29,7 +29,8 @@ npm run dev
 ```
 
 - 板: http://localhost:8787/
-- メンバー仮パス: `demo-member`（表示名を変えれば複数人）
+- デモ卓（10人分を同じ画面で投票）: http://localhost:8787/demo （管理者で入室）
+- メンバー仮パス: `demo-member`（一人ログイン用。デモ卓とは別）
 - 管理者: http://localhost:8787/admin 仮パス `demo-admin`
 
 Seed は直置き。U-tools のデモレギと本番 URL はまだです。

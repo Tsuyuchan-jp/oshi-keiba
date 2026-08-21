@@ -10,9 +10,11 @@ import {
 import { escapeHtml, html, json, readForm, redirect } from "./lib/http";
 import {
   addHorse,
+  ensureDemoMembers,
   forceClose,
   getUser,
   grantIfNeeded,
+  isDemoMemberName,
   listUserBets,
   loadBoard,
   openVoting,
@@ -184,6 +186,116 @@ export default {
             finishPlace: showPlaces ? h.horse.finish_place : null,
           })),
         });
+      }
+
+      if (method === "GET" && path === "/demo") {
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) return gate;
+        const board = await loadBoard(env.DB);
+        const members = await ensureDemoMembers(env.DB, board.event);
+        const showPlaces = board.event.status === "published";
+        const m = msg(url);
+        const who = url.searchParams.get("who") ?? "メンバー01";
+        const live = board.horses.filter((h) => !h.horse.scratched);
+        const options = live
+          .map(
+            (h) =>
+              `<option value="${h.horse.id}">${escapeHtml(h.horse.name)}</option>`,
+          )
+          .join("");
+        const chips = members
+          .map(
+            (u) =>
+              `<button type="button" class="chip${u.display_name === who ? " on" : ""}" data-who="${escapeHtml(u.display_name)}">${escapeHtml(u.display_name)}</button>`,
+          )
+          .join("");
+        const rows = members
+          .map((u) => {
+            const canBet = board.event.status === "voting";
+            const betCell = canBet
+              ? `<form method="post" action="/demo/bet" class="row">
+                  <input type="hidden" name="user_id" value="${u.id}">
+                  <input type="hidden" name="who" value="${escapeHtml(u.display_name)}">
+                  <select name="horse_id">${options}</select>
+                  <input name="amount" type="number" min="${board.event.bet_unit}" step="${board.event.bet_unit}" value="700" required style="width:6.5rem">
+                  <button type="submit">買う</button>
+                </form>`
+              : `<span class="muted">投票期間外</span>`;
+            return `<tr class="desk-row${u.display_name === who ? " desk-focus" : ""}" data-who="${escapeHtml(u.display_name)}">
+              <td><button type="button" class="chip${u.display_name === who ? " on" : ""}" data-who="${escapeHtml(u.display_name)}">${escapeHtml(u.display_name)}</button></td>
+              <td class="num">${formatPt(u.balance)}</td>
+              <td>${betCell}</td>
+            </tr>`;
+          })
+          .join("");
+        return html(
+          layout({
+            title: "デモ卓（仮）",
+            user: gate.user,
+            admin: true,
+            body: `${flashHtml(m.text, m.error)}
+              <div class="card">
+                <h1>デモ卓<span class="stamp">仮</span></h1>
+                <p class="note">運営が 10 人分を代行する画面です。会員向けのログインではありません。チップまたは行で強調、投票は各行から直接できます。</p>
+                <p>${statusLabel(board.event.status)}</p>
+                <p class="note">${HINT}</p>
+                <p class="note">${wCaption(board)}</p>
+                ${boardTable(board, { showPlaces })}
+              </div>
+              <div class="card">
+                <h2>メンバー01〜10</h2>
+                <div class="chips">${chips}</div>
+                <table>
+                  <thead><tr><th>名前</th><th>残高</th><th>単勝</th></tr></thead>
+                  <tbody>${rows}</tbody>
+                </table>
+              </div>
+              <script>
+                const apply = (who) => {
+                  document.querySelectorAll("[data-who]").forEach((el) => {
+                    const on = el.getAttribute("data-who") === who;
+                    el.classList.toggle("on", on && el.classList.contains("chip"));
+                    if (el.classList.contains("desk-row")) el.classList.toggle("desk-focus", on);
+                  });
+                  history.replaceState(null, "", "/demo?who=" + encodeURIComponent(who));
+                };
+                document.querySelectorAll("[data-who]").forEach((el) => {
+                  el.addEventListener("click", (ev) => {
+                    if (ev.target.closest("form")) return;
+                    apply(el.getAttribute("data-who"));
+                  });
+                });
+              </script>`,
+          }),
+        );
+      }
+
+      if (method === "POST" && path === "/demo/bet") {
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) return gate;
+        const form = await readForm(request);
+        const who = form.get("who") ?? "メンバー01";
+        try {
+          const board = await loadBoard(env.DB);
+          const user = await getUser(env.DB, form.get("user_id") ?? "");
+          if (!user || !isDemoMemberName(user.display_name)) {
+            throw new Error("デモ卓のメンバーではありません");
+          }
+          await placeBet(
+            env.DB,
+            board.event,
+            user,
+            form.get("horse_id") ?? "",
+            Number(form.get("amount") ?? "0"),
+          );
+          return bounce(`/demo?who=${encodeURIComponent(who)}`, `${user.display_name} が投票しました`);
+        } catch (e) {
+          return bounce(
+            `/demo?who=${encodeURIComponent(who)}`,
+            e instanceof Error ? e.message : "投票に失敗",
+            true,
+          );
+        }
       }
 
       if (method === "GET" && (path === "/" || path === "/board")) {
