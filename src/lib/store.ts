@@ -297,7 +297,7 @@ export async function getUser(
   return db.prepare("SELECT * FROM users WHERE id = ?").bind(userId).first<UserRow>();
 }
 
-/** デモ用投票画面の 10 人。会員ログインとは別画面で使う */
+/** デモ用投票画面の 10 人。管理者画面から代行投票する */
 export const DEMO_MEMBER_NAMES = [
   "メンバー01",
   "メンバー02",

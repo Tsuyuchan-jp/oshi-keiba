@@ -4,8 +4,7 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-08-21",
   "vars": {
-    // 手土産デモ用。会員向け本番パスではない
-    "MEMBER_PASSWORD": "demo-member",
+    // 手土産デモ用の管理者仮パス
     "ADMIN_PASSWORD": "demo-admin"
   },
   "workers_dev": true,

@@ -13,9 +13,7 @@ import {
   ensureDemoMembers,
   forceClose,
   getUser,
-  grantIfNeeded,
   isDemoMemberName,
-  listUserBets,
   loadBoard,
   openVoting,
   placeBet,
@@ -58,19 +56,6 @@ function bounce(path: string, text: string, error = false): Response {
   return redirect(u.pathname + u.search);
 }
 
-async function requireMember(
-  request: Request,
-  env: Env,
-): Promise<{ session: Session; user: UserRow } | Response> {
-  const session = await sessionFromRequest(request, env.SESSION_SECRET);
-  if (!session || session.role !== "member") {
-    return redirect("/login");
-  }
-  const user = await getUser(env.DB, session.userId);
-  if (!user) return redirect("/login");
-  return { session, user };
-}
-
 async function requireAdmin(
   request: Request,
   env: Env,
@@ -92,48 +77,11 @@ export default {
       const method = request.method;
 
       if (method === "GET" && path === "/login") {
-        const m = msg(url);
-        const board = await loadBoard(env.DB);
-        return html(
-          layout({
-            title: "ログイン（仮）",
-            eventStatus: board.event.status,
-            body: `${flashHtml(m.text, m.error)}
-              <div class="card">
-                <h1>メンバーログイン<span class="stamp">仮</span></h1>
-                <p class="note">共通の仮パスワードと、自分の表示名。名前を変えれば複数アカウント相当です。本番のメンバーシップ認証ではありません。</p>
-                <form method="post" action="/login">
-                  <div class="row">
-                    <label>表示名 <input name="name" required maxlength="40"></label>
-                    <label>仮パスワード <input name="password" type="password" required></label>
-                    <button type="submit">入室</button>
-                  </div>
-                </form>
-              </div>`,
-          }),
-        );
-      }
-
-      if (method === "POST" && path === "/login") {
-        const form = await readForm(request);
-        const name = (form.get("name") ?? "").trim();
-        const password = form.get("password") ?? "";
-        if (!name) return bounce("/login", "表示名を入れてください", true);
-        if (!timingSafeEqualStr(password, env.MEMBER_PASSWORD)) {
-          return bounce("/login", "仮パスワードが違います", true);
-        }
-        const eventBoard = await loadBoard(env.DB);
-        const user0 = await upsertUser(env.DB, name, "member");
-        const user = await grantIfNeeded(env.DB, eventBoard.event, user0);
-        const token = await encodeSession(
-          { userId: user.id, role: "member", exp: sessionExpiry() },
-          env.SESSION_SECRET,
-        );
-        return redirect("/", { "Set-Cookie": sessionCookie(token) });
+        return redirect("/");
       }
 
       if (method === "GET" && path === "/logout") {
-        return redirect("/login", { "Set-Cookie": clearSessionCookie() });
+        return redirect("/admin/login", { "Set-Cookie": clearSessionCookie() });
       }
 
       if (method === "GET" && path === "/admin/login") {
@@ -244,7 +192,7 @@ export default {
             body: `${flashHtml(m.text, m.error)}
               <div class="card">
                 <h1>デモ用投票画面<span class="stamp">仮</span></h1>
-                <p class="note">運営が 10 人分を代行する画面です。会員向けのログインではありません。チップまたは行で強調、投票は各行から直接できます。</p>
+                <p class="note">運営が 10 人分を代行する画面です。チップまたは行で強調、投票は各行から直接できます。</p>
                 ${boardTable(board, { showPlaces })}
               </div>
               <div class="card">
@@ -321,35 +269,11 @@ export default {
 
       if (method === "GET" && (path === "/" || path === "/board")) {
         const session = await sessionFromRequest(request, env.SESSION_SECRET);
-        const user = session ? await getUser(env.DB, session.userId) : null;
+        const user =
+          session?.role === "admin" ? await getUser(env.DB, session.userId) : null;
         const board = await loadBoard(env.DB);
         const showPlaces = board.event.status === "published";
         const m = msg(url);
-        const myBets =
-          user && session?.role === "member"
-            ? await listUserBets(env.DB, board.event.id, user.id)
-            : [];
-        const live = board.horses.filter((h) => !h.horse.scratched);
-        const betForm =
-          session?.role === "member" && board.event.status === "voting"
-            ? `<form method="post" action="/bet" class="row">
-                <label>ウマ娘
-                  <select name="horse_id">${live
-                    .map(
-                      (h) =>
-                        `<option value="${h.horse.id}">${escapeHtml(h.horse.name)}</option>`,
-                    )
-                    .join("")}</select>
-                </label>
-                <label>金額（単位 ${board.event.bet_unit}）
-                  <input name="amount" type="number" min="${board.event.bet_unit}" step="${board.event.bet_unit}" value="700" required>
-                </label>
-                <button type="submit">単勝を買う</button>
-              </form>
-              <p class="note">1頭へ全額可。1人一票にはしません。複数頭・複数回できます。</p>`
-            : session?.role === "member"
-              ? `<p class="note">いまは投票できません（${statusLabel(board.event.status)}）。</p>`
-              : `<p class="note">投票はデモ用投票画面から行います。</p>`;
 
         const oddsName =
           board.event.status === "closed" || board.event.status === "published"
@@ -363,20 +287,11 @@ export default {
               ? `<p class="note">1着に実際の投票額が無かったため、この賭式は不成立・返還です。</p>`
               : "";
 
-        const myList = myBets.length
-          ? `<ul>${myBets
-              .map((b) => {
-                const h = board.horses.find((x) => x.horse.id === b.horse_id);
-                return `<li>${escapeHtml(h?.horse.name ?? b.horse_id)} ${formatPt(b.amount)}${b.refunded ? "（返還）" : ""}</li>`;
-              })
-              .join("")}</ul>`
-          : `<p class="muted">まだ投票していません。</p>`;
-
         return html(
           layout({
             title: "オッズ表（仮）",
             user,
-            loginNav: "text",
+            admin: session?.role === "admin",
             eventStatus: board.event.status,
             body: `${flashHtml(m.text, m.error)}
               <div class="card">
@@ -384,32 +299,10 @@ export default {
                 <p>${oddsName}</p>
                 ${boardTable(board, { showPlaces })}
                 ${resultNote}
-              </div>
-              <div class="card">
-                <h2>単勝を買う</h2>
-                ${betForm}
-              </div>
-              <div class="card">
-                <h2>自分の投票</h2>
-                ${myList}
+                <p class="note">投票はデモ用投票画面から行います。</p>
               </div>`,
           }),
         );
-      }
-
-      if (method === "POST" && path === "/bet") {
-        const gate = await requireMember(request, env);
-        if (gate instanceof Response) return gate;
-        const form = await readForm(request);
-        const horseId = form.get("horse_id") ?? "";
-        const amount = Number(form.get("amount") ?? "0");
-        try {
-          const board = await loadBoard(env.DB);
-          await placeBet(env.DB, board.event, gate.user, horseId, amount);
-          return bounce("/", "投票しました");
-        } catch (e) {
-          return bounce("/", e instanceof Error ? e.message : "投票に失敗", true);
-        }
       }
 
       if (method === "GET" && path === "/admin") {

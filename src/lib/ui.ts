@@ -230,18 +230,12 @@ export function layout(opts: {
   user?: UserRow | null;
   body: string;
   admin?: boolean;
-  /** オッズ表は会員ログインを出さない（文言だけ残してよい） */
-  loginNav?: "link" | "text";
   eventStatus?: EventStatus;
 }): string {
-  const who = opts.user
-    ? `${escapeHtml(opts.user.display_name)}　${formatPt(opts.user.balance)}`
-    : "未ログイン";
-  const loginItem = opts.user
-    ? `<a href="/logout">ログアウト</a>`
-    : opts.loginNav === "text"
-      ? `<span>ログイン</span>`
-      : `<a href="/login">ログイン</a>`;
+  const whoLine = opts.user
+    ? `<div class="muted">${escapeHtml(opts.user.display_name)}　${formatPt(opts.user.balance)}</div>`
+    : "";
+  const logoutLink = opts.user ? `<a href="/logout">ログアウト</a>` : "";
   const phase = opts.eventStatus
     ? `<div class="phase ${headerPhaseKind(opts.eventStatus)}">${escapeHtml(statusLabel(opts.eventStatus))}</div>`
     : "";
@@ -261,11 +255,11 @@ export function layout(opts: {
       ${phase}
     </div>
     <div>
-      <div class="muted">${who}</div>
+      ${whoLine}
       <nav class="links">
         <a href="/">オッズ表</a>
         <a href="/demo">デモ用投票画面</a>
-        ${loginItem}
+        ${logoutLink}
         <a href="/admin">${opts.admin ? "管理" : "管理者"}</a>
       </nav>
     </div>
