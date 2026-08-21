@@ -417,7 +417,14 @@ export default {
           .map((h) => {
             const placeCell =
               e.status === "closed" && !h.horse.scratched
-                ? `<input form="places-form" type="number" name="place_${h.horse.id}" min="1" max="${liveCount}" value="${h.horse.finish_place ?? ""}" required>`
+                ? `<select form="places-form" class="place-select" name="place_${h.horse.id}" required>
+                    <option value="">—</option>
+                    ${Array.from({ length: liveCount }, (_, i) => {
+                      const n = i + 1;
+                      const sel = h.horse.finish_place === n ? " selected" : "";
+                      return `<option value="${n}"${sel}>${n}着</option>`;
+                    }).join("")}
+                  </select>`
                 : h.horse.finish_place != null
                   ? `${h.horse.finish_place}着`
                   : "—";
@@ -496,7 +503,26 @@ export default {
                 ${
                   e.status === "closed"
                     ? `<p class="note">一般画面には着順を出しません。公開スイッチを押すまで。</p>
-                       <button form="places-form" type="submit">着順を保存</button>`
+                       <button form="places-form" type="submit">着順を保存</button>
+                       <script>
+                         const syncPlaceOptions = () => {
+                           const selects = [...document.querySelectorAll("select.place-select")];
+                           const taken = new Set(selects.map((s) => s.value).filter((v) => v !== ""));
+                           for (const s of selects) {
+                             const mine = s.value;
+                             for (const opt of s.options) {
+                               if (opt.value === "") continue;
+                               const hide = taken.has(opt.value) && opt.value !== mine;
+                               opt.hidden = hide;
+                               opt.disabled = hide;
+                             }
+                           }
+                         };
+                         document.querySelectorAll("select.place-select").forEach((s) => {
+                           s.addEventListener("change", syncPlaceOptions);
+                         });
+                         syncPlaceOptions();
+                       </script>`
                     : ""
                 }
                 ${
