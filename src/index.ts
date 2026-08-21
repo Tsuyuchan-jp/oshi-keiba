@@ -448,7 +448,6 @@ export default {
               <div class="card">
                 <h1>管理者<span class="stamp">仮</span></h1>
                 <p>${statusLabel(e.status)}　頭数（取消前） ${liveCount}</p>
-                <p class="note">馬券締切はゲーム内で着順が見える前。日時指定と強制ボタンの両方。着順の公開は note に合わせ、締切とは別です。</p>
               </div>
               <div class="card">
                 <h2>数値</h2>
@@ -471,7 +470,7 @@ export default {
                 <h2>週次操作</h2>
                 <div class="row">
                   <form method="post" action="/admin/seed-demo"><button type="submit">仮ウマ娘 7 頭を入れる</button></form>
-                  <form method="post" action="/admin/open"><button type="submit">投票開始</button></form>
+                  <form method="post" action="/admin/open"><button type="submit">出走登録完了/投票開始</button></form>
                   <form method="post" action="/admin/close"><button class="danger" type="submit">強制締切 → 確定配当</button></form>
                   <form method="post" action="/admin/reset"><button class="secondary" type="submit">デモ初期化</button></form>
                 </div>
