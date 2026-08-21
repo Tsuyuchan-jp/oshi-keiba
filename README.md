@@ -32,4 +32,12 @@ npm run dev
 - デモ用投票画面（10人分を同じ画面で投票）: http://localhost:8787/demo （管理者で入室）
 - 管理者: http://localhost:8787/admin 仮パス `demo-admin`
 
-Seed は直置き。U-tools のデモレギと本番 URL はまだです。
+Seed は直置き。U-tools のデモレギはまだです。
+
+## 手土産 URL（Cloudflare）
+
+閉じた試作です。検索に出さない前提で、URL を知っている人だけに渡します。
+
+- オッズ表: https://oshi-keiba.renso.workers.dev/
+- デモ用投票画面: https://oshi-keiba.renso.workers.dev/demo （管理者で入室）
+- 管理者: https://oshi-keiba.renso.workers.dev/admin 仮パス `demo-admin`

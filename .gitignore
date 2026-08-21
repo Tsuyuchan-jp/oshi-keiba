@@ -5,6 +5,7 @@ Desktop.ini
 node_modules/
 .wrangler/
 .dev.vars
+secrets-prod.env
 .mf/
 dist/
 *.tsbuildinfo

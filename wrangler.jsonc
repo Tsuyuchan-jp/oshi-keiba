@@ -4,11 +4,11 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-08-21",
   "vars": {
-    // 仮パスワード。本番は wrangler secret put に差し替える
+    // 手土産デモ用。会員向け本番パスではない
     "MEMBER_PASSWORD": "demo-member",
-    "ADMIN_PASSWORD": "demo-admin",
-    "SESSION_SECRET": "local-dev-session-secret-change-me"
+    "ADMIN_PASSWORD": "demo-admin"
   },
+  "workers_dev": true,
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1
@@ -17,8 +17,7 @@
     {
       "binding": "DB",
       "database_name": "oshi-keiba",
-      // ローカル開発用。本番は wrangler d1 create のあと差し替える
-      "database_id": "00000000-0000-0000-0000-000000000001",
+      "database_id": "7145055f-edbc-4991-88bb-9ee62ce1a9f1",
       "migrations_dir": "./migrations"
     }
   ]
