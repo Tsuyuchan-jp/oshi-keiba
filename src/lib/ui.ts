@@ -151,6 +151,14 @@ tr.desk-focus { outline: 2px solid var(--accent); background: #eef6ee; }
   line-height: 1.55;
 }
 .plug { font-size: .82rem; margin-top: .25rem; }
+.story {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: .88rem;
+  line-height: 1.7;
+  margin: 0 0 .65rem;
+}
+.story p { margin: 0 0 .55rem; }
+.story p:last-child { margin-bottom: .4rem; }
 .flow-arrow { text-align: center; color: var(--muted); font-size: .8rem; line-height: 1; }
 .terms { width: 100%; margin: 0 0 1rem; font-size: .82rem; }
 .terms th { white-space: nowrap; }
@@ -240,7 +248,7 @@ export function wCaption(board: Board): string {
   return `w=${board.w.toFixed(2)}（時間 ${board.wTime.toFixed(2)} × 実際の投票額 ${board.wVolume.toFixed(2)}）　実際の投票額の合計 ${formatPt(board.realTotal)}　S=${board.event.seed_pool_s}　E=${board.event.pull_e}　D=${Math.round(board.event.takeout_d * 100)}%`;
 }
 
-/** 管理画面: 定義 → 記号の式 → 日本語【記号】 */
+/** 管理画面: 定義 → 物語（記号つき）→ 式だけ */
 export function formulaPanel(board: Board): string {
   const e = board.event;
   const refNow = e.status === "setup" || e.status === "voting";
@@ -259,6 +267,7 @@ export function formulaPanel(board: Board): string {
         <tr><td>仮想のユーザー所持額</td><td>残高</td><td>今持っているポイント</td></tr>
         <tr><td>毎週配る仮想ポイント</td><td>G</td><td>口座に足す額。オッズの式には入らない。G を変えても S と E は動かない</td></tr>
         <tr><td>投票の刻み</td><td>単位</td><td>一度に賭けられる最小のポイント</td></tr>
+        <tr><td>そのウマ娘</td><td>i</td><td>式の右下の小さな文字。1 頭ずつの数字につける。S や TV など出走全体には付けない</td></tr>
         <tr><td>この出走メンバーの中での相対評価点</td><td>Strength</td><td>ウマ娘 1 頭あたり。場の外の点数ではない。デモでは直置き</td></tr>
         <tr><td>評価点合計</td><td>Σ Strength</td><td>取消していないウマ娘の相対評価点を足したもの</td></tr>
         <tr><td>当アプリが算出した仮想の初期投票額</td><td>Seed</td><td>誰も買っていなくても乗せる分。払わない。ウマ娘 1 頭あたり</td></tr>
@@ -282,42 +291,50 @@ export function formulaPanel(board: Board): string {
     <div class="flow">
     <div class="flow-step">
       <div class="flow-k">口座（オッズの式に入れない）</div>
-      <div class="eq">G　／　単位</div>
-      <div class="plug">毎週配る仮想ポイント【G】を、仮想のユーザー所持額【残高】へ足す。投票の刻み【単位】は一度に賭けられる最小のポイント</div>
+      <div class="story">
+        <p>毎週配る仮想ポイント【G】を、仮想のユーザー所持額【残高】へ足す。投票の刻み【単位】は、一度に賭けられる最小のポイント。</p>
+      </div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step">
       <div class="flow-k">1　仮想の初期投票額</div>
+      <div class="story">
+        <p>まだ誰も買っていなくても、当アプリが仮想の初期投票額【Seed】を乗せる。合計が【S】。各ウマ娘への分け方は、この出走メンバーの中での相対評価点【Strength】の比。小さな i は「そのウマ娘」。</p>
+      </div>
       <div class="eq">Seed<sub>i</sub> = S × Strength<sub>i</sub> / Σ Strength</div>
-      <div class="plug">仮想の初期投票額【Seed<sub>i</sub>】 =  仮想の初期投票額の合計【S】× この出走メンバーの中での相対評価点【Strength<sub>i</sub>】 / 評価点合計【Σ Strength】</div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step">
-      <div class="flow-k">2　初期投票額をどれだけ残すか（w）</div>
+      <div class="flow-k">2　参考オッズを、仮想と実際のどちらに寄せるか（w）</div>
+      <div class="story">
+        <p>参考オッズは、仮想の初期投票額【Seed】と、実際の投票額【Real】を混ぜて出す。【w】は、混ぜるときに仮想の初期投票額を何割残すか。1 に近いほど仮想が効く。0 なら実際の投票額だけになる。</p>
+        <p>寄せる原因は二つある。</p>
+        <p>一つめは時間【w<sub>時</sub>】。投票の開始から日時締切に向かって時間が進むと、仮想の初期投票額の効きを弱くする（w<sub>時</sub> が下がる）。弱くはするが、時間だけが理由では 0 まで下げない。下限を残す。誰も賭けていなくても、開始時の付け方が参考オッズに少し残るようにするため。日時締切を置いていないときは、時間では減らさない。</p>
+        <p>二つめは実際の投票【w<sub>票</sub>】。実際の投票額の合計【TV】が、寄せ始める目安【E】に近づくと、仮想の効きを弱くする（w<sub>票</sub> が下がる）。TV が E の半分なら、だいたい半分。E まで貯まると、こちらは 0 まで下げてよい。参考オッズは実際の投票額に寄る。</p>
+        <p>最後に掛けて【w】=【w<sub>時</sub>】×【w<sub>票</sub>】にする。時間だけでは 0 にならない（w<sub>時</sub> に下限がある）。実際の投票が十分なら 0 にできる（w<sub>票</sub> が 0）。</p>
+      </div>
       <div class="eq">w<sub>時</sub> = 下限 + (1 − 下限) × 残り<sup>指数</sup></div>
-      <div class="plug">時間による残り方【w<sub>時</sub>】 =  時間側の下限【下限】＋ (1 − 下限) × 投票時間の残り割合【残り】の、曲線の指数【指数】乗</div>
       <div class="eq">w<sub>票</sub> = max(0, 1 − TV / E)</div>
-      <div class="plug">実際の投票額による薄め【w<sub>票</sub>】 =  0 と（1 − 実際の投票額の合計【TV】 / 実際の投票額に寄せ始める目安【E】）のうち大きい方</div>
       <div class="eq">w = w<sub>時</sub> × w<sub>票</sub></div>
-      <div class="plug">初期投票額をどれだけ残すか【w】 =  時間による残り方【w<sub>時</sub>】× 実際の投票額による薄め【w<sub>票</sub>】</div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step ${refNow ? "on" : "dim"}">
       <div class="flow-k">3　参考オッズ（投票中に出す。払わない）</div>
+      <div class="story">
+        <p>そのウマ娘について、仮想の初期投票額【Seed<sub>i</sub>】を【w】で薄め、実際の投票額【Real<sub>i</sub>】と足す。それが「参考オッズを出すために足した額」。足した額の合計と控除【D】から、参考オッズ（倍率）を出す。払う約束ではない。</p>
+      </div>
       <div class="eq">足した額<sub>i</sub> = Seed<sub>i</sub> × w + Real<sub>i</sub></div>
-      <div class="plug">参考オッズを出すために足した額【足した額<sub>i</sub>】 =  仮想の初期投票額【Seed<sub>i</sub>】× 初期投票額をどれだけ残すか【w】＋ メンバーが実際に賭けた投票額【Real<sub>i</sub>】</div>
       <div class="eq">参考オッズ<sub>i</sub> = (足した額の合計 × (1 − D)) / 足した額<sub>i</sub></div>
-      <div class="plug">参考オッズ【参考オッズ<sub>i</sub>】 =  (足した額の合計 × (1 − 控除【D】)) / そのウマ娘について足した額【足した額<sub>i</sub>】</div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step ${payNow ? "pay" : "dim"}">
       <div class="flow-k">4　確定配当（締切後に払う。仮想の初期投票額は入れない）</div>
+      <div class="story">
+        <p>払うのは実際の投票額だけ。実際の投票額の合計【TV】から控除【D】を除いたものが払戻しの原資。それを、そのウマ娘の実際の投票額【Real<sub>i</sub>】で割ると確定配当。払戻は、その投票額に確定配当を掛けて小数を切り捨てる。</p>
+      </div>
       <div class="eq">払戻しの原資 = TV × (1 − D)</div>
-      <div class="plug">払戻しの原資  =  実際の投票額の合計【TV】× (1 − 控除【D】)</div>
       <div class="eq">確定配当<sub>i</sub> = 払戻しの原資 / Real<sub>i</sub></div>
-      <div class="plug">確定配当【確定配当<sub>i</sub>】 =  払戻しの原資 / そのウマ娘の実際の投票額【Real<sub>i</sub>】</div>
       <div class="eq">払戻 = ⌊ 実際の投票額 × 確定配当 ⌋</div>
-      <div class="plug">払戻  =  その投票の実際の投票額 × 確定配当、の小数切り捨て</div>
     </div>
   </div>`;
 }
