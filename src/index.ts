@@ -231,12 +231,12 @@ export default {
           .join("");
         return html(
           layout({
-            title: "デモ卓（仮）",
+            title: "デモ用投票画面（仮）",
             user: gate.user,
             admin: true,
             body: `${flashHtml(m.text, m.error)}
               <div class="card">
-                <h1>デモ卓<span class="stamp">仮</span></h1>
+                <h1>デモ用投票画面<span class="stamp">仮</span></h1>
                 <p class="note">運営が 10 人分を代行する画面です。会員向けのログインではありません。チップまたは行で強調、投票は各行から直接できます。</p>
                 <p>${statusLabel(board.event.status)}</p>
                 <p class="note">${HINT}</p>
@@ -280,7 +280,7 @@ export default {
           const board = await loadBoard(env.DB);
           const user = await getUser(env.DB, form.get("user_id") ?? "");
           if (!user || !isDemoMemberName(user.display_name)) {
-            throw new Error("デモ卓のメンバーではありません");
+            throw new Error("デモ用投票画面のメンバーではありません");
           }
           await placeBet(
             env.DB,
@@ -329,12 +329,12 @@ export default {
               <p class="note">1頭へ全額可。1人一票にはしません。複数頭・複数回できます。</p>`
             : session?.role === "member"
               ? `<p class="note">いまは投票できません（${statusLabel(board.event.status)}）。</p>`
-              : `<p class="note"><a href="/login">ログイン</a>すると投票できます。複数の表示名で複数人を再現してください。</p>`;
+              : `<p class="note">投票はデモ用投票画面から行います。</p>`;
 
         const oddsName =
           board.event.status === "closed" || board.event.status === "published"
-            ? "確定配当（実際の投票額のみ。この数字で払う）"
-            : "参考オッズ（払う約束ではない）";
+            ? "確定配当"
+            : "参考オッズ";
 
         const resultNote =
           board.event.status === "closed"
@@ -356,12 +356,11 @@ export default {
           layout({
             title: "オッズ表（仮）",
             user,
+            loginNav: "text",
             body: `${flashHtml(m.text, m.error)}
               <div class="card">
                 <h1>${escapeHtml(board.event.title)}<span class="stamp">仮</span></h1>
                 <p>${statusLabel(board.event.status)}　／　${oddsName}</p>
-                <p class="note">${HINT}</p>
-                <p class="note">${wCaption(board)}</p>
                 ${boardTable(board, { showPlaces })}
                 ${resultNote}
               </div>

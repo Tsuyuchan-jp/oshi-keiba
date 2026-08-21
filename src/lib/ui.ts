@@ -118,6 +118,7 @@ th { font-size: .78rem; color: var(--muted); font-weight: 600; }
 .flash { background: #fff3d8; border: 1px solid #e4c98a; padding: .6rem .8rem; margin-bottom: 1rem; }
 .error { background: #f8e4e0; border-color: #d9a59b; }
 nav.links { display: flex; gap: .8rem; flex-wrap: wrap; font-family: sans-serif; font-size: .85rem; }
+nav.links span { color: var(--muted); }
 .note { font-size: .85rem; color: var(--muted); line-height: 1.5; }
 .scr { opacity: .55; text-decoration: line-through; }
 .chips { display: flex; flex-wrap: wrap; gap: .35rem; margin: .5rem 0 1rem; }
@@ -174,10 +175,17 @@ export function layout(opts: {
   user?: UserRow | null;
   body: string;
   admin?: boolean;
+  /** オッズ表は会員ログインを出さない（文言だけ残してよい） */
+  loginNav?: "link" | "text";
 }): string {
   const who = opts.user
     ? `${escapeHtml(opts.user.display_name)}　${formatPt(opts.user.balance)}`
     : "未ログイン";
+  const loginItem = opts.user
+    ? `<a href="/logout">ログアウト</a>`
+    : opts.loginNav === "text"
+      ? `<span>ログイン</span>`
+      : `<a href="/login">ログイン</a>`;
   return `<!doctype html>
 <html lang="ja">
 <head>
@@ -196,8 +204,8 @@ export function layout(opts: {
       <div class="muted">${who}</div>
       <nav class="links">
         <a href="/">オッズ表</a>
-        <a href="/demo">デモ卓</a>
-        ${opts.user ? `<a href="/logout">ログアウト</a>` : `<a href="/login">ログイン</a>`}
+        <a href="/demo">デモ用投票画面</a>
+        ${loginItem}
         <a href="/admin">${opts.admin ? "管理" : "管理者"}</a>
       </nav>
     </div>
