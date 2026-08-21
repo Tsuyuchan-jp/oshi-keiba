@@ -344,15 +344,7 @@ export function wCaption(board: Board): string {
 }
 
 /** 管理画面: 定義 → 物語（記号つき）→ 式だけ */
-export function formulaPanel(board: Board): string {
-  const e = board.event;
-  const nowLine =
-    e.status === "setup" || e.status === "voting"
-      ? `今オッズ表に出しているのは参考オッズです。確定配当ではありません。`
-      : e.status === "closed" || e.status === "published"
-        ? `今オッズ表に出しているのは確定配当です。仮想の初期投票額は計算に入れません。`
-        : "";
-
+export function formulaPanel(_board: Board): string {
   return `<details class="terms-box">
       <summary>定義表（参考）</summary>
       <table class="terms">
@@ -384,7 +376,6 @@ export function formulaPanel(board: Board): string {
       </tbody>
     </table>
     </details>
-    <p class="note">${nowLine}</p>
     <div class="flow">
     <div class="flow-step">
       <div class="flow-k">口座（オッズの式に入れない）</div>
