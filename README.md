@@ -38,6 +38,6 @@ Seed は直置き。U-tools のデモレギはまだです。
 
 閉じた試作です。検索に出さない前提で、URL を知っている人だけに渡します。
 
-- オッズ表: https://oshi-keiba.renso.workers.dev/
-- デモ用投票画面: https://oshi-keiba.renso.workers.dev/demo （管理者で入室）
-- 管理者: https://oshi-keiba.renso.workers.dev/admin 仮パス `demo-admin`
+- オッズ表: https://oshi-keiba.tsuyuchan-jp.workers.dev/
+- デモ用投票画面: https://oshi-keiba.tsuyuchan-jp.workers.dev/demo （管理者で入室）
+- 管理者: https://oshi-keiba.tsuyuchan-jp.workers.dev/admin 仮パス `demo-admin`
