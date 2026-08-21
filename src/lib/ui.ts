@@ -160,9 +160,16 @@ tr.desk-focus { outline: 2px solid var(--accent); background: #eef6ee; }
 .story p { margin: 0 0 .55rem; }
 .story p:last-child { margin-bottom: .4rem; }
 .flow-arrow { text-align: center; color: var(--muted); font-size: .8rem; line-height: 1; }
-.terms { width: 100%; margin: 0 0 1rem; font-size: .82rem; }
+.terms { width: 100%; margin: .5rem 0 0; font-size: .82rem; }
 .terms th { white-space: nowrap; }
-.terms td:first-child { min-width: 9rem; }
+.terms td:nth-child(2) { min-width: 9rem; }
+details.terms-box { margin: 0 0 1rem; }
+details.terms-box summary {
+  cursor: pointer;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: .9rem;
+  padding: .35rem 0;
+}
 `;
 
 export function layout(opts: {
@@ -259,34 +266,37 @@ export function formulaPanel(board: Board): string {
       ? `今払うのは確定配当です。仮想の初期投票額は入れません。`
       : "";
 
-  return `<table class="terms">
+  return `<details class="terms-box">
+      <summary>定義表（参考）</summary>
+      <table class="terms">
       <thead>
-        <tr><th>画面で言うこと</th><th>記号</th><th>何の数字か</th></tr>
+        <tr><th>記号</th><th>画面で言うこと</th><th>何の数字か</th></tr>
       </thead>
       <tbody>
-        <tr><td>仮想のユーザー所持額</td><td>残高</td><td>今持っているポイント</td></tr>
-        <tr><td>毎週配る仮想ポイント</td><td>G</td><td>口座に足す額。オッズの式には入らない。G を変えても S と E は動かない</td></tr>
-        <tr><td>投票の刻み</td><td>単位</td><td>一度に賭けられる最小のポイント</td></tr>
-        <tr><td>そのウマ娘</td><td>i</td><td>式の右下の小さな文字。1 頭ずつの数字につける。S や TV など出走全体には付けない</td></tr>
-        <tr><td>この出走メンバーの中での相対評価点</td><td>Strength</td><td>ウマ娘 1 頭あたり。場の外の点数ではない。デモでは直置き</td></tr>
-        <tr><td>評価点合計</td><td>Σ Strength</td><td>取消していないウマ娘の相対評価点を足したもの</td></tr>
-        <tr><td>当アプリが算出した仮想の初期投票額</td><td>Seed</td><td>誰も買っていなくても乗せる分。払わない。ウマ娘 1 頭あたり</td></tr>
-        <tr><td>仮想の初期投票額の合計</td><td>S</td><td>開始直後の仮想の初期投票額を何ポイント分置くか</td></tr>
-        <tr><td>メンバーが実際に賭けた投票額</td><td>Real / V</td><td>口座から減った分。ウマ娘 1 頭あたり。締切後はこれで払う</td></tr>
-        <tr><td>実際の投票額の合計</td><td>TV</td><td>取消していないウマ娘の、実際の投票額を足したもの</td></tr>
-        <tr><td>初期投票額をどれだけ残すか</td><td>w</td><td>1 に近いほど仮想の初期投票額が残る。0 なら実際の投票額だけ</td></tr>
-        <tr><td>時間による残り方</td><td>w時</td><td>投票時間の経過で、初期投票額をどれだけ残すか。時計だけでは 0 にしない</td></tr>
-        <tr><td>時間側の下限</td><td>下限</td><td>時間だけ進んでも残す割合。厚め</td></tr>
-        <tr><td>投票時間の残り割合</td><td>残り</td><td>1 が開始直後、0 が日時締切。締切未設定なら 1 のまま</td></tr>
-        <tr><td>曲線の指数</td><td>指数</td><td>残り方の曲がり。1 なら直線</td></tr>
-        <tr><td>実際の投票額による薄め</td><td>w票</td><td>実際の投票額の合計が E に近づくほど小さくなる。下限 0</td></tr>
-        <tr><td>実際の投票額に寄せ始める目安</td><td>E</td><td>賭け上限ではない。実際の投票額の合計がこれに近づくと、初期投票額を薄くする</td></tr>
-        <tr><td>参考オッズを出すために足した額</td><td>足した額</td><td>初期投票額×w ＋ 実際の投票額。ウマ娘 1 頭あたり。倍率そのものではない</td></tr>
-        <tr><td>足した額の合計</td><td>足した額の合計</td><td>取消していないウマ娘について足した額を足したもの</td></tr>
-        <tr><td>控除</td><td>D</td><td>払うとき、合計から除く割合（0.2 なら 2 割引き、8 割を分ける）</td></tr>
-        <tr><td>払戻しの原資</td><td>TV × (1 − D)</td><td>実際の投票額の合計から控除したあと、分け合うまとまり</td></tr>
+        <tr><td>残高</td><td>仮想のユーザー所持額</td><td>今持っているポイント</td></tr>
+        <tr><td>G</td><td>毎週配る仮想ポイント</td><td>口座に足す額。オッズの式には入らない。G を変えても S と E は動かない</td></tr>
+        <tr><td>単位</td><td>投票の刻み</td><td>一度に賭けられる最小のポイント</td></tr>
+        <tr><td>i</td><td>そのウマ娘</td><td>式の右下の小さな文字。1 頭ずつの数字につける。S や TV など出走全体には付けない</td></tr>
+        <tr><td>Strength</td><td>この出走メンバーの中での相対評価点</td><td>ウマ娘 1 頭あたり。場の外の点数ではない。デモでは直置き</td></tr>
+        <tr><td>Σ Strength</td><td>評価点合計</td><td>取消していないウマ娘の相対評価点を足したもの</td></tr>
+        <tr><td>Seed</td><td>当アプリが算出した仮想の初期投票額</td><td>誰も買っていなくても乗せる分。払わない。ウマ娘 1 頭あたり</td></tr>
+        <tr><td>S</td><td>仮想の初期投票額の合計</td><td>開始直後の仮想の初期投票額を何ポイント分置くか</td></tr>
+        <tr><td>Real / V</td><td>メンバーが実際に賭けた投票額</td><td>口座から減った分。ウマ娘 1 頭あたり。締切後はこれで払う</td></tr>
+        <tr><td>TV</td><td>実際の投票額の合計</td><td>取消していないウマ娘の、実際の投票額を足したもの</td></tr>
+        <tr><td>w</td><td>初期投票額をどれだけ残すか</td><td>1 に近いほど仮想の初期投票額が残る。0 なら実際の投票額だけ</td></tr>
+        <tr><td>w時</td><td>時間による残り方</td><td>投票時間の経過で、初期投票額をどれだけ残すか。時計だけでは 0 にしない</td></tr>
+        <tr><td>下限</td><td>時間側の下限</td><td>時間だけ進んでも残す割合。厚め</td></tr>
+        <tr><td>残り</td><td>投票時間の残り割合</td><td>1 が開始直後、0 が日時締切。締切未設定なら 1 のまま</td></tr>
+        <tr><td>指数</td><td>曲線の指数</td><td>残り方の曲がり。1 なら直線</td></tr>
+        <tr><td>w票</td><td>実際の投票額による薄め</td><td>実際の投票額の合計が E に近づくほど小さくなる。下限 0</td></tr>
+        <tr><td>E</td><td>実際の投票額に寄せ始める目安</td><td>賭け上限ではない。実際の投票額の合計がこれに近づくと、初期投票額を薄くする</td></tr>
+        <tr><td>Display</td><td>参考オッズを出すために足した額</td><td>Seed×w ＋ Real。ウマ娘 1 頭あたり。倍率そのものではない</td></tr>
+        <tr><td>Σ Display</td><td>Display の合計</td><td>取消していないウマ娘の Display を足したもの</td></tr>
+        <tr><td>D</td><td>控除</td><td>払うとき、合計から除く割合（0.2 なら 2 割引き、8 割を分ける）</td></tr>
+        <tr><td>TV × (1 − D)</td><td>払戻しの原資</td><td>実際の投票額の合計から控除したあと、分け合うまとまり</td></tr>
       </tbody>
     </table>
+    </details>
     <p class="note">${nowLine}</p>
     <div class="flow">
     <div class="flow-step">
@@ -321,10 +331,10 @@ export function formulaPanel(board: Board): string {
     <div class="flow-step ${refNow ? "on" : "dim"}">
       <div class="flow-k">3　参考オッズ（投票中に出す。払わない）</div>
       <div class="story">
-        <p>そのウマ娘について、仮想の初期投票額【Seed<sub>i</sub>】を【w】で薄め、実際の投票額【Real<sub>i</sub>】と足す。それが「参考オッズを出すために足した額」。足した額の合計と控除【D】から、参考オッズ（倍率）を出す。払う約束ではない。</p>
+        <p>そのウマ娘について、仮想の初期投票額【Seed<sub>i</sub>】を【w】で薄め、実際の投票額【Real<sub>i</sub>】と足す。この混ぜた値を【Display<sub>i</sub>】と呼ぶ（参考オッズを出すために足した額。倍率そのものではない）。取消していないウマ娘の Display を足したものが【Σ Display】。これと控除【D】から参考オッズ（倍率）を出す。払う約束ではない。</p>
       </div>
-      <div class="eq">足した額<sub>i</sub> = Seed<sub>i</sub> × w + Real<sub>i</sub></div>
-      <div class="eq">参考オッズ<sub>i</sub> = (足した額の合計 × (1 − D)) / 足した額<sub>i</sub></div>
+      <div class="eq">Display<sub>i</sub> = Seed<sub>i</sub> × w + Real<sub>i</sub></div>
+      <div class="eq">参考オッズ<sub>i</sub> = (Σ Display × (1 − D)) / Display<sub>i</sub></div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step ${payNow ? "pay" : "dim"}">
