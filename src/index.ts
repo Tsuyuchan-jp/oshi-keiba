@@ -12,15 +12,18 @@ import {
   BET_KINDS,
   formatSelectionLabel,
   isBetKind,
+  settleBet,
   type BetKind,
 } from "./lib/bets";
 import { escapeHtml, html, json, readForm, redirect } from "./lib/http";
 import {
   addHorse,
   bulkUpsertHorses,
+  deleteMember,
   forceClose,
   getUser,
   listAllBets,
+  listEventPayouts,
   listMembers,
   listUserBets,
   listUserPayouts,
@@ -45,6 +48,7 @@ import {
   comboOddsTable,
   DEDUPE_SELECT_SCRIPT,
   flashHtml,
+  formatMove,
   formatOddsWithUnit,
   formatPt,
   formulaPanel,
@@ -510,6 +514,8 @@ export default {
         const members = await listMembers(env.DB);
         const betOrder = url.searchParams.get("bets") === "name" ? "name" : "new";
         const allBets = await listAllBets(env.DB, e.id, betOrder);
+        const payouts = await listEventPayouts(env.DB, e.id);
+        const payByBet = new Map(payouts.map((p) => [p.bet_id, p]));
         const nums = numberByHorseId(board);
 
         const horseRows = board.horses
@@ -570,12 +576,26 @@ export default {
               b.horse_3,
               nums,
             );
+            const pool = board.pools.find((p) => p.kind === b.kind);
+            const combo = pool?.combos.find((c) => c.selection_key === b.selection_key);
+            const settled = settleBet({
+              amount: b.amount,
+              refunded: !!b.refunded,
+              status: e.status,
+              payout: payByBet.get(b.id) ?? null,
+              comboOdds: combo?.odds ?? null,
+              kindVoid: pool?.voidSpecial ?? null,
+            });
+            const moveClass =
+              settled.move > 0 ? "move-plus" : settled.move < 0 ? "move-minus" : "";
             return `<tr class="${b.refunded ? "scr" : ""}">
               <td>${escapeHtml(b.display_name)}</td>
               <td>${escapeHtml(BET_KIND_LABEL[b.kind])}</td>
               <td>${escapeHtml(label)}</td>
               <td class="num">${formatPt(b.amount)}</td>
-              <td class="muted">${b.refunded ? "取消済" : ""}</td>
+              <td>${escapeHtml(settled.result)}</td>
+              <td class="num">${formatOddsWithUnit(settled.odds)}</td>
+              <td class="num ${moveClass}">${formatMove(settled.move)}</td>
             </tr>`;
           })
           .join("");
@@ -624,7 +644,7 @@ export default {
                 </div>
                 <dialog class="modal" id="reset-modal">
                   <h2>デモ初期化</h2>
-                  <p>出走・投票・付与は消えます。メンバーの表示名は残ります。残高は 0 になります。</p>
+                  <p>出走・投票は消えます。メンバーの表示名は残し、残高は全員 3000 スペに揃えます（試運転）。</p>
                   <form method="post" action="/admin/reset">
                     <div class="row">
                       <label>管理者パス <input name="password" type="password" required autocomplete="current-password"></label>
@@ -707,21 +727,76 @@ export default {
                 }
               </div>
               <div class="card">
-                <h2>参加者残高</h2>
+                <div class="card-head">
+                  <h2>参加者残高</h2>
+                  <button type="button" class="secondary" id="member-del-open">メンバー削除</button>
+                </div>
                 <table>
                   <thead><tr><th>名前</th><th>残高</th></tr></thead>
                   <tbody>${memberRows || `<tr><td colspan="2" class="muted">まだいません</td></tr>`}</tbody>
                 </table>
+                <dialog class="modal" id="member-del-modal">
+                  <h2>メンバー削除</h2>
+                  <p class="note">口座と、その人の票・付与を消します。投票中ならオッズが変わります。公開後の払戻記録も消えます。</p>
+                  <form method="post" action="/admin/member-delete" id="member-del-form">
+                    <div class="row">
+                      <label>削除する人
+                        <select name="user_id" id="member-del-select" required>
+                          <option value="">—</option>
+                          ${members
+                            .map(
+                              (u) =>
+                                `<option value="${escapeHtml(u.id)}" data-name="${escapeHtml(u.display_name)}">${escapeHtml(u.display_name)}（${formatPt(u.balance)}）</option>`,
+                            )
+                            .join("")}
+                        </select>
+                      </label>
+                      <button class="danger" type="submit">削除する</button>
+                      <button type="button" class="secondary" id="member-del-cancel">やめる</button>
+                    </div>
+                  </form>
+                </dialog>
+                <script>
+                  (() => {
+                    const dlg = document.getElementById("member-del-modal");
+                    const openBtn = document.getElementById("member-del-open");
+                    const cancel = document.getElementById("member-del-cancel");
+                    const form = document.getElementById("member-del-form");
+                    const sel = document.getElementById("member-del-select");
+                    if (dlg && openBtn) openBtn.addEventListener("click", () => dlg.showModal());
+                    if (dlg && cancel) cancel.addEventListener("click", () => dlg.close());
+                    if (dlg) {
+                      dlg.addEventListener("click", (ev) => {
+                        const r = dlg.getBoundingClientRect();
+                        const inside =
+                          ev.clientX >= r.left && ev.clientX <= r.right &&
+                          ev.clientY >= r.top && ev.clientY <= r.bottom;
+                        if (!inside) dlg.close();
+                      });
+                    }
+                    if (form && sel) {
+                      form.addEventListener("submit", (ev) => {
+                        const opt = sel.options[sel.selectedIndex];
+                        const name = opt && opt.value ? (opt.getAttribute("data-name") || opt.textContent) : "";
+                        if (!name) { ev.preventDefault(); return; }
+                        if (!confirm("「" + name + "」を削除します。この人の馬券も消えます。よろしいですか？")) {
+                          ev.preventDefault();
+                        }
+                      });
+                    }
+                  })();
+                </script>
               </div>
               <div class="card">
                 <h2>全投票一覧</h2>
                 <p class="note">
                   <a href="/admin?bets=new">新しい順</a>　
                   <a href="/admin?bets=name">名前順</a>
+                  　公開後は結果・確定配当・収支（メンバー目線）が出ます。
                 </p>
                 <table>
-                  <thead><tr><th>誰</th><th>賭式</th><th>組み合わせ</th><th>額</th><th></th></tr></thead>
-                  <tbody>${betRows || `<tr><td colspan="5" class="muted">なし</td></tr>`}</tbody>
+                  <thead><tr><th>誰</th><th>賭式</th><th>組み合わせ</th><th>額</th><th>結果</th><th>確定配当</th><th>収支</th></tr></thead>
+                  <tbody>${betRows || `<tr><td colspan="7" class="muted">なし</td></tr>`}</tbody>
                 </table>
               </div>
               <div class="card">
@@ -882,6 +957,18 @@ export default {
         }
       }
 
+      if (method === "POST" && path === "/admin/member-delete") {
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) return gate;
+        const form = await readForm(request);
+        try {
+          const name = await deleteMember(env.DB, form.get("user_id") ?? "");
+          return bounce("/admin", `「${name}」を削除しました`);
+        } catch (err) {
+          return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
+        }
+      }
+
       if (method === "POST" && path === "/admin/reset") {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
@@ -891,7 +978,7 @@ export default {
           return bounce("/admin", "管理者パスが違います（初期化していません）", true);
         }
         await resetDemo(env.DB);
-        return bounce("/admin", "デモを初期化しました（メンバー名は残しています）");
+        return bounce("/admin", "デモを初期化しました（メンバーは 3000 スペ、名前は残しています）");
       }
 
       return html(

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   normalizeSelection,
+  settleBet,
   winningKey,
 } from "./bets.ts";
 import {
@@ -98,4 +99,62 @@ test("当選キー: 着順から各賭式", () => {
   assert.equal(winningKey("umatan", horses), "h1>h2");
   assert.equal(winningKey("sanrenpuku", horses), "h1-h2-h3");
   assert.equal(winningKey("sanrentan", horses), "h1>h2>h3");
+});
+
+test("清算行: 的中・はずれ・特払い・返還の収支", () => {
+  assert.deepEqual(
+    settleBet({
+      amount: 100,
+      refunded: false,
+      status: "published",
+      payout: { kind: "win", amount: 320 },
+      comboOdds: 3.2,
+      kindVoid: false,
+    }),
+    { result: "的中", odds: 3.2, move: 220 },
+  );
+  assert.equal(
+    settleBet({
+      amount: 500,
+      refunded: false,
+      status: "published",
+      payout: null,
+      comboOdds: 12.5,
+      kindVoid: false,
+    }).result,
+    "はずれ",
+  );
+  assert.equal(
+    settleBet({
+      amount: 500,
+      refunded: false,
+      status: "published",
+      payout: null,
+      comboOdds: 12.5,
+      kindVoid: false,
+    }).move,
+    -500,
+  );
+  assert.deepEqual(
+    settleBet({
+      amount: 100,
+      refunded: true,
+      status: "published",
+      payout: { kind: "special", amount: 80 },
+      comboOdds: null,
+      kindVoid: true,
+    }),
+    { result: "特払い", odds: null, move: -20 },
+  );
+  assert.deepEqual(
+    settleBet({
+      amount: 200,
+      refunded: true,
+      status: "voting",
+      payout: { kind: "refund", amount: 200 },
+      comboOdds: null,
+      kindVoid: null,
+    }),
+    { result: "返還", odds: null, move: 0 },
+  );
 });

@@ -28,6 +28,14 @@ export function formatPt(n: number): string {
   return `${n.toLocaleString("ja-JP")} スペ`;
 }
 
+/** メンバー目線の収支。増えたら＋、減ったら− */
+export function formatMove(n: number): string {
+  const abs = Math.abs(n).toLocaleString("ja-JP");
+  if (n > 0) return `+${abs}`;
+  if (n < 0) return `−${abs}`;
+  return "0";
+}
+
 export function statusLabel(status: EventStatus): string {
   switch (status) {
     case "setup":
@@ -175,6 +183,16 @@ main { max-width: 920px; margin: 0 auto; padding: 1.25rem; }
   padding: 1rem 1.1rem;
   margin: 0 0 1rem;
 }
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .75rem;
+  margin: 0 0 .75rem;
+}
+.card-head h2 { margin: 0; }
+.move-plus { color: var(--ok); font-weight: 700; }
+.move-minus { color: var(--danger); font-weight: 700; }
 h1, h2 { font-weight: 600; letter-spacing: .04em; }
 h1 { font-size: 1.35rem; margin: 0 0 .4rem; }
 h2 { font-size: 1.05rem; margin: 0 0 .75rem; }

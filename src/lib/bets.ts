@@ -141,3 +141,48 @@ export function formatSelectionLabel(
   if (kind === "sanrenpuku") return `${n(horse_1)}-${n(horse_2)}-${n(horse_3)}`;
   return `${n(horse_1)}→${n(horse_2)}→${n(horse_3)}`;
 }
+
+export type BetPayout = { kind: string; amount: number };
+
+/** 管理の全投票一覧用。公開後の結果・確定配当・メンバー目線の収支 */
+export function settleBet(opts: {
+  amount: number;
+  refunded: boolean;
+  status: "setup" | "voting" | "closed" | "published";
+  payout: BetPayout | null;
+  comboOdds: number | null;
+  kindVoid: boolean | null;
+}): { result: string; odds: number | null; move: number } {
+  const stake = opts.amount;
+  const pk = opts.payout?.kind ?? "";
+  if (pk === "refund" || pk === "redo" || pk === "void") {
+    return { result: "返還", odds: null, move: 0 };
+  }
+  if (pk === "special") {
+    return {
+      result: "特払い",
+      odds: null,
+      move: (opts.payout?.amount ?? 0) - stake,
+    };
+  }
+  if (pk === "win") {
+    return {
+      result: "的中",
+      odds: opts.comboOdds,
+      move: (opts.payout?.amount ?? 0) - stake,
+    };
+  }
+  if (opts.refunded) {
+    return { result: "返還", odds: null, move: 0 };
+  }
+  if (opts.status === "published") {
+    return { result: "はずれ", odds: opts.comboOdds, move: -stake };
+  }
+  if (opts.status === "closed") {
+    if (opts.kindVoid) {
+      return { result: "特払い予定", odds: null, move: -stake };
+    }
+    return { result: "締切", odds: opts.comboOdds, move: -stake };
+  }
+  return { result: "投票中", odds: null, move: -stake };
+}

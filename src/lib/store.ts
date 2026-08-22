@@ -1018,7 +1018,38 @@ export async function listUserPayouts(
   return results ?? [];
 }
 
-/** メンバー口座は残す。残高は 0。票・出走・付与は消す */
+export async function listEventPayouts(
+  db: D1Database,
+  eventId: string,
+): Promise<{ bet_id: string; amount: number; kind: string }[]> {
+  const { results } = await db
+    .prepare("SELECT bet_id, amount, kind FROM payouts WHERE event_id = ?")
+    .bind(eventId)
+    .all<{ bet_id: string; amount: number; kind: string }>();
+  return results ?? [];
+}
+
+/** 試運転: メンバー口座ごと削除。票はプールから消える */
+export async function deleteMember(
+  db: D1Database,
+  userId: string,
+): Promise<string> {
+  const user = await getUser(db, userId);
+  if (!user || user.role !== "member") {
+    throw new Error("削除できるメンバーが見つかりません");
+  }
+  await db.batch([
+    db.prepare("DELETE FROM payouts WHERE user_id = ?").bind(userId),
+    db.prepare("DELETE FROM bets WHERE user_id = ?").bind(userId),
+    db.prepare("DELETE FROM grants WHERE user_id = ?").bind(userId),
+    db
+      .prepare("DELETE FROM users WHERE id = ? AND role = 'member'")
+      .bind(userId),
+  ]);
+  return user.display_name;
+}
+
+/** 試運転MVP: 票・出走を消し、メンバー残高を G（3000）に揃える。名前は残す */
 export async function resetDemo(db: D1Database): Promise<void> {
   await db.batch([
     db.prepare("DELETE FROM payouts"),
@@ -1028,5 +1059,9 @@ export async function resetDemo(db: D1Database): Promise<void> {
     db.prepare("DELETE FROM events"),
     db.prepare("UPDATE users SET balance = 0"),
   ]);
-  await ensureEvent(db);
+  const event = await ensureEvent(db);
+  const members = await listMembers(db);
+  for (const m of members) {
+    await grantIfNeeded(db, event, m);
+  }
 }
