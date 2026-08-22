@@ -82,6 +82,9 @@ export type Board = {
 };
 
 const DEMO_EVENT_ID = "demo-week";
+/** 取消前の出走登録。下限は投票開始時のみ、上限は登録時と投票開始の両方で見る */
+const MIN_LIVE_HORSES = 5;
+const MAX_LIVE_HORSES = 18;
 
 const DEMO_HORSES: { name: string; strength: number }[] = [
   { name: "仮・スペシャルウィーク", strength: 28 },
@@ -365,7 +368,9 @@ export async function addHorse(
   if (!(strength >= 0)) throw new Error("相対評価点が不正です");
   const horses = await listHorses(db, event.id);
   const live = horses.filter((h) => h.scratched === 0).length;
-  if (live >= 8) throw new Error("デモの頭数は 8 まで");
+  if (live >= MAX_LIVE_HORSES) {
+    throw new Error(`デモの頭数は ${MAX_LIVE_HORSES} まで`);
+  }
   const id = newId();
   await db
     .prepare(
@@ -405,8 +410,10 @@ export async function openVoting(
   if (event.status !== "setup") throw new Error("投票開始できるのはセットアップ中だけです");
   const horses = await listHorses(db, event.id);
   const live = horses.filter((h) => h.scratched === 0);
-  if (live.length < 5 || live.length > 8) {
-    throw new Error("投票開始には取消前の頭数が 5〜8 必要です");
+  if (live.length < MIN_LIVE_HORSES || live.length > MAX_LIVE_HORSES) {
+    throw new Error(
+      `投票開始には取消前の頭数が ${MIN_LIVE_HORSES}〜${MAX_LIVE_HORSES} 必要です`,
+    );
   }
   const now = Date.now();
   await db
