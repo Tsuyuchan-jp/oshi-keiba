@@ -1,12 +1,12 @@
 /**
- * 参考オッズと確定配当の計算（仮置き: docs/03-odds.md）
+ * 参考オッズと確定配当（試運転: docs/09-trial-run.md）
  *
- * 投票中 Display_i = Seed_i × w + Real_i（払う約束ではない）
- * 締切後は Real のみ。D=20%。Seed 込みでは払わない。
+ * 単勝投票中: Display = Seed×w + Real（参考のみ）
+ * 確定・連勝: Real のみ。払いの約束①。不成立は特払い B。
  */
 
 export const DEFAULTS = {
-  grantG: 1000,
+  grantG: 3000,
   betUnit: 100,
   typicalBet: 700,
   seedPoolS: 20000,
@@ -21,7 +21,7 @@ export function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n));
 }
 
-/** 票量側 w。下限 0。E の半分でだいたい半分 */
+/** 票量側 w。下限 0。E の半分でだいたい半分。TV は単勝実票合計 */
 export function wVolume(realTotal: number, pullE: number): number {
   if (!(pullE > 0)) return 0;
   return Math.max(0, 1 - realTotal / pullE);
@@ -57,7 +57,7 @@ export function wCombined(wT: number, wV: number): number {
   return wT * wV;
 }
 
-/** Strength 比で仮想の初期投票額の合計 S を配る */
+/** Strength 比で仮想の初期投票額の合計 S を配る（単勝 Seed のみ） */
 export function allocateSeed(strengths: number[], seedPoolS: number): number[] {
   const positive = strengths.map((s) => Math.max(0, s));
   const sum = positive.reduce((a, b) => a + b, 0);
@@ -86,4 +86,11 @@ export function displayPool(seed: number, w: number, real: number): number {
 export function payoutAmount(stake: number, odds: number): number {
   if (!(stake > 0) || !(odds > 0)) return 0;
   return Math.floor(stake * odds);
+}
+
+/** 特払い B: 100 スペ → 80 スペ（D 後、端数切り捨て） */
+export function specialPayoutAmount(stake: number, takeoutD: number): number {
+  if (!(stake > 0)) return 0;
+  const d = clamp(takeoutD, 0, 0.99);
+  return Math.floor(stake * (1 - d));
 }

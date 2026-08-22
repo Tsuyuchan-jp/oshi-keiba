@@ -1,13 +1,31 @@
 import { escapeHtml } from "./http";
-import type { Board, EventStatus, UserRow } from "./store";
+import {
+  BET_KIND_LABEL,
+  BET_KINDS,
+  formatSelectionLabel,
+  type BetKind,
+} from "./bets";
+import type {
+  BetRow,
+  Board,
+  EventStatus,
+  HorseBoard,
+  UserRow,
+} from "./store";
+import { numberByHorseId } from "./store";
 
 export function formatOdds(n: number | null): string {
+  if (n == null || !Number.isFinite(n)) return "—";
+  return n.toFixed(1);
+}
+
+export function formatOddsWithUnit(n: number | null): string {
   if (n == null || !Number.isFinite(n)) return "—";
   return `${n.toFixed(1)}倍`;
 }
 
 export function formatPt(n: number): string {
-  return `${n.toLocaleString("ja-JP")} pt`;
+  return `${n.toLocaleString("ja-JP")} スペ`;
 }
 
 export function statusLabel(status: EventStatus): string {
@@ -17,8 +35,9 @@ export function statusLabel(status: EventStatus): string {
     case "voting":
       return "投票中";
     case "closed":
+      return "投票締切（確定配当）";
     case "published":
-      return "レース終了/配当確定";
+      return "結果公開";
   }
 }
 
@@ -66,7 +85,7 @@ body {
 header.app {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--line);
@@ -106,6 +125,15 @@ header.app a { color: var(--accent); }
 .phase.setup { background: #efe6d4; color: var(--ink); }
 .phase.voting { background: #e4f0e6; color: var(--accent); border-color: var(--accent); }
 .phase.done { background: #f8eee8; color: var(--stamp); border-color: var(--stamp); }
+.live-mark {
+  display: inline-block;
+  margin-left: .5rem;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: .72rem;
+  letter-spacing: .08em;
+  color: var(--accent);
+  vertical-align: middle;
+}
 main { max-width: 920px; margin: 0 auto; padding: 1.25rem; }
 .card {
   background: var(--paper);
@@ -136,44 +164,21 @@ button, .btn {
 }
 button.secondary { background: #6b6356; }
 button.danger { background: var(--danger); }
-table { width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: .92rem; }
+button.amt { min-width: 4.5rem; }
+table { width: 100%; border-collapse: collapse; font-size: .92rem; }
 th, td { text-align: left; padding: .45rem .4rem; border-bottom: 1px solid var(--line); }
-th { font-size: .78rem; color: var(--muted); font-weight: 600; }
-.num { text-align: right; font-variant-numeric: tabular-nums; }
+th { font-size: .78rem; color: var(--muted); font-weight: 600; font-family: "Hiragino Sans", "Yu Gothic", sans-serif; }
+.num { text-align: right; font-variant-numeric: tabular-nums; font-family: "Hiragino Sans", "Yu Gothic", sans-serif; }
 .flash { background: #fff3d8; border: 1px solid #e4c98a; padding: .6rem .8rem; margin-bottom: 1rem; }
 .error { background: #f8e4e0; border-color: #d9a59b; }
 nav.links { display: flex; gap: .8rem; flex-wrap: wrap; font-family: sans-serif; font-size: .85rem; }
-nav.links span { color: var(--muted); }
 .note { font-size: .85rem; color: var(--muted); line-height: 1.5; }
 .scr { opacity: .55; text-decoration: line-through; }
-.chips { display: flex; flex-wrap: wrap; gap: .35rem; margin: .5rem 0 1rem; }
-.chip {
-  font-family: sans-serif;
-  font-size: .8rem;
-  padding: .25rem .5rem;
-  border: 1px solid var(--line);
-  background: #fff;
-  color: var(--ink);
-  border-radius: 999px;
-  cursor: pointer;
-}
-.chip.on { background: var(--accent); color: #fff; border-color: var(--accent); }
-tr.desk-focus { outline: 2px solid var(--accent); background: #eef6ee; }
-.desk-row td { vertical-align: middle; }
-.desk-row form { margin: 0; }
-.flow { display: flex; flex-direction: column; gap: .55rem; font-family: "Hiragino Sans", "Yu Gothic", sans-serif; margin: 0 0 1rem; }
-.flow-step {
-  border-left: 3px solid var(--line);
-  padding: .5rem .75rem;
-  background: #f7f3ea;
-}
-.flow-k { font-size: .72rem; letter-spacing: .08em; color: var(--muted); margin-bottom: .2rem; }
 .eq, .plug {
   font-family: ui-monospace, "Cascadia Code", "Yu Gothic", "Hiragino Sans", sans-serif;
   font-size: .9rem;
   line-height: 1.55;
 }
-.plug { font-size: .82rem; margin-top: .25rem; }
 .story {
   font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
   font-size: .88rem;
@@ -181,11 +186,16 @@ tr.desk-focus { outline: 2px solid var(--accent); background: #eef6ee; }
   margin: 0 0 .65rem;
 }
 .story p { margin: 0 0 .55rem; }
-.story p:last-child { margin-bottom: .4rem; }
+.flow { display: flex; flex-direction: column; gap: .55rem; font-family: "Hiragino Sans", "Yu Gothic", sans-serif; margin: 0 0 1rem; }
+.flow-step {
+  border-left: 3px solid var(--line);
+  padding: .5rem .75rem;
+  background: #f7f3ea;
+}
+.flow-k { font-size: .72rem; letter-spacing: .08em; color: var(--muted); margin-bottom: .2rem; }
 .flow-arrow { text-align: center; color: var(--muted); font-size: .8rem; line-height: 1; }
 .terms { width: 100%; margin: .5rem 0 0; font-size: .82rem; }
 .terms th { white-space: nowrap; }
-.terms td:nth-child(2) { min-width: 9rem; }
 details.terms-box { margin: 0 0 1rem; }
 details.terms-box summary {
   cursor: pointer;
@@ -199,7 +209,7 @@ details.terms-box summary {
 }
 tr.pulse-row { animation: pulse-row 1.4s ease-out; }
 tr.pulse-hit { animation: pulse-row 1.4s ease-out; background: #fff3c4; }
-.odds-cell { white-space: nowrap; }
+.odds-cell { white-space: nowrap; font-family: "Hiragino Sans", "Yu Gothic", sans-serif; font-variant-numeric: tabular-nums; }
 .odds-delta {
   display: inline-block;
   margin-left: .35rem;
@@ -229,12 +239,76 @@ dialog.modal {
 }
 dialog.modal::backdrop { background: rgba(28, 36, 22, .45); }
 dialog.modal h2 { margin-top: 0; }
-dialog.modal .eq { margin: .2rem 0 .55rem; }
+/* 単勝表（場内・投票） */
+table.win-sheet { table-layout: fixed; }
+table.win-sheet th:nth-child(1),
+table.win-sheet td:nth-child(1) { width: 2.4rem; }
+table.win-sheet th:nth-child(3),
+table.win-sheet td:nth-child(3) { width: 4.2rem; }
+table.win-sheet td.name {
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+table.win-sheet td.num-col {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+table.win-sheet th, table.win-sheet td { padding: .28rem .3rem; }
+/* 賭式タブ */
+.bet-tabs {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+  margin: 0 0 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+.bet-tabs a {
+  flex: 0 0 auto;
+  padding: .55rem .85rem;
+  text-decoration: none;
+  color: var(--muted);
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: .9rem;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+.bet-tabs a.on {
+  color: var(--ink);
+  font-weight: 700;
+  border-bottom-color: var(--accent);
+}
+.bet-form { margin: 0 0 1.25rem; }
+.bet-form .row { margin-bottom: .55rem; }
+.combo-list { font-family: "Hiragino Sans", "Yu Gothic", sans-serif; font-size: .88rem; }
+.combo-list td.num { width: 4.5rem; }
+.my-bets { margin-top: 1.25rem; }
+.redo-wrap { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.kind-status { font-family: "Hiragino Sans", "Yu Gothic", sans-serif; font-size: .88rem; margin: .35rem 0; }
+.cta { margin: 1rem 0; }
+.cta a.btn { padding: .55rem 1.1rem; font-size: 1rem; }
 `;
 
-/** ヘッダー表示用。後で差し替えやすいようここだけ直す */
-const APP_VERSION = "0.3";
+const APP_VERSION = "0.4-trial";
 
+export function howToModal(): string {
+  return `<dialog class="modal" id="howto-modal">
+    <h2>使い方</h2>
+    <div class="story">
+      <p>このアプリでは、仮想のポイント「スペ」で馬券を買います。最初に 3000 スペが入ります。買う単位は 100 スペです。</p>
+      <p>場内では出走表と単勝のオッズを見ます。馬券を買うときは「馬券を買う」から投票ページへ進んでください。投票が始まる前は、場内でお待ちください。</p>
+      <p>表の番号は、このアプリの通し番号です。ゲームの枠番ではありません。買うときはこの番号を選びます。</p>
+      <p>オッズは投票中も動きます。締切のあと、実際に買われた票だけで払いが決まります。単勝の投票中は目安が乗っています。馬連・馬単・3連複・3連単は、その組み合わせに実際の投票があるときだけ数字が出ます。無いときは「—」です。</p>
+      <p>賭式はタブで切り替えます。一度に買えるのは 1 点です。同じウマ娘を、同じ買い目の中で二度は選べません。買う前に確認が出ます。締切までは、やりなおしで自分の馬券を全部取り消せます。残高に戻ります。</p>
+      <p>人数が少ないと、3連単などは当たりの組み合わせに投票が1件もないことがあります。そのときは『特払い』になり、その賭式に使ったスペの8割が戻ります。</p>
+      <p>出走取消になったウマ娘を含む馬券は、全額が戻ります。結果と着順は、公開されてから出ます。他人が何を買ったかは見えません。</p>
+    </div>
+    <form method="dialog"><button type="submit">閉じる</button></form>
+  </dialog>`;
+}
 
 export function layout(opts: {
   title: string;
@@ -242,14 +316,25 @@ export function layout(opts: {
   body: string;
   admin?: boolean;
   eventStatus?: EventStatus;
+  live?: boolean;
+  scripts?: string;
 }): string {
   const whoLine = opts.user
     ? `<div class="muted">${escapeHtml(opts.user.display_name)}　${formatPt(opts.user.balance)}</div>`
     : "";
   const logoutLink = opts.user ? `<a href="/logout">ログアウト</a>` : "";
-  const phase = opts.eventStatus
-    ? `<div class="phase ${headerPhaseKind(opts.eventStatus)}">${escapeHtml(statusLabel(opts.eventStatus))}</div>`
+  const howto = opts.user
+    ? `<button type="button" class="text-btn" id="howto-open">使い方</button>`
     : "";
+  const liveMark = opts.live ? `<span class="live-mark" id="live-mark">ライブ</span>` : "";
+  const phase = opts.eventStatus
+    ? `<div class="phase ${headerPhaseKind(opts.eventStatus)}">${escapeHtml(statusLabel(opts.eventStatus))}${liveMark}</div>`
+    : "";
+  const memberNav = opts.admin
+    ? ""
+    : opts.user
+      ? `<a href="/">場内</a><a href="/bet">投票</a>`
+      : `<a href="/login">入室</a>`;
   return `<!doctype html>
 <html lang="ja">
 <head>
@@ -261,21 +346,27 @@ export function layout(opts: {
 <body>
   <header class="app">
     <div>
-      <strong>oshi-keiba</strong><span class="stamp">仮</span><span class="app-ver">v${escapeHtml(APP_VERSION)}</span>
-      <div class="muted">仮想ポイント馬券　換金しません</div>
+      <strong>oshi-keiba</strong><span class="stamp">試</span><span class="app-ver">v${escapeHtml(APP_VERSION)}</span>
       ${phase}
     </div>
     <div>
       ${whoLine}
       <nav class="links">
-        <a href="/">オッズ表</a>
-        <a href="/demo">デモ用投票画面</a>
+        ${memberNav}
+        ${howto}
         ${logoutLink}
         <a href="/admin">${opts.admin ? "管理" : "管理者"}</a>
       </nav>
     </div>
   </header>
   <main>${opts.body}</main>
+  ${opts.user ? howToModal() : ""}
+  <script>
+    const howtoDlg = document.getElementById("howto-modal");
+    const howtoBtn = document.getElementById("howto-open");
+    if (howtoDlg && howtoBtn) howtoBtn.addEventListener("click", () => howtoDlg.showModal());
+  </script>
+  ${opts.scripts ?? ""}
 </body>
 </html>`;
 }
@@ -285,43 +376,124 @@ export function flashHtml(msg: string | null, isError = false): string {
   return `<div class="flash${isError ? " error" : ""}">${escapeHtml(msg)}</div>`;
 }
 
-export function boardTable(board: Board, opts: { showPlaces: boolean }): string {
-  const label =
-    board.event.status === "voting" || board.event.status === "setup"
-      ? "参考オッズ"
-      : "確定配当";
+/** 場内・投票用の単勝表（番号・名前・オッズのみ） */
+export function winSheetTable(board: Board): string {
+  const votingLike =
+    board.event.status === "voting" || board.event.status === "setup";
   const rows = board.horses
-    .map((h, i) => {
-      const odds =
-        board.event.status === "voting" || board.event.status === "setup"
-          ? h.referenceOdds
-          : h.confirmedOdds;
-      const place =
-        opts.showPlaces && h.horse.finish_place != null
-          ? `${h.horse.finish_place}着`
-          : "—";
-      const mark = h.horse.scratched ? "取消" : `${i + 1}`;
-      return `<tr class="${h.horse.scratched ? "scr" : ""}" data-horse-id="${escapeHtml(h.horse.id)}">
-        <td>${mark}</td>
-        <td>${escapeHtml(h.horse.name)}</td>
-        <td class="num odds-cell"><span class="odds-now">${h.horse.scratched ? "—" : formatOdds(odds)}</span><span class="odds-delta" hidden></span></td>
-        <td class="num">${formatPt(h.real)}</td>
-        <td class="num">${h.horse.scratched ? "—" : h.seed.toFixed(0)}</td>
-        <td>${place}</td>
+    .filter((h) => !h.horse.scratched)
+    .map((h) => {
+      const odds = votingLike ? h.referenceOdds : h.confirmedOdds;
+      return `<tr data-horse-id="${escapeHtml(h.horse.id)}" data-sel="${escapeHtml(h.horse.id)}">
+        <td class="num-col">${h.number}</td>
+        <td class="name" title="${escapeHtml(h.horse.name)}">${escapeHtml(h.horse.name)}</td>
+        <td class="num odds-cell"><span class="odds-now">${formatOdds(odds)}</span><span class="odds-delta" hidden></span></td>
       </tr>`;
     })
     .join("");
-  return `<table>
-    <thead>
-      <tr>
-        <th>#</th><th>ウマ娘</th><th>${label}</th><th>実際の投票額</th><th>初期投票額</th><th>着順</th>
-      </tr>
-    </thead>
+  return `<table class="win-sheet">
+    <thead><tr><th>番号</th><th>ウマ娘名</th><th>オッズ</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
 }
 
-/** 画面に出している倍率（投票中は参考、締切後は確定） */
+/** 連勝の実票一覧（空は —） */
+export function comboOddsTable(board: Board, kind: BetKind): string {
+  if (kind === "win") return winSheetTable(board);
+  const pool = board.pools.find((p) => p.kind === kind);
+  const nums = numberByHorseId(board);
+  if (!pool || pool.combos.length === 0) {
+    return `<p class="note">—</p>`;
+  }
+  const rows = pool.combos
+    .map((c) => {
+      const label = formatSelectionLabel(
+        kind,
+        c.horse_1,
+        c.horse_2,
+        c.horse_3,
+        nums,
+      );
+      return `<tr data-sel="${escapeHtml(c.selection_key)}">
+        <td>${escapeHtml(label)}</td>
+        <td class="num odds-cell"><span class="odds-now">${formatOdds(c.odds)}</span><span class="odds-delta" hidden></span></td>
+      </tr>`;
+    })
+    .join("");
+  return `<table class="combo-list">
+    <thead><tr><th>組み合わせ</th><th>オッズ</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+export function kindVoidNotes(board: Board): string {
+  if (board.event.status !== "closed" && board.event.status !== "published") {
+    return "";
+  }
+  const lines = board.pools
+    .map((p) => {
+      if (p.voidSpecial == null) return "";
+      const label = BET_KIND_LABEL[p.kind];
+      if (p.voidSpecial) {
+        if (board.event.status === "closed") {
+          return `<p class="kind-status">${escapeHtml(label)}は特払い予定です。この賭式に使ったスペの8割が戻ります。</p>`;
+        }
+        return `<p class="kind-status">${escapeHtml(label)}は当たりの組み合わせに投票がなかったため、特払いです。この賭式に使ったスペの8割が戻ります。</p>`;
+      }
+      if (board.event.status === "closed") {
+        return `<p class="kind-status">${escapeHtml(label)}は成立予定です。</p>`;
+      }
+      return "";
+    })
+    .filter(Boolean)
+    .join("");
+  return lines;
+}
+
+export function horseOptions(board: Board, name: string, excludeIds: string[] = []): string {
+  const excl = new Set(excludeIds);
+  return board.horses
+    .filter((h) => !h.horse.scratched && !excl.has(h.horse.id))
+    .map(
+      (h) =>
+        `<option value="${escapeHtml(h.horse.id)}">${h.number}. ${escapeHtml(h.horse.name)}</option>`,
+    )
+    .join("");
+}
+
+export function groupMyBets(
+  bets: BetRow[],
+  board: Board,
+): { kind: BetKind; label: string; amount: number; selection_key: string }[] {
+  const nums = numberByHorseId(board);
+  const map = new Map<
+    string,
+    { kind: BetKind; label: string; amount: number; selection_key: string }
+  >();
+  for (const b of bets) {
+    if (b.refunded) continue;
+    const key = `${b.kind}:${b.selection_key}`;
+    const label = formatSelectionLabel(
+      b.kind,
+      b.horse_1,
+      b.horse_2,
+      b.horse_3,
+      nums,
+    );
+    const cur = map.get(key);
+    if (cur) cur.amount += b.amount;
+    else
+      map.set(key, {
+        kind: b.kind,
+        label: `${BET_KIND_LABEL[b.kind]} ${label}`,
+        amount: b.amount,
+        selection_key: b.selection_key,
+      });
+  }
+  return [...map.values()];
+}
+
+/** 画面に出している単勝倍率 */
 export function shownOdds(board: Board, horseId: string): number | null {
   const h = board.horses.find((x) => x.horse.id === horseId);
   if (!h || h.horse.scratched) return null;
@@ -331,45 +503,109 @@ export function shownOdds(board: Board, horseId: string): number | null {
   return h.confirmedOdds;
 }
 
-/** 投票直後の行光と倍率差。クエリ b を読んで消す */
 export const BOARD_FLASH_SCRIPT = `<script>
 (() => {
   const p = new URLSearchParams(location.search);
   const raw = p.get("b");
   if (!raw) return;
   let data;
-  try { data = JSON.parse(raw); } catch { return; }
-  const deltas = data.deltas || {};
+  try { data = JSON.parse(decodeURIComponent(raw)); } catch {
+    try { data = JSON.parse(raw); } catch { return; }
+  }
   const hit = data.hit;
-  for (const tr of document.querySelectorAll("tr[data-horse-id]")) {
-    const id = tr.getAttribute("data-horse-id");
-    const d = deltas[id];
-    if (typeof d === "number" && Number.isFinite(d) && Math.abs(d) >= 0.05) {
-      tr.classList.add("pulse-row");
-      const el = tr.querySelector(".odds-delta");
-      if (el) {
-        el.hidden = false;
-        el.textContent = (d > 0 ? "+" : "") + d.toFixed(1) + "倍";
-        el.classList.toggle("up", d > 0);
-        el.classList.toggle("down", d < 0);
-      }
-    }
+  for (const tr of document.querySelectorAll("tr[data-sel], tr[data-horse-id]")) {
+    const id = tr.getAttribute("data-sel") || tr.getAttribute("data-horse-id");
     if (id === hit) tr.classList.add("pulse-hit");
   }
   p.delete("b");
   const q = p.toString();
   history.replaceState(null, "", location.pathname + (q ? "?" + q : ""));
   setTimeout(() => {
-    document.querySelectorAll(".odds-delta").forEach((el) => el.classList.add("gone"));
-    document.querySelectorAll("tr.pulse-row, tr.pulse-hit").forEach((el) => {
-      el.classList.remove("pulse-row", "pulse-hit");
-    });
+    document.querySelectorAll("tr.pulse-hit").forEach((el) => el.classList.remove("pulse-hit"));
   }, 2800);
 })();
 </script>`;
 
+/** 投票中のみ。5秒。裏なら止める。差 0.1 以上で黄パルス */
+export function livePollScript(apiPath: string, kind: BetKind): string {
+  return `<script>
+(() => {
+  const kind = ${JSON.stringify(kind)};
+  let prev = new Map();
+  let timer = null;
+  const apply = (payload) => {
+    const next = new Map();
+    const items = payload.kinds?.[kind] || [];
+    for (const it of items) next.set(it.key, it.odds);
+    for (const tr of document.querySelectorAll("tbody tr[data-sel], tbody tr[data-horse-id]")) {
+      const key = tr.getAttribute("data-sel") || tr.getAttribute("data-horse-id");
+      const cell = tr.querySelector(".odds-now");
+      if (!cell || !key) continue;
+      const odds = next.get(key);
+      const text = (odds == null || !Number.isFinite(odds)) ? "—" : Number(odds).toFixed(1);
+      const old = prev.get(key);
+      cell.textContent = text;
+      if (old == null && odds != null && Number.isFinite(odds)) {
+        tr.classList.add("pulse-row");
+      } else if (old != null && odds != null && Math.abs(odds - old) >= 0.1) {
+        tr.classList.add("pulse-row");
+      }
+    }
+    // 票が消えた行は静かに外す（連勝）
+    if (kind !== "win") {
+      const tbody = document.querySelector(".combo-list tbody");
+      if (tbody) {
+        const existing = new Set([...tbody.querySelectorAll("tr")].map((tr) => tr.getAttribute("data-sel")));
+        for (const key of existing) {
+          if (key && !next.has(key)) {
+            const tr = tbody.querySelector('tr[data-sel="' + CSS.escape(key) + '"]');
+            if (tr) tr.remove();
+          }
+        }
+        for (const it of items) {
+          if (existing.has(it.key)) continue;
+          const tr = document.createElement("tr");
+          tr.setAttribute("data-sel", it.key);
+          tr.classList.add("pulse-row");
+          tr.innerHTML = '<td></td><td class="num odds-cell"><span class="odds-now"></span><span class="odds-delta" hidden></span></td>';
+          tr.children[0].textContent = it.label;
+          tr.querySelector(".odds-now").textContent =
+            (it.odds == null || !Number.isFinite(it.odds)) ? "—" : Number(it.odds).toFixed(1);
+          tbody.appendChild(tr);
+        }
+      }
+    }
+    prev = next;
+    setTimeout(() => {
+      document.querySelectorAll("tr.pulse-row").forEach((el) => el.classList.remove("pulse-row"));
+    }, 1400);
+  };
+  const tick = async () => {
+    if (document.hidden) return;
+    try {
+      const res = await fetch(${JSON.stringify(apiPath)});
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.status !== "voting") {
+        if (timer) clearInterval(timer);
+        const mark = document.getElementById("live-mark");
+        if (mark) mark.remove();
+        return;
+      }
+      apply(data);
+    } catch (_) {}
+  };
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) tick();
+  });
+  tick();
+  timer = setInterval(tick, 5000);
+})();
+</script>`;
+}
+
 export function wCaption(board: Board): string {
-  return `w=${board.w.toFixed(2)}（時間 ${board.wTime.toFixed(2)} × 実際の投票額 ${board.wVolume.toFixed(2)}）　実際の投票額の合計 ${formatPt(board.realTotal)}　S=${board.event.seed_pool_s}　E=${board.event.pull_e}　D=${Math.round(board.event.takeout_d * 100)}%`;
+  return `w=${board.w.toFixed(2)}（時間 ${board.wTime.toFixed(2)} × 単勝実票 ${board.wVolume.toFixed(2)}）　単勝実票合計 ${formatPt(board.realTotal)}　S=${board.event.seed_pool_s}　E=${board.event.pull_e}　D=${Math.round(board.event.takeout_d * 100)}%`;
 }
 
 /** 管理画面: 定義 → 物語（記号つき）→ 式だけ */
@@ -381,95 +617,28 @@ export function formulaPanel(_board: Board): string {
         <tr><th>記号</th><th>画面で言うこと</th><th>何の数字か</th></tr>
       </thead>
       <tbody>
-        <tr><td>残高</td><td>仮想のユーザー所持額</td><td>今持っているポイント</td></tr>
-        <tr><td>G</td><td>毎週配る仮想ポイント</td><td>口座に足す額。オッズの式には入らない。G を変えても S と E は動かない</td></tr>
-        <tr><td>単位</td><td>投票の刻み</td><td>一度に賭けられる最小のポイント</td></tr>
-        <tr><td>i</td><td>そのウマ娘</td><td>式の右下の小さな文字。1 頭ずつの数字につける。S や TV など出走全体には付けない</td></tr>
-        <tr><td>Strength</td><td>この出走メンバーの中での相対評価点</td><td>ウマ娘 1 頭あたり。場の外の点数ではない。デモでは直置き</td></tr>
-        <tr><td>Σ Strength</td><td>評価点合計</td><td>取消していないウマ娘の相対評価点を足したもの</td></tr>
-        <tr><td>Seed</td><td>当アプリが算出した仮想の初期投票額</td><td>誰も買っていなくても乗せる分。払わない。ウマ娘 1 頭あたり</td></tr>
-        <tr><td>S</td><td>仮想の初期投票額の合計</td><td>開始直後の仮想の初期投票額を何ポイント分置くか</td></tr>
-        <tr><td>Real / V</td><td>メンバーが実際に賭けた投票額</td><td>口座から減った分。ウマ娘 1 頭あたり。締切後はこれで払う</td></tr>
-        <tr><td>TV</td><td>実際の投票額の合計</td><td>取消していないウマ娘の、実際の投票額を足したもの</td></tr>
-        <tr><td>w</td><td>初期投票額をどれだけ残すか</td><td>1 に近いほど仮想の初期投票額が残る。0 なら実際の投票額だけ</td></tr>
-        <tr><td>w時</td><td>時間による残り方</td><td>投票時間の経過で、初期投票額をどれだけ残すか。時計だけでは 0 にしない</td></tr>
-        <tr><td>下限</td><td>時間側の下限</td><td>時間だけ進んでも残す割合。厚め</td></tr>
-        <tr><td>残り</td><td>投票時間の残り割合</td><td>1 が開始直後、0 が日時締切。締切未設定なら 1 のまま</td></tr>
-        <tr><td>指数</td><td>曲線の指数</td><td>残り方の曲がり。1 なら直線</td></tr>
-        <tr><td>w票</td><td>実際の投票額による薄め</td><td>実際の投票額の合計が E に近づくほど小さくなる。下限 0</td></tr>
-        <tr><td>E</td><td>実際の投票額に寄せ始める目安</td><td>賭け上限ではない。実際の投票額の合計がこれに近づくと、初期投票額を薄くする</td></tr>
-        <tr><td>Display</td><td>参考オッズを出すために足した額</td><td>Seed×w ＋ Real。ウマ娘 1 頭あたり。倍率そのものではない</td></tr>
-        <tr><td>Σ Display</td><td>Display の合計</td><td>取消していないウマ娘の Display を足したもの</td></tr>
-        <tr><td>D</td><td>控除</td><td>払うとき、合計から除く割合（0.2 なら 2 割引き、8 割を分ける）</td></tr>
-        <tr><td>TV × (1 − D)</td><td>払戻しの原資</td><td>実際の投票額の合計から控除したあと、分け合うまとまり</td></tr>
+        <tr><td>残高</td><td>仮想のユーザー所持額</td><td>今持っているスペ</td></tr>
+        <tr><td>G</td><td>毎週配る仮想ポイント</td><td>口座に足す額。オッズの式には入らない</td></tr>
+        <tr><td>単位</td><td>投票の刻み</td><td>一度に賭けられる最小のスペ</td></tr>
+        <tr><td>Strength</td><td>相対評価点</td><td>単勝 Seed の比。連勝には載せない</td></tr>
+        <tr><td>Seed</td><td>単勝の仮想初期投票額</td><td>投票中の参考だけ。確定には入れない</td></tr>
+        <tr><td>Real</td><td>実際の投票額</td><td>賭式ごとのプール</td></tr>
+        <tr><td>D</td><td>控除</td><td>特払いも同じ（100→80、切り捨て）</td></tr>
       </tbody>
     </table>
     </details>
     <div class="flow">
     <div class="flow-step">
-      <div class="flow-k">口座（オッズの式に入れない）</div>
-      <div class="story">
-        <p>毎週配る仮想ポイント【G】を、仮想のユーザー所持額【残高】へ足す。投票の刻み【単位】は、一度に賭けられる最小のポイント。</p>
-      </div>
-    </div>
-    <div class="flow-arrow">↓</div>
-    <div class="flow-step">
-      <div class="flow-k">1　仮想の初期投票額</div>
-      <div class="story">
-        <p>まだ誰も買っていなくても、当アプリが仮想の初期投票額【Seed】を乗せる。合計が【S】。各ウマ娘への分け方は、この出走メンバーの中での相対評価点【Strength】の比。小さな i は「そのウマ娘」。</p>
-      </div>
-      <div class="eq">Seed<sub>i</sub> = S × Strength<sub>i</sub> / Σ Strength</div>
-    </div>
-    <div class="flow-arrow">↓</div>
-    <div class="flow-step">
-      <div class="flow-k">2　参考オッズを、仮想と実際のどちらに寄せるか（w）</div>
-      <div class="story">
-        <p>参考オッズは、仮想の初期投票額【Seed】と、実際の投票額【Real】を混ぜて出す。【w】は、混ぜるときに仮想の初期投票額を何割残すか。1 に近いほど仮想が効く。0 なら実際の投票額だけになる。</p>
-        <p>寄せる原因は二つある。</p>
-        <p>一つめは時間【w<sub>時</sub>】。投票の開始から日時締切に向かって時間が進むと、仮想の初期投票額の効きを弱くする（w<sub>時</sub> が下がる）。弱くはするが、時間だけが理由では 0 まで下げない。下限を残す。誰も賭けていなくても、開始時の付け方が参考オッズに少し残るようにするため。日時締切を置いていないときは、時間では減らさない。</p>
-        <p>二つめは実際の投票【w<sub>票</sub>】。実際の投票額の合計【TV】が、寄せ始める目安【E】に近づくと、仮想の効きを弱くする（w<sub>票</sub> が下がる）。TV が E の半分なら、だいたい半分。E まで貯まると、こちらは 0 まで下げてよい。参考オッズは実際の投票額に寄る。</p>
-        <p>最後に掛けて【w】=【w<sub>時</sub>】×【w<sub>票</sub>】にする。時間だけでは 0 にならない（w<sub>時</sub> に下限がある）。実際の投票が十分なら 0 にできる（w<sub>票</sub> が 0）。</p>
-      </div>
-      <div class="eq">w<sub>時</sub> = 下限 + (1 − 下限) × 残り<sup>指数</sup></div>
-      <div class="eq">w<sub>票</sub> = max(0, 1 − TV / E)</div>
-      <div class="eq">w = w<sub>時</sub> × w<sub>票</sub></div>
-    </div>
-    <div class="flow-arrow">↓</div>
-    <div class="flow-step">
-      <div class="flow-k">3　参考オッズ（投票中に出す。確定配当ではない）</div>
-      <div class="story">
-        <p>そのウマ娘について、仮想の初期投票額【Seed<sub>i</sub>】を【w】で薄め、実際の投票額【Real<sub>i</sub>】と足す。この混ぜた値を【Display<sub>i</sub>】と呼ぶ（参考オッズを出すために足した額。倍率そのものではない）。取消していないウマ娘の Display を足したものが【Σ Display】。これと控除【D】から参考オッズ（倍率）を出す。確定配当ではない。</p>
-      </div>
-      <div class="eq">Display<sub>i</sub> = Seed<sub>i</sub> × w + Real<sub>i</sub></div>
-      <div class="eq">参考オッズ<sub>i</sub> = (Σ Display × (1 − D)) / Display<sub>i</sub></div>
-    </div>
-    <div class="flow-arrow">↓</div>
-    <div class="flow-step">
-      <div class="flow-k">4　確定配当（締切後。仮想の初期投票額は計算に入れない）</div>
-      <div class="story">
-        <p>確定配当は、実際の投票額だけで決める。仮想の初期投票額は計算に入れない。実際の投票額の合計【TV】から控除【D】を除いたものが払戻しの原資。それを、そのウマ娘の実際の投票額【Real<sub>i</sub>】で割ると確定配当。口座に戻す額（払戻）は、賭けた投票額に確定配当を掛けて、小数を切り捨てる。</p>
-      </div>
-      <div class="eq">払戻しの原資 = TV × (1 − D)</div>
-      <div class="eq">確定配当<sub>i</sub> = 払戻しの原資 / Real<sub>i</sub></div>
-      <div class="eq">払戻 = ⌊ 実際の投票額 × 確定配当 ⌋</div>
+      <div class="flow-k">払いの約束①</div>
+      <div class="story"><p>確定配当は実票だけの山分け。Seed は単勝の投票中参考にだけ混ぜる。不成立は特払い B（その賭式の8割戻し）。出走取消は全額返還。</p></div>
     </div>
   </div>`;
 }
 
-/** ステータススクショ算出は未搭載。確定している混ぜ方だけモーダルで示す */
 export function strengthCalcModal(): string {
   return `<dialog class="modal" id="strength-modal">
-    <h2>ステータススクショからの算出</h2>
-    <p class="note">いまは未搭載です。デモの相対評価点は管理者が直置きしています。下は、方針として確定している範囲だけです。</p>
-    <div class="story">
-      <p>スクショから読む予定の入力は、対象コースの有効スキルによる総獲得バ身と、適正をステに吸収した有効ステ（温存リスク込み）です。</p>
-      <p>スキル枠は U-tools のコース別バ身効率を採用する、という選択です。固有はキャラページの合計バ身、継承は同じコースの有効スキルバ身。単位はバ身に揃えるので、スキル枠の中では足してよい。対象が 36 コース内ならそのコースを使う。</p>
-      <p>スタミナは温存の発生確率へ。低いほどよい。0〜8% は減点ゼロ、16% 程度で 1 段落、40% 超で大減点。超過（十分低いこと）への加点はしない。減点はスタミナ枠だけ。8〜16% と 16〜40% の間の折れ線は未確定です。</p>
-      <p>出走メンバーの中だけでスキル枠を相対化し、ステ枠もその中だけで相対化する。そのあと仮の 3:1 で Strength にする。Strength の比が Seed です。</p>
-    </div>
-    <div class="eq">Strength<sub>i</sub> = 3 × スキル相対<sub>i</sub> + 1 × ステ相対<sub>i</sub></div>
-    <div class="eq">Seed<sub>i</sub> = S × Strength<sub>i</sub> / Σ Strength</div>
-    <p class="note">3:1 は仮。スタミナ以外のステータスは距離帯により重みづけを変える、式は未確定。36 コース外の近傍流用も未確定です。</p>
+    <h2>相対評価点</h2>
+    <p class="note">試運転は Strength 直置きです。自動算出は出しません。</p>
     <form method="dialog"><button type="submit">閉じる</button></form>
   </dialog>
   <script>
@@ -478,3 +647,52 @@ export function strengthCalcModal(): string {
     if (dlg && openBtn) openBtn.addEventListener("click", () => dlg.showModal());
   </script>`;
 }
+
+export function betTabsHtml(active: BetKind): string {
+  return `<nav class="bet-tabs">${BET_KINDS.map(
+    (k) =>
+      `<a href="/bet?kind=${k}" class="${k === active ? "on" : ""}">${BET_KIND_LABEL[k]}</a>`,
+  ).join("")}</nav>`;
+}
+
+export function pickSelects(kind: BetKind, board: Board): string {
+  const opts = horseOptions(board, "horse");
+  if (kind === "win") {
+    return `<label>1着（番号） <select name="h1" required><option value="">—</option>${opts}</select></label>`;
+  }
+  if (kind === "umaren" || kind === "umatan") {
+    const l1 = kind === "umaren" ? "馬A" : "1着";
+    const l2 = kind === "umaren" ? "馬B" : "2着";
+    return `<label>${l1} <select name="h1" id="sel-h1" required><option value="">—</option>${opts}</select></label>
+      <label>${l2} <select name="h2" id="sel-h2" required><option value="">—</option>${opts}</select></label>`;
+  }
+  return `<label>1着 <select name="h1" id="sel-h1" required><option value="">—</option>${opts}</select></label>
+    <label>2着 <select name="h2" id="sel-h2" required><option value="">—</option>${opts}</select></label>
+    <label>3着 <select name="h3" id="sel-h3" required><option value="">—</option>${opts}</select></label>`;
+}
+
+/** 同じ頭を二度選べない */
+export const DEDUPE_SELECT_SCRIPT = `<script>
+(() => {
+  const sels = ["sel-h1", "sel-h2", "sel-h3"]
+    .map((id) => document.getElementById(id))
+    .filter(Boolean);
+  if (sels.length < 2) return;
+  const sync = () => {
+    const chosen = new Set(sels.map((s) => s.value).filter(Boolean));
+    for (const s of sels) {
+      const mine = s.value;
+      for (const opt of s.options) {
+        if (!opt.value) continue;
+        const hide = chosen.has(opt.value) && opt.value !== mine;
+        opt.hidden = hide;
+        opt.disabled = hide;
+      }
+    }
+  };
+  sels.forEach((s) => s.addEventListener("change", sync));
+  sync();
+})();
+</script>`;
+
+export type { HorseBoard, BetKind };

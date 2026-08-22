@@ -1,2 +1,3 @@
 ADMIN_PASSWORD=demo-admin
+MEMBER_PASSWORD=demo-member
 SESSION_SECRET=local-dev-session-secret-change-me

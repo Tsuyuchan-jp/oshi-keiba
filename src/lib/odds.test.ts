@@ -1,10 +1,15 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  normalizeSelection,
+  winningKey,
+} from "./bets.ts";
+import {
   allocateSeed,
   displayPool,
   parimutuelOdds,
   payoutAmount,
+  specialPayoutAmount,
   wCombined,
   wTime,
   wVolume,
@@ -64,4 +69,33 @@ test("Seed は Strength 比。確定配当は Real のみ", () => {
 test("払戻は切り捨て。不成立は 0", () => {
   assert.equal(payoutAmount(700, 3.2), 2240);
   assert.equal(payoutAmount(100, 0), 0);
+});
+
+test("特払い B: 100→80、端数切り捨て", () => {
+  assert.equal(specialPayoutAmount(100, 0.2), 80);
+  assert.equal(specialPayoutAmount(150, 0.2), 120);
+  assert.equal(specialPayoutAmount(101, 0.2), 80);
+});
+
+test("馬連・3連複はソート、同じ頭は拒否", () => {
+  const u = normalizeSelection("umaren", ["b", "a"]);
+  assert.equal(u.selection_key, "a-b");
+  const s = normalizeSelection("sanrenpuku", ["c", "a", "b"]);
+  assert.equal(s.selection_key, "a-b-c");
+  const t = normalizeSelection("umatan", ["b", "a"]);
+  assert.equal(t.selection_key, "b>a");
+  assert.throws(() => normalizeSelection("umaren", ["a", "a"]));
+});
+
+test("当選キー: 着順から各賭式", () => {
+  const horses = [
+    { id: "h1", finish_place: 1, scratched: 0 },
+    { id: "h2", finish_place: 2, scratched: 0 },
+    { id: "h3", finish_place: 3, scratched: 0 },
+  ];
+  assert.equal(winningKey("win", horses), "h1");
+  assert.equal(winningKey("umaren", horses), "h1-h2");
+  assert.equal(winningKey("umatan", horses), "h1>h2");
+  assert.equal(winningKey("sanrenpuku", horses), "h1-h2-h3");
+  assert.equal(winningKey("sanrentan", horses), "h1>h2>h3");
 });

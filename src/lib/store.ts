@@ -1,9 +1,17 @@
 import {
+  betIncludesHorse,
+  isBetKind,
+  normalizeSelection,
+  winningKey,
+  type BetKind,
+} from "./bets";
+import {
   allocateSeed,
   DEFAULTS,
   displayPool,
   parimutuelOdds,
   payoutAmount,
+  specialPayoutAmount,
   wCombined,
   wTime,
   wVolume,
@@ -53,7 +61,13 @@ export type BetRow = {
   id: string;
   event_id: string;
   user_id: string;
+  /** 旧単勝列。移行後も残るが読みは horse_1 優先 */
   horse_id: string;
+  kind: BetKind;
+  selection_key: string;
+  horse_1: string;
+  horse_2: string | null;
+  horse_3: string | null;
   amount: number;
   refunded: number;
   created_at: number;
@@ -61,6 +75,8 @@ export type BetRow = {
 
 export type HorseBoard = {
   horse: HorseRow;
+  /** 通し番号（1..n）。名簿の並び */
+  number: number;
   real: number;
   seed: number;
   display: number;
@@ -68,23 +84,41 @@ export type HorseBoard = {
   confirmedOdds: number | null;
 };
 
+export type PoolCombo = {
+  selection_key: string;
+  horse_1: string;
+  horse_2: string | null;
+  horse_3: string | null;
+  real: number;
+  odds: number | null;
+};
+
+export type KindPool = {
+  kind: BetKind;
+  realTotal: number;
+  combos: PoolCombo[];
+  /** 着順があるとき。当たり実票ゼロなら特払い予定 */
+  winningKey: string | null;
+  voidSpecial: boolean | null;
+};
+
 export type Board = {
   event: EventRow;
   wTime: number;
   wVolume: number;
   w: number;
+  /** 単勝実票合計（w 票量側） */
   realTotal: number;
   seedTotal: number;
   displayTotal: number;
   horses: HorseBoard[];
-  winVoid: boolean;
-  winnerId: string | null;
+  pools: KindPool[];
 };
 
 const DEMO_EVENT_ID = "demo-week";
-/** 取消前の出走登録。下限は投票開始時のみ、上限は登録時と投票開始の両方で見る */
-const MIN_LIVE_HORSES = 5;
-const MAX_LIVE_HORSES = 50;
+/** 試運転: 頭数 2〜18 */
+const MIN_LIVE_HORSES = 2;
+const MAX_LIVE_HORSES = 18;
 
 const DEMO_HORSES: { name: string; strength: number }[] = [
   { name: "仮・スペシャルウィーク", strength: 28 },
@@ -94,6 +128,9 @@ const DEMO_HORSES: { name: string; strength: number }[] = [
   { name: "仮・メジロマックイーン", strength: 10 },
   { name: "仮・オグリキャップ", strength: 8 },
   { name: "仮・ダイワスカーレット", strength: 6 },
+  { name: "仮・ウオッカ", strength: 5 },
+  { name: "仮・エアグルーヴ", strength: 4 },
+  { name: "仮・テイエムオペラオー", strength: 3 },
 ];
 
 export async function ensureEvent(db: D1Database): Promise<EventRow> {
@@ -112,7 +149,7 @@ export async function ensureEvent(db: D1Database): Promise<EventRow> {
     )
     .bind(
       DEMO_EVENT_ID,
-      "推し活イベントレース（仮）",
+      "推し活イベントレース（試運転）",
       DEFAULTS.grantG,
       DEFAULTS.betUnit,
       DEFAULTS.seedPoolS,
@@ -165,6 +202,34 @@ export async function listHorses(
   return results ?? [];
 }
 
+function normalizeBetRow(raw: Record<string, unknown>): BetRow {
+  const horseId = String(raw.horse_id ?? "");
+  const kindRaw = String(raw.kind ?? "win");
+  const kind: BetKind = isBetKind(kindRaw) ? kindRaw : "win";
+  const horse_1 = String(raw.horse_1 ?? horseId);
+  const horse_2 =
+    raw.horse_2 == null || raw.horse_2 === "" ? null : String(raw.horse_2);
+  const horse_3 =
+    raw.horse_3 == null || raw.horse_3 === "" ? null : String(raw.horse_3);
+  const selection_key = String(
+    raw.selection_key ?? (kind === "win" ? horse_1 : ""),
+  );
+  return {
+    id: String(raw.id),
+    event_id: String(raw.event_id),
+    user_id: String(raw.user_id),
+    horse_id: horseId || horse_1,
+    kind,
+    selection_key,
+    horse_1,
+    horse_2,
+    horse_3,
+    amount: Number(raw.amount),
+    refunded: Number(raw.refunded),
+    created_at: Number(raw.created_at),
+  };
+}
+
 export async function listActiveBets(
   db: D1Database,
   eventId: string,
@@ -172,8 +237,92 @@ export async function listActiveBets(
   const { results } = await db
     .prepare("SELECT * FROM bets WHERE event_id = ? AND refunded = 0")
     .bind(eventId)
-    .all<BetRow>();
+    .all();
+  return (results ?? []).map((r) => normalizeBetRow(r as Record<string, unknown>));
+}
+
+export async function listAllBets(
+  db: D1Database,
+  eventId: string,
+  order: "new" | "name",
+): Promise<(BetRow & { display_name: string })[]> {
+  const sql =
+    order === "name"
+      ? `SELECT b.*, u.display_name FROM bets b
+         JOIN users u ON u.id = b.user_id
+         WHERE b.event_id = ?
+         ORDER BY u.display_name COLLATE NOCASE, b.created_at DESC`
+      : `SELECT b.*, u.display_name FROM bets b
+         JOIN users u ON u.id = b.user_id
+         WHERE b.event_id = ?
+         ORDER BY b.created_at DESC`;
+  const { results } = await db.prepare(sql).bind(eventId).all();
+  return (results ?? []).map((r) => {
+    const row = r as Record<string, unknown>;
+    return {
+      ...normalizeBetRow(row),
+      display_name: String(row.display_name),
+    };
+  });
+}
+
+export async function listMembers(db: D1Database): Promise<UserRow[]> {
+  const { results } = await db
+    .prepare(
+      "SELECT * FROM users WHERE role = 'member' ORDER BY display_name COLLATE NOCASE",
+    )
+    .all<UserRow>();
   return results ?? [];
+}
+
+function buildKindPool(
+  kind: BetKind,
+  bets: BetRow[],
+  horses: HorseRow[],
+  takeoutD: number,
+  confirmed: boolean,
+): KindPool {
+  const kindBets = bets.filter((b) => !b.refunded && b.kind === kind);
+  const byKey = new Map<
+    string,
+    { horse_1: string; horse_2: string | null; horse_3: string | null; real: number }
+  >();
+  for (const b of kindBets) {
+    const cur = byKey.get(b.selection_key);
+    if (cur) {
+      cur.real += b.amount;
+    } else {
+      byKey.set(b.selection_key, {
+        horse_1: b.horse_1,
+        horse_2: b.horse_2,
+        horse_3: b.horse_3,
+        real: b.amount,
+      });
+    }
+  }
+  const realTotal = [...byKey.values()].reduce((a, x) => a + x.real, 0);
+  const combos: PoolCombo[] = [...byKey.entries()]
+    .map(([selection_key, v]) => ({
+      selection_key,
+      horse_1: v.horse_1,
+      horse_2: v.horse_2,
+      horse_3: v.horse_3,
+      real: v.real,
+      odds:
+        confirmed || kind !== "win"
+          ? parimutuelOdds(v.real, realTotal, takeoutD)
+          : null,
+    }))
+    .sort((a, b) => b.real - a.real);
+
+  const winKey = winningKey(kind, horses);
+  let voidSpecial: boolean | null = null;
+  if (winKey != null) {
+    const winnerReal = byKey.get(winKey)?.real ?? 0;
+    voidSpecial = winnerReal <= 0;
+  }
+
+  return { kind, realTotal, combos, winningKey: winKey, voidSpecial };
 }
 
 export function buildBoard(
@@ -183,10 +332,10 @@ export function buildBoard(
   now = Date.now(),
 ): Board {
   const live = horses.filter((h) => h.scratched === 0);
+  const winBets = bets.filter((b) => !b.refunded && b.kind === "win");
   const realByHorse = new Map<string, number>();
-  for (const b of bets) {
-    if (b.refunded) continue;
-    realByHorse.set(b.horse_id, (realByHorse.get(b.horse_id) ?? 0) + b.amount);
+  for (const b of winBets) {
+    realByHorse.set(b.horse_1, (realByHorse.get(b.horse_1) ?? 0) + b.amount);
   }
   const realLive = live.map((h) => realByHorse.get(h.id) ?? 0);
   const realTotal = realLive.reduce((a, b) => a + b, 0);
@@ -214,15 +363,18 @@ export function buildBoard(
     displayById.set(h.id, displays[i]);
   });
 
-  const winner = live.find((h) => h.finish_place === 1) ?? null;
-  const winnerReal = winner ? (realByHorse.get(winner.id) ?? 0) : 0;
-  const winVoid = winner != null && winnerReal <= 0;
+  const confirmed =
+    event.status === "closed" || event.status === "published";
 
+  let number = 0;
   const rows: HorseBoard[] = horses.map((h) => {
+    if (!h.scratched) number += 1;
+    const num = h.scratched ? 0 : number;
     const real = realByHorse.get(h.id) ?? 0;
     if (h.scratched) {
       return {
         horse: h,
+        number: 0,
         real,
         seed: 0,
         display: 0,
@@ -234,6 +386,7 @@ export function buildBoard(
     const display = displayById.get(h.id) ?? 0;
     return {
       horse: h,
+      number: num,
       real,
       seed,
       display,
@@ -241,6 +394,36 @@ export function buildBoard(
       confirmedOdds: parimutuelOdds(real, realTotal, event.takeout_d),
     };
   });
+
+  const pools = (
+    ["win", "umaren", "umatan", "sanrenpuku", "sanrentan"] as BetKind[]
+  ).map((kind) => buildKindPool(kind, bets, horses, event.takeout_d, confirmed));
+
+  // 単勝の combos に参考オッズを載せる（投票中）
+  const winPool = pools.find((p) => p.kind === "win")!;
+  if (!confirmed) {
+    winPool.combos = rows
+      .filter((h) => !h.horse.scratched)
+      .map((h) => ({
+        selection_key: h.horse.id,
+        horse_1: h.horse.id,
+        horse_2: null,
+        horse_3: null,
+        real: h.real,
+        odds: h.referenceOdds,
+      }));
+  } else {
+    winPool.combos = rows
+      .filter((h) => !h.horse.scratched)
+      .map((h) => ({
+        selection_key: h.horse.id,
+        horse_1: h.horse.id,
+        horse_2: null,
+        horse_3: null,
+        real: h.real,
+        odds: h.confirmedOdds,
+      }));
+  }
 
   return {
     event,
@@ -251,8 +434,7 @@ export function buildBoard(
     seedTotal,
     displayTotal,
     horses: rows,
-    winVoid,
-    winnerId: winner?.id ?? null,
+    pools,
   };
 }
 
@@ -266,6 +448,14 @@ export async function loadBoard(db: D1Database, now = Date.now()): Promise<Board
   return buildBoard(event, horses, bets, now);
 }
 
+export function numberByHorseId(board: Board): Map<string, number> {
+  const m = new Map<string, number>();
+  for (const h of board.horses) {
+    if (!h.horse.scratched && h.number > 0) m.set(h.horse.id, h.number);
+  }
+  return m;
+}
+
 export async function upsertUser(
   db: D1Database,
   displayName: string,
@@ -273,6 +463,7 @@ export async function upsertUser(
 ): Promise<UserRow> {
   const name = displayName.trim();
   if (!name) throw new Error("表示名を入れてください");
+  if (name.length > 40) throw new Error("表示名が長すぎます");
   const existing = await db
     .prepare("SELECT * FROM users WHERE display_name = ?")
     .bind(name)
@@ -293,41 +484,45 @@ export async function upsertUser(
   return user;
 }
 
+/** 初めて入室: 同名ありは拒否。口座作成＋G */
+export async function registerMember(
+  db: D1Database,
+  displayName: string,
+): Promise<UserRow> {
+  const name = displayName.trim();
+  if (!name) throw new Error("表示名を入れてください");
+  if (name.length > 40) throw new Error("表示名が長すぎます");
+  const existing = await db
+    .prepare("SELECT * FROM users WHERE display_name = ?")
+    .bind(name)
+    .first<UserRow>();
+  if (existing) throw new Error("この名前はすでに使われています");
+  const event = await ensureEvent(db);
+  const user = await upsertUser(db, name, "member");
+  return grantIfNeeded(db, event, user);
+}
+
+/** 登録済み再入室: 名前なしは拒否 */
+export async function loginMember(
+  db: D1Database,
+  displayName: string,
+): Promise<UserRow> {
+  const name = displayName.trim();
+  if (!name) throw new Error("表示名を入れてください");
+  const existing = await db
+    .prepare("SELECT * FROM users WHERE display_name = ? AND role = 'member'")
+    .bind(name)
+    .first<UserRow>();
+  if (!existing) throw new Error("この名前は登録されていません");
+  const event = await ensureEvent(db);
+  return grantIfNeeded(db, event, existing);
+}
+
 export async function getUser(
   db: D1Database,
   userId: string,
 ): Promise<UserRow | null> {
   return db.prepare("SELECT * FROM users WHERE id = ?").bind(userId).first<UserRow>();
-}
-
-/** デモ用投票画面の 10 人。管理者画面から代行投票する */
-export const DEMO_MEMBER_NAMES = [
-  "メンバー01",
-  "メンバー02",
-  "メンバー03",
-  "メンバー04",
-  "メンバー05",
-  "メンバー06",
-  "メンバー07",
-  "メンバー08",
-  "メンバー09",
-  "メンバー10",
-] as const;
-
-export function isDemoMemberName(name: string): boolean {
-  return (DEMO_MEMBER_NAMES as readonly string[]).includes(name);
-}
-
-export async function ensureDemoMembers(
-  db: D1Database,
-  event: EventRow,
-): Promise<UserRow[]> {
-  const out: UserRow[] = [];
-  for (const name of DEMO_MEMBER_NAMES) {
-    const user = await grantIfNeeded(db, event, await upsertUser(db, name, "member"));
-    out.push(user);
-  }
-  return out;
 }
 
 export async function grantIfNeeded(
@@ -369,7 +564,7 @@ export async function addHorse(
   const horses = await listHorses(db, event.id);
   const live = horses.filter((h) => h.scratched === 0).length;
   if (live >= MAX_LIVE_HORSES) {
-    throw new Error(`デモの頭数は ${MAX_LIVE_HORSES} まで`);
+    throw new Error(`頭数は ${MAX_LIVE_HORSES} まで`);
   }
   const id = newId();
   await db
@@ -378,9 +573,81 @@ export async function addHorse(
         id, event_id, name, strength, seed_source, scratched, sort_order, created_at
       ) VALUES (?, ?, ?, ?, 'manual', 0, ?, ?)`,
     )
-      .bind(id, event.id, trimmed, strength, horses.length + 1, Date.now())
+    .bind(id, event.id, trimmed, strength, horses.length + 1, Date.now())
     .run();
   return id;
+}
+
+export async function updateHorse(
+  db: D1Database,
+  event: EventRow,
+  horseId: string,
+  name: string,
+  strength: number,
+): Promise<void> {
+  if (event.status !== "setup") {
+    throw new Error("セットアップ中だけ修正できます");
+  }
+  const trimmed = name.trim();
+  if (!trimmed) throw new Error("名前を入れてください");
+  if (!(strength >= 0)) throw new Error("相対評価点が不正です");
+  const r = await db
+    .prepare(
+      "UPDATE horses SET name = ?, strength = ? WHERE id = ? AND event_id = ?",
+    )
+    .bind(trimmed, strength, horseId, event.id)
+    .run();
+  if (!r.meta.changes) throw new Error("出走が見つかりません");
+}
+
+/** 一括: 行ごと「名前、点数」 */
+export async function bulkUpsertHorses(
+  db: D1Database,
+  event: EventRow,
+  text: string,
+): Promise<number> {
+  if (event.status !== "setup") {
+    throw new Error("セットアップ中だけ一括登録できます");
+  }
+  const lines = text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  if (lines.length === 0) throw new Error("貼り付け内容が空です");
+  const existing = await listHorses(db, event.id);
+  const byName = new Map(existing.map((h) => [h.name, h]));
+  let live = existing.filter((h) => !h.scratched).length;
+  let n = 0;
+  for (const line of lines) {
+    const m = line.match(/^(.+?)[、,]\s*(-?\d+(?:\.\d+)?)\s*$/);
+    if (!m) throw new Error(`形式が違います: ${line}`);
+    const name = m[1].trim();
+    const strength = Number(m[2]);
+    if (!name) throw new Error(`名前が空です: ${line}`);
+    if (!(strength >= 0)) throw new Error(`点数が不正です: ${line}`);
+    const hit = byName.get(name);
+    if (hit) {
+      await updateHorse(db, event, hit.id, name, strength);
+    } else {
+      if (live >= MAX_LIVE_HORSES) {
+        throw new Error(`頭数は ${MAX_LIVE_HORSES} まで（途中で上限）`);
+      }
+      const id = await addHorse(db, event, name, strength);
+      byName.set(name, {
+        id,
+        event_id: event.id,
+        name,
+        strength,
+        seed_source: "manual",
+        scratched: 0,
+        finish_place: null,
+        sort_order: 0,
+      });
+      live += 1;
+    }
+    n += 1;
+  }
+  return n;
 }
 
 export async function seedDemoHorses(db: D1Database, event: EventRow): Promise<void> {
@@ -439,18 +706,23 @@ export async function placeBet(
   db: D1Database,
   event: EventRow,
   user: UserRow,
-  horseId: string,
+  kind: BetKind,
+  horseIds: string[],
   amount: number,
-): Promise<void> {
+): Promise<{ selection_key: string }> {
   if (event.status !== "voting") throw new Error("投票期間外です");
   if (!Number.isFinite(amount) || amount < event.bet_unit || amount % event.bet_unit !== 0) {
     throw new Error(`最低単位は ${event.bet_unit} です`);
   }
-  const horse = await db
-    .prepare("SELECT * FROM horses WHERE id = ? AND event_id = ?")
-    .bind(horseId, event.id)
-    .first<HorseRow>();
-  if (!horse || horse.scratched) throw new Error("このウマ娘には投票できません");
+  const sel = normalizeSelection(kind, horseIds);
+  const ids = [sel.horse_1, sel.horse_2, sel.horse_3].filter(Boolean) as string[];
+  for (const hid of ids) {
+    const horse = await db
+      .prepare("SELECT * FROM horses WHERE id = ? AND event_id = ?")
+      .bind(hid, event.id)
+      .first<HorseRow>();
+    if (!horse || horse.scratched) throw new Error("このウマ娘には投票できません");
+  }
   const fresh = await getUser(db, user.id);
   if (!fresh) throw new Error("ユーザーが見つかりません");
   if (amount > fresh.balance) throw new Error("残高が足りません");
@@ -458,13 +730,67 @@ export async function placeBet(
   await db.batch([
     db
       .prepare(
-        "INSERT INTO bets (id, event_id, user_id, horse_id, amount, refunded, created_at) VALUES (?, ?, ?, ?, ?, 0, ?)",
+        `INSERT INTO bets (
+          id, event_id, user_id, horse_id, kind, selection_key,
+          horse_1, horse_2, horse_3, amount, refunded, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
       )
-      .bind(newId(), event.id, user.id, horseId, amount, now),
+      .bind(
+        newId(),
+        event.id,
+        user.id,
+        sel.horse_1,
+        kind,
+        sel.selection_key,
+        sel.horse_1,
+        sel.horse_2,
+        sel.horse_3,
+        amount,
+        now,
+      ),
     db
       .prepare("UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?")
       .bind(amount, user.id, amount),
   ]);
+  return { selection_key: sel.selection_key };
+}
+
+/** やりなおし: 自分の未返還票を全取消し、残高に戻す */
+export async function redoMyBets(
+  db: D1Database,
+  event: EventRow,
+  user: UserRow,
+): Promise<number> {
+  if (event.status !== "voting") throw new Error("やりなおしは投票中だけです");
+  const { results } = await db
+    .prepare(
+      "SELECT * FROM bets WHERE event_id = ? AND user_id = ? AND refunded = 0",
+    )
+    .bind(event.id, user.id)
+    .all();
+  const bets = (results ?? []).map((r) =>
+    normalizeBetRow(r as Record<string, unknown>),
+  );
+  if (bets.length === 0) throw new Error("取り消す馬券がありません");
+  const now = Date.now();
+  const stmts = [];
+  let total = 0;
+  for (const b of bets) {
+    total += b.amount;
+    stmts.push(
+      db.prepare("UPDATE bets SET refunded = 1 WHERE id = ?").bind(b.id),
+      db
+        .prepare("UPDATE users SET balance = balance + ? WHERE id = ?")
+        .bind(b.amount, b.user_id),
+      db
+        .prepare(
+          "INSERT INTO payouts (id, event_id, user_id, bet_id, amount, kind, created_at) VALUES (?, ?, ?, ?, ?, 'redo', ?)",
+        )
+        .bind(newId(), event.id, b.user_id, b.id, b.amount, now),
+    );
+  }
+  await db.batch(stmts);
+  return total;
 }
 
 export async function scratchHorse(
@@ -482,12 +808,15 @@ export async function scratchHorse(
   if (!horse) throw new Error("出走が見つかりません");
   if (horse.scratched) return 0;
   const { results } = await db
-    .prepare(
-      "SELECT * FROM bets WHERE event_id = ? AND horse_id = ? AND refunded = 0",
-    )
-    .bind(event.id, horseId)
-    .all<BetRow>();
-  const bets = results ?? [];
+    .prepare("SELECT * FROM bets WHERE event_id = ? AND refunded = 0")
+    .bind(event.id)
+    .all();
+  const allBets = (results ?? []).map((r) =>
+    normalizeBetRow(r as Record<string, unknown>),
+  );
+  const bets = allBets.filter((b) =>
+    betIncludesHorse(b.horse_1, b.horse_2, b.horse_3, horseId),
+  );
   const stmts = [
     db
       .prepare(
@@ -563,27 +892,34 @@ export async function publishResults(db: D1Database, event: EventRow): Promise<v
   const board = buildBoard(event, horses, bets);
   const now = Date.now();
   const stmts = [];
-  if (board.winVoid) {
-    for (const b of bets) {
-      stmts.push(
-        db.prepare("UPDATE bets SET refunded = 1 WHERE id = ?").bind(b.id),
-        db
-          .prepare("UPDATE users SET balance = balance + ? WHERE id = ?")
-          .bind(b.amount, b.user_id),
-        db
-          .prepare(
-            "INSERT INTO payouts (id, event_id, user_id, bet_id, amount, kind, created_at) VALUES (?, ?, ?, ?, ?, 'void', ?)",
-          )
-          .bind(newId(), event.id, b.user_id, b.id, b.amount, now),
-      );
+
+  for (const pool of board.pools) {
+    const kindBets = bets.filter((b) => b.kind === pool.kind);
+    if (kindBets.length === 0) continue;
+    if (pool.voidSpecial) {
+      for (const b of kindBets) {
+        const pay = specialPayoutAmount(b.amount, event.takeout_d);
+        stmts.push(
+          db.prepare("UPDATE bets SET refunded = 1 WHERE id = ?").bind(b.id),
+          db
+            .prepare("UPDATE users SET balance = balance + ? WHERE id = ?")
+            .bind(pay, b.user_id),
+          db
+            .prepare(
+              "INSERT INTO payouts (id, event_id, user_id, bet_id, amount, kind, created_at) VALUES (?, ?, ?, ?, ?, 'special', ?)",
+            )
+            .bind(newId(), event.id, b.user_id, b.id, pay, now),
+        );
+      }
+      continue;
     }
-  } else {
-    const winnerId = board.winnerId!;
-    const winnerRow = board.horses.find((h) => h.horse.id === winnerId);
-    const odds = winnerRow?.confirmedOdds;
-    if (odds == null) throw new Error("確定配当を計算できません");
-    for (const b of bets) {
-      if (b.horse_id !== winnerId) continue;
+    const winKey = pool.winningKey;
+    if (!winKey) throw new Error(`${pool.kind} の当選キーがありません`);
+    const winnerReal = pool.combos.find((c) => c.selection_key === winKey)?.real ?? 0;
+    const odds = parimutuelOdds(winnerReal, pool.realTotal, event.takeout_d);
+    if (odds == null) throw new Error(`${pool.kind} の確定配当を計算できません`);
+    for (const b of kindBets) {
+      if (b.selection_key !== winKey) continue;
       const pay = payoutAmount(b.amount, odds);
       stmts.push(
         db
@@ -597,6 +933,7 @@ export async function publishResults(db: D1Database, event: EventRow): Promise<v
       );
     }
   }
+
   stmts.push(
     db
       .prepare(
@@ -663,10 +1000,25 @@ export async function listUserBets(
       "SELECT * FROM bets WHERE event_id = ? AND user_id = ? ORDER BY created_at",
     )
     .bind(eventId, userId)
-    .all<BetRow>();
+    .all();
+  return (results ?? []).map((r) => normalizeBetRow(r as Record<string, unknown>));
+}
+
+export async function listUserPayouts(
+  db: D1Database,
+  eventId: string,
+  userId: string,
+): Promise<{ bet_id: string; amount: number; kind: string }[]> {
+  const { results } = await db
+    .prepare(
+      "SELECT bet_id, amount, kind FROM payouts WHERE event_id = ? AND user_id = ?",
+    )
+    .bind(eventId, userId)
+    .all<{ bet_id: string; amount: number; kind: string }>();
   return results ?? [];
 }
 
+/** メンバー口座は残す。残高は 0。票・出走・付与は消す */
 export async function resetDemo(db: D1Database): Promise<void> {
   await db.batch([
     db.prepare("DELETE FROM payouts"),
