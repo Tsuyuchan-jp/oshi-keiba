@@ -100,6 +100,10 @@ header.app {
   background: var(--paper);
 }
 header.app a { color: var(--accent); }
+header.app a.brand {
+  color: inherit;
+  text-decoration: none;
+}
 header.app .head-left { min-width: 0; }
 header.app .who { margin-top: .35rem; }
 @media (max-width: 640px) {
@@ -130,8 +134,10 @@ header.app .who { margin-top: .35rem; }
     text-underline-offset: 0;
     font-size: .92rem;
     font-weight: 600;
+    width: auto;
+    max-width: 100%;
+    box-sizing: border-box;
   }
-  nav.links button.text-btn { width: 100%; }
 }
 .app-ver {
   margin-left: .45rem;
@@ -426,6 +432,27 @@ table.win-sheet th, table.win-sheet td { padding: .28rem .3rem; }
 .kind-status { font-family: "Hiragino Sans", "Yu Gothic", sans-serif; font-size: .88rem; margin: .35rem 0; }
 .cta { margin: 1rem 0; }
 .cta a.btn { padding: .55rem 1.1rem; font-size: 1rem; }
+.bal-now {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  margin: 0 0 1rem;
+  padding: .65rem .85rem;
+  background: #e4f0e6;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  font-size: 1.02rem;
+}
+.bal-now .bal-k {
+  display: block;
+  font-size: .72rem;
+  letter-spacing: .08em;
+  color: var(--muted);
+  margin-bottom: .15rem;
+}
+.bal-now strong {
+  font-size: 1.45rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+}
 `;
 
 const APP_VERSION = "0.4-trial";
@@ -478,9 +505,7 @@ export function layout(opts: {
     ? `<div class="muted who">${escapeHtml(opts.user.display_name)}　${formatPt(opts.user.balance)}</div>`
     : "";
   const logoutLink = opts.user ? `<a href="/logout">ログアウト</a>` : "";
-  const howto = opts.user
-    ? `<button type="button" class="text-btn" id="howto-open">使い方</button>`
-    : "";
+  const howto = `<a href="#" id="howto-open">使い方</a>`;
   const liveMark = opts.live ? `<span class="live-mark" id="live-mark">ライブ</span>` : "";
   const phase = opts.eventStatus
     ? `<div class="phase ${headerPhaseKind(opts.eventStatus)}">${escapeHtml(statusLabel(opts.eventStatus))}${liveMark}</div>`
@@ -501,7 +526,7 @@ export function layout(opts: {
 <body>
   <header class="app">
     <div class="head-left">
-      <strong>oshi-keiba</strong><span class="stamp">試</span><span class="app-ver">v${escapeHtml(APP_VERSION)}</span>
+      <strong><a class="brand" href="/">oshi-keiba</a></strong><span class="stamp">試</span><span class="app-ver">v${escapeHtml(APP_VERSION)}</span>
       ${phase}
       ${whoLine}
     </div>
@@ -513,11 +538,16 @@ export function layout(opts: {
     </nav>
   </header>
   <main>${opts.body}</main>
-  ${opts.user ? howToModal() : ""}
+  ${howToModal()}
   <script>
     const howtoDlg = document.getElementById("howto-modal");
     const howtoBtn = document.getElementById("howto-open");
-    if (howtoDlg && howtoBtn) howtoBtn.addEventListener("click", () => howtoDlg.showModal());
+    if (howtoDlg && howtoBtn) {
+      howtoBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        howtoDlg.showModal();
+      });
+    }
     if (howtoDlg) {
       howtoDlg.addEventListener("click", (ev) => {
         const r = howtoDlg.getBoundingClientRect();

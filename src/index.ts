@@ -279,12 +279,11 @@ export default {
         });
       }
 
-      // —— 場内 ——
+      // —— 場内（未入室でも閲覧可。買うには入室） ——
       if (method === "GET" && (path === "/" || path === "/board")) {
-        const gate = await requireMember(request, env);
-        if (gate instanceof Response) return gate;
+        const session = await sessionFromRequest(request, env.SESSION_SECRET);
+        const user = session ? await getUser(env.DB, session.userId) : null;
         const board = await loadBoard(env.DB);
-        const user = (await getUser(env.DB, gate.user.id))!;
         const m = msg(url);
         const live = board.event.status === "voting";
 
@@ -292,15 +291,13 @@ export default {
         if (board.event.status === "setup") {
           cta = `<p class="note">投票開始までお待ちください。</p>`;
         } else if (board.event.status === "voting") {
-          cta = `<p class="cta"><a class="btn" href="/bet">馬券を買う</a></p>`;
+          cta = user
+            ? `<p class="cta"><a class="btn" href="/bet">馬券を買う</a></p>`
+            : `<p class="cta"><a class="btn" href="/login">入室して馬券を買う</a></p>`;
         }
 
         let publishedBlock = "";
         if (board.event.status === "published") {
-          const bets = await listUserBets(env.DB, board.event.id, user.id);
-          const payouts = await listUserPayouts(env.DB, board.event.id, user.id);
-          const payByBet = new Map(payouts.map((p) => [p.bet_id, p]));
-          const nums = numberByHorseId(board);
           const placeRows = board.horses
             .filter((h) => !h.horse.scratched && h.horse.finish_place != null)
             .sort(
@@ -311,24 +308,30 @@ export default {
                 `<tr><td>${h.horse.finish_place}着</td><td>${h.number}. ${escapeHtml(h.horse.name)}</td></tr>`,
             )
             .join("");
-          const hist = bets
-            .map((b) => {
-              const label = `${BET_KIND_LABEL[b.kind]} ${formatSelectionLabel(b.kind, b.horse_1, b.horse_2, b.horse_3, nums)}`;
-              const pay = payByBet.get(b.id);
-              let result = "外れ";
-              if (b.refunded && pay?.kind === "refund") result = "取消（全額戻し）";
-              else if (b.refunded && pay?.kind === "redo") result = "やりなおし";
-              else if (pay?.kind === "special") result = "特払い（8割戻し）";
-              else if (pay?.kind === "win") result = `的中 ${formatPt(pay.amount)}`;
-              else if (b.refunded) result = "返還";
-              return `<tr><td>${escapeHtml(label)}</td><td class="num">${formatPt(b.amount)}</td><td>${escapeHtml(result)}</td></tr>`;
-            })
-            .join("");
           publishedBlock = `
             <div class="card">
               <h2>着順</h2>
               <table><thead><tr><th>着</th><th>ウマ娘</th></tr></thead><tbody>${placeRows}</tbody></table>
-            </div>
+            </div>`;
+          if (user && user.role === "member") {
+            const bets = await listUserBets(env.DB, board.event.id, user.id);
+            const payouts = await listUserPayouts(env.DB, board.event.id, user.id);
+            const payByBet = new Map(payouts.map((p) => [p.bet_id, p]));
+            const nums = numberByHorseId(board);
+            const hist = bets
+              .map((b) => {
+                const label = `${BET_KIND_LABEL[b.kind]} ${formatSelectionLabel(b.kind, b.horse_1, b.horse_2, b.horse_3, nums)}`;
+                const pay = payByBet.get(b.id);
+                let result = "外れ";
+                if (b.refunded && pay?.kind === "refund") result = "取消（全額戻し）";
+                else if (b.refunded && pay?.kind === "redo") result = "やりなおし";
+                else if (pay?.kind === "special") result = "特払い（8割戻し）";
+                else if (pay?.kind === "win") result = `的中 ${formatPt(pay.amount)}`;
+                else if (b.refunded) result = "返還";
+                return `<tr><td>${escapeHtml(label)}</td><td class="num">${formatPt(b.amount)}</td><td>${escapeHtml(result)}</td></tr>`;
+              })
+              .join("");
+            publishedBlock += `
             <div class="card">
               <h2>自分の馬券</h2>
               <p class="muted">残高 ${formatPt(user.balance)}</p>
@@ -337,6 +340,7 @@ export default {
                 <tbody>${hist || `<tr><td colspan="3" class="muted">なし</td></tr>`}</tbody>
               </table>
             </div>`;
+          }
         }
 
         return html(
@@ -456,6 +460,7 @@ export default {
             body: `${flashHtml(m.text, m.error)}
               <div class="card">
                 <h1>馬券を買う</h1>
+                <p class="bal-now"><span class="bal-k">いまの所持</span><strong>${formatPt(user.balance)}</strong></p>
                 ${betTabsHtml(kind)}
                 ${form}
                 <h2>${escapeHtml(BET_KIND_LABEL[kind])}のオッズ</h2>
