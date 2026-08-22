@@ -75,13 +75,10 @@ header.app {
 header.app a { color: var(--accent); }
 .app-ver {
   margin-left: .45rem;
-  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
-  font-size: .68rem;
-  font-weight: 400;
-  color: var(--muted);
-  opacity: .65;
-  letter-spacing: .02em;
-  vertical-align: middle;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: inherit;
+  vertical-align: baseline;
 }
 .stamp {
   display: inline-block;
