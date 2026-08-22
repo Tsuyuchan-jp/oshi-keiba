@@ -73,6 +73,16 @@ header.app {
   background: var(--paper);
 }
 header.app a { color: var(--accent); }
+.app-ver {
+  margin-left: .45rem;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: .68rem;
+  font-weight: 400;
+  color: var(--muted);
+  opacity: .65;
+  letter-spacing: .02em;
+  vertical-align: middle;
+}
 .stamp {
   display: inline-block;
   margin-left: .4rem;
@@ -225,6 +235,10 @@ dialog.modal h2 { margin-top: 0; }
 dialog.modal .eq { margin: .2rem 0 .55rem; }
 `;
 
+/** ヘッダー表示用。後で差し替えやすいようここだけ直す */
+const APP_VERSION = "0.3";
+
+
 export function layout(opts: {
   title: string;
   user?: UserRow | null;
@@ -250,7 +264,7 @@ export function layout(opts: {
 <body>
   <header class="app">
     <div>
-      <strong>oshi-keiba</strong><span class="stamp">仮</span>
+      <strong>oshi-keiba</strong><span class="stamp">仮</span><span class="app-ver">v${escapeHtml(APP_VERSION)}</span>
       <div class="muted">仮想ポイント馬券　換金しません</div>
       ${phase}
     </div>
