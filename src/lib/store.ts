@@ -84,7 +84,7 @@ export type Board = {
 const DEMO_EVENT_ID = "demo-week";
 /** 取消前の出走登録。下限は投票開始時のみ、上限は登録時と投票開始の両方で見る */
 const MIN_LIVE_HORSES = 5;
-const MAX_LIVE_HORSES = 18;
+const MAX_LIVE_HORSES = 50;
 
 const DEMO_HORSES: { name: string; strength: number }[] = [
   { name: "仮・スペシャルウィーク", strength: 28 },
