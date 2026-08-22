@@ -2,7 +2,7 @@
 
 Neko長明さんのウマ娘メンバーシップにおける、推し活イベントレース向けの**仮想馬券（ポイント）システム**の設計・実装リポジトリです。
 
-現時点は手土産 MVP をローカル（Cloudflare Workers + D1）で回している途中です。方針の正本は Docs（[docs/08-mvp-consult.md](docs/08-mvp-consult.md)）。GitHub Pages は使いません。
+現時点は手土産 MVP をローカル（Cloudflare Workers + D1）で回している途中です。本線の方針は Docs（[docs/08-mvp-consult.md](docs/08-mvp-consult.md)）。**日曜ルムマの試運転要件は [docs/09-trial-run.md](docs/09-trial-run.md)。** GitHub Pages は使いません。
 
 ## 読む順
 
