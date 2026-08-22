@@ -92,6 +92,39 @@ header.app {
   background: var(--paper);
 }
 header.app a { color: var(--accent); }
+header.app .head-left { min-width: 0; }
+header.app .who { margin-top: .35rem; }
+@media (max-width: 640px) {
+  header.app {
+    flex-direction: column;
+    align-items: stretch;
+    gap: .7rem;
+    padding: .8rem 1rem;
+  }
+  .app-ver { display: none; }
+  nav.links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .45rem;
+    width: 100%;
+  }
+  nav.links a,
+  nav.links button.text-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.7rem;
+    padding: .45rem .5rem;
+    background: #f7f3ea;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    text-decoration: none;
+    text-underline-offset: 0;
+    font-size: .92rem;
+    font-weight: 600;
+  }
+  nav.links button.text-btn { width: 100%; }
+}
 .app-ver {
   margin-left: .45rem;
   font-weight: 600;
@@ -231,6 +264,8 @@ button.text-btn {
 dialog.modal {
   max-width: 38rem;
   width: calc(100% - 2rem);
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 1.1rem 1.2rem;
@@ -239,6 +274,36 @@ dialog.modal {
 }
 dialog.modal::backdrop { background: rgba(28, 36, 22, .45); }
 dialog.modal h2 { margin-top: 0; }
+.howto-sec { margin: 0 0 1.05rem; }
+.howto-sec h3 {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: .88rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  margin: 0 0 .35rem;
+  color: var(--accent);
+}
+.howto-sec p { margin: 0; font-size: .9rem; line-height: 1.7; }
+details.fold-card { margin: 0; }
+details.fold-card > summary {
+  cursor: pointer;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  padding: .15rem 0 .35rem;
+  list-style: none;
+}
+details.fold-card > summary::-webkit-details-marker { display: none; }
+details.fold-card > summary::after {
+  content: "開く";
+  float: right;
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+details.fold-card[open] > summary::after { content: "閉じる"; }
+.formula-box { overflow-x: auto; }
 /* 単勝表（場内・投票） */
 table.win-sheet { table-layout: fixed; }
 table.win-sheet th:nth-child(1),
@@ -297,15 +362,34 @@ const APP_VERSION = "0.4-trial";
 export function howToModal(): string {
   return `<dialog class="modal" id="howto-modal">
     <h2>使い方</h2>
-    <div class="story">
-      <p>このアプリでは、仮想のポイント「スペ」で馬券を買います。最初に 3000 スペが入ります。買う単位は 100 スペです。</p>
+    <section class="howto-sec">
+      <h3>スペ</h3>
+      <p>仮想のポイント「スペ」で馬券を買います。最初に 3000 スペが入ります。買う単位は 100 スペです。</p>
+    </section>
+    <section class="howto-sec">
+      <h3>場内と投票</h3>
       <p>場内では出走表と単勝のオッズを見ます。馬券を買うときは「馬券を買う」から投票ページへ進んでください。投票が始まる前は、場内でお待ちください。</p>
+    </section>
+    <section class="howto-sec">
+      <h3>番号</h3>
       <p>表の番号は、このアプリの通し番号です。ゲームの枠番ではありません。買うときはこの番号を選びます。</p>
+    </section>
+    <section class="howto-sec">
+      <h3>オッズ</h3>
       <p>オッズは投票中も動きます。締切のあと、実際に買われた票だけで払いが決まります。単勝の投票中は目安が乗っています。馬連・馬単・3連複・3連単は、その組み合わせに実際の投票があるときだけ数字が出ます。無いときは「—」です。</p>
+    </section>
+    <section class="howto-sec">
+      <h3>買い方</h3>
       <p>賭式はタブで切り替えます。一度に買えるのは 1 点です。同じウマ娘を、同じ買い目の中で二度は選べません。買う前に確認が出ます。締切までは、やりなおしで自分の馬券を全部取り消せます。残高に戻ります。</p>
+    </section>
+    <section class="howto-sec">
+      <h3>特払い</h3>
       <p>人数が少ないと、3連単などは当たりの組み合わせに投票が1件もないことがあります。そのときは『特払い』になり、その賭式に使ったスペの8割が戻ります。</p>
+    </section>
+    <section class="howto-sec">
+      <h3>取消と結果</h3>
       <p>出走取消になったウマ娘を含む馬券は、全額が戻ります。結果と着順は、公開されてから出ます。他人が何を買ったかは見えません。</p>
-    </div>
+    </section>
     <form method="dialog"><button type="submit">閉じる</button></form>
   </dialog>`;
 }
@@ -320,7 +404,7 @@ export function layout(opts: {
   scripts?: string;
 }): string {
   const whoLine = opts.user
-    ? `<div class="muted">${escapeHtml(opts.user.display_name)}　${formatPt(opts.user.balance)}</div>`
+    ? `<div class="muted who">${escapeHtml(opts.user.display_name)}　${formatPt(opts.user.balance)}</div>`
     : "";
   const logoutLink = opts.user ? `<a href="/logout">ログアウト</a>` : "";
   const howto = opts.user
@@ -345,19 +429,17 @@ export function layout(opts: {
 </head>
 <body>
   <header class="app">
-    <div>
+    <div class="head-left">
       <strong>oshi-keiba</strong><span class="stamp">試</span><span class="app-ver">v${escapeHtml(APP_VERSION)}</span>
       ${phase}
-    </div>
-    <div>
       ${whoLine}
-      <nav class="links">
-        ${memberNav}
-        ${howto}
-        ${logoutLink}
-        <a href="/admin">${opts.admin ? "管理" : "管理者"}</a>
-      </nav>
     </div>
+    <nav class="links">
+      ${memberNav}
+      ${howto}
+      ${logoutLink}
+      <a href="/admin">${opts.admin ? "管理" : "管理者"}</a>
+    </nav>
   </header>
   <main>${opts.body}</main>
   ${opts.user ? howToModal() : ""}
@@ -365,6 +447,15 @@ export function layout(opts: {
     const howtoDlg = document.getElementById("howto-modal");
     const howtoBtn = document.getElementById("howto-open");
     if (howtoDlg && howtoBtn) howtoBtn.addEventListener("click", () => howtoDlg.showModal());
+    if (howtoDlg) {
+      howtoDlg.addEventListener("click", (ev) => {
+        const r = howtoDlg.getBoundingClientRect();
+        const inside =
+          ev.clientX >= r.left && ev.clientX <= r.right &&
+          ev.clientY >= r.top && ev.clientY <= r.bottom;
+        if (!inside) howtoDlg.close();
+      });
+    }
   </script>
   ${opts.scripts ?? ""}
 </body>
@@ -531,7 +622,23 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
   return `<script>
 (() => {
   const kind = ${JSON.stringify(kind)};
-  let prev = new Map();
+  const parseShown = (t) => {
+    const s = (t || "").trim();
+    if (!s || s === "—") return null;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : null;
+  };
+  const seedFromDom = () => {
+    const m = new Map();
+    for (const tr of document.querySelectorAll("tbody tr[data-sel], tbody tr[data-horse-id]")) {
+      const key = tr.getAttribute("data-sel") || tr.getAttribute("data-horse-id");
+      const cell = tr.querySelector(".odds-now");
+      if (!cell || !key) continue;
+      m.set(key, parseShown(cell.textContent));
+    }
+    return m;
+  };
+  let prev = seedFromDom();
   let timer = null;
   const apply = (payload) => {
     const next = new Map();
@@ -543,15 +650,13 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
       if (!cell || !key) continue;
       const odds = next.get(key);
       const text = (odds == null || !Number.isFinite(odds)) ? "—" : Number(odds).toFixed(1);
-      const old = prev.get(key);
+      const old = prev.has(key) ? prev.get(key) : parseShown(cell.textContent);
       cell.textContent = text;
-      if (old == null && odds != null && Number.isFinite(odds)) {
-        tr.classList.add("pulse-row");
-      } else if (old != null && odds != null && Math.abs(odds - old) >= 0.1) {
+      if (old != null && odds != null && Math.abs(odds - old) >= 0.1) {
         tr.classList.add("pulse-row");
       }
     }
-    // 票が消えた行は静かに外す（連勝）
+    // 連勝: 消えた行は静かに外す。新規行だけパルス（初回シード済みのときは新規のみ）
     if (kind !== "win") {
       const tbody = document.querySelector(".combo-list tbody");
       if (tbody) {
@@ -596,7 +701,9 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
     } catch (_) {}
   };
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) tick();
+    if (document.hidden) return;
+    prev = seedFromDom();
+    tick();
   });
   tick();
   timer = setInterval(tick, 5000);
@@ -608,9 +715,10 @@ export function wCaption(board: Board): string {
   return `w=${board.w.toFixed(2)}（時間 ${board.wTime.toFixed(2)} × 単勝実票 ${board.wVolume.toFixed(2)}）　単勝実票合計 ${formatPt(board.realTotal)}　S=${board.event.seed_pool_s}　E=${board.event.pull_e}　D=${Math.round(board.event.takeout_d * 100)}%`;
 }
 
-/** 管理画面: 定義 → 物語（記号つき）→ 式だけ */
+/** 管理画面: 定義 → 物語 → 式 */
 export function formulaPanel(_board: Board): string {
-  return `<details class="terms-box">
+  return `<div class="formula-box">
+    <details class="terms-box" open>
       <summary>定義表（参考）</summary>
       <table class="terms">
       <thead>
@@ -618,11 +726,14 @@ export function formulaPanel(_board: Board): string {
       </thead>
       <tbody>
         <tr><td>残高</td><td>仮想のユーザー所持額</td><td>今持っているスペ</td></tr>
-        <tr><td>G</td><td>毎週配る仮想ポイント</td><td>口座に足す額。オッズの式には入らない</td></tr>
+        <tr><td>G</td><td>毎週配る仮想ポイント</td><td>口座に足す額。オッズの式には入らない。G を変えても S と E は動かない</td></tr>
         <tr><td>単位</td><td>投票の刻み</td><td>一度に賭けられる最小のスペ</td></tr>
         <tr><td>Strength</td><td>相対評価点</td><td>単勝 Seed の比。連勝には載せない</td></tr>
         <tr><td>Seed</td><td>単勝の仮想初期投票額</td><td>投票中の参考だけ。確定には入れない</td></tr>
+        <tr><td>S</td><td>仮想の初期投票額の合計</td><td>単勝参考用。連勝には配らない</td></tr>
         <tr><td>Real</td><td>実際の投票額</td><td>賭式ごとのプール</td></tr>
+        <tr><td>TV</td><td>単勝の実票合計</td><td>w の票量側。連勝票は入れない</td></tr>
+        <tr><td>w</td><td>初期投票額をどれだけ残すか</td><td>単勝参考のみ。1 に近いほど仮想が残る</td></tr>
         <tr><td>D</td><td>控除</td><td>特払いも同じ（100→80、切り捨て）</td></tr>
       </tbody>
     </table>
@@ -630,8 +741,35 @@ export function formulaPanel(_board: Board): string {
     <div class="flow">
     <div class="flow-step">
       <div class="flow-k">払いの約束①</div>
-      <div class="story"><p>確定配当は実票だけの山分け。Seed は単勝の投票中参考にだけ混ぜる。不成立は特払い B（その賭式の8割戻し）。出走取消は全額返還。</p></div>
+      <div class="story"><p>確定配当は実票だけの山分け。Seed は単勝の投票中参考にだけ混ぜる。不成立は特払い B（その賭式の8割戻し）。出走取消は全額返還。連勝は実票が無ければ「—」。</p></div>
     </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-step">
+      <div class="flow-k">1　単勝の仮想初期投票額</div>
+      <div class="eq">Seed<sub>i</sub> = S × Strength<sub>i</sub> / Σ Strength</div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-step">
+      <div class="flow-k">2　参考オッズの寄せ（単勝のみ。w）</div>
+      <div class="eq">w<sub>時</sub> = 下限 + (1 − 下限) × 残り<sup>指数</sup></div>
+      <div class="eq">w<sub>票</sub> = max(0, 1 − TV / E)</div>
+      <div class="eq">w = w<sub>時</sub> × w<sub>票</sub></div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-step">
+      <div class="flow-k">3　単勝の参考オッズ（投票中。確定ではない）</div>
+      <div class="eq">Display<sub>i</sub> = Seed<sub>i</sub> × w + Real<sub>i</sub></div>
+      <div class="eq">参考オッズ<sub>i</sub> = (Σ Display × (1 − D)) / Display<sub>i</sub></div>
+    </div>
+    <div class="flow-arrow">↓</div>
+    <div class="flow-step">
+      <div class="flow-k">4　確定配当（賭式ごと。実票のみ）</div>
+      <div class="eq">払戻しの原資 = その賭式の実票合計 × (1 − D)</div>
+      <div class="eq">確定配当 = 払戻しの原資 / 当選の実票</div>
+      <div class="eq">払戻 = ⌊ 賭け額 × 確定配当 ⌋</div>
+      <div class="eq">特払い = ⌊ 賭け額 × (1 − D) ⌋</div>
+    </div>
+  </div>
   </div>`;
 }
 
@@ -645,6 +783,15 @@ export function strengthCalcModal(): string {
     const dlg = document.getElementById("strength-modal");
     const openBtn = document.getElementById("strength-detail");
     if (dlg && openBtn) openBtn.addEventListener("click", () => dlg.showModal());
+    if (dlg) {
+      dlg.addEventListener("click", (ev) => {
+        const r = dlg.getBoundingClientRect();
+        const inside =
+          ev.clientX >= r.left && ev.clientX <= r.right &&
+          ev.clientY >= r.top && ev.clientY <= r.bottom;
+        if (!inside) dlg.close();
+      });
+    }
   </script>`;
 }
 

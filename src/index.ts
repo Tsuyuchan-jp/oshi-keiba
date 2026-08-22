@@ -35,7 +35,6 @@ import {
   resetDemo,
   savePlaces,
   scratchHorse,
-  seedDemoHorses,
   updateHorse,
   updateParams,
   upsertUser,
@@ -351,36 +350,56 @@ export default {
 
         const canBuy = board.event.status === "voting";
         const form = canBuy
-          ? `<form method="post" action="/bet" class="bet-form" id="bet-form"
-                onsubmit="return confirm('この内容で買いますか？\\n' + (document.getElementById('confirm-summary')?.textContent || ''));">
+          ? `<form method="post" action="/bet" class="bet-form" id="bet-form">
               <input type="hidden" name="kind" value="${kind}">
               <div class="row">${pickSelects(kind, board)}</div>
               <div class="row">
-                <button type="button" class="amt secondary" data-amt="100">100</button>
-                <button type="button" class="amt secondary" data-amt="500">500</button>
+                <button type="button" class="amt secondary" data-add="100">+100</button>
+                <button type="button" class="amt secondary" data-add="500">+500</button>
                 <button type="button" class="amt secondary" data-amt="all">残り全部</button>
                 <label>金額（スペ）
-                  <input name="amount" id="bet-amount" type="number" min="${board.event.bet_unit}" step="${board.event.bet_unit}" value="${board.event.bet_unit}" required>
+                  <input name="amount" id="bet-amount" type="number" min="0" step="${board.event.bet_unit}" value="0" required>
                 </label>
                 <button type="submit">買う</button>
               </div>
-              <p class="note" id="confirm-summary" hidden></p>
             </form>
             <script>
-              const bal = ${user.balance};
-              const unit = ${board.event.bet_unit};
-              document.querySelectorAll("[data-amt]").forEach((btn) => {
-                btn.addEventListener("click", () => {
-                  const a = btn.getAttribute("data-amt");
-                  const input = document.getElementById("bet-amount");
-                  if (!input) return;
-                  if (a === "all") {
-                    input.value = String(Math.floor(bal / unit) * unit);
-                  } else {
-                    input.value = a;
-                  }
+              (() => {
+                const bal = ${user.balance};
+                const unit = ${board.event.bet_unit};
+                const kindLabel = ${JSON.stringify(BET_KIND_LABEL[kind])};
+                const form = document.getElementById("bet-form");
+                const input = document.getElementById("bet-amount");
+                const cap = Math.floor(bal / unit) * unit;
+                const setAmt = (n) => {
+                  const v = Math.max(0, Math.min(cap, Math.floor(n / unit) * unit));
+                  input.value = String(v);
+                };
+                document.querySelectorAll("[data-add]").forEach((btn) => {
+                  btn.addEventListener("click", () => {
+                    setAmt(Number(input.value || 0) + Number(btn.getAttribute("data-add")));
+                  });
                 });
-              });
+                document.querySelectorAll("[data-amt]").forEach((btn) => {
+                  btn.addEventListener("click", () => {
+                    if (btn.getAttribute("data-amt") === "all") setAmt(cap);
+                  });
+                });
+                form.addEventListener("submit", (ev) => {
+                  const picks = [...form.querySelectorAll("select")].map((s) => {
+                    const opt = s.options[s.selectedIndex];
+                    return opt && opt.value ? opt.textContent.trim() : "";
+                  }).filter(Boolean);
+                  const amt = Number(input.value);
+                  if (!picks.length || !(amt >= unit)) {
+                    ev.preventDefault();
+                    alert("買い目と金額（" + unit + " スペ単位）を入れてください");
+                    return;
+                  }
+                  const msg = "この内容で買いますか？\\n\\n" + kindLabel + "\\n" + picks.join(" / ") + "\\n" + amt.toLocaleString("ja-JP") + " スペ";
+                  if (!confirm(msg)) ev.preventDefault();
+                });
+              })();
             </script>
             ${DEDUPE_SELECT_SCRIPT}`
           : `<p class="note">いまは投票期間外です。場内でオッズを見てください。</p>`;
@@ -510,7 +529,7 @@ export default {
                   : "—";
             const scratchBtn =
               e.status !== "published" && !h.horse.scratched
-                ? `<form method="post" action="/admin/scratch">
+                ? `<form method="post" action="/admin/scratch" onsubmit="return confirm(${escapeHtml(JSON.stringify(`「${h.horse.name}」を出走取消し、このウマ娘を含む馬券を全額返還します。よろしいですか？`))});">
                     <input type="hidden" name="horse_id" value="${h.horse.id}">
                     <button class="danger" type="submit">取消・返還</button>
                   </form>`
@@ -573,7 +592,9 @@ export default {
                 <p>頭数（取消前） ${liveCount}　${escapeHtml(wCaption(board))}</p>
               </div>
               <div class="card">
-                <h2>数値</h2>
+                <details class="fold-card"${e.status === "setup" ? " open" : ""}>
+                <summary>数値</summary>
+                <p class="note">投票開始後は通常いじりません。必要なときだけ開いてください。</p>
                 <form method="post" action="/admin/params">
                   <div class="row">
                     <label>タイトル <input name="title" value="${escapeHtml(e.title)}"></label>
@@ -588,21 +609,48 @@ export default {
                   </div>
                   <button type="submit">保存</button>
                 </form>
+                </details>
               </div>
               <div class="card">
                 <h2>週次操作</h2>
                 <div class="row">
-                  <form method="post" action="/admin/seed-demo"><button type="submit">仮ウマ娘を入れる</button></form>
-                  <form method="post" action="/admin/open"><button type="submit">投票開始</button></form>
-                  <form method="post" action="/admin/close"><button class="danger" type="submit">強制締切</button></form>
+                  <form method="post" action="/admin/open" onsubmit="return confirm(${escapeHtml(JSON.stringify("投票を開始します。このあと出走の追加はできません。よろしいですか？"))});">
+                    <button type="submit">投票開始</button>
+                  </form>
+                  <form method="post" action="/admin/close" onsubmit="return confirm(${escapeHtml(JSON.stringify("強制締切します。投票を止め、確定配当に切り替えます。よろしいですか？"))});">
+                    <button class="danger" type="submit">強制締切</button>
+                  </form>
+                  <button type="button" class="secondary" id="reset-open">デモ初期化</button>
                 </div>
-                <form method="post" action="/admin/reset" style="margin-top:1rem"
-                  onsubmit="return confirm('デモを初期化します。メンバーの表示名は残ります。よろしいですか？');">
-                  <div class="row">
-                    <label>管理者パス再入力 <input name="password" type="password" required autocomplete="current-password"></label>
-                    <button class="secondary" type="submit">デモ初期化</button>
-                  </div>
-                </form>
+                <dialog class="modal" id="reset-modal">
+                  <h2>デモ初期化</h2>
+                  <p>出走・投票・付与は消えます。メンバーの表示名は残ります。残高は 0 になります。</p>
+                  <form method="post" action="/admin/reset">
+                    <div class="row">
+                      <label>管理者パス <input name="password" type="password" required autocomplete="current-password"></label>
+                      <button class="danger" type="submit">初期化する</button>
+                      <button type="button" class="secondary" id="reset-cancel">やめる</button>
+                    </div>
+                  </form>
+                </dialog>
+                <script>
+                  (() => {
+                    const dlg = document.getElementById("reset-modal");
+                    const openBtn = document.getElementById("reset-open");
+                    const cancel = document.getElementById("reset-cancel");
+                    if (dlg && openBtn) openBtn.addEventListener("click", () => dlg.showModal());
+                    if (dlg && cancel) cancel.addEventListener("click", () => dlg.close());
+                    if (dlg) {
+                      dlg.addEventListener("click", (ev) => {
+                        const r = dlg.getBoundingClientRect();
+                        const inside =
+                          ev.clientX >= r.left && ev.clientX <= r.right &&
+                          ev.clientY >= r.top && ev.clientY <= r.bottom;
+                        if (!inside) dlg.close();
+                      });
+                    }
+                  })();
+                </script>
               </div>
               <div class="card">
                 <h2>出走（Strength / Seed）</h2>
@@ -651,7 +699,8 @@ export default {
                          });
                          syncPlaceOptions();
                        </script>
-                       <form method="post" action="/admin/publish" style="margin-top:1rem">
+                       <form method="post" action="/admin/publish" style="margin-top:1rem"
+                         onsubmit="return confirm(${escapeHtml(JSON.stringify("結果を公開して払戻します。着順が一般に出ます。よろしいですか？"))});">
                          <button type="submit">結果を公開して払戻する</button>
                        </form>`
                     : ""
@@ -704,18 +753,6 @@ export default {
           return bounce("/admin", "数値を保存しました");
         } catch (err) {
           return bounce("/admin", err instanceof Error ? err.message : "保存失敗", true);
-        }
-      }
-
-      if (method === "POST" && path === "/admin/seed-demo") {
-        const gate = await requireAdmin(request, env);
-        if (gate instanceof Response) return gate;
-        try {
-          const board = await loadBoard(env.DB);
-          await seedDemoHorses(env.DB, board.event);
-          return bounce("/admin", "仮ウマ娘を登録しました");
-        } catch (err) {
-          return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
         }
       }
 
