@@ -322,6 +322,51 @@ details.fold-card > summary::after {
 }
 details.fold-card[open] > summary::after { content: "閉じる"; }
 .formula-box { overflow-x: auto; }
+.ops-monitor {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) 2fr;
+  gap: .85rem 1.25rem;
+  padding: .85rem 1rem;
+  background: #f7f3ea;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin: 0 0 1.1rem;
+}
+@media (max-width: 640px) {
+  .ops-monitor { grid-template-columns: 1fr; }
+}
+.ops-k {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: .72rem;
+  letter-spacing: .08em;
+  color: var(--muted);
+  margin: 0 0 .3rem;
+}
+.ops-next {
+  margin: 0;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.ops-phase-btns { margin: 0 0 .35rem; }
+.ops-aside {
+  margin-top: 1.35rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--line);
+}
+.ops-aside h3 {
+  font-size: .82rem;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  letter-spacing: .06em;
+  color: var(--muted);
+  margin: 0 0 .55rem;
+  font-weight: 700;
+}
+button:disabled, button[disabled] {
+  opacity: .45;
+  cursor: not-allowed;
+}
 /* 単勝表（場内・投票） */
 table.win-sheet { table-layout: fixed; }
 table.win-sheet th:nth-child(1),
@@ -733,10 +778,34 @@ export function wCaption(board: Board): string {
   return `w=${board.w.toFixed(2)}（時間 ${board.wTime.toFixed(2)} × 単勝実票 ${board.wVolume.toFixed(2)}）　単勝実票合計 ${formatPt(board.realTotal)}　S=${board.event.seed_pool_s}　E=${board.event.pull_e}　D=${Math.round(board.event.takeout_d * 100)}%`;
 }
 
+/** 管理の週次: いまのフェーズと次に押すもの */
+export function adminOpsGuide(board: Board): { now: string; next: string } {
+  const now = statusLabel(board.event.status);
+  const live = board.horses.filter((h) => !h.horse.scratched);
+  if (board.event.status === "setup") {
+    if (live.length < 2) {
+      return { now, next: "出走を 2 頭以上登録してください（下の出走枠。一括貼り付け可）" };
+    }
+    return { now, next: "締切日時を確認してから「投票開始」" };
+  }
+  if (board.event.status === "voting") {
+    const t = toJstInput(board.event.voting_closes_at);
+    const when = t ? `日時締切は ${t.replace("T", " ")} JST。` : "日時締切は未設定。";
+    return { now, next: `${when}ゲーム内で着順が見える前に「強制締切」` };
+  }
+  if (board.event.status === "closed") {
+    if (live.some((h) => h.horse.finish_place == null)) {
+      return { now, next: "下の出走枠で着順をすべて入れ、「着順を保存」" };
+    }
+    return { now, next: "着順を確認し、出走枠の「結果を公開して払戻する」" };
+  }
+  return { now, next: "結果公開済みです。次のレースは下の「デモ初期化」から（誤タップ注意）" };
+}
+
 /** 管理画面: 定義 → 物語 → 式 */
 export function formulaPanel(_board: Board): string {
   return `<div class="formula-box">
-    <details class="terms-box" open>
+    <details class="terms-box">
       <summary>定義表（参考）</summary>
       <table class="terms">
       <thead>

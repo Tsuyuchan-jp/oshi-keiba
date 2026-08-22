@@ -54,6 +54,7 @@ import {
   formatPt,
   formulaPanel,
   groupMyBets,
+  headerPhaseKind,
   kindVoidNotes,
   layout,
   livePollScript,
@@ -64,6 +65,7 @@ import {
   toJstInput,
   wCaption,
   winSheetTable,
+  adminOpsGuide,
 } from "./lib/ui";
 import type { UserRow } from "./lib/store";
 
@@ -524,6 +526,7 @@ export default {
         } catch {
           undoMeta = null;
         }
+        const ops = adminOpsGuide(board);
 
         const horseRows = board.horses
           .map((h) => {
@@ -620,7 +623,7 @@ export default {
               </div>
               <div class="card">
                 <details class="fold-card"${e.status === "setup" ? " open" : ""}>
-                <summary>数値</summary>
+                <summary>レースイベント設定</summary>
                 <p class="note">投票開始後は通常いじりません。必要なときだけ開いてください。</p>
                 <form method="post" action="/admin/params">
                   <div class="row">
@@ -640,25 +643,42 @@ export default {
               </div>
               <div class="card">
                 <h2>週次操作</h2>
-                <div class="row">
+                <div class="ops-monitor">
+                  <div>
+                    <div class="ops-k">いまのフェーズ</div>
+                    <div class="phase ${headerPhaseKind(e.status)}">${escapeHtml(ops.now)}</div>
+                  </div>
+                  <div>
+                    <div class="ops-k">次に必要な操作</div>
+                    <p class="ops-next">${escapeHtml(ops.next)}</p>
+                  </div>
+                </div>
+                <h3 class="ops-k" style="margin-bottom:.45rem">フェーズを進める</h3>
+                <div class="row ops-phase-btns">
                   <form method="post" action="/admin/open" onsubmit="return confirm(${escapeHtml(JSON.stringify("投票を開始します。このあと出走の追加はできません。よろしいですか？"))});">
-                    <button type="submit">投票開始</button>
+                    <button type="submit"${e.status !== "setup" ? " disabled" : ""}>投票開始</button>
                   </form>
                   <form method="post" action="/admin/close" onsubmit="return confirm(${escapeHtml(JSON.stringify("強制締切します。投票を止め、確定配当に切り替えます。よろしいですか？"))});">
-                    <button class="danger" type="submit">強制締切</button>
+                    <button class="danger" type="submit"${e.status !== "voting" ? " disabled" : ""}>強制締切</button>
                   </form>
-                  <button type="button" class="secondary" id="reset-open">デモ初期化</button>
+                </div>
+                <p class="note">着順の保存と結果公開は、下の出走枠にあります。</p>
+                <div class="ops-aside">
+                  <h3>復旧（普段は使わない）</h3>
+                  <div class="row">
+                    <button type="button" class="secondary" id="reset-open">デモ初期化</button>
+                    ${
+                      undoMeta
+                        ? `<button type="button" class="danger" id="undo-open">操作を戻す</button>`
+                        : `<button type="button" class="secondary" disabled>操作を戻す</button>`
+                    }
+                  </div>
                   ${
                     undoMeta
-                      ? `<button type="button" class="danger" id="undo-open">操作を戻す</button>`
-                      : `<button type="button" class="secondary" disabled>操作を戻す</button>`
+                      ? `<p class="note">戻せる操作: ${escapeHtml(undoMeta.action_label)}（${escapeHtml(toJstInput(undoMeta.created_at).replace("T", " "))} JST）</p>`
+                      : `<p class="note">戻せる管理者操作はまだありません。</p>`
                   }
                 </div>
-                ${
-                  undoMeta
-                    ? `<p class="note">戻せる操作: ${escapeHtml(undoMeta.action_label)}（${escapeHtml(toJstInput(undoMeta.created_at).replace("T", " "))} JST）</p>`
-                    : `<p class="note">戻せる管理者操作はまだありません。</p>`
-                }
                 <dialog class="modal" id="undo-modal">
                   <h2>直前の操作を戻す</h2>
                   <p><strong>戻す操作: ${undoMeta ? escapeHtml(undoMeta.action_label) : "—"}</strong></p>
@@ -874,7 +894,7 @@ export default {
             w_time_exp: Number(form.get("w_time_exp")),
             voting_closes_at: parseJstInput(closesRaw),
           });
-          return bounce("/admin", "数値を保存しました");
+          return bounce("/admin", "レースイベント設定を保存しました");
         } catch (err) {
           return bounce("/admin", err instanceof Error ? err.message : "保存失敗", true);
         }

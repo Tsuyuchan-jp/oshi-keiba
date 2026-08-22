@@ -978,7 +978,7 @@ export async function updateParams(
     voting_closes_at?: number | null;
   },
 ): Promise<void> {
-  await captureAdminUndo(db, "数値を保存");
+  await captureAdminUndo(db, "レースイベント設定を保存");
   await db
     .prepare(
       `UPDATE events SET
