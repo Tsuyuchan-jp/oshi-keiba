@@ -28,7 +28,7 @@ npm test
 npm run dev
 ```
 
-- 入室: http://localhost:8787/login （共有パス `demo-member`）
+- 入室: http://localhost:8787/login （共有パス `loh`）
 - 場内: http://localhost:8787/
 - 投票: http://localhost:8787/bet
 - 管理者: http://localhost:8787/admin 仮パス `demo-admin`
@@ -40,4 +40,5 @@ G=3000 スペ。賭式は単勝・馬連・馬単・3連複・3連単（1点買�
 閉じた試作です。検索に出さない前提で、URL を知っている人だけに渡します。
 
 - https://oshi-keiba.tsuyuchan-jp.workers.dev/
+- 入室の共有パス: `loh`
 - 管理者: https://oshi-keiba.tsuyuchan-jp.workers.dev/admin 仮パス `demo-admin`

@@ -4,9 +4,9 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-08-21",
   "vars": {
-    // 試運転: 管理者は当面 demo-admin。メンバー共有パスは後で差し替え可
+    // 試運転: 管理者は当面 demo-admin。メンバー共有パスは loh
     "ADMIN_PASSWORD": "demo-admin",
-    "MEMBER_PASSWORD": "demo-member"
+    "MEMBER_PASSWORD": "loh"
   },
   "workers_dev": true,
   "observability": {
