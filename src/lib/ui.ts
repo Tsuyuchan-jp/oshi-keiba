@@ -367,6 +367,14 @@ button:disabled, button[disabled] {
   opacity: .45;
   cursor: not-allowed;
 }
+.autofill-trap {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+form.reauth { position: relative; }
 /* 単勝表（場内・投票） */
 table.win-sheet { table-layout: fixed; }
 table.win-sheet th:nth-child(1),

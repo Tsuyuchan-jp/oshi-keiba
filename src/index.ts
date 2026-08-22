@@ -83,6 +83,23 @@ function bounce(path: string, text: string, error = false): Response {
   return redirect(u.pathname + u.search);
 }
 
+/** 確認用パス。name=password にするとブラウザがログイン情報を流し込む */
+function adminReauthField(): string {
+  return `<div class="autofill-trap" aria-hidden="true">
+      <input type="text" tabindex="-1" autocomplete="username">
+      <input type="password" tabindex="-1" autocomplete="current-password">
+    </div>
+    <label>管理者パス
+      <input class="no-autofill" name="admin_reauth" type="password" required
+        autocomplete="new-password" autocapitalize="off" spellcheck="false"
+        data-lpignore="true" data-1p-ignore="true" data-bwignore="true" readonly>
+    </label>`;
+}
+
+function readAdminReauth(form: FormData): string {
+  return form.get("admin_reauth") ?? form.get("password") ?? "";
+}
+
 async function requireAdmin(
   request: Request,
   env: Env,
@@ -684,9 +701,9 @@ export default {
                   <p><strong>戻す操作: ${undoMeta ? escapeHtml(undoMeta.action_label) : "—"}</strong></p>
                   <p>出走・票・残高・払戻が、その操作の直前の状態に戻ります。そのあとメンバーが入室・投票した分は消えます。Undo をさらに戻すことはできません。</p>
                   <p class="note">日時締切を過ぎていると、戻したあとにまた自動締切されることがあります。</p>
-                  <form method="post" action="/admin/undo" id="undo-form">
+                  <form method="post" action="/admin/undo" id="undo-form" class="reauth" autocomplete="off">
                     <div class="row">
-                      <label>管理者パス <input name="password" type="password" required autocomplete="current-password"></label>
+                      ${adminReauthField()}
                       <button class="danger" type="submit">巻き戻す</button>
                       <button type="button" class="secondary" id="undo-cancel">やめる</button>
                     </div>
@@ -694,10 +711,11 @@ export default {
                 </dialog>
                 <dialog class="modal" id="reset-modal">
                   <h2>デモ初期化</h2>
-                  <p>出走・投票は消えます。メンバーの表示名は残し、残高は全員 3000 スペに揃えます（試運転）。</p>
-                  <form method="post" action="/admin/reset">
+                  <p><strong>いまの出走・投票・残高を消して、最初からやり直します。</strong></p>
+                  <p>メンバーの表示名は残ります。残高は全員 3000 スペに揃います。このあと「操作を戻す」で初期化前に戻せるのは、初期化が直前の操作である場合だけです。</p>
+                  <form method="post" action="/admin/reset" id="reset-form" class="reauth" autocomplete="off">
                     <div class="row">
-                      <label>管理者パス <input name="password" type="password" required autocomplete="current-password"></label>
+                      ${adminReauthField()}
                       <button class="danger" type="submit">初期化する</button>
                       <button type="button" class="secondary" id="reset-cancel">やめる</button>
                     </div>
@@ -738,6 +756,17 @@ export default {
                         if (!confirm(msg)) ev.preventDefault();
                       });
                     }
+                    const resetForm = document.getElementById("reset-form");
+                    if (resetForm) {
+                      resetForm.addEventListener("submit", (ev) => {
+                        const msg =
+                          "デモを初期化します。\\n\\n出走・投票は消えます。メンバー名は残し、残高は全員 3000 スペになります。\\n\\n本当に初期化しますか？";
+                        if (!confirm(msg)) ev.preventDefault();
+                      });
+                    }
+                    document.querySelectorAll("input.no-autofill").forEach((el) => {
+                      el.addEventListener("focus", () => el.removeAttribute("readonly"));
+                    });
                   })();
                 </script>
               </div>
@@ -1042,7 +1071,7 @@ export default {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
         const form = await readForm(request);
-        const password = form.get("password") ?? "";
+        const password = readAdminReauth(form);
         if (!timingSafeEqualStr(password, env.ADMIN_PASSWORD)) {
           return bounce("/admin", "管理者パスが違います（巻き戻していません）", true);
         }
@@ -1058,7 +1087,7 @@ export default {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
         const form = await readForm(request);
-        const password = form.get("password") ?? "";
+        const password = readAdminReauth(form);
         if (!timingSafeEqualStr(password, env.ADMIN_PASSWORD)) {
           return bounce("/admin", "管理者パスが違います（初期化していません）", true);
         }
