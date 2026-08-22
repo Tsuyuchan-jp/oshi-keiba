@@ -17,6 +17,7 @@ import {
   wVolume,
 } from "./odds";
 import { newId } from "./auth";
+import { captureAdminUndo } from "./undo";
 
 export type EventStatus = "setup" | "voting" | "closed" | "published";
 
@@ -554,6 +555,7 @@ export async function addHorse(
   event: EventRow,
   name: string,
   strength: number,
+  recordUndo = true,
 ): Promise<string> {
   if (event.status !== "setup") {
     throw new Error("名簿は投票開始後は閉じます（飛び入り禁止）");
@@ -566,6 +568,7 @@ export async function addHorse(
   if (live >= MAX_LIVE_HORSES) {
     throw new Error(`頭数は ${MAX_LIVE_HORSES} まで`);
   }
+  if (recordUndo) await captureAdminUndo(db, `出走を追加（${trimmed}）`);
   const id = newId();
   await db
     .prepare(
@@ -584,6 +587,7 @@ export async function updateHorse(
   horseId: string,
   name: string,
   strength: number,
+  recordUndo = true,
 ): Promise<void> {
   if (event.status !== "setup") {
     throw new Error("セットアップ中だけ修正できます");
@@ -591,13 +595,18 @@ export async function updateHorse(
   const trimmed = name.trim();
   if (!trimmed) throw new Error("名前を入れてください");
   if (!(strength >= 0)) throw new Error("相対評価点が不正です");
-  const r = await db
+  const horse = await db
+    .prepare("SELECT id FROM horses WHERE id = ? AND event_id = ?")
+    .bind(horseId, event.id)
+    .first();
+  if (!horse) throw new Error("出走が見つかりません");
+  if (recordUndo) await captureAdminUndo(db, `出走を修正（${trimmed}）`);
+  await db
     .prepare(
       "UPDATE horses SET name = ?, strength = ? WHERE id = ? AND event_id = ?",
     )
     .bind(trimmed, strength, horseId, event.id)
     .run();
-  if (!r.meta.changes) throw new Error("出走が見つかりません");
 }
 
 /** 一括: 行ごと「名前、点数」 */
@@ -614,10 +623,7 @@ export async function bulkUpsertHorses(
     .map((l) => l.trim())
     .filter(Boolean);
   if (lines.length === 0) throw new Error("貼り付け内容が空です");
-  const existing = await listHorses(db, event.id);
-  const byName = new Map(existing.map((h) => [h.name, h]));
-  let live = existing.filter((h) => !h.scratched).length;
-  let n = 0;
+  const parsed: { name: string; strength: number }[] = [];
   for (const line of lines) {
     const m = line.match(/^(.+?)[、,]\s*(-?\d+(?:\.\d+)?)\s*$/);
     if (!m) throw new Error(`形式が違います: ${line}`);
@@ -625,14 +631,22 @@ export async function bulkUpsertHorses(
     const strength = Number(m[2]);
     if (!name) throw new Error(`名前が空です: ${line}`);
     if (!(strength >= 0)) throw new Error(`点数が不正です: ${line}`);
+    parsed.push({ name, strength });
+  }
+  await captureAdminUndo(db, `出走を一括反映（${parsed.length} 行）`);
+  const existing = await listHorses(db, event.id);
+  const byName = new Map(existing.map((h) => [h.name, h]));
+  let live = existing.filter((h) => !h.scratched).length;
+  let n = 0;
+  for (const { name, strength } of parsed) {
     const hit = byName.get(name);
     if (hit) {
-      await updateHorse(db, event, hit.id, name, strength);
+      await updateHorse(db, event, hit.id, name, strength, false);
     } else {
       if (live >= MAX_LIVE_HORSES) {
         throw new Error(`頭数は ${MAX_LIVE_HORSES} まで（途中で上限）`);
       }
-      const id = await addHorse(db, event, name, strength);
+      const id = await addHorse(db, event, name, strength, false);
       byName.set(name, {
         id,
         event_id: event.id,
@@ -682,6 +696,7 @@ export async function openVoting(
       `投票開始には取消前の頭数が ${MIN_LIVE_HORSES}〜${MAX_LIVE_HORSES} 必要です`,
     );
   }
+  await captureAdminUndo(db, "投票開始");
   const now = Date.now();
   await db
     .prepare(
@@ -693,6 +708,7 @@ export async function openVoting(
 
 export async function forceClose(db: D1Database, event: EventRow): Promise<void> {
   if (event.status !== "voting") throw new Error("締切できるのは投票中だけです");
+  await captureAdminUndo(db, "強制締切");
   const now = Date.now();
   await db
     .prepare(
@@ -807,6 +823,7 @@ export async function scratchHorse(
     .first<HorseRow>();
   if (!horse) throw new Error("出走が見つかりません");
   if (horse.scratched) return 0;
+  await captureAdminUndo(db, `出走取消（${horse.name}）`);
   const { results } = await db
     .prepare("SELECT * FROM bets WHERE event_id = ? AND refunded = 0")
     .bind(event.id)
@@ -864,6 +881,7 @@ export async function savePlaces(
     if (seenPlace.has(p.place)) throw new Error("着順が重複しています");
     seenPlace.add(p.place);
   }
+  await captureAdminUndo(db, "着順を保存");
   const stmts = places.map((p) =>
     db
       .prepare("UPDATE horses SET finish_place = ? WHERE id = ?")
@@ -888,6 +906,7 @@ export async function publishResults(db: D1Database, event: EventRow): Promise<v
   if (live.some((h) => h.finish_place == null)) {
     throw new Error("着順が入っていない頭があります");
   }
+  await captureAdminUndo(db, "結果公開・払戻");
   const bets = await listActiveBets(db, event.id);
   const board = buildBoard(event, horses, bets);
   const now = Date.now();
@@ -959,6 +978,7 @@ export async function updateParams(
     voting_closes_at?: number | null;
   },
 ): Promise<void> {
+  await captureAdminUndo(db, "数値を保存");
   await db
     .prepare(
       `UPDATE events SET
@@ -1038,6 +1058,7 @@ export async function deleteMember(
   if (!user || user.role !== "member") {
     throw new Error("削除できるメンバーが見つかりません");
   }
+  await captureAdminUndo(db, `メンバー削除（${user.display_name}）`);
   await db.batch([
     db.prepare("DELETE FROM payouts WHERE user_id = ?").bind(userId),
     db.prepare("DELETE FROM bets WHERE user_id = ?").bind(userId),
@@ -1051,6 +1072,7 @@ export async function deleteMember(
 
 /** 試運転MVP: 票・出走を消し、メンバー残高を G（3000）に揃える。名前は残す */
 export async function resetDemo(db: D1Database): Promise<void> {
+  await captureAdminUndo(db, "デモ初期化");
   await db.batch([
     db.prepare("DELETE FROM payouts"),
     db.prepare("DELETE FROM bets"),

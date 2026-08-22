@@ -42,6 +42,7 @@ import {
   updateParams,
   upsertUser,
 } from "./lib/store";
+import { applyAdminUndo, getAdminUndoMeta } from "./lib/undo";
 import {
   BOARD_FLASH_SCRIPT,
   betTabsHtml,
@@ -517,6 +518,12 @@ export default {
         const payouts = await listEventPayouts(env.DB, e.id);
         const payByBet = new Map(payouts.map((p) => [p.bet_id, p]));
         const nums = numberByHorseId(board);
+        let undoMeta = null;
+        try {
+          undoMeta = await getAdminUndoMeta(env.DB);
+        } catch {
+          undoMeta = null;
+        }
 
         const horseRows = board.horses
           .map((h) => {
@@ -641,7 +648,30 @@ export default {
                     <button class="danger" type="submit">強制締切</button>
                   </form>
                   <button type="button" class="secondary" id="reset-open">デモ初期化</button>
+                  ${
+                    undoMeta
+                      ? `<button type="button" class="danger" id="undo-open">操作を戻す</button>`
+                      : `<button type="button" class="secondary" disabled>操作を戻す</button>`
+                  }
                 </div>
+                ${
+                  undoMeta
+                    ? `<p class="note">戻せる操作: ${escapeHtml(undoMeta.action_label)}（${escapeHtml(toJstInput(undoMeta.created_at).replace("T", " "))} JST）</p>`
+                    : `<p class="note">戻せる管理者操作はまだありません。</p>`
+                }
+                <dialog class="modal" id="undo-modal">
+                  <h2>直前の操作を戻す</h2>
+                  <p><strong>戻す操作: ${undoMeta ? escapeHtml(undoMeta.action_label) : "—"}</strong></p>
+                  <p>出走・票・残高・払戻が、その操作の直前の状態に戻ります。そのあとメンバーが入室・投票した分は消えます。Undo をさらに戻すことはできません。</p>
+                  <p class="note">日時締切を過ぎていると、戻したあとにまた自動締切されることがあります。</p>
+                  <form method="post" action="/admin/undo" id="undo-form">
+                    <div class="row">
+                      <label>管理者パス <input name="password" type="password" required autocomplete="current-password"></label>
+                      <button class="danger" type="submit">巻き戻す</button>
+                      <button type="button" class="secondary" id="undo-cancel">やめる</button>
+                    </div>
+                  </form>
+                </dialog>
                 <dialog class="modal" id="reset-modal">
                   <h2>デモ初期化</h2>
                   <p>出走・投票は消えます。メンバーの表示名は残し、残高は全員 3000 スペに揃えます（試運転）。</p>
@@ -655,18 +685,37 @@ export default {
                 </dialog>
                 <script>
                   (() => {
-                    const dlg = document.getElementById("reset-modal");
-                    const openBtn = document.getElementById("reset-open");
-                    const cancel = document.getElementById("reset-cancel");
-                    if (dlg && openBtn) openBtn.addEventListener("click", () => dlg.showModal());
-                    if (dlg && cancel) cancel.addEventListener("click", () => dlg.close());
-                    if (dlg) {
-                      dlg.addEventListener("click", (ev) => {
-                        const r = dlg.getBoundingClientRect();
-                        const inside =
-                          ev.clientX >= r.left && ev.clientX <= r.right &&
-                          ev.clientY >= r.top && ev.clientY <= r.bottom;
-                        if (!inside) dlg.close();
+                    const bindDlg = (dlg, openBtn, cancel) => {
+                      if (dlg && openBtn) openBtn.addEventListener("click", () => dlg.showModal());
+                      if (dlg && cancel) cancel.addEventListener("click", () => dlg.close());
+                      if (dlg) {
+                        dlg.addEventListener("click", (ev) => {
+                          const r = dlg.getBoundingClientRect();
+                          const inside =
+                            ev.clientX >= r.left && ev.clientX <= r.right &&
+                            ev.clientY >= r.top && ev.clientY <= r.bottom;
+                          if (!inside) dlg.close();
+                        });
+                      }
+                    };
+                    bindDlg(
+                      document.getElementById("reset-modal"),
+                      document.getElementById("reset-open"),
+                      document.getElementById("reset-cancel"),
+                    );
+                    bindDlg(
+                      document.getElementById("undo-modal"),
+                      document.getElementById("undo-open"),
+                      document.getElementById("undo-cancel"),
+                    );
+                    const undoForm = document.getElementById("undo-form");
+                    const undoLabel = ${JSON.stringify(undoMeta?.action_label ?? "")};
+                    if (undoForm) {
+                      undoForm.addEventListener("submit", (ev) => {
+                        const msg =
+                          "直前の管理者操作を巻き戻します。\\n\\n戻す操作: " + undoLabel +
+                          "\\n\\n出走・票・残高・払戻がその直前に戻ります。あとから入った票は消えます。\\nこの Undo 自体は戻せません。\\n\\n本当に巻き戻しますか？";
+                        if (!confirm(msg)) ev.preventDefault();
                       });
                     }
                   })();
@@ -964,6 +1013,22 @@ export default {
         try {
           const name = await deleteMember(env.DB, form.get("user_id") ?? "");
           return bounce("/admin", `「${name}」を削除しました`);
+        } catch (err) {
+          return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
+        }
+      }
+
+      if (method === "POST" && path === "/admin/undo") {
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) return gate;
+        const form = await readForm(request);
+        const password = form.get("password") ?? "";
+        if (!timingSafeEqualStr(password, env.ADMIN_PASSWORD)) {
+          return bounce("/admin", "管理者パスが違います（巻き戻していません）", true);
+        }
+        try {
+          const label = await applyAdminUndo(env.DB);
+          return bounce("/admin", `「${label}」を巻き戻しました`);
         } catch (err) {
           return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
         }
