@@ -1,7 +1,11 @@
 import {
   betIncludesHorse,
+  DEFAULT_ENABLED_KINDS,
   isBetKind,
+  kindIsEnabled,
   normalizeSelection,
+  parseEnabledKinds,
+  serializeEnabledKinds,
   winningKey,
   type BetKind,
 } from "./bets";
@@ -38,7 +42,16 @@ export type EventRow = {
   published_at: number | null;
   payouts_applied: number;
   created_at: number;
+  /** カンマ区切り。単勝は常に含む */
+  enabled_kinds: string;
 };
+
+function normalizeEvent(row: EventRow): EventRow {
+  return {
+    ...row,
+    enabled_kinds: serializeEnabledKinds(parseEnabledKinds(row.enabled_kinds)),
+  };
+}
 
 export type HorseRow = {
   id: string;
@@ -139,14 +152,14 @@ export async function ensureEvent(db: D1Database): Promise<EventRow> {
     .prepare("SELECT * FROM events WHERE id = ?")
     .bind(DEMO_EVENT_ID)
     .first<EventRow>();
-  if (existing) return existing;
+  if (existing) return normalizeEvent(existing);
   const now = Date.now();
   await db
     .prepare(
       `INSERT INTO events (
         id, title, status, grant_g, bet_unit, seed_pool_s, pull_e, takeout_d,
-        w_time_floor, w_time_exp, created_at
-      ) VALUES (?, ?, 'setup', ?, ?, ?, ?, ?, ?, ?, ?)`,
+        w_time_floor, w_time_exp, enabled_kinds, created_at
+      ) VALUES (?, ?, 'setup', ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .bind(
       DEMO_EVENT_ID,
@@ -158,6 +171,7 @@ export async function ensureEvent(db: D1Database): Promise<EventRow> {
       DEFAULTS.takeoutD,
       DEFAULTS.wTimeFloor,
       DEFAULTS.wTimeExp,
+      DEFAULT_ENABLED_KINDS,
       now,
     )
     .run();
@@ -165,10 +179,11 @@ export async function ensureEvent(db: D1Database): Promise<EventRow> {
 }
 
 export async function getEvent(db: D1Database): Promise<EventRow | null> {
-  return db
+  const row = await db
     .prepare("SELECT * FROM events WHERE id = ?")
     .bind(DEMO_EVENT_ID)
     .first<EventRow>();
+  return row ? normalizeEvent(row) : null;
 }
 
 export async function maybeAutoClose(
@@ -727,6 +742,9 @@ export async function placeBet(
   amount: number,
 ): Promise<{ selection_key: string }> {
   if (event.status !== "voting") throw new Error("投票期間外です");
+  if (!kindIsEnabled(event.enabled_kinds, kind)) {
+    throw new Error("この賭式は今回のレースでは使えません");
+  }
   if (!Number.isFinite(amount) || amount < event.bet_unit || amount % event.bet_unit !== 0) {
     throw new Error(`最低単位は ${event.bet_unit} です`);
   }
@@ -976,9 +994,14 @@ export async function updateParams(
     w_time_exp?: number;
     title?: string;
     voting_closes_at?: number | null;
+    enabled_kinds?: string;
   },
 ): Promise<void> {
   await captureAdminUndo(db, "レースイベント設定を保存");
+  const kinds =
+    event.status === "setup" && patch.enabled_kinds != null
+      ? serializeEnabledKinds(parseEnabledKinds(patch.enabled_kinds))
+      : event.enabled_kinds;
   await db
     .prepare(
       `UPDATE events SET
@@ -990,7 +1013,8 @@ export async function updateParams(
         takeout_d = ?,
         w_time_floor = ?,
         w_time_exp = ?,
-        voting_closes_at = ?
+        voting_closes_at = ?,
+        enabled_kinds = ?
       WHERE id = ?`,
     )
     .bind(
@@ -1005,6 +1029,7 @@ export async function updateParams(
       patch.voting_closes_at === undefined
         ? event.voting_closes_at
         : patch.voting_closes_at,
+      kinds,
       event.id,
     )
     .run();

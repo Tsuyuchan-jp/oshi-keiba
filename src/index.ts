@@ -9,9 +9,12 @@ import {
 } from "./lib/auth";
 import {
   BET_KIND_LABEL,
-  BET_KINDS,
   formatSelectionLabel,
   isBetKind,
+  kindIsEnabled,
+  OPTIONAL_BET_KINDS,
+  parseEnabledKinds,
+  serializeEnabledKinds,
   settleBet,
   type BetKind,
 } from "./lib/bets";
@@ -47,6 +50,7 @@ import {
   BOARD_FLASH_SCRIPT,
   betTabsHtml,
   comboOddsTable,
+  enabledKindsAdminFields,
   DEDUPE_SELECT_SCRIPT,
   flashHtml,
   formatMove,
@@ -246,7 +250,8 @@ export default {
           string,
           { key: string; label: string; odds: number | null }[]
         > = {};
-        for (const k of BET_KINDS) {
+        const liveKinds = parseEnabledKinds(board.event.enabled_kinds);
+        for (const k of liveKinds) {
           if (k === "win") {
             const votingLike =
               board.event.status === "voting" || board.event.status === "setup";
@@ -371,7 +376,10 @@ export default {
         const user = (await getUser(env.DB, gate.user.id))!;
         const m = msg(url);
         const kindParam = url.searchParams.get("kind") ?? "win";
-        const kind: BetKind = isBetKind(kindParam) ? kindParam : "win";
+        let kind: BetKind = isBetKind(kindParam) ? kindParam : "win";
+        if (!kindIsEnabled(board.event.enabled_kinds, kind)) {
+          return redirect("/bet");
+        }
         const live = board.event.status === "voting";
         const myBets = await listUserBets(env.DB, board.event.id, user.id);
         const grouped = groupMyBets(myBets, board);
@@ -461,7 +469,7 @@ export default {
               <div class="card">
                 <h1>馬券を買う</h1>
                 <p class="bal-now"><span class="bal-k">いまの所持</span><strong>${formatPt(user.balance)}</strong></p>
-                ${betTabsHtml(kind)}
+                ${betTabsHtml(kind, board.event.enabled_kinds)}
                 ${form}
                 <h2>${escapeHtml(BET_KIND_LABEL[kind])}のオッズ</h2>
                 ${comboOddsTable(board, kind)}
@@ -663,6 +671,7 @@ export default {
                     <label>w時 指数 <input name="w_time_exp" type="number" min="0.2" max="4" step="0.1" value="${e.w_time_exp}"></label>
                     <label>日時締切（JST） <input name="closes_at" type="datetime-local" value="${toJstInput(e.voting_closes_at)}"></label>
                   </div>
+                  ${enabledKindsAdminFields(e)}
                   <button type="submit">保存</button>
                 </form>
                 </details>
@@ -931,6 +940,16 @@ export default {
             w_time_floor: Number(form.get("w_time_floor")),
             w_time_exp: Number(form.get("w_time_exp")),
             voting_closes_at: parseJstInput(closesRaw),
+            enabled_kinds:
+              board.event.status === "setup"
+                ? serializeEnabledKinds(
+                    parseEnabledKinds(
+                      ["win", ...OPTIONAL_BET_KINDS.filter((k) => form.get(`kind_${k}`))].join(
+                        ",",
+                      ),
+                    ),
+                  )
+                : undefined,
           });
           return bounce("/admin", "レースイベント設定を保存しました");
         } catch (err) {

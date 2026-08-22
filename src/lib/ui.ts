@@ -2,13 +2,15 @@ import { escapeHtml } from "./http";
 import {
   BET_KIND_BLURB,
   BET_KIND_LABEL,
-  BET_KINDS,
   formatSelectionLabel,
+  OPTIONAL_BET_KINDS,
+  parseEnabledKinds,
   type BetKind,
 } from "./bets";
 import type {
   BetRow,
   Board,
+  EventRow,
   EventStatus,
   HorseBoard,
   UserRow,
@@ -206,6 +208,14 @@ h1 { font-size: 1.35rem; margin: 0 0 .4rem; }
 h2 { font-size: 1.05rem; margin: 0 0 .75rem; }
 .muted { color: var(--muted); font-size: .92rem; }
 .row { display: flex; flex-wrap: wrap; gap: .6rem; align-items: end; }
+.kind-set {
+  border: 1px solid var(--line);
+  padding: .55rem .8rem .7rem;
+  margin: .75rem 0 0;
+}
+.kind-set legend { padding: 0 .35rem; font-size: .85rem; }
+.kind-opts { display: flex; flex-wrap: wrap; gap: .45rem 1rem; margin-top: .35rem; }
+.kind-opt { display: inline-flex; flex-direction: row; align-items: center; gap: .35rem; font-size: .9rem; }
 label { display: flex; flex-direction: column; gap: .25rem; font-size: .85rem; }
 input, select, button, textarea {
   font: inherit;
@@ -634,7 +644,9 @@ export function kindVoidNotes(board: Board): string {
   if (board.event.status !== "closed" && board.event.status !== "published") {
     return "";
   }
+  const enabled = new Set(parseEnabledKinds(board.event.enabled_kinds));
   const lines = board.pools
+    .filter((p) => enabled.has(p.kind))
     .map((p) => {
       if (p.voidSpecial == null) return "";
       const label = BET_KIND_LABEL[p.kind];
@@ -932,12 +944,41 @@ export function strengthCalcModal(): string {
   </script>`;
 }
 
-export function betTabsHtml(active: BetKind): string {
-  return `<nav class="bet-tabs">${BET_KINDS.map(
+export function betTabsHtml(active: BetKind, enabledRaw: string): string {
+  const enabled = parseEnabledKinds(enabledRaw);
+  const kind = enabled.includes(active) ? active : "win";
+  return `<nav class="bet-tabs">${enabled.map(
     (k) =>
-      `<a href="/bet?kind=${k}" class="${k === active ? "on" : ""}">${BET_KIND_LABEL[k]}</a>`,
+      `<a href="/bet?kind=${k}" class="${k === kind ? "on" : ""}">${BET_KIND_LABEL[k]}</a>`,
   ).join("")}</nav>
-  <p class="bet-blurb">${escapeHtml(BET_KIND_BLURB[active])}</p>`;
+  <p class="bet-blurb">${escapeHtml(BET_KIND_BLURB[kind])}</p>`;
+}
+
+/** 投票開始前だけ編集。単勝は外せない */
+export function enabledKindsAdminFields(event: EventRow): string {
+  const enabled = new Set(parseEnabledKinds(event.enabled_kinds));
+  const setup = event.status === "setup";
+  const note = setup
+    ? `<p class="note">単勝は必ず使います。ほかは投票開始前だけ変えられます。初期は全部オンです。</p>`
+    : `<p class="note">投票開始後は賭式を変えません。いま有効なのは ${escapeHtml(
+        parseEnabledKinds(event.enabled_kinds)
+          .map((k) => BET_KIND_LABEL[k])
+          .join("、"),
+      )} です。</p>`;
+  const rest = OPTIONAL_BET_KINDS.map((k) => {
+    const on = enabled.has(k);
+    const dis = setup ? "" : " disabled";
+    return `<label class="kind-opt"><input type="checkbox" name="kind_${k}" value="1"${on ? " checked" : ""}${dis}> ${BET_KIND_LABEL[k]}</label>`;
+  }).join("");
+  return `<fieldset class="kind-set">
+    <legend>賭式</legend>
+    ${note}
+    <div class="kind-opts">
+      <label class="kind-opt"><input type="checkbox" checked disabled> 単勝（必須）</label>
+      <input type="hidden" name="kind_win" value="1">
+      ${rest}
+    </div>
+  </fieldset>`;
 }
 
 export function pickSelects(kind: BetKind, board: Board): string {

@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   normalizeSelection,
+  parseEnabledKinds,
+  serializeEnabledKinds,
   settleBet,
   winningKey,
 } from "./bets.ts";
@@ -15,6 +17,25 @@ import {
   wTime,
   wVolume,
 } from "./odds.ts";
+
+test("有効賭式: 空は全部オン、単勝は外せない", () => {
+  assert.deepEqual(parseEnabledKinds(null), [
+    "win",
+    "umaren",
+    "umatan",
+    "sanrenpuku",
+    "sanrentan",
+  ]);
+  assert.deepEqual(parseEnabledKinds("umaren,sanrentan"), [
+    "win",
+    "umaren",
+    "sanrentan",
+  ]);
+  assert.equal(
+    serializeEnabledKinds(["sanrentan", "win", "umaren"]),
+    "win,umaren,sanrentan",
+  );
+});
 
 test("票量側: E の半分でだいたい半分、E で 0", () => {
   assert.equal(wVolume(0, 20000), 1);

@@ -41,6 +41,43 @@ export function isBetKind(s: string): s is BetKind {
   return (BET_KINDS as string[]).includes(s);
 }
 
+export const OPTIONAL_BET_KINDS: BetKind[] = [
+  "umaren",
+  "umatan",
+  "sanrenpuku",
+  "sanrentan",
+];
+
+export const DEFAULT_ENABLED_KINDS = BET_KINDS.join(",");
+
+/** 単勝は必ず含める。空や不正は初期（全部オン） */
+export function parseEnabledKinds(raw: string | null | undefined): BetKind[] {
+  if (raw == null || !String(raw).trim()) {
+    return [...BET_KINDS];
+  }
+  const set = new Set(
+    String(raw)
+      .split(/[,、\s]+/)
+      .map((s) => s.trim())
+      .filter(isBetKind),
+  );
+  set.add("win");
+  return BET_KINDS.filter((k) => set.has(k));
+}
+
+export function serializeEnabledKinds(kinds: BetKind[]): string {
+  const set = new Set(kinds);
+  set.add("win");
+  return BET_KINDS.filter((k) => set.has(k)).join(",");
+}
+
+export function kindIsEnabled(
+  raw: string | null | undefined,
+  kind: BetKind,
+): boolean {
+  return parseEnabledKinds(raw).includes(kind);
+}
+
 /** 馬連・3連複はソート、馬単・3連単は順序維持 */
 export function normalizeSelection(
   kind: BetKind,
