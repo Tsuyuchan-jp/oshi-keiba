@@ -26,6 +26,17 @@ export const BET_KIND_LABEL: Record<BetKind, string> = {
   sanrentan: "3連単",
 };
 
+/** 投票タブ用。競馬を知らない人向けの短い説明 */
+export const BET_KIND_BLURB: Record<BetKind, string> = {
+  win: "1着になるウマ娘を1頭当てる買い方です。いちばんかんたんです。",
+  umaren: "1着と2着になる2頭を当てます。どちらが1着でもかまいません（順番は不問）。",
+  umatan: "1着と2着を、順番どおりに当てます。馬連より難しいぶん、配当は厚めになりやすいです。",
+  sanrenpuku:
+    "1〜3着に入る3頭を当てます。着順の並びは問いません。",
+  sanrentan:
+    "1着・2着・3着を、順番どおりに当てます。いちばん難しい買い方です。",
+};
+
 export function isBetKind(s: string): s is BetKind {
   return (BET_KINDS as string[]).includes(s);
 }
@@ -144,7 +155,7 @@ export function formatSelectionLabel(
 
 export type BetPayout = { kind: string; amount: number };
 
-/** 管理の全投票一覧用。公開後の結果・確定配当・メンバー目線の収支 */
+/** 管理の全投票一覧用。収支は結果公開後だけ（確定前は空） */
 export function settleBet(opts: {
   amount: number;
   refunded: boolean;
@@ -152,37 +163,38 @@ export function settleBet(opts: {
   payout: BetPayout | null;
   comboOdds: number | null;
   kindVoid: boolean | null;
-}): { result: string; odds: number | null; move: number } {
+}): { result: string; odds: number | null; move: number | null } {
   const stake = opts.amount;
   const pk = opts.payout?.kind ?? "";
+  const settled = opts.status === "published";
   if (pk === "refund" || pk === "redo" || pk === "void") {
-    return { result: "返還", odds: null, move: 0 };
+    return { result: "返還", odds: null, move: settled ? 0 : null };
   }
   if (pk === "special") {
     return {
       result: "特払い",
       odds: null,
-      move: (opts.payout?.amount ?? 0) - stake,
+      move: settled ? (opts.payout?.amount ?? 0) - stake : null,
     };
   }
   if (pk === "win") {
     return {
       result: "的中",
       odds: opts.comboOdds,
-      move: (opts.payout?.amount ?? 0) - stake,
+      move: settled ? (opts.payout?.amount ?? 0) - stake : null,
     };
   }
   if (opts.refunded) {
-    return { result: "返還", odds: null, move: 0 };
+    return { result: "返還", odds: null, move: settled ? 0 : null };
   }
-  if (opts.status === "published") {
+  if (settled) {
     return { result: "はずれ", odds: opts.comboOdds, move: -stake };
   }
   if (opts.status === "closed") {
     if (opts.kindVoid) {
-      return { result: "特払い予定", odds: null, move: -stake };
+      return { result: "特払い予定", odds: null, move: null };
     }
-    return { result: "締切", odds: opts.comboOdds, move: -stake };
+    return { result: "締切", odds: opts.comboOdds, move: null };
   }
-  return { result: "投票中", odds: null, move: -stake };
+  return { result: "投票中", odds: null, move: null };
 }

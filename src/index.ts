@@ -619,7 +619,11 @@ export default {
               kindVoid: pool?.voidSpecial ?? null,
             });
             const moveClass =
-              settled.move > 0 ? "move-plus" : settled.move < 0 ? "move-minus" : "";
+              settled.move != null && settled.move > 0
+                ? "move-plus"
+                : settled.move != null && settled.move < 0
+                  ? "move-minus"
+                  : "";
             return `<tr class="${b.refunded ? "scr" : ""}">
               <td>${escapeHtml(b.display_name)}</td>
               <td>${escapeHtml(BET_KIND_LABEL[b.kind])}</td>
@@ -895,7 +899,7 @@ export default {
                 <p class="note">
                   <a href="/admin?bets=new">新しい順</a>　
                   <a href="/admin?bets=name">名前順</a>
-                  　公開後は結果・確定配当・収支（メンバー目線）が出ます。
+                  　結果公開後に確定配当と収支（メンバー目線）が出ます。公開前の収支は空です。
                 </p>
                 <table>
                   <thead><tr><th>誰</th><th>賭式</th><th>組み合わせ</th><th>額</th><th>結果</th><th>確定配当</th><th>収支</th></tr></thead>

@@ -1,5 +1,6 @@
 import { escapeHtml } from "./http";
 import {
+  BET_KIND_BLURB,
   BET_KIND_LABEL,
   BET_KINDS,
   formatSelectionLabel,
@@ -28,8 +29,9 @@ export function formatPt(n: number): string {
   return `${n.toLocaleString("ja-JP")} スペ`;
 }
 
-/** メンバー目線の収支。増えたら＋、減ったら− */
-export function formatMove(n: number): string {
+/** メンバー目線の収支。増えたら＋、減ったら−。未確定は空 */
+export function formatMove(n: number | null): string {
+  if (n == null) return "";
   const abs = Math.abs(n).toLocaleString("ja-JP");
   if (n > 0) return `+${abs}`;
   if (n < 0) return `−${abs}`;
@@ -422,6 +424,16 @@ table.win-sheet th, table.win-sheet td { padding: .28rem .3rem; }
   color: var(--ink);
   font-weight: 700;
   border-bottom-color: var(--accent);
+}
+.bet-blurb {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: .9rem;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0 0 1rem;
+  padding: .55rem .7rem;
+  background: #f7f3ea;
+  border-left: 3px solid var(--line);
 }
 .bet-form { margin: 0 0 1.25rem; }
 .bet-form .row { margin-bottom: .55rem; }
@@ -924,7 +936,8 @@ export function betTabsHtml(active: BetKind): string {
   return `<nav class="bet-tabs">${BET_KINDS.map(
     (k) =>
       `<a href="/bet?kind=${k}" class="${k === active ? "on" : ""}">${BET_KIND_LABEL[k]}</a>`,
-  ).join("")}</nav>`;
+  ).join("")}</nav>
+  <p class="bet-blurb">${escapeHtml(BET_KIND_BLURB[active])}</p>`;
 }
 
 export function pickSelects(kind: BetKind, board: Board): string {

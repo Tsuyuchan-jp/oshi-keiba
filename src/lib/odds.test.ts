@@ -155,6 +155,28 @@ test("清算行: 的中・はずれ・特払い・返還の収支", () => {
       comboOdds: null,
       kindVoid: null,
     }),
-    { result: "返還", odds: null, move: 0 },
+    { result: "返還", odds: null, move: null },
+  );
+  assert.equal(
+    settleBet({
+      amount: 100,
+      refunded: false,
+      status: "voting",
+      payout: null,
+      comboOdds: null,
+      kindVoid: null,
+    }).move,
+    null,
+  );
+  assert.equal(
+    settleBet({
+      amount: 100,
+      refunded: false,
+      status: "closed",
+      payout: null,
+      comboOdds: 2.5,
+      kindVoid: false,
+    }).move,
+    null,
   );
 });
