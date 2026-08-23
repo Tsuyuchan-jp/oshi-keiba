@@ -2,13 +2,13 @@
 
 Neko長明さんのウマ娘メンバーシップにおける、推し活イベントレース向けの**仮想馬券（ポイント）システム**の設計・実装リポジトリです。
 
-**試運転版**（日曜ルムマ）の要件は [docs/09-trial-run.md](docs/09-trial-run.md)。本線の長期方針は Docs 01〜08。GitHub Pages は使いません。
+**試運転 MVP 本戦**（日曜ルムマ）の正本は [docs/09-trial-run.md](docs/09-trial-run.md)。本線の長期方針は Docs 01〜08。GitHub Pages は使いません。
 
 ## 読む順
 
 1. [docs/README.md](docs/README.md) — Docs の地図
 2. [docs/00-status.md](docs/00-status.md) — いま決まっていること / 未決
-3. 試運転なら [docs/09-trial-run.md](docs/09-trial-run.md)
+3. 試運転（本戦）なら [docs/09-trial-run.md](docs/09-trial-run.md)
 
 ## 運用上の絶対条件（要約）
 
@@ -35,9 +35,9 @@ npm run dev
 
 G=3000 スペ。賭式は単勝・馬連・馬単・3連複・3連単（1点買い）。Seed は単勝のみ直置き。
 
-## 手土産 URL（Cloudflare）
+## 本番 URL（Cloudflare・試運転本戦）
 
-閉じた試作です。検索に出さない前提で、URL を知っている人だけに渡します。
+閉じた試運転です。検索に出さない前提で、URL を知っている人だけに渡します。
 
 - https://oshi-keiba.tsuyuchan-jp.workers.dev/
 - 入室の共有パス: `loh`
