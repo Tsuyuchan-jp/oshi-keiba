@@ -329,26 +329,28 @@ function spread(snap: Snap): string {
   return `${Math.min(...xs).toFixed(1)}〜${Math.max(...xs).toFixed(1)}`;
 }
 
-function htmlMomentTable(runs: Run[], key: "open" | "mid" | "last" | "conf"): string {
-  const head = runs.map((r) => `<th class="num">${esc(r.p.mark)}</th>`).join("");
+function htmlPlanTable(r: Run): string {
   const body = HORSES.map((h, i) => {
-    const win = runs[0][key].horses[i].win;
-    const cls = h.finish === 1 ? "winner-row" : win <= 0 ? "quiet-row" : "";
-    const cells = runs.map((r) => `<td class="num">${fmtOdds(r[key].horses[i].odds)}</td>`).join("");
-    return `<tr class="${cls}"><td class="num">${h.sort}</td><td>${esc(h.name)}</td><td class="num">${h.strength}</td><td class="num">${h.finish}</td><td class="num">${win.toLocaleString("ja-JP")}</td>${cells}</tr>`;
+    const winLast = r.last.horses[i].win;
+    const cls = h.finish === 1 ? "winner-row" : winLast <= 0 ? "quiet-row" : "";
+    return `<tr class="${cls}"><td class="num">${h.sort}</td><td>${esc(h.name)}</td><td class="num">${h.strength}</td><td class="num">${h.finish}</td><td class="num flow">${fmtOdds(r.open.horses[i].odds)}</td><td class="num flow">${fmtOdds(r.mid.horses[i].odds)}</td><td class="num flow">${fmtOdds(r.last.horses[i].odds)}</td><td class="num flow">${fmtOdds(r.conf.horses[i].odds)}</td><td class="num">${winLast.toLocaleString("ja-JP")}</td></tr>`;
   }).join("");
   return `<table>
-    <thead><tr><th class="num">#</th><th>ウマ娘</th><th class="num">Str</th><th class="num">着</th><th class="num">単勝実票</th>${head}</tr></thead>
+    <thead><tr>
+      <th class="num">#</th><th>ウマ娘</th><th class="num">Str</th><th class="num">着</th>
+      <th class="num flow">開場</th><th class="num flow">途中</th><th class="num flow">直前</th><th class="num flow">確定</th>
+      <th class="num">単勝実票</th>
+    </tr></thead>
     <tbody>${body}</tbody>
   </table>`;
 }
 
-function mdMomentTable(runs: Run[], key: "open" | "mid" | "last" | "conf"): string {
-  const head = "| # | ウマ娘 | Str | 着 | 単勝実票 |" + runs.map((r) => ` ${r.p.mark} |`).join("");
-  const sep = "|---|---|---|---|---:|" + runs.map(() => "---:|").join("");
+function mdPlanTable(r: Run): string {
+  const head = "| # | ウマ娘 | Str | 着 | 開場 | 途中 | 直前 | 確定 | 単勝実票 |";
+  const sep = "|---|---|---|---|---:|---:|---:|---:|---:|";
   const rows = HORSES.map((h, i) => {
-    const win = runs[0][key].horses[i].win;
-    return `| ${h.sort} | ${h.name} | ${h.strength} | ${h.finish} | ${win} |${runs.map((r) => ` ${fmtOdds(r[key].horses[i].odds)} |`).join("")}`;
+    const winLast = r.last.horses[i].win;
+    return `| ${h.sort} | ${h.name} | ${h.strength} | ${h.finish} | ${fmtOdds(r.open.horses[i].odds)} | ${fmtOdds(r.mid.horses[i].odds)} | ${fmtOdds(r.last.horses[i].odds)} | ${fmtOdds(r.conf.horses[i].odds)} | ${winLast} |`;
   });
   return [head, sep, ...rows].join("\n");
 }
@@ -378,17 +380,18 @@ function main(): void {
     </tr>`)
     .join("");
 
-  const planCards = runs
+  const planFlow = runs
     .map(
-      (r) => `<article class="plan">
-      <h3>${esc(r.p.mark)} ${esc(r.p.label)}</h3>
-      <p class="meta">S=${r.p.S.toLocaleString("ja-JP")}　E=${r.p.E.toLocaleString("ja-JP")}　w時下限=${r.p.floor}　λ=${r.p.lambda}</p>
-      <p><strong>優先:</strong> ${esc(r.p.keep)}</p>
-      <p><strong>諦める:</strong> ${esc(r.p.drop)}</p>
-      <p class="note">直前 w=${r.last.w.toFixed(2)}（w時 ${r.last.wT.toFixed(2)} × w票 ${r.last.wV.toFixed(2)}）　TV=${r.last.tv.toLocaleString("ja-JP")}　Seed ${(r.last.seedShare * 100).toFixed(0)}%</p>
-    </article>`,
+      (r) => `<section id="plan-${r.p.id}">
+    <h2>${esc(r.p.mark)} ${esc(r.p.label)}</h2>
+    <p class="meta">S=${r.p.S.toLocaleString("ja-JP")}　E=${r.p.E.toLocaleString("ja-JP")}　w時下限=${r.p.floor}　λ=${r.p.lambda}</p>
+    <p><strong>優先:</strong> ${esc(r.p.keep)}</p>
+    <p><strong>諦める:</strong> ${esc(r.p.drop)}</p>
+    <p class="note">開場 → 途中（${jst(MID_AT)}・14番へ単勝3000の直後）→ 直前 → 確定。直前 w=${r.last.w.toFixed(2)}　Seed ${(r.last.seedShare * 100).toFixed(0)}%　TV=${r.last.tv.toLocaleString("ja-JP")}</p>
+    ${htmlPlanTable(r)}
+  </section>`,
     )
-    .join("");
+    .join("\n");
 
   const html = `<!DOCTYPE html>
 <html lang="ja">
@@ -400,7 +403,7 @@ function main(): void {
   :root { --bg:#f4efe4; --paper:#fffdf7; --ink:#1c2416; --muted:#5c6754; --line:#d9d0bd; --accent:#3d5a2c; }
   * { box-sizing: border-box; }
   body { margin:0; background:var(--bg); color:var(--ink); font-family:"Yu Mincho","YuMincho","Hiragino Mincho ProN",serif; line-height:1.65; }
-  .wrap { max-width: 1180px; margin:0 auto; padding:2rem 1.2rem 4rem; }
+  .wrap { max-width: 1280px; margin:0 auto; padding:2rem 1.2rem 4rem; }
   header.hero h1 { font-size:1.5rem; margin:0 0 .4rem; }
   header.hero p, .note { color:var(--muted); }
   .kicker { font-family:"Yu Gothic","YuGothic",sans-serif; font-size:.82rem; letter-spacing:.12em; color:var(--accent); }
@@ -416,6 +419,7 @@ function main(): void {
   th, td { border-bottom:1px solid var(--line); padding:.38rem .32rem; text-align:left; vertical-align:top; }
   th { color:var(--muted); font-weight:600; font-size:.72rem; }
   td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  th.flow, td.flow { background:#f7f4ea; }
   tr.winner-row { background:#eef5ee; }
   tr.quiet-row { color:var(--muted); }
   code { font-family: ui-monospace, monospace; font-size:.85em; }
@@ -428,16 +432,16 @@ function main(): void {
   <header class="hero">
     <h1>第2回向け 仮値5案</h1>
     <p>式は共通。第1回の実票（単勝＋連勝）を当てはめた再生。F なし。確定は単勝実票のみ。基準 S は <strong>50000</strong>（5000 は誤記のため、このファイルで差し替え済み）。</p>
-    <p>途中は ${jst(MID_AT)}（14番へ単勝 3000 の直後）。次回の持ち点想定は 14×3000＋15840＝${chipsNext.toLocaleString("ja-JP")} スペ（E の読み用。票そのものは第1回のまま）。</p>
+    <p>各案の表は左から <strong>開場 → 途中 → 直前 → 確定</strong>。途中は ${jst(MID_AT)}（14番へ単勝 3000 の直後）。次回の持ち点想定は 14×3000＋15840＝${chipsNext.toLocaleString("ja-JP")} スペ（E の読み用。票そのものは第1回のまま）。</p>
   </header>
   <nav class="toc">
     <a href="#formula">式</a>
-    <a href="#plans">5案</a>
     <a href="#metrics">直前の要約</a>
-    <a href="#open">開場</a>
-    <a href="#mid">途中</a>
-    <a href="#last">直前</a>
-    <a href="#conf">確定</a>
+    <a href="#plan-a">A</a>
+    <a href="#plan-b">B</a>
+    <a href="#plan-c">C</a>
+    <a href="#plan-d">D</a>
+    <a href="#plan-e">E</a>
   </nav>
 
   <section id="formula">
@@ -447,11 +451,6 @@ function main(): void {
     <p>連勝 600 の割り振り（λ=1 のとき）: 馬連 300+300 / 馬単 400+200 / 3連複 200×3 / 3連単 300+200+100</p>
     <p><code>Display_i = Seed_i × w + 単勝Real_i + Imputed_i</code>（投票中）　確定・払いは単勝 Real のみ。Seed は Strength 比（α=1）。</p>
     <p class="note">第1回再生の直前 TV（λ=1）は単勝 ${last0.winTotal.toLocaleString("ja-JP")} ＋連勝 ${last0.exoticTotal.toLocaleString("ja-JP")}。開場の単勝オッズは S に依らず Strength 比だけ。</p>
-  </section>
-
-  <section id="plans">
-    <h2>各案の狙い</h2>
-    <div class="plans">${planCards}</div>
   </section>
 
   <section id="metrics">
@@ -466,26 +465,7 @@ function main(): void {
     </table>
   </section>
 
-  <section id="open">
-    <h2>開場</h2>
-    <p class="note">${jst(EVENT.openedAt)}　票ゼロ。α=1 なので5案とも同じ。</p>
-    ${htmlMomentTable(runs, "open")}
-  </section>
-  <section id="mid">
-    <h2>途中（14番全額の直後）</h2>
-    <p class="note">${jst(MID_AT)}　ここから案の差が出る。</p>
-    ${htmlMomentTable(runs, "mid")}
-  </section>
-  <section id="last">
-    <h2>締切直前</h2>
-    <p class="note">${jst(EVENT.closesAt)} の直前。参考（Seed＋単勝＋Imputed）。</p>
-    ${htmlMomentTable(runs, "last")}
-  </section>
-  <section id="conf">
-    <h2>確定</h2>
-    <p class="note">単勝実票のみ。5案とも同じ。票なしは —。</p>
-    ${htmlMomentTable(runs, "conf")}
-  </section>
+  ${planFlow}
 </div>
 </body>
 </html>
@@ -518,7 +498,7 @@ Display_i = Seed_i × w + 単勝Real_i + Imputed_i   # 投票中
 
 第1回再生の直前（λ=1）: 単勝 ${last0.winTotal.toLocaleString("ja-JP")}、連勝 ${last0.exoticTotal.toLocaleString("ja-JP")}。
 
-## 5案
+## 各案の流れ（開場 → 途中 → 直前 → 確定）
 
 ${runs
   .map(
@@ -528,25 +508,11 @@ ${runs
 - 優先: ${r.p.keep}
 - 諦める: ${r.p.drop}
 - 直前 w=${r.last.w.toFixed(2)}、Seed ${(r.last.seedShare * 100).toFixed(0)}%、幅 ${spread(r.last)}、単勝1000〜の直前→確定 ${gapBacked(r.last, r.conf)} 倍
+
+${mdPlanTable(r)}
 `,
   )
   .join("\n")}
-
-## 開場
-
-${mdMomentTable(runs, "open")}
-
-## 途中（14番全額の直後）
-
-${mdMomentTable(runs, "mid")}
-
-## 締切直前
-
-${mdMomentTable(runs, "last")}
-
-## 確定
-
-${mdMomentTable(runs, "conf")}
 `;
 
   mkdirSync(REPORT_DIR, { recursive: true });
