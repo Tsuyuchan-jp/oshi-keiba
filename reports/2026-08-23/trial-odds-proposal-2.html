@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第2回向け 仮値5案 · 設定比較</title>
+<style>
+  :root { --bg:#f4efe4; --paper:#fffdf7; --ink:#1c2416; --muted:#5c6754; --line:#d9d0bd; --accent:#3d5a2c; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Yu Mincho","YuMincho","Hiragino Mincho ProN",serif; line-height:1.65; }
+  .wrap { max-width: 1180px; margin:0 auto; padding:2rem 1.2rem 4rem; }
+  header.hero h1 { font-size:1.5rem; margin:0 0 .4rem; }
+  header.hero p, .note { color:var(--muted); }
+  .kicker { font-family:"Yu Gothic","YuGothic",sans-serif; font-size:.82rem; letter-spacing:.12em; color:var(--accent); }
+  nav.toc { display:flex; flex-wrap:wrap; gap:.5rem 1rem; margin:1.4rem 0 2rem; font-family:"Yu Gothic","YuGothic",sans-serif; font-size:.88rem; }
+  nav.toc a { color:var(--accent); }
+  section { background:var(--paper); border:1px solid var(--line); padding:1.3rem 1.2rem 1.5rem; margin:0 0 1.2rem; }
+  h2 { font-size:1.15rem; margin:0 0 .8rem; }
+  h3 { font-size:1rem; margin:0 0 .35rem; }
+  .plans { display:grid; gap:.8rem; }
+  article.plan { border:1px solid var(--line); padding:.8rem 1rem; background:#fff; }
+  .meta { font-family:"Yu Gothic","YuGothic",sans-serif; font-size:.85rem; color:var(--muted); margin:.2rem 0 .5rem; }
+  table { width:100%; border-collapse:collapse; font-family:"Yu Gothic","YuGothic",sans-serif; font-size:.82rem; }
+  th, td { border-bottom:1px solid var(--line); padding:.38rem .32rem; text-align:left; vertical-align:top; }
+  th { color:var(--muted); font-weight:600; font-size:.72rem; }
+  td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  tr.winner-row { background:#eef5ee; }
+  tr.quiet-row { color:var(--muted); }
+  code { font-family: ui-monospace, monospace; font-size:.85em; }
+  @media print { body { background:#fff; } section { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kicker">内部レポート · メンバーには出さない</p>
+  <header class="hero">
+    <h1>第2回向け 仮値5案</h1>
+    <p>式は共通。第1回の実票（単勝＋連勝）を当てはめた再生。F なし。確定は単勝実票のみ。</p>
+    <p>途中は 8/23 17:45（14番へ単勝 3000 の直後）。次回の持ち点想定は 14×3000＋15840＝57,840 スペ（E の読み用。票そのものは第1回のまま）。</p>
+  </header>
+  <nav class="toc">
+    <a href="#formula">式</a>
+    <a href="#plans">5案</a>
+    <a href="#metrics">直前の要約</a>
+    <a href="#open">開場</a>
+    <a href="#mid">途中</a>
+    <a href="#last">直前</a>
+    <a href="#conf">確定</a>
+  </nav>
+
+  <section id="formula">
+    <h2>次回の計算式（この比較の前提）</h2>
+    <p><code>TV = 単勝実票合計 + λ × 連勝実票合計</code>（返還済みは含めない）</p>
+    <p><code>w時 = 下限 + (1 − 下限) × 残り^1</code>　<code>w票 = max(0, 1 − TV / E)</code>　<code>w = w時 × w票</code></p>
+    <p>連勝 600 の割り振り（λ=1 のとき）: 馬連 300+300 / 馬単 400+200 / 3連複 200×3 / 3連単 300+200+100</p>
+    <p><code>Display_i = Seed_i × w + 単勝Real_i + Imputed_i</code>（投票中）　確定・払いは単勝 Real のみ。Seed は Strength 比（α=1）。</p>
+    <p class="note">第1回再生の直前 TV（λ=1）は単勝 19,800 ＋連勝 17,800。開場の単勝オッズは S に依らず Strength 比だけ。</p>
+  </section>
+
+  <section id="plans">
+    <h2>各案の狙い</h2>
+    <div class="plans"><article class="plan">
+      <h3>A 基準</h3>
+      <p class="meta">S=5,000　E=100,000　w時下限=0.8　λ=1</p>
+      <p><strong>優先:</strong> 票（単勝＋連勝）がすぐ板に出る。E は次回の持ち点総量（約 5.8 万）より厚く、消化が進んでも w が急に 0 にならない。第1回実票では直前 w≈0.5。</p>
+      <p><strong>諦める:</strong> S が 3000 と同規模なので、全額単勝の瞬間跳ねは大きい。作者並びは開場以外ほぼ効かない。</p>
+      <p class="note">直前 w=0.50（w時 0.80 × w票 0.62）　TV=37,600　Seed 6%</p>
+    </article><article class="plan">
+      <h3>B S だけ厚く</h3>
+      <p class="meta">S=25,000　E=100,000　w時下限=0.8　λ=1</p>
+      <p><strong>優先:</strong> E・下限・λ は基準のまま。3000 が山の約 1/8 になり、跳ねを抑える。w の進みは A と同じ。</p>
+      <p><strong>諦める:</strong> 序盤〜中盤は作者並びが A より残る。票の見え方は鈍い。</p>
+      <p class="note">直前 w=0.50（w時 0.80 × w票 0.62）　TV=37,600　Seed 25%</p>
+    </article><article class="plan">
+      <h3>C E を総量寄りに</h3>
+      <p class="meta">S=5,000　E=60,000　w時下限=0.8　λ=1</p>
+      <p><strong>優先:</strong> E を次回持ち点総量（57840）近くにする。票が乗ると Seed が早く薄まり、終盤は場の票が本体。</p>
+      <p><strong>諦める:</strong> 直前 w=0.5 は諦める（第1回票だと 0.3 前後）。終盤の 3000 は分母の Seed が減って跳ねやすい。</p>
+      <p class="note">直前 w=0.30（w時 0.80 × w票 0.37）　TV=37,600　Seed 4%</p>
+    </article><article class="plan">
+      <h3>D λ=0.5</h3>
+      <p class="meta">S=5,000　E=100,000　w時下限=0.8　λ=0.5</p>
+      <p><strong>優先:</strong> 連勝は単勝板に半額だけ漏らす。単勝全額勢の板が、連勝勢に食われすぎない。</p>
+      <p><strong>諦める:</strong> 連勝に厚い週は「場の総意」が不足。TV が小さいので直前 w は 0.5 より残る。ミックスで w が想定からずれる（以前の懸念）。</p>
+      <p class="note">直前 w=0.57（w時 0.80 × w票 0.71）　TV=28,700　Seed 9%</p>
+    </article><article class="plan">
+      <h3>E 時計では落とさない</h3>
+      <p class="meta">S=5,000　E=100,000　w時下限=0.999　λ=1</p>
+      <p><strong>優先:</strong> w は票量だけ。閑散でも時間だけで作者が薄まらない。S は基準のまま票はすぐ見える。</p>
+      <p><strong>諦める:</strong> 直前 w=0.5 より Seed が残る（第1回票なら w票≈0.62）。時間演出はない。</p>
+      <p class="note">直前 w=0.62（w時 1.00 × w票 0.62）　TV=37,600　Seed 8%</p>
+    </article></div>
+  </section>
+
+  <section id="metrics">
+    <h2>直前の要約（第1回実票）</h2>
+    <table>
+      <thead><tr>
+        <th>案</th><th class="num">S</th><th class="num">E</th><th class="num">下限</th><th class="num">λ</th>
+        <th class="num">直前 w</th><th class="num">直前 Seed%</th><th class="num">直前の幅</th>
+        <th class="num">直前→確定<br>（単勝1000〜）</th>
+      </tr></thead>
+      <tbody><tr>
+      <td>A 基準</td>
+      <td class="num">5,000</td>
+      <td class="num">100,000</td>
+      <td class="num">0.8</td>
+      <td class="num">1</td>
+      <td class="num">0.50</td>
+      <td class="num">6%</td>
+      <td class="num">3.2〜1486.5</td>
+      <td class="num">3.3</td>
+    </tr><tr>
+      <td>B S だけ厚く</td>
+      <td class="num">25,000</td>
+      <td class="num">100,000</td>
+      <td class="num">0.8</td>
+      <td class="num">1</td>
+      <td class="num">0.50</td>
+      <td class="num">25%</td>
+      <td class="num">3.7〜371.3</td>
+      <td class="num">4.6</td>
+    </tr><tr>
+      <td>C E を総量寄りに</td>
+      <td class="num">5,000</td>
+      <td class="num">60,000</td>
+      <td class="num">0.8</td>
+      <td class="num">1</td>
+      <td class="num">0.30</td>
+      <td class="num">4%</td>
+      <td class="num">3.1〜2422.4</td>
+      <td class="num">3.2</td>
+    </tr><tr>
+      <td>D λ=0.5</td>
+      <td class="num">5,000</td>
+      <td class="num">100,000</td>
+      <td class="num">0.8</td>
+      <td class="num">0.5</td>
+      <td class="num">0.57</td>
+      <td class="num">9%</td>
+      <td class="num">3.4〜1023.7</td>
+      <td class="num">2.0</td>
+    </tr><tr>
+      <td>E 時計では落とさない</td>
+      <td class="num">5,000</td>
+      <td class="num">100,000</td>
+      <td class="num">0.999</td>
+      <td class="num">1</td>
+      <td class="num">0.62</td>
+      <td class="num">8%</td>
+      <td class="num">3.2〜1208.8</td>
+      <td class="num">3.4</td>
+    </tr></tbody>
+    </table>
+  </section>
+
+  <section id="open">
+    <h2>開場</h2>
+    <p class="note">8/23 10:10　票ゼロ。α=1 なので5案とも同じ。</p>
+    <table>
+    <thead><tr><th class="num">#</th><th>ウマ娘</th><th class="num">Str</th><th class="num">着</th><th class="num">単勝実票</th><th class="num">A</th><th class="num">B</th><th class="num">C</th><th class="num">D</th><th class="num">E</th></tr></thead>
+    <tbody><tr class="quiet-row"><td class="num">1</td><td>アドマイヤグルーヴ（つゆちゃん）</td><td class="num">1</td><td class="num">9</td><td class="num">0</td><td class="num">277.6</td><td class="num">277.6</td><td class="num">277.6</td><td class="num">277.6</td><td class="num">277.6</td></tr><tr class="quiet-row"><td class="num">2</td><td>アーモンドアイ（あさくらりえ）</td><td class="num">3</td><td class="num">13</td><td class="num">0</td><td class="num">92.5</td><td class="num">92.5</td><td class="num">92.5</td><td class="num">92.5</td><td class="num">92.5</td></tr><tr class="quiet-row"><td class="num">3</td><td>スティルインラブ（Raiko）</td><td class="num">18</td><td class="num">8</td><td class="num">0</td><td class="num">15.4</td><td class="num">15.4</td><td class="num">15.4</td><td class="num">15.4</td><td class="num">15.4</td></tr><tr class="quiet-row"><td class="num">4</td><td>アーモンドアイ（だいだい）</td><td class="num">19</td><td class="num">12</td><td class="num">0</td><td class="num">14.6</td><td class="num">14.6</td><td class="num">14.6</td><td class="num">14.6</td><td class="num">14.6</td></tr><tr class="winner-row"><td class="num">5</td><td>セイウンスカイ（GEDO）</td><td class="num">20</td><td class="num">1</td><td class="num">0</td><td class="num">13.9</td><td class="num">13.9</td><td class="num">13.9</td><td class="num">13.9</td><td class="num">13.9</td></tr><tr class="quiet-row"><td class="num">6</td><td>セイウンスカイ（しょーじ）</td><td class="num">21</td><td class="num">3</td><td class="num">0</td><td class="num">13.2</td><td class="num">13.2</td><td class="num">13.2</td><td class="num">13.2</td><td class="num">13.2</td></tr><tr class="quiet-row"><td class="num">7</td><td>アーモンドアイ（陸カヤック）</td><td class="num">22</td><td class="num">14</td><td class="num">0</td><td class="num">12.6</td><td class="num">12.6</td><td class="num">12.6</td><td class="num">12.6</td><td class="num">12.6</td></tr><tr class="quiet-row"><td class="num">8</td><td>カツラギエース（みはるん）</td><td class="num">24</td><td class="num">4</td><td class="num">0</td><td class="num">11.6</td><td class="num">11.6</td><td class="num">11.6</td><td class="num">11.6</td><td class="num">11.6</td></tr><tr class="quiet-row"><td class="num">9</td><td>アーモンドアイ（K4m1y4n）</td><td class="num">25</td><td class="num">11</td><td class="num">0</td><td class="num">11.1</td><td class="num">11.1</td><td class="num">11.1</td><td class="num">11.1</td><td class="num">11.1</td></tr><tr class="quiet-row"><td class="num">10</td><td>セイウンスカイ（シラオリ）</td><td class="num">26</td><td class="num">16</td><td class="num">0</td><td class="num">10.7</td><td class="num">10.7</td><td class="num">10.7</td><td class="num">10.7</td><td class="num">10.7</td></tr><tr class="quiet-row"><td class="num">11</td><td>セイウンスカイ（かきお）</td><td class="num">28</td><td class="num">2</td><td class="num">0</td><td class="num">9.9</td><td class="num">9.9</td><td class="num">9.9</td><td class="num">9.9</td><td class="num">9.9</td></tr><tr class="quiet-row"><td class="num">12</td><td>セイウンスカイ（だい）</td><td class="num">29</td><td class="num">6</td><td class="num">0</td><td class="num">9.6</td><td class="num">9.6</td><td class="num">9.6</td><td class="num">9.6</td><td class="num">9.6</td></tr><tr class="quiet-row"><td class="num">13</td><td>カツラギエース（b-men）</td><td class="num">30</td><td class="num">7</td><td class="num">0</td><td class="num">9.3</td><td class="num">9.3</td><td class="num">9.3</td><td class="num">9.3</td><td class="num">9.3</td></tr><tr class="quiet-row"><td class="num">14</td><td>セイウンスカイ（neko）</td><td class="num">31</td><td class="num">5</td><td class="num">0</td><td class="num">9.0</td><td class="num">9.0</td><td class="num">9.0</td><td class="num">9.0</td><td class="num">9.0</td></tr><tr class="quiet-row"><td class="num">15</td><td>アーモンドアイ（ゆっぴー）</td><td class="num">32</td><td class="num">10</td><td class="num">0</td><td class="num">8.7</td><td class="num">8.7</td><td class="num">8.7</td><td class="num">8.7</td><td class="num">8.7</td></tr><tr class="quiet-row"><td class="num">16</td><td>セイウンスカイ（tandm）</td><td class="num">18</td><td class="num">15</td><td class="num">0</td><td class="num">15.4</td><td class="num">15.4</td><td class="num">15.4</td><td class="num">15.4</td><td class="num">15.4</td></tr></tbody>
+  </table>
+  </section>
+  <section id="mid">
+    <h2>途中（14番全額の直後）</h2>
+    <p class="note">8/23 17:45　ここから案の差が出る。</p>
+    <table>
+    <thead><tr><th class="num">#</th><th>ウマ娘</th><th class="num">Str</th><th class="num">着</th><th class="num">単勝実票</th><th class="num">A</th><th class="num">B</th><th class="num">C</th><th class="num">D</th><th class="num">E</th></tr></thead>
+    <tbody><tr class="quiet-row"><td class="num">1</td><td>アドマイヤグルーヴ（つゆちゃん）</td><td class="num">1</td><td class="num">9</td><td class="num">0</td><td class="num">3091.2</td><td class="num">840.3</td><td class="num">4216.6</td><td class="num">2266.4</td><td class="num">2658.9</td></tr><tr class="quiet-row"><td class="num">2</td><td>アーモンドアイ（あさくらりえ）</td><td class="num">3</td><td class="num">13</td><td class="num">0</td><td class="num">1030.4</td><td class="num">280.1</td><td class="num">1405.5</td><td class="num">755.5</td><td class="num">886.3</td></tr><tr class=""><td class="num">3</td><td>スティルインラブ（Raiko）</td><td class="num">18</td><td class="num">8</td><td class="num">1,400</td><td class="num">11.3</td><td class="num">12.1</td><td class="num">11.2</td><td class="num">10.8</td><td class="num">11.3</td></tr><tr class="quiet-row"><td class="num">4</td><td>アーモンドアイ（だいだい）</td><td class="num">19</td><td class="num">12</td><td class="num">0</td><td class="num">162.7</td><td class="num">44.2</td><td class="num">221.9</td><td class="num">119.3</td><td class="num">139.9</td></tr><tr class="winner-row"><td class="num">5</td><td>セイウンスカイ（GEDO）</td><td class="num">20</td><td class="num">1</td><td class="num">3,000</td><td class="num">6.7</td><td class="num">7.8</td><td class="num">6.6</td><td class="num">6.0</td><td class="num">6.8</td></tr><tr class=""><td class="num">6</td><td>セイウンスカイ（しょーじ）</td><td class="num">21</td><td class="num">3</td><td class="num">100</td><td class="num">94.5</td><td class="num">36.0</td><td class="num">112.7</td><td class="num">71.5</td><td class="num">86.0</td></tr><tr class="quiet-row"><td class="num">7</td><td>アーモンドアイ（陸カヤック）</td><td class="num">22</td><td class="num">14</td><td class="num">0</td><td class="num">140.5</td><td class="num">38.2</td><td class="num">191.7</td><td class="num">103.0</td><td class="num">120.9</td></tr><tr class="quiet-row"><td class="num">8</td><td>カツラギエース（みはるん）</td><td class="num">24</td><td class="num">4</td><td class="num">0</td><td class="num">128.8</td><td class="num">35.0</td><td class="num">175.7</td><td class="num">94.4</td><td class="num">110.8</td></tr><tr class=""><td class="num">9</td><td>アーモンドアイ（K4m1y4n）</td><td class="num">25</td><td class="num">11</td><td class="num">500</td><td class="num">11.2</td><td class="num">11.1</td><td class="num">11.2</td><td class="num">13.6</td><td class="num">11.2</td></tr><tr class="quiet-row"><td class="num">10</td><td>セイウンスカイ（シラオリ）</td><td class="num">26</td><td class="num">16</td><td class="num">0</td><td class="num">118.9</td><td class="num">32.3</td><td class="num">162.2</td><td class="num">87.2</td><td class="num">102.3</td></tr><tr class=""><td class="num">11</td><td>セイウンスカイ（かきお）</td><td class="num">28</td><td class="num">2</td><td class="num">3,000</td><td class="num">5.5</td><td class="num">6.2</td><td class="num">5.4</td><td class="num">5.2</td><td class="num">5.5</td></tr><tr class="quiet-row"><td class="num">12</td><td>セイウンスカイ（だい）</td><td class="num">29</td><td class="num">6</td><td class="num">0</td><td class="num">21.1</td><td class="num">16.0</td><td class="num">21.8</td><td class="num">27.5</td><td class="num">20.7</td></tr><tr class=""><td class="num">13</td><td>カツラギエース（b-men）</td><td class="num">30</td><td class="num">7</td><td class="num">4,500</td><td class="num">3.1</td><td class="num">3.7</td><td class="num">3.0</td><td class="num">3.2</td><td class="num">3.1</td></tr><tr class=""><td class="num">14</td><td>セイウンスカイ（neko）</td><td class="num">31</td><td class="num">5</td><td class="num">4,000</td><td class="num">3.5</td><td class="num">4.1</td><td class="num">3.4</td><td class="num">3.6</td><td class="num">3.5</td></tr><tr class="quiet-row"><td class="num">15</td><td>アーモンドアイ（ゆっぴー）</td><td class="num">32</td><td class="num">10</td><td class="num">0</td><td class="num">31.4</td><td class="num">18.6</td><td class="num">33.7</td><td class="num">36.4</td><td class="num">30.1</td></tr><tr class="quiet-row"><td class="num">16</td><td>セイウンスカイ（tandm）</td><td class="num">18</td><td class="num">15</td><td class="num">0</td><td class="num">171.7</td><td class="num">46.7</td><td class="num">234.3</td><td class="num">125.9</td><td class="num">147.7</td></tr></tbody>
+  </table>
+  </section>
+  <section id="last">
+    <h2>締切直前</h2>
+    <p class="note">8/23 20:00 の直前。参考（Seed＋単勝＋Imputed）。</p>
+    <table>
+    <thead><tr><th class="num">#</th><th>ウマ娘</th><th class="num">Str</th><th class="num">着</th><th class="num">単勝実票</th><th class="num">A</th><th class="num">B</th><th class="num">C</th><th class="num">D</th><th class="num">E</th></tr></thead>
+    <tbody><tr class=""><td class="num">1</td><td>アドマイヤグルーヴ（つゆちゃん）</td><td class="num">1</td><td class="num">9</td><td class="num">1,000</td><td class="num">31.8</td><td class="num">38.7</td><td class="num">31.1</td><td class="num">25.0</td><td class="num">32.3</td></tr><tr class="quiet-row"><td class="num">2</td><td>アーモンドアイ（あさくらりえ）</td><td class="num">3</td><td class="num">13</td><td class="num">0</td><td class="num">1486.5</td><td class="num">371.3</td><td class="num">2422.4</td><td class="num">1023.7</td><td class="num">1208.8</td></tr><tr class=""><td class="num">3</td><td>スティルインラブ（Raiko）</td><td class="num">18</td><td class="num">8</td><td class="num">2,400</td><td class="num">9.7</td><td class="num">10.5</td><td class="num">9.6</td><td class="num">8.6</td><td class="num">9.7</td></tr><tr class="quiet-row"><td class="num">4</td><td>アーモンドアイ（だいだい）</td><td class="num">19</td><td class="num">12</td><td class="num">0</td><td class="num">234.7</td><td class="num">58.6</td><td class="num">382.5</td><td class="num">161.6</td><td class="num">190.9</td></tr><tr class="winner-row"><td class="num">5</td><td>セイウンスカイ（GEDO）</td><td class="num">20</td><td class="num">1</td><td class="num">3,000</td><td class="num">7.6</td><td class="num">8.3</td><td class="num">7.5</td><td class="num">6.8</td><td class="num">7.6</td></tr><tr class=""><td class="num">6</td><td>セイウンスカイ（しょーじ）</td><td class="num">21</td><td class="num">3</td><td class="num">100</td><td class="num">127.8</td><td class="num">46.8</td><td class="num">164.3</td><td class="num">92.6</td><td class="num">112.9</td></tr><tr class="quiet-row"><td class="num">7</td><td>アーモンドアイ（陸カヤック）</td><td class="num">22</td><td class="num">14</td><td class="num">0</td><td class="num">202.7</td><td class="num">50.6</td><td class="num">330.3</td><td class="num">139.6</td><td class="num">164.8</td></tr><tr class=""><td class="num">8</td><td>カツラギエース（みはるん）</td><td class="num">24</td><td class="num">4</td><td class="num">300</td><td class="num">52.9</td><td class="num">30.9</td><td class="num">58.3</td><td class="num">44.8</td><td class="num">50.2</td></tr><tr class=""><td class="num">9</td><td>アーモンドアイ（K4m1y4n）</td><td class="num">25</td><td class="num">11</td><td class="num">1,500</td><td class="num">9.6</td><td class="num">9.9</td><td class="num">9.6</td><td class="num">10.0</td><td class="num">9.7</td></tr><tr class="quiet-row"><td class="num">10</td><td>セイウンスカイ（シラオリ）</td><td class="num">26</td><td class="num">16</td><td class="num">0</td><td class="num">171.5</td><td class="num">42.8</td><td class="num">279.5</td><td class="num">118.1</td><td class="num">139.5</td></tr><tr class=""><td class="num">11</td><td>セイウンスカイ（かきお）</td><td class="num">28</td><td class="num">2</td><td class="num">3,000</td><td class="num">5.3</td><td class="num">5.8</td><td class="num">5.2</td><td class="num">5.4</td><td class="num">5.3</td></tr><tr class="quiet-row"><td class="num">12</td><td>セイウンスカイ（だい）</td><td class="num">29</td><td class="num">6</td><td class="num">0</td><td class="num">14.2</td><td class="num">13.0</td><td class="num">14.4</td><td class="num">20.0</td><td class="num">14.1</td></tr><tr class=""><td class="num">13</td><td>カツラギエース（b-men）</td><td class="num">30</td><td class="num">7</td><td class="num">4,500</td><td class="num">3.2</td><td class="num">3.7</td><td class="num">3.1</td><td class="num">3.4</td><td class="num">3.2</td></tr><tr class=""><td class="num">14</td><td>セイウンスカイ（neko）</td><td class="num">31</td><td class="num">5</td><td class="num">4,000</td><td class="num">4.3</td><td class="num">4.8</td><td class="num">4.2</td><td class="num">4.3</td><td class="num">4.3</td></tr><tr class="quiet-row"><td class="num">15</td><td>アーモンドアイ（ゆっぴー）</td><td class="num">32</td><td class="num">10</td><td class="num">0</td><td class="num">40.3</td><td class="num">23.3</td><td class="num">44.4</td><td class="num">46.2</td><td class="num">38.1</td></tr><tr class="quiet-row"><td class="num">16</td><td>セイウンスカイ（tandm）</td><td class="num">18</td><td class="num">15</td><td class="num">0</td><td class="num">247.7</td><td class="num">61.9</td><td class="num">403.7</td><td class="num">170.6</td><td class="num">201.5</td></tr></tbody>
+  </table>
+  </section>
+  <section id="conf">
+    <h2>確定</h2>
+    <p class="note">単勝実票のみ。5案とも同じ。票なしは —。</p>
+    <table>
+    <thead><tr><th class="num">#</th><th>ウマ娘</th><th class="num">Str</th><th class="num">着</th><th class="num">単勝実票</th><th class="num">A</th><th class="num">B</th><th class="num">C</th><th class="num">D</th><th class="num">E</th></tr></thead>
+    <tbody><tr class=""><td class="num">1</td><td>アドマイヤグルーヴ（つゆちゃん）</td><td class="num">1</td><td class="num">9</td><td class="num">1,000</td><td class="num">15.8</td><td class="num">15.8</td><td class="num">15.8</td><td class="num">15.8</td><td class="num">15.8</td></tr><tr class="quiet-row"><td class="num">2</td><td>アーモンドアイ（あさくらりえ）</td><td class="num">3</td><td class="num">13</td><td class="num">0</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr><tr class=""><td class="num">3</td><td>スティルインラブ（Raiko）</td><td class="num">18</td><td class="num">8</td><td class="num">2,400</td><td class="num">6.6</td><td class="num">6.6</td><td class="num">6.6</td><td class="num">6.6</td><td class="num">6.6</td></tr><tr class="quiet-row"><td class="num">4</td><td>アーモンドアイ（だいだい）</td><td class="num">19</td><td class="num">12</td><td class="num">0</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr><tr class="winner-row"><td class="num">5</td><td>セイウンスカイ（GEDO）</td><td class="num">20</td><td class="num">1</td><td class="num">3,000</td><td class="num">5.3</td><td class="num">5.3</td><td class="num">5.3</td><td class="num">5.3</td><td class="num">5.3</td></tr><tr class=""><td class="num">6</td><td>セイウンスカイ（しょーじ）</td><td class="num">21</td><td class="num">3</td><td class="num">100</td><td class="num">158.4</td><td class="num">158.4</td><td class="num">158.4</td><td class="num">158.4</td><td class="num">158.4</td></tr><tr class="quiet-row"><td class="num">7</td><td>アーモンドアイ（陸カヤック）</td><td class="num">22</td><td class="num">14</td><td class="num">0</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr><tr class=""><td class="num">8</td><td>カツラギエース（みはるん）</td><td class="num">24</td><td class="num">4</td><td class="num">300</td><td class="num">52.8</td><td class="num">52.8</td><td class="num">52.8</td><td class="num">52.8</td><td class="num">52.8</td></tr><tr class=""><td class="num">9</td><td>アーモンドアイ（K4m1y4n）</td><td class="num">25</td><td class="num">11</td><td class="num">1,500</td><td class="num">10.6</td><td class="num">10.6</td><td class="num">10.6</td><td class="num">10.6</td><td class="num">10.6</td></tr><tr class="quiet-row"><td class="num">10</td><td>セイウンスカイ（シラオリ）</td><td class="num">26</td><td class="num">16</td><td class="num">0</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr><tr class=""><td class="num">11</td><td>セイウンスカイ（かきお）</td><td class="num">28</td><td class="num">2</td><td class="num">3,000</td><td class="num">5.3</td><td class="num">5.3</td><td class="num">5.3</td><td class="num">5.3</td><td class="num">5.3</td></tr><tr class="quiet-row"><td class="num">12</td><td>セイウンスカイ（だい）</td><td class="num">29</td><td class="num">6</td><td class="num">0</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr><tr class=""><td class="num">13</td><td>カツラギエース（b-men）</td><td class="num">30</td><td class="num">7</td><td class="num">4,500</td><td class="num">3.5</td><td class="num">3.5</td><td class="num">3.5</td><td class="num">3.5</td><td class="num">3.5</td></tr><tr class=""><td class="num">14</td><td>セイウンスカイ（neko）</td><td class="num">31</td><td class="num">5</td><td class="num">4,000</td><td class="num">4.0</td><td class="num">4.0</td><td class="num">4.0</td><td class="num">4.0</td><td class="num">4.0</td></tr><tr class="quiet-row"><td class="num">15</td><td>アーモンドアイ（ゆっぴー）</td><td class="num">32</td><td class="num">10</td><td class="num">0</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr><tr class="quiet-row"><td class="num">16</td><td>セイウンスカイ（tandm）</td><td class="num">18</td><td class="num">15</td><td class="num">0</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr></tbody>
+  </table>
+  </section>
+</div>
+</body>
+</html>

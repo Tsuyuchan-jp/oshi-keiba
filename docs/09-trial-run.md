@@ -224,4 +224,4 @@ Neko さんの note の 3連単予想は置き換えない。
 
 ## 試運転後のオッズ知見
 
-終了後に票を時系列再生したレポートは [`reports/2026-08-23/`](../reports/2026-08-23/)（AI 用 `trial-odds-report.md`、閲覧用 `trial-odds-replay.html`）。第2回向け改善案1の設定比較は同フォルダの `trial-odds-proposal-1.md` / `.html`。
+終了後に票を時系列再生したレポートは [`reports/2026-08-23/`](../reports/2026-08-23/)（AI 用 `trial-odds-report.md`、閲覧用 `trial-odds-replay.html`）。第2回向け改善案1の設定比較は同フォルダの `trial-odds-proposal-1.md` / `.html`。Imputed を TV に入れる次回式の仮値5案は `trial-odds-proposal-2.md` / `.html`。

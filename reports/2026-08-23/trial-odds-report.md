@@ -197,5 +197,8 @@ Display_i = Seed_i × w + Real_i
 | [`trial-odds-replay.html`](./trial-odds-replay.html) | 同じ内容の閲覧用 HTML |
 | [trial-odds-proposal-1.md](./trial-odds-proposal-1.md) | 第2回向け改善案1（設定4通りの再生比較） |
 | [`trial-odds-proposal-1.html`](./trial-odds-proposal-1.html) | 改善案1の閲覧用 |
+| [trial-odds-proposal-2.md](./trial-odds-proposal-2.md) | 次回式の仮値5案（Imputed を TV に入れる） |
+| [`trial-odds-proposal-2.html`](./trial-odds-proposal-2.html) | 仮値5案の閲覧用 |
 | [`scripts/trial-odds-report.ts`](../../scripts/trial-odds-report.ts) | 第1回再生の生成 |
 | [`scripts/trial-odds-proposal-1.ts`](../../scripts/trial-odds-proposal-1.ts) | 改善案1比較の生成 |
+| [`scripts/trial-odds-proposal-2.ts`](../../scripts/trial-odds-proposal-2.ts) | 仮値5案の生成 |

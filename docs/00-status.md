@@ -119,7 +119,7 @@
 
 ## 次に詰めること（候補）
 
-1. **初期オッズの影響度（S・E・w）をコミュニティ向けに詰める**（第1回の材料は [reports/2026-08-23/trial-odds-report.md](../reports/2026-08-23/trial-odds-report.md)。第2回向け改善案1の比較は [trial-odds-proposal-1.md](../reports/2026-08-23/trial-odds-proposal-1.md)）
+1. **初期オッズの影響度（S・E・w）をコミュニティ向けに詰める**（第1回の材料は [reports/2026-08-23/trial-odds-report.md](../reports/2026-08-23/trial-odds-report.md)。次回式は Imputed を TV に入れる・F なし。仮値5案は [trial-odds-proposal-2.md](../reports/2026-08-23/trial-odds-proposal-2.md)）
 2. **特払いのキャリーオーバー案**をコミュニティ向けに詰める（同レポート末尾の不成立山の数字。特払い率変更は今は想定外）
 3. 本線: デモレギ 1〜2 コースの U-tools Seed（直置きは残す）
 4. 相談リストは 08 の順。飛び入り時のアプリ扱いは相談
