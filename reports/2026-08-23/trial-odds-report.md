@@ -4,7 +4,7 @@
 
 **このファイルの役割:** 日曜ルムマ試運転（メンバーシップエクストラLoH）後に、D1 の票を時系列再生して得た知見の正本（AI・ドキュメント参照用）。同じフォルダの [`trial-odds-replay.html`](./trial-odds-replay.html) が人間向け閲覧版。再生成は `node --experimental-strip-types scripts/trial-odds-report.ts`。
 
-試運転の仕様・数字の正本は [docs/09-trial-run.md](../../docs/09-trial-run.md)。オッズ式の本線は [docs/03-odds.md](../../docs/03-odds.md)。
+第1回当時のオペはいま [docs/playbook.md](../../docs/playbook.md)。オッズの現行は [docs/odds.md](../../docs/odds.md)。このファイルは第1回再生の知見。
 
 ---
 
@@ -192,8 +192,8 @@ Display_i = Seed_i × w + Real_i
 
 | パス | 内容 |
 |---|---|
-| [docs/09-trial-run.md](../../docs/09-trial-run.md) | 試運転 MVP 本戦の仕様正本 |
-| [docs/03-odds.md](../../docs/03-odds.md) | オッズ式・w・S・E の本線 |
+| [docs/playbook.md](../../docs/playbook.md) | 画面・当日オペ |
+| [docs/odds.md](../../docs/odds.md) | 投票・参考オッズ・確定 |
 | [`trial-odds-replay.html`](./trial-odds-replay.html) | 同じ内容の閲覧用 HTML |
 | [trial-odds-proposal-1.md](./trial-odds-proposal-1.md) | 第2回向け改善案1（設定4通りの再生比較） |
 | [`trial-odds-proposal-1.html`](./trial-odds-proposal-1.html) | 改善案1の閲覧用 |

@@ -1,6 +1,6 @@
 # reports
 
-イベント日ごとのフォルダに、人間用 HTML と AI 参照用 Markdown を置く。
+イベント日ごとのフォルダに、人間用 HTML と AI 参照用 Markdown を置く。現行の式・オペは [docs/](../docs/)（[odds.md](../docs/odds.md) / [playbook.md](../docs/playbook.md)）。ここは日付付きの証拠。
 
 ```
 reports/
