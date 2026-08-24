@@ -9,6 +9,7 @@ import {
 } from "./bets.ts";
 import {
   allocateSeed,
+  DEFAULTS,
   displayPool,
   parimutuelOdds,
   payoutAmount,
@@ -35,6 +36,16 @@ test("有効賭式: 空は全部オン、単勝は外せない", () => {
     serializeEnabledKinds(["sanrentan", "win", "umaren"]),
     "win,umaren,sanrentan",
   );
+});
+
+test("開催デフォルトは第2回案 B", () => {
+  assert.equal(DEFAULTS.grantG, 3000);
+  assert.equal(DEFAULTS.betUnit, 100);
+  assert.equal(DEFAULTS.seedPoolS, 80000);
+  assert.equal(DEFAULTS.pullE, 100000);
+  assert.equal(DEFAULTS.wTimeFloor, 0.8);
+  assert.equal(DEFAULTS.wTimeExp, 1);
+  assert.equal(DEFAULTS.takeoutD, 0.2);
 });
 
 test("票量側: E の半分でだいたい半分、E で 0", () => {

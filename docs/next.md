@@ -8,7 +8,6 @@
 2. **評価点の自動算出**（直置きは残す）
 3. **OCR（本戦のみ）** → [ocr.md](ocr.md)
 4. **単勝参考に Imputed**（TV と Display。λ=1。確定は触らない） — [trial-odds-proposal-2](../reports/2026-08-23/trial-odds-proposal-2.md)
-5. **開催数字を案 B に**（S=80000、E=100000、w時下限 0.8） — 同じ proposal-2。仮置きは [now.md](now.md)
 
 ## そのあと
 

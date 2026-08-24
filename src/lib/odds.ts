@@ -5,15 +5,16 @@
  * 確定・連勝: Real のみ。払いの約束①。不成立は特払い B。
  */
 
+/** 開催の初期値。第2回は案 B（docs/now.md） */
 export const DEFAULTS = {
   grantG: 3000,
   betUnit: 100,
   typicalBet: 700,
-  seedPoolS: 20000,
-  pullE: 20000,
+  seedPoolS: 80000,
+  pullE: 100000,
   takeoutD: 0.2,
   /** 時間側の下限。時計だけでは 0 にしない（厚め） */
-  wTimeFloor: 0.5,
+  wTimeFloor: 0.8,
   wTimeExp: 1,
 } as const;
 
