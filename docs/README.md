@@ -14,3 +14,4 @@
 | [07-strength-mix.md](07-strength-mix.md) | Strength 混ぜは B 採用。A との比較 |
 | [08-mvp-consult.md](08-mvp-consult.md) | 動く MVP を手土産に相談する。作る／聞く／抱える |
 | [09-trial-run.md](09-trial-run.md) | 日曜ルムマ試運転 MVP 本戦の正本。本線に混ぜない |
+| [10-trial-odds-report.md](10-trial-odds-report.md) | 試運転後の単勝オッズ再生レポート（知見・数字の参照用）。HTML は `reports/` |
