@@ -224,4 +224,4 @@ Neko さんの note の 3連単予想は置き換えない。
 
 ## 試運転後のオッズ知見
 
-終了後に票を時系列再生したレポートは [10-trial-odds-report.md](10-trial-odds-report.md)（閲覧用 HTML は `reports/trial-odds-replay.html`）。S・E 調整と特払い・キャリーオーバーの材料はそこ。
+終了後に票を時系列再生したレポートは [`reports/2026-08-23/`](../reports/2026-08-23/)（AI 用 `trial-odds-report.md`、閲覧用 `trial-odds-replay.html`）。S・E 調整と特払い・キャリーオーバーの材料はそこ。

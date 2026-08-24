@@ -14,7 +14,13 @@ import {
   wVolume,
 } from "../src/lib/odds.ts";
 
-const OUT = join(dirname(fileURLToPath(import.meta.url)), "..", "reports", "trial-odds-replay.html");
+const REPORT_DIR = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "reports",
+  "2026-08-23",
+);
+const OUT = join(REPORT_DIR, "trial-odds-replay.html");
 
 const EVENT = {
   title: "メンバーシップエクストラLoH",

@@ -2,9 +2,9 @@
 
 最終更新: 2026-08-24
 
-**このファイルの役割:** 日曜ルムマ試運転（メンバーシップエクストラLoH）後に、D1 の票を時系列再生して得た知見の正本。HTML の見やすい版は [`reports/trial-odds-replay.html`](../reports/trial-odds-replay.html)。再生成は `node --experimental-strip-types scripts/trial-odds-report.ts`。
+**このファイルの役割:** 日曜ルムマ試運転（メンバーシップエクストラLoH）後に、D1 の票を時系列再生して得た知見の正本（AI・ドキュメント参照用）。同じフォルダの [`trial-odds-replay.html`](./trial-odds-replay.html) が人間向け閲覧版。再生成は `node --experimental-strip-types scripts/trial-odds-report.ts`。
 
-試運転の仕様・数字の正本は [09-trial-run.md](09-trial-run.md)。オッズ式の本線は [03-odds.md](03-odds.md)。
+試運転の仕様・数字の正本は [docs/09-trial-run.md](../../docs/09-trial-run.md)。オッズ式の本線は [docs/03-odds.md](../../docs/03-odds.md)。
 
 ---
 
@@ -192,7 +192,7 @@ Display_i = Seed_i × w + Real_i
 
 | パス | 内容 |
 |---|---|
-| [09-trial-run.md](09-trial-run.md) | 試運転 MVP 本戦の仕様正本 |
-| [03-odds.md](03-odds.md) | オッズ式・w・S・E の本線 |
-| [`reports/trial-odds-replay.html`](../reports/trial-odds-replay.html) | 同じ内容の閲覧用 HTML |
-| [`scripts/trial-odds-report.ts`](../scripts/trial-odds-report.ts) | 再生・HTML 生成スクリプト |
+| [docs/09-trial-run.md](../../docs/09-trial-run.md) | 試運転 MVP 本戦の仕様正本 |
+| [docs/03-odds.md](../../docs/03-odds.md) | オッズ式・w・S・E の本線 |
+| [`trial-odds-replay.html`](./trial-odds-replay.html) | 同じ内容の閲覧用 HTML |
+| [`scripts/trial-odds-report.ts`](../../scripts/trial-odds-report.ts) | 再生・HTML 生成スクリプト |
