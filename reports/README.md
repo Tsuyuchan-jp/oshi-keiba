@@ -5,10 +5,15 @@
 ```
 reports/
   YYYY-MM-DD/
-    trial-odds-report.md    # 知見・数字（エージェント・ドキュメント参照の正）
-    trial-odds-replay.html  # 同じ内容の閲覧用
+    trial-odds-report.md              # 第1回再生の知見（エージェント参照の正）
+    trial-odds-replay.html            # 同上・閲覧用
+    trial-odds-proposal-1.md          # 第2回向け改善案1（設定比較）
+    trial-odds-proposal-1.html        # 同上・閲覧用
 ```
 
 日付はレース／投票日（JST）。試運転（メンバーシップエクストラLoH）は [2026-08-23/](2026-08-23/)。
 
-HTML の再生成: `node --experimental-strip-types scripts/trial-odds-report.ts`（出力先はスクリプト内の日付フォルダ）。
+HTML の再生成:
+
+- 第1回再生: `node --experimental-strip-types scripts/trial-odds-report.ts`
+- 改善案1の比較: `node --experimental-strip-types scripts/trial-odds-proposal-1.ts`
