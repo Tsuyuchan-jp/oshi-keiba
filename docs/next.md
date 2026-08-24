@@ -7,7 +7,6 @@
 1. **評価点たたき台の意味確定** → [score.md](score.md) を書き直す
 2. **評価点の自動算出**（直置きは残す）
 3. **OCR（本戦のみ）** → [ocr.md](ocr.md)
-4. **単勝参考に Imputed**（TV と Display。λ=1。確定は触らない） — [trial-odds-proposal-2](../reports/2026-08-23/trial-odds-proposal-2.md)
 
 ## そのあと
 

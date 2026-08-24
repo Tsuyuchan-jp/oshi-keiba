@@ -1,9 +1,11 @@
 /**
  * 参考オッズと確定配当（docs/odds.md）
  *
- * 単勝投票中: Display = Seed×w + Real（参考のみ）
- * 確定・連勝: Real のみ。払いの約束①。不成立は特払い B。
+ * 単勝投票中: Display = Seed×w + 単勝Real + Imputed（参考のみ）
+ * 確定・連勝・払い: Real のみ。払いの約束①。不成立は特払い B。
  */
+
+import type { BetKind } from "./bets";
 
 /** 開催の初期値。第2回は案 B（docs/now.md） */
 export const DEFAULTS = {
@@ -18,11 +20,14 @@ export const DEFAULTS = {
   wTimeExp: 1,
 } as const;
 
+/** 連勝を単勝参考へ乗せる係数。管理画面では触らない */
+export const IMPUTED_LAMBDA = 1;
+
 export function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n));
 }
 
-/** 票量側 w。下限 0。E の半分でだいたい半分。TV は単勝実票合計 */
+/** 票量側 w。下限 0。E の半分でだいたい半分。TV は単勝参考用（単勝＋λ×連勝） */
 export function wVolume(realTotal: number, pullE: number): number {
   if (!(pullE > 0)) return 0;
   return Math.max(0, 1 - realTotal / pullE);
@@ -79,8 +84,45 @@ export function parimutuelOdds(
   return (poolTotal * (1 - d)) / share;
 }
 
-export function displayPool(seed: number, w: number, real: number): number {
-  return seed * w + real;
+export function displayPool(seed: number, w: number, real: number, imputed = 0): number {
+  return seed * w + real + imputed;
+}
+
+/** 連勝1票を単勝参考用に割り振る（λ 済みの額）。返還済みは呼ばない側で除く */
+export function addImputed(
+  kind: BetKind,
+  amount: number,
+  horse1: string,
+  horse2: string | null,
+  horse3: string | null,
+  lambda: number,
+  into: Map<string, number>,
+): void {
+  if (kind === "win" || !(amount > 0) || !(lambda > 0)) return;
+  const a = amount * lambda;
+  const add = (id: string | null, n: number) => {
+    if (!id || !(n > 0)) return;
+    into.set(id, (into.get(id) ?? 0) + n);
+  };
+  if (kind === "umaren") {
+    add(horse1, a / 2);
+    add(horse2, a / 2);
+  } else if (kind === "umatan") {
+    add(horse1, (a * 2) / 3);
+    add(horse2, a / 3);
+  } else if (kind === "sanrenpuku") {
+    add(horse1, a / 3);
+    add(horse2, a / 3);
+    add(horse3, a / 3);
+  } else if (kind === "sanrentan") {
+    add(horse1, a / 2);
+    add(horse2, a / 3);
+    add(horse3, a / 6);
+  }
+}
+
+export function referenceTv(winTotal: number, exoticTotal: number, lambda: number): number {
+  return winTotal + lambda * exoticTotal;
 }
 
 /** 整数ポイントへ切り捨て（払戻） */

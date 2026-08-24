@@ -8,11 +8,14 @@ import {
   winningKey,
 } from "./bets.ts";
 import {
+  addImputed,
   allocateSeed,
   DEFAULTS,
   displayPool,
+  IMPUTED_LAMBDA,
   parimutuelOdds,
   payoutAmount,
+  referenceTv,
   specialPayoutAmount,
   wCombined,
   wTime,
@@ -46,6 +49,42 @@ test("開催デフォルトは第2回案 B", () => {
   assert.equal(DEFAULTS.wTimeFloor, 0.8);
   assert.equal(DEFAULTS.wTimeExp, 1);
   assert.equal(DEFAULTS.takeoutD, 0.2);
+  assert.equal(IMPUTED_LAMBDA, 1);
+});
+
+test("Imputed: 馬連1:1 馬単2:1 3連複1:1:1 3連単3:2:1。λは額に掛ける", () => {
+  const a = new Map<string, number>();
+  addImputed("umaren", 600, "A", "B", null, 1, a);
+  assert.equal(a.get("A"), 300);
+  assert.equal(a.get("B"), 300);
+
+  const b = new Map<string, number>();
+  addImputed("umatan", 600, "A", "B", null, 1, b);
+  assert.equal(b.get("A"), 400);
+  assert.equal(b.get("B"), 200);
+
+  const c = new Map<string, number>();
+  addImputed("sanrenpuku", 600, "A", "B", "C", 1, c);
+  assert.equal(c.get("A"), 200);
+  assert.equal(c.get("B"), 200);
+  assert.equal(c.get("C"), 200);
+
+  const d = new Map<string, number>();
+  addImputed("sanrentan", 600, "A", "B", "C", 1, d);
+  assert.equal(d.get("A"), 300);
+  assert.equal(d.get("B"), 200);
+  assert.equal(d.get("C"), 100);
+
+  const e = new Map<string, number>();
+  addImputed("umaren", 600, "A", "B", null, 0.5, e);
+  assert.equal(e.get("A"), 150);
+  addImputed("win", 3000, "A", null, null, 1, e);
+  assert.equal(e.get("A"), 150);
+});
+
+test("単勝参考の TV は単勝＋λ×連勝", () => {
+  assert.equal(referenceTv(19800, 17800, 1), 37600);
+  assert.equal(referenceTv(19800, 17800, 0.5), 19800 + 8900);
 });
 
 test("票量側: E の半分でだいたい半分、E で 0", () => {
@@ -86,6 +125,7 @@ test("Seed は Strength 比。確定配当は Real のみ", () => {
   const w = 1;
   const reals = [700, 0, 0, 0];
   const displays = seeds.map((s, i) => displayPool(s, w, reals[i]));
+  assert.equal(displayPool(1000, 0.5, 100, 50), 650);
   const displayTotal = displays.reduce((a, b) => a + b, 0);
   const refFav = parimutuelOdds(displays[0], displayTotal, 0.2);
   const realTotal = reals.reduce((a, b) => a + b, 0);

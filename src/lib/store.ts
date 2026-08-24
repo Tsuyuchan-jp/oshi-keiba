@@ -13,8 +13,11 @@ import {
   allocateSeed,
   DEFAULTS,
   displayPool,
+  addImputed,
+  IMPUTED_LAMBDA,
   parimutuelOdds,
   payoutAmount,
+  referenceTv,
   specialPayoutAmount,
   wCombined,
   wTime,
@@ -92,6 +95,7 @@ export type HorseBoard = {
   /** 通し番号（1..n）。名簿の並び */
   number: number;
   real: number;
+  imputed: number;
   seed: number;
   display: number;
   referenceOdds: number | null;
@@ -121,8 +125,12 @@ export type Board = {
   wTime: number;
   wVolume: number;
   w: number;
-  /** 単勝実票合計（w 票量側） */
+  /** 単勝実票合計 */
   realTotal: number;
+  /** 連勝実票合計（返還済み除く） */
+  exoticTotal: number;
+  /** 単勝参考の TV（単勝 + λ×連勝） */
+  tv: number;
   seedTotal: number;
   displayTotal: number;
   horses: HorseBoard[];
@@ -355,6 +363,23 @@ export function buildBoard(
   }
   const realLive = live.map((h) => realByHorse.get(h.id) ?? 0);
   const realTotal = realLive.reduce((a, b) => a + b, 0);
+  const imputedMap = new Map<string, number>();
+  let exoticTotal = 0;
+  for (const b of bets) {
+    if (b.refunded || b.kind === "win") continue;
+    exoticTotal += b.amount;
+    addImputed(
+      b.kind,
+      b.amount,
+      b.horse_1,
+      b.horse_2,
+      b.horse_3,
+      IMPUTED_LAMBDA,
+      imputedMap,
+    );
+  }
+  const imputedLive = live.map((h) => imputedMap.get(h.id) ?? 0);
+  const tv = referenceTv(realTotal, exoticTotal, IMPUTED_LAMBDA);
   const seeds = allocateSeed(
     live.map((h) => h.strength),
     event.seed_pool_s,
@@ -366,9 +391,11 @@ export function buildBoard(
     event.w_time_floor,
     event.w_time_exp,
   );
-  const wV = wVolume(realTotal, event.pull_e);
+  const wV = wVolume(tv, event.pull_e);
   const w = wCombined(wT, wV);
-  const displays = seeds.map((s, i) => displayPool(s, w, realLive[i]));
+  const displays = seeds.map((s, i) =>
+    displayPool(s, w, realLive[i], imputedLive[i]),
+  );
   const displayTotal = displays.reduce((a, b) => a + b, 0);
   const seedTotal = seeds.reduce((a, b) => a + b, 0);
 
@@ -392,6 +419,7 @@ export function buildBoard(
         horse: h,
         number: 0,
         real,
+        imputed: 0,
         seed: 0,
         display: 0,
         referenceOdds: null,
@@ -404,6 +432,7 @@ export function buildBoard(
       horse: h,
       number: num,
       real,
+      imputed: imputedMap.get(h.id) ?? 0,
       seed,
       display,
       referenceOdds: parimutuelOdds(display, displayTotal, event.takeout_d),
@@ -447,6 +476,8 @@ export function buildBoard(
     wVolume: wV,
     w,
     realTotal,
+    exoticTotal,
+    tv,
     seedTotal,
     displayTotal,
     horses: rows,

@@ -16,6 +16,7 @@ import type {
   UserRow,
 } from "./store";
 import { numberByHorseId } from "./store";
+import { IMPUTED_LAMBDA } from "./odds";
 
 export function formatOdds(n: number | null): string {
   if (n == null || !Number.isFinite(n)) return "—";
@@ -837,7 +838,7 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
 }
 
 export function wCaption(board: Board): string {
-  return `w=${board.w.toFixed(2)}（時間 ${board.wTime.toFixed(2)} × 単勝実票 ${board.wVolume.toFixed(2)}）　単勝実票合計 ${formatPt(board.realTotal)}　S=${board.event.seed_pool_s}　E=${board.event.pull_e}　D=${Math.round(board.event.takeout_d * 100)}%`;
+  return `w=${board.w.toFixed(2)}（時間 ${board.wTime.toFixed(2)} × 票量 ${board.wVolume.toFixed(2)}）　TV=${formatPt(board.tv)}（単勝 ${formatPt(board.realTotal)} ＋ λ×連勝 ${formatPt(board.exoticTotal)}）　λ=${IMPUTED_LAMBDA}　S=${board.event.seed_pool_s}　E=${board.event.pull_e}　D=${Math.round(board.event.takeout_d * 100)}%`;
 }
 
 /** 管理の週次: いまのフェーズと次に押すもの */
@@ -865,8 +866,9 @@ export function adminOpsGuide(board: Board): { now: string; next: string } {
 }
 
 /** 管理画面: 定義 → 物語 → 式 */
-export function formulaPanel(_board: Board): string {
+export function formulaPanel(board: Board): string {
   return `<div class="formula-box">
+    <p class="note">いま: ${escapeHtml(wCaption(board))}</p>
     <details class="terms-box">
       <summary>定義表（参考）</summary>
       <table class="terms">
@@ -877,11 +879,12 @@ export function formulaPanel(_board: Board): string {
         <tr><td>残高</td><td>仮想のユーザー所持額</td><td>今持っているスペ</td></tr>
         <tr><td>G</td><td>毎週配る仮想ポイント</td><td>口座に足す額。オッズの式には入らない。G を変えても S と E は動かない</td></tr>
         <tr><td>単位</td><td>投票の刻み</td><td>一度に賭けられる最小のスペ</td></tr>
-        <tr><td>Strength</td><td>相対評価点</td><td>単勝 Seed の比。連勝には載せない</td></tr>
+        <tr><td>Strength</td><td>相対評価点</td><td>単勝 Seed の比。連勝には載せない。メンバーには出さない</td></tr>
         <tr><td>Seed</td><td>単勝の仮想初期投票額</td><td>投票中の参考だけ。確定には入れない</td></tr>
         <tr><td>S</td><td>仮想の初期投票額の合計</td><td>単勝参考用。連勝には配らない</td></tr>
-        <tr><td>Real</td><td>実際の投票額</td><td>賭式ごとのプール</td></tr>
-        <tr><td>TV</td><td>単勝の実票合計</td><td>w の票量側。連勝票は入れない</td></tr>
+        <tr><td>Real</td><td>単勝の実際の投票額</td><td>確定の単勝はこの額だけ</td></tr>
+        <tr><td>Imputed</td><td>連勝から単勝参考へ割り振った額</td><td>確定には入れない。λ=${IMPUTED_LAMBDA}</td></tr>
+        <tr><td>TV</td><td>単勝参考の寄せに使う実票相当</td><td>単勝実票合計 ＋ λ × 連勝実票合計</td></tr>
         <tr><td>w</td><td>初期投票額をどれだけ残すか</td><td>単勝参考のみ。1 に近いほど仮想が残る</td></tr>
         <tr><td>D</td><td>控除</td><td>特払いも同じ（100→80、切り捨て）</td></tr>
       </tbody>
@@ -890,7 +893,7 @@ export function formulaPanel(_board: Board): string {
     <div class="flow">
     <div class="flow-step">
       <div class="flow-k">払いの約束①</div>
-      <div class="story"><p>確定配当は実票だけの山分け。Seed は単勝の投票中参考にだけ混ぜる。不成立は特払い B（その賭式の8割戻し）。出走取消は全額返還。連勝は実票が無ければ「—」。</p></div>
+      <div class="story"><p>確定配当は実票だけの山分け。Seed と Imputed は単勝の投票中参考にだけ混ぜる。不成立は特払い B（その賭式の8割戻し）。出走取消は全額返還。連勝は実票が無ければ「—」。</p></div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step">
@@ -900,6 +903,7 @@ export function formulaPanel(_board: Board): string {
     <div class="flow-arrow">↓</div>
     <div class="flow-step">
       <div class="flow-k">2　参考オッズの寄せ（単勝のみ。w）</div>
+      <div class="eq">TV = 単勝実票合計 + λ × 連勝実票合計</div>
       <div class="eq">w<sub>時</sub> = 下限 + (1 − 下限) × 残り<sup>指数</sup></div>
       <div class="eq">w<sub>票</sub> = max(0, 1 − TV / E)</div>
       <div class="eq">w = w<sub>時</sub> × w<sub>票</sub></div>
@@ -907,7 +911,7 @@ export function formulaPanel(_board: Board): string {
     <div class="flow-arrow">↓</div>
     <div class="flow-step">
       <div class="flow-k">3　単勝の参考オッズ（投票中。確定ではない）</div>
-      <div class="eq">Display<sub>i</sub> = Seed<sub>i</sub> × w + Real<sub>i</sub></div>
+      <div class="eq">Display<sub>i</sub> = Seed<sub>i</sub> × w + 単勝Real<sub>i</sub> + Imputed<sub>i</sub></div>
       <div class="eq">参考オッズ<sub>i</sub> = (Σ Display × (1 − D)) / Display<sub>i</sub></div>
     </div>
     <div class="flow-arrow">↓</div>

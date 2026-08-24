@@ -594,6 +594,7 @@ export default {
               <td class="num">${formatOddsWithUnit(h.referenceOdds)}</td>
               <td class="num">${formatOddsWithUnit(h.confirmedOdds)}</td>
               <td class="num">${formatPt(h.real)}</td>
+              <td class="num">${formatPt(h.imputed)}</td>
               <td>${placeCell}</td>
               <td>${scratchBtn}</td>
             </tr>`;
@@ -809,7 +810,7 @@ export default {
                 }
                 <form id="places-form" method="post" action="/admin/places"></form>
                 <table>
-                  <thead><tr><th>ウマ娘</th><th>参考</th><th>確定</th><th>単勝実票</th><th>着順</th><th></th></tr></thead>
+                  <thead><tr><th>ウマ娘</th><th>参考</th><th>確定</th><th>単勝実票</th><th>Imputed</th><th>着順</th><th></th></tr></thead>
                   <tbody>${horseRows}</tbody>
                 </table>
                 ${
