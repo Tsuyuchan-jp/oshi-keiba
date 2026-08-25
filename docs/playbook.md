@@ -3,7 +3,7 @@
 払いの約束は **①**。不成立は **特払い B**。開催数字は [now.md](now.md)。
 
 本番 URL: https://oshi-keiba.tsuyuchan-jp.workers.dev/  
-入室: `/login`　場内: `/`　投票: `/bet`　管理: `/admin`　出走登録（予定）: `/admin/horses`
+入室: `/login`　場内: `/`　投票: `/bet`　管理: `/admin`　出走登録: `/admin/horses`
 
 閉じた経路で渡す前提。検索に出さない。
 
