@@ -72,6 +72,7 @@ import {
   livePollScript,
   parseJstInput,
   pickSelects,
+  scoreSetupAdminFields,
   statusLabel,
   strengthCalcModal,
   toJstInput,
@@ -81,6 +82,7 @@ import {
 } from "./lib/ui";
 import { horseSheetParts } from "./lib/horseName";
 import { horsesAdminBody, ocrAdminScript } from "./lib/ocrAdmin";
+import { scoreSetupFromForm } from "./lib/scoreSetup";
 import type { UserRow } from "./lib/store";
 
 function msg(url: URL): { text: string | null; error: boolean } {
@@ -769,6 +771,7 @@ export default {
                     <label>日時締切（JST） <input name="closes_at" type="datetime-local" value="${toJstInput(e.voting_closes_at)}"></label>
                   </div>
                   ${enabledKindsAdminFields(e)}
+                  ${scoreSetupAdminFields(e)}
                   <button type="submit">保存</button>
                 </form>
                 </details>
@@ -1116,6 +1119,9 @@ export default {
                     ),
                   )
                 : undefined,
+            score_setup: scoreSetupFromForm((name) =>
+              String(form.get(name) ?? ""),
+            ),
           });
           return bounce("/admin", "レースイベント設定を保存しました");
         } catch (err) {

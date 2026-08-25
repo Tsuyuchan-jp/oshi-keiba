@@ -7,6 +7,6 @@ interface Env {
 }
 
 declare module "*.json" {
-  const value: { skills: { name: string; kind: string }[] };
+  const value: unknown;
   export default value;
 }

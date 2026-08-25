@@ -15,9 +15,15 @@ import type {
   HorseBoard,
   UserRow,
 } from "./store";
-import { numberByHorseId } from "./store";
+import { eventScoreSetup, numberByHorseId } from "./store";
 import { horseSheetParts } from "./horseName";
 import { IMPUTED_LAMBDA } from "./odds";
+import {
+  GROUND_CONDITION_OPTIONS,
+  listScoreCourses,
+  SEASON_OPTIONS,
+  WEATHER_OPTIONS,
+} from "./scoreSetup";
 
 export function formatOdds(n: number | null): string {
   if (n == null || !Number.isFinite(n)) return "—";
@@ -999,6 +1005,56 @@ export function enabledKindsAdminFields(event: EventRow): string {
       <label class="kind-opt"><input type="checkbox" checked disabled> 単勝（必須）</label>
       <input type="hidden" name="kind_win" value="1">
       ${rest}
+    </div>
+  </fieldset>`;
+}
+
+function selectOpts(
+  options: ReadonlyArray<{ value: number | string; label: string }>,
+  selected: string | number | null | undefined,
+  emptyLabel = "—",
+): string {
+  const cur = selected == null || selected === "" ? "" : String(selected);
+  const head = `<option value="">${escapeHtml(emptyLabel)}</option>`;
+  const body = options
+    .map((o) => {
+      const v = String(o.value);
+      const sel = v === cur ? " selected" : "";
+      return `<option value="${escapeHtml(v)}"${sel}>${escapeHtml(o.label)}</option>`;
+    })
+    .join("");
+  return head + body;
+}
+
+/** レースイベント設定内: 開催条件とステ目標値 */
+export function scoreSetupAdminFields(event: EventRow): string {
+  const setup = eventScoreSetup(event);
+  const c = setup?.conditions;
+  const r = setup?.requirements;
+  const courses = listScoreCourses().map((x) => ({
+    value: x.courseKey,
+    label: x.label,
+  }));
+  const num = (n: number | undefined) => (n == null ? "" : String(n));
+  return `<fieldset class="kind-set">
+    <legend>開催条件とステ目標値</legend>
+    <p class="note">評価点の自動算出用。未設定なら Strength 直置きのみ。コースは U-tools 金ドット36。天候・バ場・季節と目標値は開催ごと手打ち。</p>
+    <div class="row">
+      <label>コース <select name="score_course">${selectOpts(courses, c?.courseKey, "（未設定）")}</select></label>
+      <label>天候 <select name="score_weather">${selectOpts(WEATHER_OPTIONS, c?.weather)}</select></label>
+      <label>バ場 <select name="score_ground_condition">${selectOpts(GROUND_CONDITION_OPTIONS, c?.groundCondition)}</select></label>
+      <label>季節 <select name="score_season">${selectOpts(SEASON_OPTIONS, c?.season)}</select></label>
+    </div>
+    <div class="row">
+      <label>要求スピード <input name="score_speed_cap" type="number" min="1" step="1" value="${escapeHtml(num(r?.speedCap))}" placeholder="継承突破なしカンスト"></label>
+      <label>要求パ <input name="score_power" type="number" min="1" step="1" value="${escapeHtml(num(r?.power))}"></label>
+      <label>要求根 <input name="score_guts" type="number" min="1" step="1" value="${escapeHtml(num(r?.guts))}"></label>
+      <label>要求賢 <input name="score_wisdom" type="number" min="1" step="1" value="${escapeHtml(num(r?.wisdom))}"></label>
+    </div>
+    <div class="row">
+      <label>要求スタ（掛かりなし） <input name="score_stamina_no" type="number" min="1" step="1" value="${escapeHtml(num(r?.staminaNoTempt))}"></label>
+      <label>要求スタ（掛かりあり） <input name="score_stamina_with" type="number" min="1" step="1" value="${escapeHtml(num(r?.staminaWithTempt))}"></label>
+      <label class="kind-opt"><input type="checkbox" name="score_stamina_race" value="1"${r?.staminaRace ? " checked" : ""}> スタミナ勝負コース</label>
     </div>
   </fieldset>`;
 }

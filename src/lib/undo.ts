@@ -49,8 +49,9 @@ function insertEvents(db: D1Database, rows: Record<string, unknown>[]) {
         `INSERT INTO events (
           id, title, status, grant_g, bet_unit, seed_pool_s, pull_e, takeout_d,
           w_time_floor, w_time_exp, voting_opened_at, voting_closes_at,
-          closed_at, published_at, payouts_applied, created_at, enabled_kinds, is_current
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          closed_at, published_at, payouts_applied, created_at, enabled_kinds, is_current,
+          score_setup
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .bind(
         v(r, "id"),
@@ -71,6 +72,7 @@ function insertEvents(db: D1Database, rows: Record<string, unknown>[]) {
         v(r, "created_at"),
         v(r, "enabled_kinds") ?? "win,umaren,umatan,sanrenpuku,sanrentan",
         v(r, "is_current") ?? 0,
+        v(r, "score_setup"),
       ),
   );
 }

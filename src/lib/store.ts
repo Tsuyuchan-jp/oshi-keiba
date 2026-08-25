@@ -27,8 +27,14 @@ import { newId } from "./auth";
 import { captureAdminUndo } from "./undo";
 import { clawbackBalance } from "./lifecycle";
 import { composeHorseName, horseSheetParts } from "./horseName";
+import {
+  parseScoreSetup,
+  serializeScoreSetup,
+  type EventScoreSetup,
+} from "./scoreSetup";
 
 export { clawbackBalance, joinButtonLabel } from "./lifecycle";
+export type { EventScoreSetup };
 
 export type EventStatus = "setup" | "voting" | "closed" | "published";
 
@@ -53,14 +59,24 @@ export type EventRow = {
   enabled_kinds: string;
   /** 1 ならメンバー画面の開催 */
   is_current: number;
+  /** 開催条件とステ目標値（JSON）。未設定は null */
+  score_setup: string | null;
 };
 
 function normalizeEvent(row: EventRow): EventRow {
+  // 壊れた JSON は捨てて null（直置きのみ）
+  const setup = parseScoreSetup(row.score_setup ?? null);
   return {
     ...row,
     enabled_kinds: serializeEnabledKinds(parseEnabledKinds(row.enabled_kinds)),
     is_current: Number(row.is_current) ? 1 : 0,
+    score_setup: serializeScoreSetup(setup),
   };
+}
+
+/** 管理画面用。正規化済みイベントから型付き setup を取る */
+export function eventScoreSetup(event: EventRow): EventScoreSetup | null {
+  return parseScoreSetup(event.score_setup);
 }
 
 export type HorseRow = {
@@ -1083,6 +1099,8 @@ export async function updateParams(
     title?: string;
     voting_closes_at?: number | null;
     enabled_kinds?: string;
+    /** 渡したら上書き。undefined なら触らない。null でクリア */
+    score_setup?: EventScoreSetup | null;
   },
 ): Promise<void> {
   await captureAdminUndo(db, "レースイベント設定を保存");
@@ -1090,6 +1108,10 @@ export async function updateParams(
     event.status === "setup" && patch.enabled_kinds != null
       ? serializeEnabledKinds(parseEnabledKinds(patch.enabled_kinds))
       : event.enabled_kinds;
+  const scoreSetupJson =
+    patch.score_setup === undefined
+      ? event.score_setup
+      : serializeScoreSetup(patch.score_setup);
   await db
     .prepare(
       `UPDATE events SET
@@ -1102,7 +1124,8 @@ export async function updateParams(
         w_time_floor = ?,
         w_time_exp = ?,
         voting_closes_at = ?,
-        enabled_kinds = ?
+        enabled_kinds = ?,
+        score_setup = ?
       WHERE id = ?`,
     )
     .bind(
@@ -1118,6 +1141,7 @@ export async function updateParams(
         ? event.voting_closes_at
         : patch.voting_closes_at,
       kinds,
+      scoreSetupJson,
       event.id,
     )
     .run();
