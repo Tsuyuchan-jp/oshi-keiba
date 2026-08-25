@@ -10,7 +10,7 @@
     "deploy": "wrangler deploy",
     "types": "wrangler types",
     "extract:greens": "node scripts/extract-green-skills.mjs",
-    "test": "node --experimental-strip-types --experimental-transform-types --test src/lib/odds.test.ts src/lib/lifecycle.test.ts src/lib/horseName.test.ts src/lib/greenSkills.test.ts src/lib/greenCondition.test.ts"
+    "test": "node --experimental-strip-types --experimental-transform-types --test src/lib/odds.test.ts src/lib/lifecycle.test.ts src/lib/horseName.test.ts src/lib/greenSkills.test.ts src/lib/greenCondition.test.ts src/lib/score.test.ts"
   },
   "devDependencies": {
     "typescript": "^5.9.2",

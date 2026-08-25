@@ -1,0 +1,113 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import {
+  achieveMult,
+  computeScore,
+  ratioMult,
+  skillBase,
+  speedMult,
+  staminaMult,
+} from "./score.ts";
+
+test("金は有効1＋追加2で計3", () => {
+  const s = skillBase(["円弧のマエストロ", "地固め"]);
+  assert.equal(s.effectiveCount, 2);
+  assert.equal(s.goldCount, 1);
+  assert.equal(s.base, 2 + 2);
+});
+
+test("緑マスタは土台に入れない", () => {
+  const s = skillBase(["右回り○", "地固め"]);
+  assert.deepEqual(s.countedNames, ["地固め"]);
+  assert.equal(s.base, 1);
+});
+
+test("ためらいは有効リスト外でも白1", () => {
+  const s = skillBase(["逃げためらい", "地固め"], new Set(["地固め"]));
+  assert.equal(s.tameraiCount, 1);
+  assert.equal(s.effectiveCount, 2);
+  assert.equal(s.base, 2);
+});
+
+test("有効リスト外の白は落とす", () => {
+  const s = skillBase(["地固め", "コンセントレーション"], new Set(["地固め"]));
+  assert.deepEqual(s.countedNames, ["地固め"]);
+});
+
+test("達成Aと未達M", () => {
+  assert.equal(achieveMult(1, 4), 1);
+  assert.ok(Math.abs(achieveMult(1.2, 4) - 1.05) < 1e-9);
+  assert.ok(Math.abs(ratioMult(0.9, 4, 4) - 0.6) < 1e-9);
+  assert.equal(ratioMult(0.75, 4, 4), 0);
+  assert.equal(speedMult(0.9), 1);
+  assert.ok(Math.abs(speedMult(1.2) - 1.05) < 1e-9);
+});
+
+test("スタミナ離散", () => {
+  assert.equal(staminaMult(500, { staminaNoTempt: 400, staminaWithTempt: 500, staminaRace: false }), 1);
+  assert.equal(staminaMult(450, { staminaNoTempt: 400, staminaWithTempt: 500, staminaRace: false }), 0.8);
+  assert.equal(staminaMult(350, { staminaNoTempt: 400, staminaWithTempt: 500, staminaRace: false }), 0.4);
+  assert.equal(staminaMult(350, { staminaNoTempt: 400, staminaWithTempt: 500, staminaRace: true }), 0.2);
+  assert.equal(staminaMult(450, { staminaNoTempt: 400, staminaWithTempt: 500, staminaRace: true }), 0.4);
+});
+
+test("パイプライン: 右回り○と距離Sで速が伸びる", () => {
+  const base = computeScore({
+    skillNames: ["地固め"],
+    stats: { speed: 1200, stamina: 800, power: 800, guts: 400, wisdom: 800 },
+    aptitudes: { distance: "A", surface: "A", style: "A" },
+    req: {
+      speedCap: 1200,
+      staminaNoTempt: 700,
+      staminaWithTempt: 800,
+      staminaRace: false,
+      power: 800,
+      guts: 400,
+      wisdom: 800,
+    },
+    greenCtx: { rotation: 1 },
+  });
+  assert.equal(base.skill.base, 1);
+  assert.equal(base.score, 1);
+
+  const withGreen = computeScore({
+    skillNames: ["地固め", "右回り○"],
+    stats: { speed: 1200, stamina: 800, power: 800, guts: 400, wisdom: 800 },
+    aptitudes: { distance: "S", surface: "A", style: "A" },
+    req: {
+      speedCap: 1200,
+      staminaNoTempt: 700,
+      staminaWithTempt: 800,
+      staminaRace: false,
+      power: 800,
+      guts: 400,
+      wisdom: 800,
+    },
+    greenCtx: { rotation: 1 },
+  });
+  // (1200+40)*1.1 / 1200 = 1.1366… → 速倍率 1+(r-1)/4
+  const r = (1240 * 1.1) / 1200;
+  const expect = 1 * (1 + (r - 1) / 4);
+  assert.ok(Math.abs(withGreen.score - expect) < 1e-9);
+  assert.equal(withGreen.green.speed, 40);
+});
+
+test("パワー未達で大きく落ちる", () => {
+  const s = computeScore({
+    skillNames: ["地固め"],
+    stats: { speed: 1200, stamina: 800, power: 720, guts: 400, wisdom: 800 },
+    aptitudes: { distance: "A", surface: "A", style: "A" },
+    req: {
+      speedCap: 1200,
+      staminaNoTempt: 700,
+      staminaWithTempt: 800,
+      staminaRace: false,
+      power: 800,
+      guts: 400,
+      wisdom: 800,
+    },
+    greenCtx: {},
+  });
+  // rパ=0.9 → ×0.6
+  assert.ok(Math.abs(s.score - 0.6) < 1e-9);
+});

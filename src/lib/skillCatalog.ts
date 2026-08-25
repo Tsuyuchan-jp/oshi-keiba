@@ -1,4 +1,4 @@
-import catalogJson from "../data/skill-catalog.json";
+import catalogJson from "../data/skill-catalog.json" with { type: "json" };
 
 export type SkillKind =
   | "green"
