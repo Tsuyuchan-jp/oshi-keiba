@@ -255,8 +255,8 @@
     }
     .j-pay { flex: 1 1 auto; }
     .j-fin {
-      flex: 0 0 15.5rem;
-      width: 15.5rem;
+      flex: 0 0 19rem;
+      width: 19rem;
       background: #020202;
       border-color: #2a2a2a;
     }
@@ -273,7 +273,7 @@
       flex: 0 0 auto;
     }
     .j-pay .j-head { background: #5aa0d0; color: #fff; }
-    /* 確定盤：縦長。会場名たて書き・大きい番号・右に着差 */
+    /* 確定盤：縦長。会場名たて書き・大きい番号・右は着順 */
     .fin-top {
       display: grid;
       grid-template-columns: 1.15rem minmax(0, 1fr) auto;
@@ -285,31 +285,31 @@
     .fin-place {
       writing-mode: vertical-rl;
       text-orientation: mixed;
-      font-size: .62rem;
+      font-size: .75rem;
       letter-spacing: .18em;
       color: #f2f2f2;
       line-height: 1;
-      height: 2.4rem;
+      height: 2.9rem;
     }
     .fin-r {
       font-family: "Chakra Petch", sans-serif;
       color: #fff;
       font-weight: 700;
-      font-size: 1.05rem;
+      font-size: 1.25rem;
       letter-spacing: .04em;
     }
     .fin-r b {
       color: #ffd000;
-      font-size: 1.55rem;
+      font-size: 1.9rem;
       margin-right: .12rem;
       text-shadow: 0 0 10px rgba(255, 208, 0, .45);
     }
     .kakutei {
       background: #d0121c;
       color: #fff;
-      padding: .28rem .42rem;
+      padding: .34rem .5rem;
       letter-spacing: .28em;
-      font-size: .78rem;
+      font-size: .92rem;
       font-weight: 800;
       box-shadow: 0 0 12px rgba(208, 18, 28, .55);
     }
@@ -322,27 +322,27 @@
     .fin-rows { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-evenly; }
     .fin-row {
       display: grid;
-      grid-template-columns: 1.7rem 3.4rem minmax(0, 1fr);
-      gap: .15rem .25rem;
+      grid-template-columns: 2.05rem 4.15rem minmax(0, 1fr);
+      gap: .18rem .3rem;
       align-items: center;
-      padding: .08rem 0;
+      padding: .1rem 0;
       border: 0;
     }
     .fin-rk {
-      width: 1.45rem;
-      height: 1.45rem;
+      width: 1.75rem;
+      height: 1.75rem;
       border-radius: 50%;
       display: grid;
       place-items: center;
       background: #3d7eb8;
       color: #fff;
-      font-size: .58rem;
+      font-size: .7rem;
       font-weight: 800;
       font-family: "Chakra Petch", sans-serif;
     }
     .fin-n {
       font-family: "Chakra Petch", sans-serif;
-      font-size: 2.15rem;
+      font-size: 2.6rem;
       font-weight: 700;
       line-height: .9;
       color: #ffd000;
@@ -350,27 +350,22 @@
       font-variant-numeric: tabular-nums;
       letter-spacing: .02em;
     }
-    .fin-gap {
+    .fin-place-lbl {
       font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif;
       color: #ffd000;
-      font-size: .78rem;
+      font-size: .95rem;
       font-weight: 700;
       text-align: right;
       white-space: nowrap;
-      letter-spacing: .02em;
-    }
-    .fin-gap .gt {
-      opacity: .55;
-      margin-right: .2rem;
-      font-weight: 600;
+      letter-spacing: .08em;
     }
     .fin-foot {
       flex: 0 0 auto;
       margin-top: .2rem;
-      padding-top: .25rem;
+      padding-top: .3rem;
       border-top: 1px solid #222;
       color: #ffd000;
-      font-size: .72rem;
+      font-size: .85rem;
       letter-spacing: .04em;
       line-height: 1.45;
     }
@@ -549,7 +544,7 @@
       .col-b { display: none; }
       .jumbo { flex-direction: column; }
       .j-pay { flex: 1 1 auto; }
-      .j-fin { flex: 1.15 1 auto; width: auto; max-width: 18rem; margin: 0 auto; min-height: 17rem; }
+      .j-fin { flex: 1.15 1 auto; width: auto; max-width: 22rem; margin: 0 auto; min-height: 21rem; }
       .foot { display: block; }
       .cta {
         display: flex;
@@ -649,13 +644,13 @@
             </div>
             <div class="j-body">
               <div class="fin-rows">
-                <div class="fin-row"><span class="fin-rk">I</span><span class="fin-n">1</span><span class="fin-gap"><span class="gt">&gt;</span>1 3/4</span></div>
-                <div class="fin-row"><span class="fin-rk">II</span><span class="fin-n">16</span><span class="fin-gap"><span class="gt">&gt;</span>1/2</span></div>
-                <div class="fin-row"><span class="fin-rk">III</span><span class="fin-n">2</span><span class="fin-gap"><span class="gt">&gt;</span>1 1/4</span></div>
-                <div class="fin-row"><span class="fin-rk">IV</span><span class="fin-n">5</span><span class="fin-gap"><span class="gt">&gt;</span>アタマ</span></div>
-                <div class="fin-row"><span class="fin-rk">V</span><span class="fin-n">9</span></div>
+                <div class="fin-row"><span class="fin-rk">I</span><span class="fin-n">1</span><span class="fin-place-lbl">1着</span></div>
+                <div class="fin-row"><span class="fin-rk">II</span><span class="fin-n">16</span><span class="fin-place-lbl">2着</span></div>
+                <div class="fin-row"><span class="fin-rk">III</span><span class="fin-n">2</span><span class="fin-place-lbl">3着</span></div>
+                <div class="fin-row"><span class="fin-rk">IV</span><span class="fin-n">5</span><span class="fin-place-lbl">4着</span></div>
+                <div class="fin-row"><span class="fin-rk">V</span><span class="fin-n">9</span><span class="fin-place-lbl">5着</span></div>
               </div>
-              <!-- 着差・タイムは場内ビジョンの雰囲気用。開催データには無い -->
+              <!-- タイムは場内ビジョンの雰囲気用。開催データには無い -->
               <div class="fin-foot">
                 <div>芝 <b>稍重</b></div>
                 <div>タイム 1.22.8</div>
