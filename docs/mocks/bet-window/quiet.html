@@ -168,6 +168,27 @@
       letter-spacing: .12em; cursor: pointer; min-width: 7.5rem;
     }
     .buy:disabled { opacity: .35; cursor: not-allowed; }
+    .purse {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: .75rem;
+      padding: .4rem .7rem;
+      background: #101214;
+      border-bottom: 1px solid #1a2220;
+    }
+    .purse .k { font-size: .7rem; letter-spacing: .08em; color: #6aa8a4; }
+    .purse .v {
+      font-size: 1.35rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: .02em;
+      color: #fff;
+    }
+    .purse .u { font-size: .78rem; font-weight: 600; color: #8a9490; margin-left: .25rem; }
+    .amt-show .rest { display: block; font-size: .68rem; color: #6aa8a4; margin-top: .1rem; }
+    .amt-show .rest b { color: #c8d0cc; font-weight: 700; }
   </style>
 </head>
 <body class="tone-quiet">
@@ -185,6 +206,10 @@
           <a class="on" href="./index.html">窓口</a>
         </div>
       </header>
+      <div class="purse">
+        <span class="k">いまの所持</span>
+        <div><span class="v" id="bal">12,800</span><span class="u">スペ</span></div>
+      </div>
       <div class="desk">
         <div class="desk-scroll">
           <div class="kinds" id="kinds"></div>
@@ -199,7 +224,9 @@
         </div>
         <div class="dock">
           <div class="amt-box">
-            <div class="amt-show">金額 <b id="amt">100</b><span> スペ</span></div>
+            <div class="amt-show">金額 <b id="amt">100</b><span> スペ</span>
+              <span class="rest">買うと残り <b id="rest">12,700</b></span>
+            </div>
             <div class="amt-row">
               <button type="button" data-add="100">+100</button>
               <button type="button" data-add="500">+500</button>
@@ -215,7 +242,7 @@
   <div class="mock-label">案A · マークカード（タップで試せます）</div>
   <script>
     const UNIT = 100;
-    const BAL = 12800;
+    let balance = 12800;
     const HORSES = [
       [1, "サイレンススズカ", "3.2"], [2, "スペシャルウィーク", "5.8"],
       [3, "グラスワンダー", "8.1"], [4, "セイウンスカイ", "12.4"],
@@ -296,8 +323,11 @@
           <span class="n">${n}</span><span class="uma">${uma}</span><span class="od">${od}</span>
         </button>`;
       }).join("");
-      document.getElementById("amt").textContent = String(amount);
-      document.getElementById("buy").disabled = !ready();
+      document.getElementById("amt").textContent = amount.toLocaleString("ja-JP");
+      document.getElementById("bal").textContent = balance.toLocaleString("ja-JP");
+      const rest = Math.max(0, balance - amount);
+      document.getElementById("rest").textContent = rest.toLocaleString("ja-JP");
+      document.getElementById("buy").disabled = !ready() || amount > balance;
       const mine = document.getElementById("mine");
       mine.innerHTML = tickets.length
         ? tickets.map((t) => `<div class="t-row"><span>${t.label}</span><span>${t.amt}</span></div>`).join("")
@@ -319,22 +349,25 @@
     document.querySelector(".amt-row").addEventListener("click", (e) => {
       const b = e.target.closest("button");
       if (!b) return;
-      if (b.dataset.add) amount = Math.min(BAL, amount + Number(b.dataset.add));
+      if (b.dataset.add) amount = Math.min(balance, amount + Number(b.dataset.add));
       if (b.dataset.set) amount = Number(b.dataset.set);
-      if (b.hasAttribute("data-all")) amount = Math.floor(BAL / UNIT) * UNIT;
-      amount = Math.max(UNIT, Math.floor(amount / UNIT) * UNIT);
+      if (b.hasAttribute("data-all")) amount = Math.floor(balance / UNIT) * UNIT;
+      amount = Math.max(UNIT, Math.min(balance, Math.floor(amount / UNIT) * UNIT));
       paint();
     });
     document.getElementById("buy").addEventListener("click", () => {
-      if (!ready()) return;
-      if (!confirm("この内容で買いますか？\n\n" + labelOf() + "\n" + amount + " スペ")) return;
+      if (!ready() || amount > balance) return;
+      if (!confirm("この内容で買いますか？\n\n" + labelOf() + "\n" + amount.toLocaleString("ja-JP") + " スペ")) return;
       tickets.unshift({ label: labelOf(), amt: amount });
+      balance -= amount;
       picks = emptySlots();
+      if (amount > balance) amount = Math.max(0, Math.floor(balance / UNIT) * UNIT);
       paint();
     });
     document.getElementById("redo").addEventListener("click", () => {
       if (!tickets.length) return;
       if (!confirm("全ての馬券がリセットされますがよろしいですか？")) return;
+      balance += tickets.reduce((s, t) => s + t.amt, 0);
       tickets = [];
       paint();
     });
