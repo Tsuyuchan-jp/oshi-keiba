@@ -9,14 +9,100 @@
   <style>
     :root {
       --bg: #070808;
-      --ink: #ece7dc;
-      --muted: #8a8578;
-      --line: #2a2824;
-      --accent: #f0b429;
-      --pulse: rgba(240, 180, 41, .28);
-      --chrome: #0c0d0e;
+      --led: #00e8d8;
+      --led-dim: #6aa8a4;
+      --odds: #ff8a2a;
+      --pulse: rgba(255, 138, 42, .28);
     }
-    body { background: #050607; color: var(--ink); }
+    body {
+      background: #050607;
+      color: #e8fffc;
+      font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
+    }
+    .scene .app-shell {
+      position: relative;
+      z-index: 3;
+      background: #050505;
+      border: 2px solid #d8dce0;
+      border-radius: 2px;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, .55);
+    }
+    .chrome {
+      background: #000;
+      border-bottom: 1px solid #1a3332;
+      font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif;
+      letter-spacing: .04em;
+    }
+    .chrome .brand { color: var(--led); }
+    .who { color: var(--led-dim); font-size: .72rem; }
+    .led-meta {
+      display: flex;
+      gap: .85rem;
+      color: var(--led);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      font-size: .82rem;
+    }
+    .led-meta strong { color: #fff; font-weight: 700; }
+    .board { padding: .35rem .45rem .55rem; }
+    .board-head {
+      font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif;
+      color: var(--led);
+      margin-bottom: .35rem;
+    }
+    .board-head h1 {
+      font-size: clamp(.95rem, 2.2vw, 1.15rem);
+      letter-spacing: .14em;
+    }
+    .deadline { color: #fff; }
+    .sheet-wrap {
+      background: #000;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    table.win { font-size: clamp(.78rem, 1.8vw, .9rem); }
+    table.win th {
+      background: #000;
+      color: var(--led-dim);
+      font-weight: 500;
+      letter-spacing: .16em;
+      border-bottom: 1px solid #143230;
+    }
+    table.win td {
+      border-bottom: 1px solid #0c1818;
+      padding: .32rem .4rem;
+    }
+    table.win td.num {
+      color: #fff;
+      font-family: "Chakra Petch", sans-serif;
+      text-shadow: 0 0 6px rgba(255,255,255,.25);
+    }
+    table.win td.name {
+      color: var(--led);
+      font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
+      letter-spacing: .06em;
+      text-shadow: 0 0 8px rgba(0, 232, 216, .25);
+    }
+    table.win td.runner {
+      color: #c8d4d3;
+      width: 22%;
+    }
+    table.win td.odds {
+      color: var(--odds);
+      font-family: "Chakra Petch", sans-serif;
+      font-size: 1.15em;
+      text-shadow: 0 0 10px rgba(255, 138, 42, .35);
+    }
+    table.win td.odds .delta.up { color: #ff5a4a; }
+    table.win td.odds .delta.down { color: var(--led); }
+    .cta {
+      background: transparent;
+      color: var(--led);
+      border: 1px solid var(--led);
+      border-radius: 0;
+    }
+    .foot { color: var(--led-dim); }
     .scene {
       position: relative;
       min-height: 100dvh;
@@ -76,35 +162,6 @@
       color: #1a1204;
       border-color: #f0b429;
     }
-    .scene .app-shell {
-      position: relative;
-      z-index: 3;
-      background: rgba(8, 9, 10, .92);
-      border: 1px solid #3d3420;
-      box-shadow:
-        0 0 0 1px rgba(240, 180, 41, .1),
-        0 18px 50px rgba(0, 0, 0, .5);
-    }
-    .chrome { background: rgba(8, 9, 10, .85); border-bottom-color: #3a3428; }
-    .pill { background: rgba(240, 180, 41, .12); color: var(--accent); }
-    .deadline { color: var(--accent); font-family: "Chakra Petch", sans-serif; }
-    .board-head h1 { font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif; }
-    .sheet-wrap {
-      background: #0a0a0b;
-      border-color: #3d3420;
-      box-shadow: inset 0 0 0 1px rgba(240, 180, 41, .08);
-    }
-    table.win th { background: #121110; color: #a89b78; }
-    table.win td.num { color: #c4b896; font-family: "Chakra Petch", sans-serif; }
-    table.win td.odds {
-      color: var(--accent);
-      font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif;
-      text-shadow: 0 0 12px rgba(240, 180, 41, .25);
-    }
-    table.win td.odds .delta.up { color: #ff8e6b; }
-    table.win td.odds .delta.down { color: #7dcea0; }
-    .cta { background: var(--accent); color: #1a1204; }
-    .who { color: var(--muted); font-size: .72rem; }
     .mock-label {
       position: fixed; right: .75rem; bottom: calc(.75rem + env(safe-area-inset-bottom));
       font-size: .68rem; color: #9aa080; z-index: 9; pointer-events: none;
@@ -120,7 +177,6 @@
         height: calc(100% - 28px);
         margin: 14px;
         width: calc(100% - 28px);
-        border-radius: 10px;
         overflow: hidden;
       }
       .col-b { display: none; }
@@ -146,10 +202,8 @@
         height: auto;
         max-height: min(36rem, calc(100dvh - 4rem));
         margin: 0;
-        border-radius: 12px;
         overflow: hidden;
       }
-      .scene .app-shell .board { padding: .75rem 1rem 1rem; }
       table.win td.runner { width: 22%; }
     }
   </style>
@@ -163,14 +217,15 @@
           <a class="brand" href="./index.html">OSHI KEIBA</a>
           <div class="who">neko · 12,800 スペ</div>
         </div>
-        <div class="meta">
-          <span class="pill"><span class="dot"></span>投票中</span>
+        <div class="led-meta">
+          <span>投票中</span>
+          <span>現在 <strong id="now-clock">18:12</strong></span>
+          <span>締切 <strong>18:40</strong></span>
         </div>
       </header>
       <section class="board">
         <div class="board-head">
-          <h1>第2回 本番</h1>
-          <div class="deadline">締切 18:40</div>
+          <h1>第2回 本番　単勝</h1>
         </div>
         <div class="cols">
           <div class="sheet-wrap">
@@ -233,6 +288,16 @@
         });
       }
       apply();
+      const clock = document.getElementById("now-clock");
+      if (clock) {
+        const tick = () => {
+          clock.textContent = new Intl.DateTimeFormat("ja-JP", {
+            timeZone: "Asia/Tokyo", hour: "2-digit", minute: "2-digit", hour12: false,
+          }).format(new Date());
+        };
+        tick();
+        setInterval(tick, 10000);
+      }
     })();
     const horses = [
       [1, "サイレンススズカ", "あお", "3.2", "down", "0.2"],

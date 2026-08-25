@@ -4,7 +4,7 @@
 
 ## 現在進行中
 
-- 場内デザイン大刷新の方針固め（A・電光掲示・アプリシェル）— 生HTML比較 [mocks/venue-board](mocks/venue-board/index.html)
+- 場内デザイン大刷新（背景イラスト仮採用・電光はLED寄せ）— [mocks/venue-board](mocks/venue-board/index.html)
 
 ## そのあと
 
