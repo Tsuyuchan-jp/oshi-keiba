@@ -25,7 +25,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
-- OCR 受け入れ画像に WebP を追加（PNG / JPEG と共通の MIME 正規化）— [ocr.md](ocr.md)
+- OCR 受け入れ画像に WebP を追加（PNG / JPEG と共通の MIME 正規化・実機確認済み）— [ocr.md](ocr.md)
 - OCR・評価点まわり実装クローズ（細かい修正は後）。開催 `score_setup`・出走 `score_input`・ファジー ID 化・脚質 UI・`computeScore`→Strength→Seed・直置き逃げ・実機確認済み — [score.md](score.md)・[ocr.md](ocr.md)
 - 出走のステ・スキル id・適性・脚質を `computeScore` に渡し、管理画面の評価点へ（直置き併用）。OCR 脚質 UI（S1つ初期選択）とファジー ID 化も含む — [score.md](score.md)・[ocr.md](ocr.md)
 - U-tools 有効スキル id を開催保存時にスナップショット（コース×4脚質、ranked 全件、照合は id）— [score.md](score.md)
