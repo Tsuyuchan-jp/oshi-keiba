@@ -21,7 +21,7 @@
 | [product.md](product.md) | 何を作るか、役割、ガードレール、儀式 |
 | [odds.md](odds.md) | 投票・参考オッズ・確定配当・ポイント |
 | [playbook.md](playbook.md) | 画面・当日オペ・入室パス |
-| [score.md](score.md) | 評価点（Seed の入力）。Neko 案たたき台 |
+| [score.md](score.md) | 評価点の正本（式・保存）。読みの根拠は同ファイル後半 |
 | [ocr.md](ocr.md) | 本戦スクショの読み取り |
 | [rejected.md](rejected.md) | 見送った案と理由 |
 | [next.md](next.md) | 次に取り組む項目名と参照 |
