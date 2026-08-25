@@ -272,7 +272,13 @@
       font-size: .78rem;
       flex: 0 0 auto;
     }
-    .j-pay .j-head { background: #5aa0d0; color: #fff; }
+    .j-pay .j-head { background: #5aa0d0; color: #fff; font-size: .95rem; padding: .4rem .55rem; }
+    .j-pay .j-body {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      padding: .2rem .55rem .35rem;
+    }
     /* 確定盤：縦長。会場名たて書き・大きい番号・右は着順 */
     .fin-top {
       display: grid;
@@ -379,19 +385,19 @@
     }
     .pay-row {
       display: grid;
-      grid-template-columns: 3.4rem minmax(0, 1fr) auto;
-      gap: .35rem;
+      grid-template-columns: 4.4rem minmax(0, 1fr) auto;
+      gap: .45rem;
       align-items: center;
-      padding: .28rem 0;
+      padding: .42rem 0;
       border-bottom: 1px solid #152018;
-      font-size: .82rem;
+      font-size: 1.12rem;
     }
     .pay-k {
-      font-size: .68rem;
+      font-size: .88rem;
       font-weight: 800;
       letter-spacing: .06em;
       text-align: center;
-      padding: .18rem 0;
+      padding: .32rem 0;
       color: #0a0a0a;
     }
     .pay-k.win { background: #4a8fd4; }
@@ -402,18 +408,20 @@
     .pay-sel {
       font-family: "Chakra Petch", sans-serif;
       font-weight: 700;
+      font-size: 1.22em;
       font-variant-numeric: tabular-nums;
       color: #fff;
     }
     .pay-amt {
       font-family: "Chakra Petch", sans-serif;
       font-weight: 700;
+      font-size: 1.22em;
       font-variant-numeric: tabular-nums;
       color: #ffe14a;
       text-align: right;
       white-space: nowrap;
     }
-    .pay-amt.void { color: var(--led); font-size: .78em; }
+    .pay-amt.void { color: var(--led); font-size: .92em; }
     .jumbo-hint {
       display: none;
       flex: 0 0 auto;
