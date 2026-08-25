@@ -70,6 +70,17 @@ export const SEASON_OPTIONS = [
   { value: 5, label: "その他(5)" },
 ] as const;
 
+/**
+ * 管理画面の要求ステ初期表示（スタミナ以外）。
+ * コース未選択のまま保存しても、これだけなら直置き扱い。
+ */
+export const DEFAULT_SCORE_REQ = {
+  speedCap: 2150,
+  power: 1600,
+  guts: 1200,
+  wisdom: 1600,
+} as const;
+
 export function listScoreCourses(): ScoreCourse[] {
   return COURSES;
 }
@@ -235,11 +246,22 @@ export function scoreSetupFromForm(
     wisdomRaw ||
     staminaRace;
 
+  /** 初期表示のデフォルトだけ埋まっている状態（コースなし＝直置き） */
+  const onlyReqDefaults =
+    !weatherRaw &&
+    !groundRaw &&
+    !seasonRaw &&
+    !staNoRaw &&
+    !staWithRaw &&
+    !staminaRace &&
+    speedCapRaw === String(DEFAULT_SCORE_REQ.speedCap) &&
+    powerRaw === String(DEFAULT_SCORE_REQ.power) &&
+    gutsRaw === String(DEFAULT_SCORE_REQ.guts) &&
+    wisdomRaw === String(DEFAULT_SCORE_REQ.wisdom);
+
   if (!courseKey) {
-    if (any) {
-      throw new Error("開催条件: コースを選ぶか、ステ目標の入力を空にしてください");
-    }
-    return null;
+    if (!any || onlyReqDefaults) return null;
+    throw new Error("開催条件: コースを選ぶか、ステ目標の入力を空にしてください");
   }
 
   const parsed = parseScoreSetup({

@@ -19,6 +19,7 @@ import { eventScoreSetup, numberByHorseId } from "./store";
 import { horseSheetParts } from "./horseName";
 import { IMPUTED_LAMBDA } from "./odds";
 import {
+  DEFAULT_SCORE_REQ,
   GROUND_CONDITION_OPTIONS,
   listScoreCourses,
   SEASON_OPTIONS,
@@ -1037,6 +1038,8 @@ export function scoreSetupAdminFields(event: EventRow): string {
     label: x.label,
   }));
   const num = (n: number | undefined) => (n == null ? "" : String(n));
+  const reqVal = (saved: number | undefined, fallback: number) =>
+    escapeHtml(saved == null ? String(fallback) : String(saved));
   const ids = setup?.effectiveSkillIds;
   const effectsNote = ids
     ? `有効スキル id（保存時取得）: 逃 ${ids.runner.length} / 先 ${ids.leader.length} / 差 ${ids.betweener.length} / 追 ${ids.chaser.length}${
@@ -1047,7 +1050,7 @@ export function scoreSetupAdminFields(event: EventRow): string {
     : "有効スキル id: 未取得（コースを選んで保存すると U-tools から取り直します）";
   return `<fieldset class="kind-set">
     <legend>開催条件とステ目標値</legend>
-    <p class="note">評価点の自動算出用。未設定なら Strength 直置きのみ。コースは U-tools 金ドット36。天候・バ場・季節と目標値は開催ごと手打ち。保存時に選んだコースの有効スキル id（4脚質）を U-tools から取得して開催に固定します。</p>
+    <p class="note">評価点の自動算出用。未設定なら Strength 直置きのみ。コースは U-tools 金ドット36。天候・バ場・季節と目標値は開催ごと手打ち（速・パ・根・賢は初期 ${DEFAULT_SCORE_REQ.speedCap}/${DEFAULT_SCORE_REQ.power}/${DEFAULT_SCORE_REQ.guts}/${DEFAULT_SCORE_REQ.wisdom}。スタミナはコース依存のため空）。保存時に選んだコースの有効スキル id（4脚質）を U-tools から取得して開催に固定します。</p>
     <div class="row">
       <label>コース <select name="score_course">${selectOpts(courses, c?.courseKey, "（未設定）")}</select></label>
       <label>天候 <select name="score_weather">${selectOpts(WEATHER_OPTIONS, c?.weather)}</select></label>
@@ -1055,10 +1058,10 @@ export function scoreSetupAdminFields(event: EventRow): string {
       <label>季節 <select name="score_season">${selectOpts(SEASON_OPTIONS, c?.season)}</select></label>
     </div>
     <div class="row">
-      <label>要求スピード <input name="score_speed_cap" type="number" min="1" step="1" value="${escapeHtml(num(r?.speedCap))}" placeholder="継承突破なしカンスト"></label>
-      <label>要求パ <input name="score_power" type="number" min="1" step="1" value="${escapeHtml(num(r?.power))}"></label>
-      <label>要求根 <input name="score_guts" type="number" min="1" step="1" value="${escapeHtml(num(r?.guts))}"></label>
-      <label>要求賢 <input name="score_wisdom" type="number" min="1" step="1" value="${escapeHtml(num(r?.wisdom))}"></label>
+      <label>要求スピード <input name="score_speed_cap" type="number" min="1" step="1" value="${reqVal(r?.speedCap, DEFAULT_SCORE_REQ.speedCap)}" placeholder="継承突破なしカンスト"></label>
+      <label>要求パ <input name="score_power" type="number" min="1" step="1" value="${reqVal(r?.power, DEFAULT_SCORE_REQ.power)}"></label>
+      <label>要求根 <input name="score_guts" type="number" min="1" step="1" value="${reqVal(r?.guts, DEFAULT_SCORE_REQ.guts)}"></label>
+      <label>要求賢 <input name="score_wisdom" type="number" min="1" step="1" value="${reqVal(r?.wisdom, DEFAULT_SCORE_REQ.wisdom)}"></label>
     </div>
     <div class="row">
       <label>要求スタ（掛かりなし） <input name="score_stamina_no" type="number" min="1" step="1" value="${escapeHtml(num(r?.staminaNoTempt))}"></label>

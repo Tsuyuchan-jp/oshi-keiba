@@ -94,6 +94,19 @@ test("フォーム: コースだけだとエラー", () => {
   );
 });
 
+test("フォーム: 要求ステのデフォルトだけなら null", () => {
+  const map: Record<string, string> = {
+    score_speed_cap: "2150",
+    score_power: "1600",
+    score_guts: "1200",
+    score_wisdom: "1600",
+  };
+  assert.equal(
+    scoreSetupFromForm((n) => map[n] ?? ""),
+    null,
+  );
+});
+
 test("フォーム: 揃えば通る", () => {
   const map: Record<string, string> = {
     score_course: "10606",
