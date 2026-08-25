@@ -61,89 +61,102 @@
       font-size: clamp(.95rem, 2.2vw, 1.15rem);
       letter-spacing: .14em;
     }
-    .deadline { color: #fff; }
-    .sheet-wrap {
-      background: #000;
-      border: 0;
-      border-radius: 0;
-      box-shadow: none;
-    }
-    table.win { font-size: clamp(.78rem, 1.8vw, .9rem); }
-    table.win th {
-      background: #000;
-      color: var(--led-dim);
-      font-weight: 500;
-      letter-spacing: .16em;
-      border-bottom: 1px solid #143230;
-    }
-    table.win td {
-      border-bottom: 1px solid #0c1818;
-      padding: .32rem .4rem;
-    }
     .led-meta .pill {
       background: rgba(224, 179, 74, .15);
       color: #e0b34a;
       border: 0;
     }
     .led-meta .pill .dot { background: currentColor; }
-    table.win { table-layout: fixed; width: 100%; }
-    table.win th:nth-child(1),
-    table.win td.num {
-      width: 1.55rem;
-      padding-left: .1rem;
-      padding-right: .1rem;
+    .sheet-wrap {
+      background: #000;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    /* 列幅はここだけ触る */
+    .sheet {
+      --col-num: 1.55rem;
+      --col-runner: 5.5rem;
+      --col-style: 1.7rem;
+      --col-odds: 6.2rem;
+      --sheet-pad-y: .32rem;
+      --sheet-pad-x: .35rem;
+      font-size: clamp(.78rem, 1.8vw, .9rem);
+    }
+    .sheet-row {
+      display: grid;
+      grid-template-columns:
+        var(--col-num)
+        minmax(0, 1fr)
+        var(--col-runner)
+        var(--col-style)
+        var(--col-odds);
+      align-items: center;
+      column-gap: .2rem;
+      padding: var(--sheet-pad-y) .15rem;
+      border-bottom: 1px solid #0c1818;
+    }
+    .sheet-row.head {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #000;
+      color: var(--led-dim);
+      font-weight: 500;
+      letter-spacing: .12em;
+      font-size: .68rem;
+      border-bottom: 1px solid #143230;
+    }
+    .c-num {
       color: #fff;
       font-family: "Chakra Petch", sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      text-align: center;
       text-shadow: 0 0 6px rgba(255,255,255,.25);
     }
-    table.win th:nth-child(2),
-    table.win td.name {
-      width: auto;
+    .c-name {
       color: var(--led);
-      font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
-      letter-spacing: 0;
+      min-width: 0;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       text-shadow: 0 0 8px rgba(0, 232, 216, .25);
     }
-    table.win th:nth-child(3),
-    table.win td.runner {
-      width: 6.5rem;
+    .c-runner {
       color: #c8d4d3;
+      min-width: 0;
+      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: nowrap;
     }
-    table.win th:nth-child(4),
-    table.win td.style {
-      width: 1.7rem;
-      padding-left: 0;
-      padding-right: 0;
+    .c-style {
       color: var(--led);
       font-size: .78em;
-      letter-spacing: 0;
       text-align: center;
       white-space: nowrap;
     }
-    table.win th:nth-child(5),
-    table.win td.odds {
-      width: 6.4rem;
-      white-space: nowrap;
+    .c-odds {
       color: var(--odds);
       font-family: "Chakra Petch", sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
       font-size: 1.15em;
+      text-align: right;
+      white-space: nowrap;
       text-shadow: 0 0 10px rgba(255, 138, 42, .35);
     }
-    table.win td.odds .delta {
+    .c-odds .delta {
       display: inline-block;
       min-width: 2.4em;
       margin: 0 .35rem 0 0;
       font-size: .72em;
       text-align: right;
     }
-    table.win td.odds .delta.up { color: #ff5a4a; }
-    table.win td.odds .delta.down { color: var(--led); }
+    .c-odds .delta.up { color: #ff5a4a; }
+    .c-odds .delta.down { color: var(--led); }
+    .sheet-row.pulse { animation: pulse-row 1.5s ease-out; }
+    .sheet-row.head .c-odds { color: var(--led-dim); font-size: .68em; text-shadow: none; }
     .cta {
       background: var(--odds);
       color: #140800;
@@ -295,16 +308,28 @@
         </div>
         <div class="cols">
           <div class="sheet-wrap">
-            <table class="win">
-              <thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th>脚質</th><th style="text-align:right">オッズ</th></tr></thead>
-              <tbody id="rows-a"></tbody>
-            </table>
+            <div class="sheet" role="table" aria-label="単勝オッズ">
+              <div class="sheet-row head" role="row">
+                <span class="c-num" role="columnheader">#</span>
+                <span class="c-name" role="columnheader">ウマ娘</span>
+                <span class="c-runner" role="columnheader">出走者</span>
+                <span class="c-style" role="columnheader">脚質</span>
+                <span class="c-odds" role="columnheader">オッズ</span>
+              </div>
+              <div id="rows-a"></div>
+            </div>
           </div>
           <div class="sheet-wrap col-b">
-            <table class="win">
-              <thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th>脚質</th><th style="text-align:right">オッズ</th></tr></thead>
-              <tbody id="rows-b"></tbody>
-            </table>
+            <div class="sheet" role="table" aria-label="単勝オッズ 続き">
+              <div class="sheet-row head" role="row">
+                <span class="c-num" role="columnheader">#</span>
+                <span class="c-name" role="columnheader">ウマ娘</span>
+                <span class="c-runner" role="columnheader">出走者</span>
+                <span class="c-style" role="columnheader">脚質</span>
+                <span class="c-odds" role="columnheader">オッズ</span>
+              </div>
+              <div id="rows-b"></div>
+            </div>
           </div>
         </div>
         <div class="foot">
@@ -387,11 +412,18 @@
     ];
     function fill(el, list) {
       for (const [n, uma, style, runner, odds, dir, d] of list) {
-        const tr = document.createElement("tr");
-        if (n === 3) tr.className = "pulse";
-        tr.innerHTML = `<td class="num">${n}</td><td class="name">${uma}</td><td class="runner">${runner}</td><td class="style">${style}</td>
-          <td class="odds">${dir ? `<span class="delta ${dir}">${dir === "up" ? "↑" : "↓"}${d}</span>` : `<span class="delta"></span>`}${odds}</td>`;
-        el.appendChild(tr);
+        const row = document.createElement("div");
+        row.className = "sheet-row" + (n === 3 ? " pulse" : "");
+        row.setAttribute("role", "row");
+        const delta = dir
+          ? `<span class="delta ${dir}">${dir === "up" ? "↑" : "↓"}${d}</span>`
+          : `<span class="delta"></span>`;
+        row.innerHTML = `<span class="c-num" role="cell">${n}</span>
+          <span class="c-name" role="cell">${uma}</span>
+          <span class="c-runner" role="cell">${runner}</span>
+          <span class="c-style" role="cell">${style}</span>
+          <span class="c-odds" role="cell">${delta}${odds}</span>`;
+        el.appendChild(row);
       }
     }
     function render() {
@@ -410,11 +442,11 @@
     render();
     window.matchMedia("(min-width: 900px)").addEventListener("change", render);
     setInterval(() => {
-      const tr = document.querySelector("#rows-a tr.pulse") || document.querySelector("#rows-a tr");
-      if (!tr) return;
-      tr.classList.remove("pulse");
-      void tr.offsetWidth;
-      tr.classList.add("pulse");
+      const row = document.querySelector("#rows-a .sheet-row.pulse") || document.querySelector("#rows-a .sheet-row");
+      if (!row) return;
+      row.classList.remove("pulse");
+      void row.offsetWidth;
+      row.classList.add("pulse");
     }, 4000);
   </script>
 </body>
