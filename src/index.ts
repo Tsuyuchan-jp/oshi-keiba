@@ -111,8 +111,12 @@ function adminReauthField(): string {
     </label>`;
 }
 
-function readAdminReauth(form: FormData): string {
-  return form.get("admin_reauth") ?? form.get("password") ?? "";
+function readAdminReauth(form: { get(name: string): FormDataEntryValue | string | null }): string {
+  const a = form.get("admin_reauth");
+  const b = form.get("password");
+  const first = typeof a === "string" ? a : "";
+  const second = typeof b === "string" ? b : "";
+  return first || second;
 }
 
 async function requireAdmin(
@@ -752,15 +756,9 @@ export default {
                 <div class="ops-aside">
                   <h3>逃げ（設定・出走のやり直し）</h3>
                   <div class="row">
-                    <form method="post" action="/admin/clear-horses" onsubmit="return confirm(${escapeHtml(JSON.stringify("この開催の出走をすべて消します。開催自体は残ります。よろしいですか？"))});">
-                      <button type="submit" class="secondary"${e.status !== "setup" ? " disabled" : ""}>出走を空にする</button>
-                    </form>
-                    <form method="post" action="/admin/discard-event" onsubmit="return confirm(${escapeHtml(JSON.stringify("この開催を破棄し、直前の公開済み開催へ戻します。残高は消しません。よろしいですか？"))});">
-                      <button type="submit" class="danger"${e.status !== "setup" ? " disabled" : ""}>この開催を破棄</button>
-                    </form>
-                    <form method="post" action="/admin/revert-voting" onsubmit="return confirm(${escapeHtml(JSON.stringify("投票を取り消して出走登録に戻します。この開催の票は全額戻り、配ったスペも戻します。よろしいですか？"))});">
-                      <button type="submit" class="danger"${e.status !== "voting" ? " disabled" : ""}>投票を取り消して登録に戻す</button>
-                    </form>
+                    <button type="button" class="secondary" id="clear-horses-open"${e.status !== "setup" ? " disabled" : ""}>出走を空にする</button>
+                    <button type="button" class="danger" id="discard-event-open"${e.status !== "setup" ? " disabled" : ""}>この開催を破棄</button>
+                    <button type="button" class="danger" id="revert-voting-open"${e.status !== "voting" ? " disabled" : ""}>投票を取り消して登録に戻す</button>
                   </div>
                   <h3>復旧（Undo${allowDemo ? "・デモ初期化" : ""}）</h3>
                   <div class="row">
@@ -781,6 +779,39 @@ export default {
                       : `<p class="note">戻せる管理者操作はまだありません。</p>`
                   }
                 </div>
+                <dialog class="modal" id="clear-horses-modal">
+                  <h2>出走を空にする</h2>
+                  <p><strong>この開催の出走をすべて消します。開催自体は残ります。</strong></p>
+                  <form method="post" action="/admin/clear-horses" id="clear-horses-form" class="reauth" autocomplete="off">
+                    <div class="row">
+                      ${adminReauthField()}
+                      <button class="danger" type="submit">空にする</button>
+                      <button type="button" class="secondary" id="clear-horses-cancel">やめる</button>
+                    </div>
+                  </form>
+                </dialog>
+                <dialog class="modal" id="discard-event-modal">
+                  <h2>この開催を破棄</h2>
+                  <p><strong>この開催を破棄し、直前の公開済み開催へ戻します。残高は消しません。</strong></p>
+                  <form method="post" action="/admin/discard-event" id="discard-event-form" class="reauth" autocomplete="off">
+                    <div class="row">
+                      ${adminReauthField()}
+                      <button class="danger" type="submit">破棄する</button>
+                      <button type="button" class="secondary" id="discard-event-cancel">やめる</button>
+                    </div>
+                  </form>
+                </dialog>
+                <dialog class="modal" id="revert-voting-modal">
+                  <h2>投票を取り消して登録に戻す</h2>
+                  <p><strong>投票を止め、出走登録に戻します。この開催の票は全額戻り、配ったスペも戻します。</strong></p>
+                  <form method="post" action="/admin/revert-voting" id="revert-voting-form" class="reauth" autocomplete="off">
+                    <div class="row">
+                      ${adminReauthField()}
+                      <button class="danger" type="submit">登録に戻す</button>
+                      <button type="button" class="secondary" id="revert-voting-cancel">やめる</button>
+                    </div>
+                  </form>
+                </dialog>
                 <dialog class="modal" id="undo-modal">
                   <h2>直前の操作を戻す</h2>
                   <p><strong>戻す操作: ${undoMeta ? escapeHtml(undoMeta.action_label) : "—"}</strong></p>
@@ -835,16 +866,45 @@ export default {
                       document.getElementById("undo-open"),
                       document.getElementById("undo-cancel"),
                     );
-                    const undoForm = document.getElementById("undo-form");
-                    const undoLabel = ${JSON.stringify(undoMeta?.action_label ?? "")};
-                    if (undoForm) {
-                      undoForm.addEventListener("submit", (ev) => {
-                        const msg =
-                          "直前の管理者操作を巻き戻します。\\n\\n戻す操作: " + undoLabel +
-                          "\\n\\n出走・票・残高・払戻がその直前に戻ります。あとから入った票は消えます。\\nこの Undo 自体は戻せません。\\n\\n本当に巻き戻しますか？";
+                    bindDlg(
+                      document.getElementById("clear-horses-modal"),
+                      document.getElementById("clear-horses-open"),
+                      document.getElementById("clear-horses-cancel"),
+                    );
+                    bindDlg(
+                      document.getElementById("discard-event-modal"),
+                      document.getElementById("discard-event-open"),
+                      document.getElementById("discard-event-cancel"),
+                    );
+                    bindDlg(
+                      document.getElementById("revert-voting-modal"),
+                      document.getElementById("revert-voting-open"),
+                      document.getElementById("revert-voting-cancel"),
+                    );
+                    const confirmOnSubmit = (form, msg) => {
+                      if (!form) return;
+                      form.addEventListener("submit", (ev) => {
                         if (!confirm(msg)) ev.preventDefault();
                       });
-                    }
+                    };
+                    const undoLabel = ${JSON.stringify(undoMeta?.action_label ?? "")};
+                    confirmOnSubmit(
+                      document.getElementById("undo-form"),
+                      "直前の管理者操作を巻き戻します。\\n\\n戻す操作: " + undoLabel +
+                        "\\n\\n出走・票・残高・払戻がその直前に戻ります。あとから入った票は消えます。\\nこの Undo 自体は戻せません。\\n\\n本当に巻き戻しますか？",
+                    );
+                    confirmOnSubmit(
+                      document.getElementById("clear-horses-form"),
+                      "この開催の出走をすべて消します。開催自体は残ります。\\n\\n本当に空にしますか？",
+                    );
+                    confirmOnSubmit(
+                      document.getElementById("discard-event-form"),
+                      "この開催を破棄し、直前の公開済み開催へ戻します。残高は消しません。\\n\\n本当に破棄しますか？",
+                    );
+                    confirmOnSubmit(
+                      document.getElementById("revert-voting-form"),
+                      "投票を取り消して出走登録に戻します。この開催の票は全額戻り、配ったスペも戻します。\\n\\n本当に戻しますか？",
+                    );
                     const resetForm = document.getElementById("reset-form");
                     if (resetForm) {
                       resetForm.addEventListener("submit", (ev) => {
@@ -1121,6 +1181,11 @@ export default {
       if (method === "POST" && path === "/admin/clear-horses") {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
+        const form = await readForm(request);
+        const password = readAdminReauth(form);
+        if (!timingSafeEqualStr(password, env.ADMIN_PASSWORD)) {
+          return bounce("/admin", "管理者パスが違います（空にしていません）", true);
+        }
         try {
           const board = await loadBoard(env.DB);
           await clearHorses(env.DB, board.event);
@@ -1133,6 +1198,11 @@ export default {
       if (method === "POST" && path === "/admin/discard-event") {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
+        const form = await readForm(request);
+        const password = readAdminReauth(form);
+        if (!timingSafeEqualStr(password, env.ADMIN_PASSWORD)) {
+          return bounce("/admin", "管理者パスが違います（破棄していません）", true);
+        }
         try {
           const board = await loadBoard(env.DB);
           await discardCurrentSetup(env.DB, board.event);
@@ -1145,6 +1215,11 @@ export default {
       if (method === "POST" && path === "/admin/revert-voting") {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
+        const form = await readForm(request);
+        const password = readAdminReauth(form);
+        if (!timingSafeEqualStr(password, env.ADMIN_PASSWORD)) {
+          return bounce("/admin", "管理者パスが違います（戻していません）", true);
+        }
         try {
           const board = await loadBoard(env.DB);
           await revertVotingToSetup(env.DB, board.event);
