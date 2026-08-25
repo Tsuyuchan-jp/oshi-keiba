@@ -4,11 +4,12 @@
 
 ## 現在進行中
 
-- 投票（窓口）の見た目相談 — [bet-window](mocks/bet-window/index.html)
+- 入室（名称・見た目）の相談。場内からこの画面へのヘッダーリンクは置かない（馬券を買うが本線）
 
 ## そのあと
 
 - 場内デザインを本番へ（モック仮置き。実装は後）— [venue-board](mocks/venue-board/layout-venue.html)
+- 窓口デザインを本番へ（案A・マークカード仮置き。実装は後）— [quiet.html](mocks/bet-window/quiet.html)
 - Neko長明さんへの評価点の式確認（手土産＝動く実装は揃った）— [score.md](score.md)
 - 管理画面の Strength 表記を評価点に揃える
 - OCR / 評価点の細かい調整（読取・表示 UI など）— [ocr.md](ocr.md)・[score.md](score.md)
@@ -26,6 +27,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
+- 窓口デザイン仮置き（案A・マークカード・所持スペ帯・買うは下固定。ナビ名は窓口、見出しは発売所）— [quiet.html](mocks/bet-window/quiet.html)
 - 場内デザイン仮置き（アプリシェル＋場の背景イラスト＋LED電光。列は Grid。脚質列あり。本番未適用）— [layout-venue.html](mocks/venue-board/layout-venue.html)
 - OCR 受け入れ画像に WebP を追加（PNG / JPEG と共通の MIME 正規化・実機確認済み）— [ocr.md](ocr.md)
 - OCR・評価点まわり実装クローズ（細かい修正は後）。開催 `score_setup`・出走 `score_input`・ファジー ID 化・脚質 UI・`computeScore`→Strength→Seed・直置き逃げ・実機確認済み — [score.md](score.md)・[ocr.md](ocr.md)
