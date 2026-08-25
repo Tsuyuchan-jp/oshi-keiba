@@ -15,15 +15,7 @@ export function horsesAdminBody(board: Board, canSetup: boolean): string {
         <td>${escapeHtml(p.umaName)}</td>
         <td>${escapeHtml(p.runnerName)}</td>
         <td>${h.horse.strength}</td>
-        <td>${shot}${
-          canSetup
-            ? `<form method="post" action="/admin/horses/shot" enctype="multipart/form-data" class="row">
-                <input type="hidden" name="horse_id" value="${escapeHtml(h.horse.id)}">
-                <input name="shot" type="file" accept="image/png,image/jpeg" required>
-                <button type="submit" class="secondary">保存</button>
-              </form>`
-            : ""
-        }</td>
+        <td>${shot}</td>
       </tr>`;
     })
     .join("");
@@ -37,7 +29,7 @@ export function horsesAdminBody(board: Board, canSetup: boolean): string {
           <button type="button" class="secondary" id="gemini-clear">消す</button>
         </div>
         <h3>スクショから読む</h3>
-        <p class="note">アプリ外で結合した完成画像を1枚。評価点は埋めません。読めなくても下の直置きで登録できます。</p>
+        <p class="note">アプリ外で結合した完成画像を1枚。読取に成功した画像が、登録と同時に保存されます。評価点は埋めません。読まなくても下の直置きで登録できます（その場合スクショは残りません）。</p>
         <div class="row">
           <label>画像 <input id="ocr-file" type="file" accept="image/png,image/jpeg"></label>
           <button type="button" id="ocr-run">読み取る</button>
@@ -46,10 +38,11 @@ export function horsesAdminBody(board: Board, canSetup: boolean): string {
         <pre class="ocr-out" id="ocr-out"></pre>
       </section>
       <form id="horse-add" method="post" action="/admin/horse" enctype="multipart/form-data" class="row" style="margin-top:1rem">
+        <input type="hidden" name="ocr_ok" id="ocr-ok" value="">
+        <input type="file" name="shot" id="shot-from-ocr" accept="image/png,image/jpeg" hidden>
         <label>ウマ娘名 <input name="uma_name" id="uma-name" required maxlength="40"></label>
         <label>出走者 <input name="runner_name" id="runner-name" required maxlength="40"></label>
         <label>Strength <input name="strength" type="number" min="0" step="0.1" value="10" required></label>
-        <label>スクショ（任意） <input name="shot" type="file" accept="image/png,image/jpeg"></label>
         <button type="submit">登録</button>
       </form>
       <form method="post" action="/admin/horses-bulk" style="margin-top:1rem">
@@ -88,9 +81,21 @@ export function ocrAdminScript(): string {
     if (out) out.textContent = "キーを消しました。";
   });
   let ac = null;
+  let ocrShot = null;
   document.getElementById("ocr-stop")?.addEventListener("click", () => {
     if (ac) ac.abort();
   });
+  function attachOcrShot(file) {
+    ocrShot = file;
+    const slot = document.getElementById("shot-from-ocr");
+    const flag = document.getElementById("ocr-ok");
+    if (flag) flag.value = "1";
+    if (slot && typeof DataTransfer !== "undefined") {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      slot.files = dt.files;
+    }
+  }
   function classify(name) {
     const kind = byName.get(name) || "unknown";
     const ja = KIND_JA[kind] || "未分類";
@@ -157,10 +162,28 @@ export function ocrAdminScript(): string {
       lines.push("脚質\\t逃" + (ap.nige ?? "") + " 先" + (ap.senkou ?? "") + " 差" + (ap.sashi ?? "") + " 追" + (ap.oikomi ?? ""));
       lines.push("スキル " + skills.length + "件（デバフ含む）");
       for (const s of skills) lines.push(classify(s));
+      attachOcrShot(file);
       out.textContent = lines.join("\\n");
     } catch (err) {
       if (err && err.name === "AbortError") out.textContent = "停止しました。";
       else out.textContent = err instanceof Error ? err.message : String(err);
+    }
+  });
+  document.getElementById("horse-add")?.addEventListener("submit", (ev) => {
+    const flag = document.getElementById("ocr-ok");
+    const slot = document.getElementById("shot-from-ocr");
+    if (flag && flag.value === "1") {
+      const has = (slot && slot.files && slot.files[0]) || ocrShot;
+      if (!has) {
+        ev.preventDefault();
+        if (out) out.textContent = "読取した画像が登録に載っていません。もう一度読み取ってください。";
+        return;
+      }
+      if (ocrShot && slot && !(slot.files && slot.files[0]) && typeof DataTransfer !== "undefined") {
+        const dt = new DataTransfer();
+        dt.items.add(ocrShot);
+        slot.files = dt.files;
+      }
     }
   });
 })();

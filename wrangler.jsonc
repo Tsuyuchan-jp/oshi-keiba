@@ -24,6 +24,11 @@
   "r2_buckets": [
     {
       "binding": "SHOTS",
+      // 本番デプロイ前に忘れない:
+      // 1. npx wrangler r2 bucket create oshi-keiba-shots（初回だけ）
+      // 2. npx wrangler d1 migrations apply oshi-keiba --remote
+      // 3. npm run deploy
+      // 詳細は docs/ocr.md の「デプロイ（忘れない）」
       "bucket_name": "oshi-keiba-shots"
     }
   ]

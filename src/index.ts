@@ -1130,6 +1130,11 @@ export default {
         try {
           const board = await loadBoard(env.DB);
           const fd = await request.formData();
+          const ocrOk = String(fd.get("ocr_ok") ?? "") === "1";
+          const shot = fd.get("shot");
+          if (ocrOk && (!(shot instanceof File) || shot.size <= 0)) {
+            throw new Error("OCRした画像がありません。もう一度読み取ってください");
+          }
           const id = await addHorse(
             env.DB,
             board.event,
@@ -1137,31 +1142,18 @@ export default {
             String(fd.get("runner_name") ?? ""),
             Number(fd.get("strength")),
           );
-          const shot = fd.get("shot");
-          if (shot instanceof File && shot.size > 0) {
-            const key = await putHorseShot(env, board.event.id, id, shot);
-            await setHorseShotKey(env.DB, board.event, id, key);
+          if (ocrOk && shot instanceof File) {
+            try {
+              const key = await putHorseShot(env, board.event.id, id, shot);
+              await setHorseShotKey(env.DB, board.event, id, key);
+            } catch (err) {
+              await env.DB.prepare("DELETE FROM horses WHERE id = ? AND event_id = ?")
+                .bind(id, board.event.id)
+                .run();
+              throw err;
+            }
           }
           return bounce("/admin/horses", "登録しました");
-        } catch (err) {
-          return bounce("/admin/horses", err instanceof Error ? err.message : "失敗", true);
-        }
-      }
-
-      if (method === "POST" && path === "/admin/horses/shot") {
-        const gate = await requireAdmin(request, env);
-        if (gate instanceof Response) return gate;
-        try {
-          const board = await loadBoard(env.DB);
-          const fd = await request.formData();
-          const horseId = String(fd.get("horse_id") ?? "");
-          const shot = fd.get("shot");
-          if (!(shot instanceof File) || shot.size <= 0) {
-            throw new Error("画像を選んでください");
-          }
-          const key = await putHorseShot(env, board.event.id, horseId, shot);
-          await setHorseShotKey(env.DB, board.event, horseId, key);
-          return bounce("/admin/horses", "スクショを保存しました");
         } catch (err) {
           return bounce("/admin/horses", err instanceof Error ? err.message : "失敗", true);
         }
