@@ -27,9 +27,54 @@
       position: absolute;
       inset: 0;
       z-index: 0;
-      background:
-        linear-gradient(180deg, rgba(5, 6, 10, .45), rgba(5, 8, 6, .55)),
-        url("./venue-night-9x16.png") center / cover no-repeat;
+      background-color: #0a1218;
+      background-image:
+        linear-gradient(180deg, var(--veil-top), var(--veil-bot)),
+        var(--scene-portrait);
+      background-position: center bottom, center bottom;
+      background-size: cover, cover;
+      background-repeat: no-repeat;
+      transition: opacity .8s ease;
+    }
+    .scene[data-slot="day"] {
+      --veil-top: rgba(20, 28, 36, .18);
+      --veil-bot: rgba(12, 18, 16, .28);
+      --scene-portrait: url("./venue-day-9x16.png");
+      --scene-landscape: url("./venue-day-16x9.png");
+    }
+    .scene[data-slot="dusk"] {
+      --veil-top: rgba(24, 12, 8, .28);
+      --veil-bot: rgba(18, 10, 8, .38);
+      --scene-portrait: url("./venue-dusk-9x16.png");
+      --scene-landscape: url("./venue-dusk-16x9.png");
+    }
+    .scene[data-slot="night"] {
+      --veil-top: rgba(5, 6, 10, .38);
+      --veil-bot: rgba(5, 8, 6, .48);
+      --scene-portrait: url("./venue-night-9x16.png");
+      --scene-landscape: url("./venue-night-16x9.png");
+    }
+    .slot-bar {
+      position: fixed;
+      left: .75rem;
+      bottom: calc(.75rem + env(safe-area-inset-bottom));
+      z-index: 10;
+      display: flex;
+      gap: .3rem;
+      font-size: .72rem;
+    }
+    .slot-bar button {
+      border: 1px solid #4a3f28;
+      background: rgba(8, 9, 10, .75);
+      color: #c4b896;
+      padding: .28rem .5rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .slot-bar button[aria-pressed="true"] {
+      background: #f0b429;
+      color: #1a1204;
+      border-color: #f0b429;
     }
     .scene .app-shell {
       position: relative;
@@ -72,9 +117,9 @@
     @media (max-width: 899px) {
       .scene { height: 100dvh; height: 100vh; }
       .scene .app-shell {
-        height: 100%;
-        margin: 8px;
-        width: calc(100% - 16px);
+        height: calc(100% - 28px);
+        margin: 14px;
+        width: calc(100% - 28px);
         border-radius: 10px;
         overflow: hidden;
       }
@@ -91,9 +136,10 @@
         height: 100vh;
       }
       .scene-bg {
-        background:
-          linear-gradient(180deg, rgba(5, 6, 10, .4), rgba(5, 8, 6, .5)),
-          url("./venue-night-16x9.png") center / cover no-repeat;
+        background-image:
+          linear-gradient(180deg, var(--veil-top), var(--veil-bot)),
+          var(--scene-landscape);
+        background-position: center, center;
       }
       .scene .app-shell {
         width: min(68rem, calc(100vw - 4rem));
@@ -109,7 +155,7 @@
   </style>
 </head>
 <body>
-  <div class="scene">
+  <div class="scene" data-slot="night">
     <div class="scene-bg" aria-hidden="true"></div>
     <div class="app-shell">
       <header class="chrome">
@@ -147,8 +193,47 @@
       </section>
     </div>
   </div>
-  <div class="mock-label">layout: venue wide · 幅を変えて見てください</div>
+  <div class="slot-bar" role="group" aria-label="背景の時間帯">
+    <button type="button" data-slot="auto">自動</button>
+    <button type="button" data-slot="day">日中</button>
+    <button type="button" data-slot="dusk">夕方</button>
+    <button type="button" data-slot="night">ナイター</button>
+  </div>
+  <div class="mock-label">端の芝が見えるか・時間帯を切替</div>
   <script>
+    (function slotBg() {
+      const scene = document.querySelector(".scene");
+      const buttons = [...document.querySelectorAll(".slot-bar [data-slot]")];
+      const q = new URLSearchParams(location.search).get("slot");
+      function jstHour() {
+        const p = new Intl.DateTimeFormat("en-US", {
+          timeZone: "Asia/Tokyo", hour: "numeric", hour12: false,
+        }).formatToParts(new Date());
+        return Number(p.find((x) => x.type === "hour").value);
+      }
+      function fromClock() {
+        const h = jstHour();
+        if (h >= 6 && h < 16) return "day";
+        if (h >= 16 && h < 19) return "dusk";
+        return "night";
+      }
+      let mode = (q === "day" || q === "dusk" || q === "night") ? q : "auto";
+      function apply() {
+        const slot = mode === "auto" ? fromClock() : mode;
+        scene.dataset.slot = slot;
+        for (const b of buttons) {
+          const on = b.dataset.slot === mode;
+          b.setAttribute("aria-pressed", on ? "true" : "false");
+        }
+      }
+      for (const b of buttons) {
+        b.addEventListener("click", () => {
+          mode = b.dataset.slot;
+          apply();
+        });
+      }
+      apply();
+    })();
     const horses = [
       [1, "サイレンススズカ", "あお", "3.2", "down", "0.2"],
       [2, "スペシャルウィーク", "つゆ", "5.8", "", ""],
