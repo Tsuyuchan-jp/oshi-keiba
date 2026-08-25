@@ -3,9 +3,172 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>窓口 — 静かな窓口</title>
+  <title>窓口 — マークカード式</title>
   <link rel="stylesheet" href="./bet-shared.css">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body.tone-quiet .app-shell { background: #0c0e0f; border-color: #3a403c; }
+    body.tone-quiet .brand { color: #c8d0cc; }
+    @media (min-width: 900px) {
+      .app-shell { width: min(36rem, calc(100vw - 4rem)) !important; }
+    }
+    .desk {
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      overflow: hidden;
+    }
+    .desk-scroll {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: .65rem .7rem 5.5rem;
+    }
+    .kinds {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      margin-bottom: .65rem;
+    }
+    .kinds button {
+      appearance: none;
+      border: 1px solid #2a3332;
+      background: #141618;
+      color: #8a9490;
+      padding: .45rem 0;
+      font: inherit;
+      font-size: .72rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .kinds button.on {
+      background: #1c1810;
+      color: #e0b34a;
+      border-color: #e0b34a;
+    }
+    .hint {
+      margin: 0 0 .45rem;
+      font-size: .75rem;
+      color: #6aa8a4;
+    }
+    .wells {
+      display: flex;
+      gap: 6px;
+      margin-bottom: .55rem;
+    }
+    .well {
+      flex: 1;
+      min-height: 3.1rem;
+      border: 1px dashed #3a4440;
+      background: #101214;
+      padding: .35rem .4rem;
+      text-align: left;
+      cursor: pointer;
+      color: #6aa8a4;
+      font: inherit;
+    }
+    .well.fill {
+      border-style: solid;
+      border-color: #e0b34a;
+      color: #e8fffc;
+    }
+    .well .k { display: block; font-size: .65rem; color: #6aa8a4; margin-bottom: .1rem; }
+    .well .v { font-weight: 700; font-size: .85rem; }
+    .well .o { color: #ff8a2a; font-size: .72rem; margin-left: .25rem; }
+    .board {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+    }
+    .chip {
+      display: grid;
+      grid-template-columns: 1.6rem minmax(0, 1fr) auto;
+      gap: .3rem;
+      align-items: center;
+      padding: .4rem .4rem;
+      border: 1px solid #2a3332;
+      background: #141618;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .chip .n {
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: #c8d0cc;
+    }
+    .chip .uma {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: .78rem;
+    }
+    .chip .od { color: #8a8070; font-size: .72rem; font-variant-numeric: tabular-nums; }
+    .chip.on {
+      border-color: #e0b34a;
+      background: #1a1610;
+    }
+    .chip.on .n, .chip.on .uma { color: #e0b34a; }
+    .chip.used:not(.on) { opacity: .4; }
+    .tickets {
+      margin-top: .9rem;
+      border-top: 1px solid #1a2220;
+      padding-top: .55rem;
+    }
+    .tickets h2 {
+      margin: 0 0 .35rem;
+      font-size: .72rem;
+      letter-spacing: .08em;
+      color: #6aa8a4;
+      font-weight: 600;
+    }
+    .t-row {
+      display: flex;
+      justify-content: space-between;
+      gap: .5rem;
+      padding: .28rem 0;
+      font-size: .82rem;
+      border-bottom: 1px solid #152018;
+    }
+    .text-btn {
+      background: none; border: 0; color: #6aa8a4;
+      text-decoration: underline; cursor: pointer; font: inherit;
+      padding: .5rem 0 0;
+    }
+    .dock {
+      flex: 0 0 auto;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: .55rem;
+      align-items: center;
+      padding: .55rem .7rem calc(.55rem + env(safe-area-inset-bottom));
+      border-top: 1px solid #2a3332;
+      background: #0a0c0d;
+    }
+    .amt-box { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
+    .amt-row { display: flex; gap: 4px; }
+    .amt-row button {
+      border: 1px solid #2a3332; background: #161a1c; color: #c8d4d3;
+      padding: .28rem .45rem; font: inherit; font-size: .72rem; cursor: pointer;
+    }
+    .amt-show {
+      font-size: .78rem; color: #6aa8a4;
+    }
+    .amt-show b {
+      color: #fff;
+      font-size: 1.15rem;
+      font-variant-numeric: tabular-nums;
+      margin-left: .25rem;
+    }
+    .buy {
+      background: #ff8a2a; color: #140800; border: 0;
+      padding: .85rem 1.25rem; font: inherit; font-weight: 800;
+      letter-spacing: .12em; cursor: pointer; min-width: 7.5rem;
+    }
+    .buy:disabled { opacity: .35; cursor: not-allowed; }
+  </style>
 </head>
 <body class="tone-quiet">
   <div class="scene">
@@ -14,7 +177,7 @@
       <header class="chrome">
         <div>
           <a class="brand" href="./index.html">OSHI KEIBA</a>
-          <div class="who">neko · 12,800 スペ</div>
+          <div class="who">neko</div>
         </div>
         <div class="nav">
           <span class="pill"><span class="dot"></span>投票中</span>
@@ -23,43 +186,159 @@
         </div>
       </header>
       <div class="desk">
-        <h1>発売所</h1>
-        <div class="bal"><span>いまの所持</span><strong>12,800 スペ</strong></div>
-        <div class="tabs">
-          <a class="on" href="#">単勝</a>
-          <a href="#">馬連</a>
-          <a href="#">馬単</a>
-          <a href="#">3連複</a>
-          <a href="#">3連単</a>
+        <div class="desk-scroll">
+          <div class="kinds" id="kinds"></div>
+          <p class="hint" id="hint"></p>
+          <div class="wells" id="wells"></div>
+          <div class="board" id="board"></div>
+          <div class="tickets">
+            <h2>自分の馬券</h2>
+            <div id="mine"></div>
+            <button type="button" class="text-btn" id="redo">やりなおし（全部取消）</button>
+          </div>
         </div>
-        <div class="row">
-          <label>1着
-            <select><option>1 サイレンススズカ</option><option>2 スペシャルウィーク</option></select>
-          </label>
-        </div>
-        <div class="row">
-          <button type="button" class="amt">+100</button>
-          <button type="button" class="amt">+500</button>
-          <button type="button" class="amt">残り全部</button>
-          <label>金額（スペ）<input type="number" value="100"></label>
-          <button type="button" class="buy">買う</button>
-        </div>
-        <p class="note">買う前に確認が出ます。締切までやりなおしできます。</p>
-        <div class="odds-mini">
-          <h2>単勝の目安（小さく）</h2>
-          <div class="orow"><span>1</span><span>サイレンススズカ</span><b>3.2</b></div>
-          <div class="orow"><span>2</span><span>スペシャルウィーク</span><b>5.8</b></div>
-          <div class="orow"><span>3</span><span>グラスワンダー</span><b>8.1</b></div>
-        </div>
-        <div class="mine">
-          <h2>自分の馬券</h2>
-          <div class="mine-row"><span>単勝 1 サイレンススズカ</span><span>200</span></div>
-          <div class="mine-row"><span>馬連 1-3</span><span>100</span></div>
-          <button type="button" class="text-btn">やりなおし（全部取消）</button>
+        <div class="dock">
+          <div class="amt-box">
+            <div class="amt-show">金額 <b id="amt">100</b><span> スペ</span></div>
+            <div class="amt-row">
+              <button type="button" data-add="100">+100</button>
+              <button type="button" data-add="500">+500</button>
+              <button type="button" data-set="100">100</button>
+              <button type="button" data-all>残り</button>
+            </div>
+          </div>
+          <button type="button" class="buy" id="buy">買う</button>
         </div>
       </div>
     </div>
   </div>
-  <div class="mock-label">案A · 静かな窓口</div>
+  <div class="mock-label">案A · マークカード（タップで試せます）</div>
+  <script>
+    const UNIT = 100;
+    const BAL = 12800;
+    const HORSES = [
+      [1, "サイレンススズカ", "3.2"], [2, "スペシャルウィーク", "5.8"],
+      [3, "グラスワンダー", "8.1"], [4, "セイウンスカイ", "12.4"],
+      [5, "エルコンドルパサー", "6.0"], [6, "テイエムオペラオー", "15.2"],
+      [7, "ファインモーション", "9.7"], [8, "ナリタブライアン", "18.0"],
+      [9, "メジロマックイーン", "7.4"], [10, "トウカイテイオー", "11.1"],
+      [11, "ビワハヤヒデ", "22.6"], [12, "ミホノブルボン", "14.3"],
+      [13, "サクラバクシンオー", "16.8"], [14, "タイキシャトル", "10.5"],
+      [15, "エアグルーヴ", "13.9"], [16, "シンボリルドルフ", "4.6"],
+      [17, "オグリキャップ", "19.2"], [18, "タマモクロス", "25.0"],
+    ];
+    const KINDS = [
+      { id: "win", label: "単勝", slots: ["1着"], ordered: true },
+      { id: "quinella", label: "馬連", slots: ["1頭", "2頭"], ordered: false },
+      { id: "exacta", label: "馬単", slots: ["1着", "2着"], ordered: true },
+      { id: "trio", label: "3連複", slots: ["1頭", "2頭", "3頭"], ordered: false },
+      { id: "trifecta", label: "3連単", slots: ["1着", "2着", "3着"], ordered: true },
+    ];
+    const HINT = {
+      win: "番号を1つタップ。もう一度で解除。",
+      quinella: "異なる番号を2つ。順不同。枠をタップで消す。",
+      exacta: "1着→2着の順にタップ。枠をタップで消す。",
+      trio: "異なる番号を3つ。順不同。",
+      trifecta: "1着→2着→3着の順にタップ。",
+    };
+    let kind = KINDS[0];
+    let picks = [];
+    let amount = 100;
+    let tickets = [
+      { label: "単勝 1 サイレンススズカ", amt: 200 },
+      { label: "馬連 1-3", amt: 100 },
+    ];
+
+    function horse(n) { return HORSES.find((h) => h[0] === n); }
+    function emptySlots() { return kind.slots.map(() => null); }
+
+    function setKind(id) {
+      kind = KINDS.find((k) => k.id === id);
+      picks = emptySlots();
+      paint();
+    }
+    function tapHorse(n) {
+      const i = picks.indexOf(n);
+      if (i >= 0) { picks[i] = null; paint(); return; }
+      const hole = picks.findIndex((x) => x == null);
+      if (hole >= 0) picks[hole] = n;
+      paint();
+    }
+    function tapWell(i) { picks[i] = null; paint(); }
+    function ready() { return picks.every((x) => x != null) && amount >= UNIT; }
+    function labelOf() {
+      const hs = picks.map((n) => horse(n)[1]);
+      if (!kind.ordered) {
+        const nums = [...picks].sort((a, b) => a - b);
+        return kind.label + " " + nums.join("-");
+      }
+      return kind.label + " " + picks.map((n, i) => n + hs[i]).join(" → ");
+    }
+
+    function paint() {
+      document.getElementById("kinds").innerHTML = KINDS.map((k) =>
+        `<button type="button" class="${k.id === kind.id ? "on" : ""}" data-kind="${k.id}">${k.label}</button>`
+      ).join("");
+      document.getElementById("hint").textContent = HINT[kind.id];
+      document.getElementById("wells").innerHTML = kind.slots.map((name, i) => {
+        const n = picks[i];
+        const h = n ? horse(n) : null;
+        return `<button type="button" class="well${h ? " fill" : ""}" data-well="${i}">
+          <span class="k">${name}</span>
+          <span class="v">${h ? n + " " + h[1] : "タップで選択"}</span>
+          ${h && kind.id === "win" ? `<span class="o">${h[2]}倍</span>` : ""}
+        </button>`;
+      }).join("");
+      const used = new Set(picks.filter(Boolean));
+      document.getElementById("board").innerHTML = HORSES.map(([n, uma, od]) => {
+        const on = used.has(n);
+        return `<button type="button" class="chip${on ? " on" : ""}" data-n="${n}">
+          <span class="n">${n}</span><span class="uma">${uma}</span><span class="od">${od}</span>
+        </button>`;
+      }).join("");
+      document.getElementById("amt").textContent = String(amount);
+      document.getElementById("buy").disabled = !ready();
+      const mine = document.getElementById("mine");
+      mine.innerHTML = tickets.length
+        ? tickets.map((t) => `<div class="t-row"><span>${t.label}</span><span>${t.amt}</span></div>`).join("")
+        : `<p class="hint">まだありません。</p>`;
+    }
+
+    document.getElementById("kinds").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-kind]");
+      if (b) setKind(b.dataset.kind);
+    });
+    document.getElementById("wells").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-well]");
+      if (b) tapWell(Number(b.dataset.well));
+    });
+    document.getElementById("board").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-n]");
+      if (b) tapHorse(Number(b.dataset.n));
+    });
+    document.querySelector(".amt-row").addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      if (b.dataset.add) amount = Math.min(BAL, amount + Number(b.dataset.add));
+      if (b.dataset.set) amount = Number(b.dataset.set);
+      if (b.hasAttribute("data-all")) amount = Math.floor(BAL / UNIT) * UNIT;
+      amount = Math.max(UNIT, Math.floor(amount / UNIT) * UNIT);
+      paint();
+    });
+    document.getElementById("buy").addEventListener("click", () => {
+      if (!ready()) return;
+      if (!confirm("この内容で買いますか？\n\n" + labelOf() + "\n" + amount + " スペ")) return;
+      tickets.unshift({ label: labelOf(), amt: amount });
+      picks = emptySlots();
+      paint();
+    });
+    document.getElementById("redo").addEventListener("click", () => {
+      if (!tickets.length) return;
+      if (!confirm("全ての馬券がリセットされますがよろしいですか？")) return;
+      tickets = [];
+      paint();
+    });
+    paint();
+  </script>
 </body>
 </html>
