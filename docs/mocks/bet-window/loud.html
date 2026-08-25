@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>窓口 — ビジョンの延長</title>
+  <link rel="stylesheet" href="./bet-shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700&family=Chakra+Petch:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    h1, .orow span:nth-child(2) { font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif; color: #00e8d8; }
+    .orow span:first-child { color: #fff; font-family: "Chakra Petch", sans-serif; }
+    .desk { display: flex; flex-direction: column; }
+    .odds-mini { flex: 1; overflow: auto; border: 1px solid #1a3332; padding: .35rem; }
+  </style>
+</head>
+<body class="tone-loud">
+  <div class="scene">
+    <div class="scene-bg"></div>
+    <div class="app-shell">
+      <header class="chrome">
+        <div>
+          <a class="brand" href="./index.html">OSHI KEIBA</a>
+          <div class="who">neko · 12,800 スペ</div>
+        </div>
+        <div class="nav">
+          <span class="pill"><span class="dot"></span>投票中</span>
+          <a href="../venue-board/layout-venue.html">場内</a>
+          <a class="on" href="./index.html">窓口</a>
+        </div>
+      </header>
+      <div class="desk">
+        <h1>発売所　単勝</h1>
+        <div class="tabs">
+          <a class="on" href="#">単勝</a>
+          <a href="#">馬連</a>
+          <a href="#">馬単</a>
+          <a href="#">3連複</a>
+          <a href="#">3連単</a>
+        </div>
+        <div class="odds-mini">
+          <div class="orow"><span>1</span><span>サイレンススズカ</span><b>3.2</b></div>
+          <div class="orow"><span>2</span><span>スペシャルウィーク</span><b>5.8</b></div>
+          <div class="orow"><span>3</span><span>グラスワンダー</span><b>8.1</b></div>
+          <div class="orow"><span>4</span><span>セイウンスカイ</span><b>12.4</b></div>
+          <div class="orow"><span>5</span><span>エルコンドルパサー</span><b>6.0</b></div>
+          <div class="orow"><span>6</span><span>テイエムオペラオー</span><b>15.2</b></div>
+          <div class="orow"><span>7</span><span>ファインモーション</span><b>9.7</b></div>
+          <div class="orow"><span>8</span><span>ナリタブライアン</span><b>18.0</b></div>
+        </div>
+        <div class="row" style="margin-top:.6rem">
+          <label>1着
+            <select><option>1 サイレンススズカ</option></select>
+          </label>
+          <label>金額<input type="number" value="100"></label>
+          <button type="button" class="buy">買う</button>
+        </div>
+        <div class="bal"><span>所持</span><strong>12,800</strong></div>
+      </div>
+    </div>
+  </div>
+  <div class="mock-label">比較 · ビジョン延長（うるさい見本）</div>
+</body>
+</html>

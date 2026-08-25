@@ -4,7 +4,7 @@
 
 ## 現在進行中
 
-- （空き）
+- 投票（窓口）の見た目相談 — [bet-window](mocks/bet-window/index.html)
 
 ## そのあと
 

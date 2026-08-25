@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>窓口モック比較 — oshi-keiba</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --page: #1a1c1f;
+      --card: #24272c;
+      --ink: #e8eaed;
+      --muted: #9aa0a8;
+      --line: #3a3f47;
+      --accent: #d4a017;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
+      background: var(--page);
+      color: var(--ink);
+      line-height: 1.55;
+    }
+    .hub { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+    h1 { font-size: 1.35rem; font-weight: 600; margin: 0 0 .4rem; }
+    .lede { color: var(--muted); font-size: .92rem; margin: 0 0 1.5rem; max-width: 42rem; }
+    h2 {
+      font-size: 1.05rem;
+      margin: 2.1rem 0 .75rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--line);
+      letter-spacing: .06em;
+    }
+    h2:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+    .note { font-size: .85rem; color: var(--muted); margin: 0 0 1rem; max-width: 44rem; }
+    .grid {
+      display: grid;
+      gap: 1.25rem;
+      grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1rem 1.05rem 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: .65rem;
+    }
+    .card h3 { margin: 0; font-size: .95rem; }
+    .card p { margin: 0; font-size: .82rem; color: var(--muted); flex: 1; }
+    .card a {
+      display: inline-flex; justify-content: center;
+      padding: .55rem .9rem; border-radius: 8px;
+      background: var(--accent); color: #1a1408;
+      text-decoration: none; font-weight: 700; font-size: .85rem;
+    }
+    .card.muted-card a {
+      background: transparent; border: 1px solid var(--line); color: var(--ink); font-weight: 600;
+    }
+    .tag { font-size: .68rem; letter-spacing: .08em; color: var(--accent); }
+    table.names { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    table.names th, table.names td {
+      text-align: left; padding: .4rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top;
+    }
+    table.names th { color: var(--muted); font-weight: 600; font-size: .75rem; }
+    .ok { color: #e0b34a; }
+  </style>
+</head>
+<body>
+  <div class="hub">
+    <h1>発売の場所 — 名称と雰囲気</h1>
+    <p class="lede">場内は観戦席。こちらは馬券を出す道具。同じ場のシェルを使い、盤のうるささを落とす。実装には繋いでいません。</p>
+    <p class="note"><a href="../venue-board/index.html" style="color:#e0b34a">場内モックへ戻る</a></p>
+
+    <h2>名称</h2>
+    <p class="note">ナビは短い語。場内と対になる二字が扱いやすい。URL の <code>/bet</code> は変えなくてよい。</p>
+    <table class="names">
+      <thead><tr><th>呼び</th><th>感じ</th><th></th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>窓口</strong></td>
+          <td>場内の隣に置ける。競馬場の発売窓口。操作の部屋、という距離感。</td>
+          <td class="ok">推奨（ナビ）</td>
+        </tr>
+        <tr>
+          <td><strong>発売所</strong></td>
+          <td>場の正式め。見出しや「馬券を買う」の先の画面名向き。ナビには少し長い。</td>
+          <td class="ok">推奨（見出し）</td>
+        </tr>
+        <tr>
+          <td>発売</td>
+          <td>短いが動詞っぽい。ボタン「買う」と被る。</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>投票所</td>
+          <td>今の「投票」の延長。場には寄るが、選挙の語感が残る。</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>自動発売</td>
+          <td>UMACA 寄る。機械のロビーになりやすい。</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">以下のモックはナビを「場内 / 窓口」、見出しを「発売所」にしています。</p>
+
+    <h2>雰囲気</h2>
+    <p class="note">どれも同じ情報（賭式・買い目・金額・自分の馬券）。差は「場内ビジョンをどれだけ持ち込むか」です。幅を変えてスマホも見てください。</p>
+    <div class="grid">
+      <article class="card">
+        <span class="tag">案A</span>
+        <h3>静かな窓口</h3>
+        <p>背景は場内と同じ。中の盤は暗く、橙は「買う」だけ。場内で見たあと、手元に落ちる感じ。</p>
+        <a href="./quiet.html">開く</a>
+      </article>
+      <article class="card">
+        <span class="tag">案B</span>
+        <h3>場内の隣室</h3>
+        <p>LEDの色は場内と揃えるが、表は小さく、フォームが主。続き物に見える。</p>
+        <a href="./sibling.html">開く</a>
+      </article>
+      <article class="card muted-card">
+        <span class="tag">比較用</span>
+        <h3>ビジョンの延長</h3>
+        <p>場内と同じ電光を大きく残す。楽しいが、買い目を間違える部屋としてはうるさい、という見本。</p>
+        <a href="./loud.html">開く</a>
+      </article>
+    </div>
+  </div>
+</body>
+</html>
