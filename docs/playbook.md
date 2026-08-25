@@ -50,7 +50,7 @@
 - メンバー向けはすべて「オッズ」。評価点・Seed・控除の記号は出さない。「換金しない」も出さない
 - 使い方・ログアウト・管理者は、枠内の「⋯」（ほか）。PCは枠外右下にも重ねてよい。スマホは⋯だけ
 
-紙面: 本番はまだ和紙・明朝（`src/lib/ui.ts`）。場内の見た目はモック仮置き（[layout-venue.html](mocks/venue-board/layout-venue.html)）。窓口の見た目はモック仮置き（[quiet.html](mocks/bet-window/quiet.html)）。枠番色・行タップで買う、はやらない。本番の買いUIはまだセレクト。
+紙面: 本番はまだ和紙・明朝（`src/lib/ui.ts`）。場内は [layout-venue.html](mocks/venue-board/layout-venue.html)、窓口は [quiet.html](mocks/bet-window/quiet.html)、入場は [gate](mocks/gate/index.html) がモック仮置き。枠番色・行タップで買う、はやらない。本番の買いUIはまだセレクト。
 
 単勝表の列は **番号・ウマ娘名・出走者・脚質・オッズ**（モック仮。本番は脚質なしの4列のまま）。小数1桁。番号は名簿の通し（ゲームの枠番ではない）。取消すると詰まる。開始後の取消は避ける。スクショはメンバーに出さない。
 
