@@ -73,7 +73,24 @@
       border-bottom: 1px solid #0c1818;
       padding: .32rem .4rem;
     }
+    .led-meta .live {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+    }
+    .led-meta .dot {
+      width: .45rem;
+      height: .45rem;
+      border-radius: 50%;
+      background: var(--led);
+      animation: blink 1.2s step-end infinite;
+    }
+    table.win { table-layout: fixed; }
+    table.win th:nth-child(1),
     table.win td.num {
+      width: 1.7rem;
+      padding-left: .15rem;
+      padding-right: .15rem;
       color: #fff;
       font-family: "Chakra Petch", sans-serif;
       text-shadow: 0 0 6px rgba(255,255,255,.25);
@@ -81,28 +98,49 @@
     table.win td.name {
       color: var(--led);
       font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
-      letter-spacing: .06em;
+      letter-spacing: .02em;
+      white-space: nowrap;
       text-shadow: 0 0 8px rgba(0, 232, 216, .25);
     }
     table.win td.runner {
+      width: 4.8rem;
+      max-width: 4.8rem;
       color: #c8d4d3;
-      width: 22%;
     }
     table.win td.odds {
+      width: 6.4rem;
+      white-space: nowrap;
       color: var(--odds);
       font-family: "Chakra Petch", sans-serif;
       font-size: 1.15em;
       text-shadow: 0 0 10px rgba(255, 138, 42, .35);
     }
+    table.win td.odds .delta {
+      display: inline-block;
+      min-width: 2.4em;
+      margin: 0 .35rem 0 0;
+      font-size: .72em;
+      text-align: right;
+    }
     table.win td.odds .delta.up { color: #ff5a4a; }
     table.win td.odds .delta.down { color: var(--led); }
     .cta {
-      background: transparent;
-      color: var(--led);
-      border: 1px solid var(--led);
-      border-radius: 0;
+      background: var(--odds);
+      color: #140800;
+      border: 0;
+      border-radius: 2px;
+      padding: .65rem 1.35rem;
+      font-size: .95rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      box-shadow: 0 0 18px rgba(255, 138, 42, .35);
     }
-    .foot { color: var(--led-dim); }
+    .cta:hover { filter: brightness(1.08); }
+    .foot {
+      margin-top: .45rem;
+      gap: .5rem;
+    }
+    .foot .hint { display: none; }
     .scene {
       position: relative;
       min-height: 100dvh;
@@ -180,6 +218,13 @@
         overflow: hidden;
       }
       .col-b { display: none; }
+      .foot { display: block; }
+      .cta {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: .8rem 1rem;
+      }
     }
 
     /* PC：横長のビジョン。全幅にはしない。縦に引き伸ばさない */
@@ -204,7 +249,9 @@
         margin: 0;
         overflow: hidden;
       }
-      table.win td.runner { width: 22%; }
+      table.win td.runner { width: 5.2rem; max-width: 5.2rem; }
+      .foot { justify-content: flex-end; }
+      .cta { min-width: 11rem; text-align: center; }
     }
   </style>
 </head>
@@ -218,7 +265,7 @@
           <div class="who">neko · 12,800 スペ</div>
         </div>
         <div class="led-meta">
-          <span>投票中</span>
+          <span class="live"><span class="dot"></span>投票中</span>
           <span>現在 <strong id="now-clock">18:12</strong></span>
           <span>締切 <strong>18:40</strong></span>
         </div>
@@ -242,7 +289,7 @@
           </div>
         </div>
         <div class="foot">
-          <span>端に場／PCは横長ビジョン</span>
+          <span class="hint"></span>
           <a class="cta" href="#">馬券を買う</a>
         </div>
       </section>
@@ -324,7 +371,7 @@
         const tr = document.createElement("tr");
         if (n === 3) tr.className = "pulse";
         tr.innerHTML = `<td class="num">${n}</td><td class="name">${uma}</td><td class="runner">${runner}</td>
-          <td class="odds">${odds}${dir ? `<span class="delta ${dir}">${dir === "up" ? "↑" : "↓"}${d}</span>` : ""}</td>`;
+          <td class="odds">${dir ? `<span class="delta ${dir}">${dir === "up" ? "↑" : "↓"}${d}</span>` : `<span class="delta"></span>`}${odds}</td>`;
         el.appendChild(tr);
       }
     }
