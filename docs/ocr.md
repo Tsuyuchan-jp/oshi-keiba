@@ -54,7 +54,8 @@ OCR とスクショ保存は **`/admin/horses`**。いまの `/admin` 1枚には
 | R2 バケット | `oshi-keiba-shots` | アプリ名と用途。D1 の `oshi-keiba` と揃える |
 | Worker バインディング | `SHOTS` | `DB` と同じ短さ |
 | オブジェクトキー | `{eventId}/{horseId}` | 開催を残す前提。拡張子は Content-Type で持つ |
-| スキル辞書 | `src/data/skill-catalog.json` | リポジトリ内。デバフを含む。実行時 fetch しない。更新はファイル差し替え＋コミット |
+| スキル辞書 | `src/data/skill-catalog.json` | リポジトリ内。OCR の種別。実行時 fetch しない。更新はファイル差し替え＋コミット |
+| 緑の内部上昇 | `src/data/green-skills.json` | mdb `skill_category=0`。評価点用。`npm run extract:greens` |
 
 キー入力の文言:
 
