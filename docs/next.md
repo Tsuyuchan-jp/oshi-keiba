@@ -4,10 +4,11 @@
 
 ## 現在進行中
 
-- 場内デザイン大刷新（背景イラスト仮採用・電光はLED寄せ）— [mocks/venue-board](mocks/venue-board/index.html)
+- （空き）
 
 ## そのあと
 
+- 場内デザインを本番へ（モック仮置き。実装は後）— [venue-board](mocks/venue-board/layout-venue.html)
 - Neko長明さんへの評価点の式確認（手土産＝動く実装は揃った）— [score.md](score.md)
 - 管理画面の Strength 表記を評価点に揃える
 - OCR / 評価点の細かい調整（読取・表示 UI など）— [ocr.md](ocr.md)・[score.md](score.md)
@@ -25,6 +26,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
+- 場内デザイン仮置き（アプリシェル＋場の背景イラスト＋LED電光。列は Grid。脚質列あり。本番未適用）— [layout-venue.html](mocks/venue-board/layout-venue.html)
 - OCR 受け入れ画像に WebP を追加（PNG / JPEG と共通の MIME 正規化・実機確認済み）— [ocr.md](ocr.md)
 - OCR・評価点まわり実装クローズ（細かい修正は後）。開催 `score_setup`・出走 `score_input`・ファジー ID 化・脚質 UI・`computeScore`→Strength→Seed・直置き逃げ・実機確認済み — [score.md](score.md)・[ocr.md](ocr.md)
 - 出走のステ・スキル id・適性・脚質を `computeScore` に渡し、管理画面の評価点へ（直置き併用）。OCR 脚質 UI（S1つ初期選択）とファジー ID 化も含む — [score.md](score.md)・[ocr.md](ocr.md)
