@@ -253,8 +253,13 @@
       display: flex;
       flex-direction: column;
     }
-    .j-pay { flex: 1.15; }
-    .j-fin { flex: .9; }
+    .j-pay { flex: 1 1 auto; }
+    .j-fin {
+      flex: 0 0 15.5rem;
+      width: 15.5rem;
+      background: #020202;
+      border-color: #2a2a2a;
+    }
     .j-head {
       display: flex;
       align-items: center;
@@ -268,15 +273,115 @@
       flex: 0 0 auto;
     }
     .j-pay .j-head { background: #5aa0d0; color: #fff; }
-    .j-fin .j-head { background: #111; color: #e8fffc; border-bottom: 1px solid #2a1818; }
-    .kakutei {
-      background: #c4222a;
+    /* 確定盤：縦長。会場名たて書き・大きい番号・右に着差 */
+    .fin-top {
+      display: grid;
+      grid-template-columns: 1.15rem minmax(0, 1fr) auto;
+      align-items: center;
+      gap: .35rem;
+      padding: .35rem .4rem .2rem;
+      flex: 0 0 auto;
+    }
+    .fin-place {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      font-size: .62rem;
+      letter-spacing: .18em;
+      color: #f2f2f2;
+      line-height: 1;
+      height: 2.4rem;
+    }
+    .fin-r {
+      font-family: "Chakra Petch", sans-serif;
       color: #fff;
-      padding: .12rem .45rem;
-      letter-spacing: .2em;
-      font-size: .72rem;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: .04em;
+    }
+    .fin-r b {
+      color: #ffd000;
+      font-size: 1.55rem;
+      margin-right: .12rem;
+      text-shadow: 0 0 10px rgba(255, 208, 0, .45);
+    }
+    .kakutei {
+      background: #d0121c;
+      color: #fff;
+      padding: .28rem .42rem;
+      letter-spacing: .28em;
+      font-size: .78rem;
+      font-weight: 800;
+      box-shadow: 0 0 12px rgba(208, 18, 28, .55);
     }
     .j-body { padding: .35rem .4rem .45rem; flex: 1; }
+    .j-fin .j-body {
+      padding: .15rem .45rem .4rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .fin-rows { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-evenly; }
+    .fin-row {
+      display: grid;
+      grid-template-columns: 1.7rem 3.4rem minmax(0, 1fr);
+      gap: .15rem .25rem;
+      align-items: center;
+      padding: .08rem 0;
+      border: 0;
+    }
+    .fin-rk {
+      width: 1.45rem;
+      height: 1.45rem;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #3d7eb8;
+      color: #fff;
+      font-size: .58rem;
+      font-weight: 800;
+      font-family: "Chakra Petch", sans-serif;
+    }
+    .fin-n {
+      font-family: "Chakra Petch", sans-serif;
+      font-size: 2.15rem;
+      font-weight: 700;
+      line-height: .9;
+      color: #ffd000;
+      text-shadow: 0 0 12px rgba(255, 208, 0, .4);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: .02em;
+    }
+    .fin-gap {
+      font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif;
+      color: #ffd000;
+      font-size: .78rem;
+      font-weight: 700;
+      text-align: right;
+      white-space: nowrap;
+      letter-spacing: .02em;
+    }
+    .fin-gap .gt {
+      opacity: .55;
+      margin-right: .2rem;
+      font-weight: 600;
+    }
+    .fin-foot {
+      flex: 0 0 auto;
+      margin-top: .2rem;
+      padding-top: .25rem;
+      border-top: 1px solid #222;
+      color: #ffd000;
+      font-size: .72rem;
+      letter-spacing: .04em;
+      line-height: 1.45;
+    }
+    .fin-foot b {
+      display: inline-block;
+      margin-left: .25rem;
+      padding: 0 .28rem;
+      background: #ffd000;
+      color: #111;
+      font-weight: 800;
+    }
     .pay-row {
       display: grid;
       grid-template-columns: 3.4rem minmax(0, 1fr) auto;
@@ -314,40 +419,6 @@
       white-space: nowrap;
     }
     .pay-amt.void { color: var(--led); font-size: .78em; }
-    .fin-row {
-      display: grid;
-      grid-template-columns: 1.7rem 2.4rem minmax(0, 1fr);
-      gap: .35rem;
-      align-items: center;
-      padding: .32rem 0;
-      border-bottom: 1px solid #181818;
-    }
-    .fin-rk {
-      width: 1.35rem;
-      height: 1.35rem;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      background: #3d6ea8;
-      color: #fff;
-      font-size: .62rem;
-      font-weight: 800;
-    }
-    .fin-n {
-      font-family: "Chakra Petch", sans-serif;
-      font-size: 1.45rem;
-      font-weight: 700;
-      color: #ffe14a;
-      text-shadow: 0 0 10px rgba(255, 225, 74, .35);
-      font-variant-numeric: tabular-nums;
-    }
-    .fin-pop { color: #9aa8a4; font-size: .78rem; }
-    .fin-meta {
-      margin-top: .45rem;
-      color: #ffe14a;
-      font-size: .78rem;
-      letter-spacing: .06em;
-    }
     .jumbo-hint {
       display: none;
       flex: 0 0 auto;
@@ -477,7 +548,8 @@
       }
       .col-b { display: none; }
       .jumbo { flex-direction: column; }
-      .j-pay, .j-fin { flex: 1 1 auto; }
+      .j-pay { flex: 1 1 auto; }
+      .j-fin { flex: 1.15 1 auto; width: auto; max-width: 18rem; margin: 0 auto; min-height: 17rem; }
       .foot { display: block; }
       .cta {
         display: flex;
@@ -570,18 +642,29 @@
             </div>
           </article>
           <article class="j-panel j-fin" aria-label="確定着順">
-            <div class="j-head"><span>着順</span><span class="kakutei">確定</span></div>
+            <div class="fin-top">
+              <span class="fin-place">本戦</span>
+              <span class="fin-r"><b>2</b>R</span>
+              <span class="kakutei">確定</span>
+            </div>
             <div class="j-body">
-              <div class="fin-row"><span class="fin-rk">I</span><span class="fin-n">1</span><span class="fin-pop">1人気</span></div>
-              <div class="fin-row"><span class="fin-rk">II</span><span class="fin-n">16</span><span class="fin-pop">2人気</span></div>
-              <div class="fin-row"><span class="fin-rk">III</span><span class="fin-n">2</span><span class="fin-pop">3人気</span></div>
-              <div class="fin-row"><span class="fin-rk">IV</span><span class="fin-n">5</span><span class="fin-pop">4人気</span></div>
-              <div class="fin-row"><span class="fin-rk">V</span><span class="fin-n">9</span><span class="fin-pop">5人気</span></div>
-              <p class="fin-meta">芝 · 中 · 稍重</p>
+              <div class="fin-rows">
+                <div class="fin-row"><span class="fin-rk">I</span><span class="fin-n">1</span><span class="fin-gap"><span class="gt">&gt;</span>1 3/4</span></div>
+                <div class="fin-row"><span class="fin-rk">II</span><span class="fin-n">16</span><span class="fin-gap"><span class="gt">&gt;</span>1/2</span></div>
+                <div class="fin-row"><span class="fin-rk">III</span><span class="fin-n">2</span><span class="fin-gap"><span class="gt">&gt;</span>1 1/4</span></div>
+                <div class="fin-row"><span class="fin-rk">IV</span><span class="fin-n">5</span><span class="fin-gap"><span class="gt">&gt;</span>アタマ</span></div>
+                <div class="fin-row"><span class="fin-rk">V</span><span class="fin-n">9</span></div>
+              </div>
+              <!-- 着差・タイムは場内ビジョンの雰囲気用。開催データには無い -->
+              <div class="fin-foot">
+                <div>芝 <b>稍重</b></div>
+                <div>タイム 1.22.8</div>
+                <div>4F 47.2　3F 35.1</div>
+              </div>
             </div>
           </article>
         </div>
-        <p class="jumbo-hint" id="jumbo-hint">左が払戻、右が確定。スワイプまたはタップで全頭</p>
+        <p class="jumbo-hint" id="jumbo-hint">左が払戻、右が確定盤。スワイプまたはタップで全頭</p>
         <div class="cols">
           <div class="sheet-wrap">
             <div class="sheet" role="table" aria-label="単勝オッズ">
