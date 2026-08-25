@@ -33,7 +33,7 @@ npm run dev
 - 投票: http://localhost:8787/bet
 - 管理者: http://localhost:8787/admin 仮パス `demo-admin`
 
-G=3000 スペ。賭式は単勝・馬連・馬単・3連複・3連単（1点買い）。評価点は直置き（画面表記は Strength のことがある）。
+G=3000 スペ（投票中にその開催へ参加したとき。入室だけでは入らない）。賭式は単勝・馬連・馬単・3連複・3連単（1点買い）。評価点は直置き（画面表記は Strength のことがある）。ローカルのデモ初期化は `.dev.vars` の `ALLOW_DEMO_RESET=1`。
 
 ## 本番 URL
 
