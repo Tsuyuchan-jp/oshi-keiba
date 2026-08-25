@@ -952,8 +952,9 @@ export function formulaPanel(board: Board): string {
 
 export function strengthCalcModal(): string {
   return `<dialog class="modal" id="strength-modal">
-    <h2>相対評価点</h2>
-    <p class="note">試運転は Strength 直置きです。自動算出は出しません。</p>
+    <h2>相対評価点（Strength）</h2>
+    <p class="note">Seed の比に使う数字です。開催条件・ステ目標と出走材料（OCR＋脚質）が揃えば <code>computeScore</code> で自動算出し、Strength に載せます。</p>
+    <p class="note">自動算出が使えないとき（開催条件なし・脚質未選択・材料なし）や、「評価点を直置き」チェック時だけ手入力が正になります。</p>
     <form method="dialog"><button type="submit">閉じる</button></form>
   </dialog>
   <script>

@@ -81,8 +81,15 @@ import {
   adminOpsGuide,
 } from "./lib/ui";
 import { horseSheetParts } from "./lib/horseName";
+import {
+  parseHorseScoreInput,
+  serializeHorseScoreInput,
+  STYLE_OPTIONS,
+} from "./lib/horseScoreInput";
 import { horsesAdminBody, ocrAdminScript } from "./lib/ocrAdmin";
+import { resolveStrength } from "./lib/scoreFromHorse";
 import { enrichScoreSetupWithEffects, scoreSetupFromForm } from "./lib/scoreSetup";
+import { eventScoreSetup } from "./lib/store";
 import type { UserRow } from "./lib/store";
 
 function msg(url: URL): { text: string | null; error: boolean } {
@@ -613,6 +620,7 @@ export default {
         if (gate instanceof Response) return gate;
         const board = await loadBoard(env.DB);
         const m = msg(url);
+        const setup = eventScoreSetup(board.event);
         return html(
           layout({
             title: "出走登録",
@@ -622,9 +630,10 @@ export default {
             body: `${flashHtml(m.text, m.error)}
               <div class="card">
                 <h2>出走登録</h2>
-                ${horsesAdminBody(board, board.event.status === "setup")}
+                ${horsesAdminBody(board, board.event.status === "setup", setup)}
               </div>`,
-            scripts: board.event.status === "setup" ? ocrAdminScript() : "",
+            scripts:
+              board.event.status === "setup" ? ocrAdminScript(!!setup) : "",
           }),
         );
       }
@@ -677,13 +686,27 @@ export default {
                     <button class="danger" type="submit">取消・返還</button>
                   </form>`
                 : "";
+            const scoreIn = parseHorseScoreInput(h.horse.score_input);
+            const styleSelect =
+              e.status === "setup" && !h.horse.scratched
+                ? `<select name="style_key" style="width:4rem">
+                    <option value="">脚質</option>
+                    ${STYLE_OPTIONS.map((o) => {
+                      const sel =
+                        scoreIn?.styleKey === o.key ? " selected" : "";
+                      return `<option value="${o.key}"${sel}>${o.label}</option>`;
+                    }).join("")}
+                  </select>`
+                : "";
             const edit =
               e.status === "setup" && !h.horse.scratched
                 ? `<form method="post" action="/admin/horse-edit" class="row">
                     <input type="hidden" name="horse_id" value="${h.horse.id}">
                     <input name="uma_name" value="${escapeHtml(parts.umaName)}" required maxlength="40">
                     <input name="runner_name" value="${escapeHtml(parts.runnerName)}" required maxlength="40">
-                    <input name="strength" type="number" min="0" step="0.1" value="${h.horse.strength}" required style="width:5rem">
+                    ${styleSelect}
+                    <input name="strength" type="number" min="0" step="0.1" value="${h.horse.strength}" required style="width:5rem" title="評価点">
+                    <label class="muted" style="font-size:0.85em"><input type="checkbox" name="strength_manual" value="1"> 直置き</label>
                     <button type="submit" class="secondary">更新</button>
                   </form>`
                 : `<div>${escapeHtml(parts.umaName)}（${escapeHtml(parts.runnerName)}）<div class="muted">#${h.number || "—"} Strength ${h.horse.strength}　Seed ${h.seed.toFixed(0)}</div></div>`;
@@ -968,8 +991,8 @@ export default {
                 </script>
               </div>
               <div class="card">
-                <h2>出走（Strength / Seed）</h2>
-                <p class="note">試運転は直置き → <button type="button" class="text-btn" id="strength-detail">詳細</button></p>
+                <h2>出走（評価点 / Seed）</h2>
+                <p class="note">算出できるときは自動評価点 → Seed。直置きは逃げ用 → <button type="button" class="text-btn" id="strength-detail">詳細</button></p>
                 ${strengthCalcModal()}
                 ${
                   e.status === "setup"
@@ -1144,12 +1167,34 @@ export default {
           if (ocrOk && (!(shot instanceof File) || shot.size <= 0)) {
             throw new Error("OCRした画像がありません。もう一度読み取ってください");
           }
+          const setup = eventScoreSetup(board.event);
+          let scoreInput = parseHorseScoreInput(String(fd.get("score_input") ?? ""));
+          const styleRaw = String(fd.get("style_key") ?? "").trim();
+          if (scoreInput && styleRaw) {
+            const parsed = parseHorseScoreInput({
+              ...scoreInput,
+              styleKey: styleRaw,
+            });
+            scoreInput = parsed;
+          } else if (scoreInput && !styleRaw) {
+            scoreInput = { ...scoreInput, styleKey: null };
+          }
+          const forceManual = String(fd.get("strength_manual") ?? "") === "1";
+          const resolved = resolveStrength({
+            setup,
+            input: scoreInput,
+            manualStrength: Number(fd.get("strength")),
+            forceManual,
+          });
           const id = await addHorse(
             env.DB,
             board.event,
             String(fd.get("uma_name") ?? ""),
             String(fd.get("runner_name") ?? ""),
-            Number(fd.get("strength")),
+            {
+              strength: resolved.strength,
+              scoreInputJson: serializeHorseScoreInput(scoreInput),
+            },
           );
           if (ocrOk && shot instanceof File) {
             try {
@@ -1162,7 +1207,9 @@ export default {
               throw err;
             }
           }
-          return bounce("/admin/horses", "登録しました");
+          const src =
+            resolved.source === "auto" ? "（自動算出）" : "（直置き）";
+          return bounce("/admin/horses", `登録しました ${src}`);
         } catch (err) {
           return bounce("/admin/horses", err instanceof Error ? err.message : "失敗", true);
         }
@@ -1174,13 +1221,36 @@ export default {
         const form = await readForm(request);
         try {
           const board = await loadBoard(env.DB);
+          const horseId = form.get("horse_id") ?? "";
+          const existing = board.horses.find((h) => h.horse.id === horseId);
+          if (!existing) throw new Error("出走が見つかりません");
+          const setup = eventScoreSetup(board.event);
+          let scoreInput = parseHorseScoreInput(existing.horse.score_input);
+          const styleRaw = String(form.get("style_key") ?? "").trim();
+          if (scoreInput) {
+            scoreInput = parseHorseScoreInput({
+              ...scoreInput,
+              styleKey: styleRaw || null,
+            });
+          }
+          const forceManual = String(form.get("strength_manual") ?? "") === "1";
+          const resolved = resolveStrength({
+            setup,
+            input: scoreInput,
+            manualStrength: Number(form.get("strength")),
+            forceManual,
+          });
           await updateHorse(
             env.DB,
             board.event,
-            form.get("horse_id") ?? "",
+            horseId,
             form.get("uma_name") ?? "",
             form.get("runner_name") ?? "",
-            Number(form.get("strength")),
+            {
+              strength: resolved.strength,
+              scoreInputJson: serializeHorseScoreInput(scoreInput),
+              keepScoreInput: false,
+            },
           );
           return bounce("/admin", "更新しました");
         } catch (err) {

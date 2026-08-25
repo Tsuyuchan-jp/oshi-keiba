@@ -87,6 +87,8 @@ export type HorseRow = {
   runner_name: string;
   shot_key: string | null;
   strength: number;
+  /** 評価点材料 JSON。未設定は null */
+  score_input: string | null;
   seed_source: string;
   scratched: number;
   finish_place: number | null;
@@ -285,6 +287,7 @@ function hydrateHorseRow(row: HorseRow): HorseRow {
     uma_name: parts.umaName,
     runner_name: parts.runnerName,
     shot_key: row.shot_key ?? null,
+    score_input: row.score_input ?? null,
     name: composeHorseName(parts.umaName, parts.runnerName) || row.name,
   };
 }
@@ -681,14 +684,23 @@ export async function grantIfNeeded(
   return (await getUser(db, user.id))!;
 }
 
+export type AddHorseOpts = {
+  strength: number;
+  /** 評価点材料。無い頭は直置きのみ */
+  scoreInputJson?: string | null;
+  recordUndo?: boolean;
+};
+
 export async function addHorse(
   db: D1Database,
   event: EventRow,
   umaName: string,
   runnerName: string,
-  strength: number,
-  recordUndo = true,
+  opts: AddHorseOpts | number,
 ): Promise<string> {
+  const o: AddHorseOpts =
+    typeof opts === "number" ? { strength: opts } : opts;
+  const recordUndo = o.recordUndo !== false;
   if (event.status !== "setup") {
     throw new Error("名簿は投票開始後は閉じます（飛び入り禁止）");
   }
@@ -696,7 +708,11 @@ export async function addHorse(
   const runner = runnerName.trim();
   if (!uma) throw new Error("ウマ娘名を入れてください");
   if (!runner) throw new Error("出走者を入れてください");
-  if (!(strength >= 0)) throw new Error("相対評価点が不正です");
+  if (!(o.strength >= 0)) throw new Error("相対評価点が不正です");
+  const scoreInput =
+    o.scoreInputJson == null || o.scoreInputJson === ""
+      ? null
+      : o.scoreInputJson;
   const combined = composeHorseName(uma, runner);
   const horses = await listHorses(db, event.id);
   const live = horses.filter((h) => h.scratched === 0).length;
@@ -708,13 +724,31 @@ export async function addHorse(
   await db
     .prepare(
       `INSERT INTO horses (
-        id, event_id, name, uma_name, runner_name, strength, seed_source, scratched, sort_order, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, 'manual', 0, ?, ?)`,
+        id, event_id, name, uma_name, runner_name, strength, score_input, seed_source, scratched, sort_order, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'manual', 0, ?, ?)`,
     )
-    .bind(id, event.id, combined, uma, runner, strength, horses.length + 1, Date.now())
+    .bind(
+      id,
+      event.id,
+      combined,
+      uma,
+      runner,
+      o.strength,
+      scoreInput,
+      horses.length + 1,
+      Date.now(),
+    )
     .run();
   return id;
 }
+
+export type UpdateHorseOpts = {
+  strength: number;
+  scoreInputJson?: string | null;
+  /** true なら score_input を触らない（Strength だけ直置き） */
+  keepScoreInput?: boolean;
+  recordUndo?: boolean;
+};
 
 export async function updateHorse(
   db: D1Database,
@@ -722,9 +756,11 @@ export async function updateHorse(
   horseId: string,
   umaName: string,
   runnerName: string,
-  strength: number,
-  recordUndo = true,
+  opts: UpdateHorseOpts | number,
 ): Promise<void> {
+  const o: UpdateHorseOpts =
+    typeof opts === "number" ? { strength: opts, keepScoreInput: true } : opts;
+  const recordUndo = o.recordUndo !== false;
   if (event.status !== "setup") {
     throw new Error("セットアップ中だけ修正できます");
   }
@@ -732,7 +768,7 @@ export async function updateHorse(
   const runner = runnerName.trim();
   if (!uma) throw new Error("ウマ娘名を入れてください");
   if (!runner) throw new Error("出走者を入れてください");
-  if (!(strength >= 0)) throw new Error("相対評価点が不正です");
+  if (!(o.strength >= 0)) throw new Error("相対評価点が不正です");
   const combined = composeHorseName(uma, runner);
   const horse = await db
     .prepare("SELECT id FROM horses WHERE id = ? AND event_id = ?")
@@ -740,11 +776,24 @@ export async function updateHorse(
     .first();
   if (!horse) throw new Error("出走が見つかりません");
   if (recordUndo) await captureAdminUndo(db, `出走を修正（${combined}）`);
+  if (o.keepScoreInput) {
+    await db
+      .prepare(
+        "UPDATE horses SET name = ?, uma_name = ?, runner_name = ?, strength = ? WHERE id = ? AND event_id = ?",
+      )
+      .bind(combined, uma, runner, o.strength, horseId, event.id)
+      .run();
+    return;
+  }
+  const scoreInput =
+    o.scoreInputJson == null || o.scoreInputJson === ""
+      ? null
+      : o.scoreInputJson;
   await db
     .prepare(
-      "UPDATE horses SET name = ?, uma_name = ?, runner_name = ?, strength = ? WHERE id = ? AND event_id = ?",
+      "UPDATE horses SET name = ?, uma_name = ?, runner_name = ?, strength = ?, score_input = ? WHERE id = ? AND event_id = ?",
     )
-    .bind(combined, uma, runner, strength, horseId, event.id)
+    .bind(combined, uma, runner, o.strength, scoreInput, horseId, event.id)
     .run();
 }
 

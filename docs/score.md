@@ -31,11 +31,12 @@ U-tools のバ身混ぜは使わない（[rejected.md](rejected.md)）。コー�
 - **脚質（仮置き）**: 頭ごと。OCR 時に人間が選択。OCR の脚質適性に **S が1つだけ**あれば、その脚質を初期選択にする。S が0または複数、または読取なしなら未選択（人が選ぶ）。変更可。U-tools キーは 逃=runner / 先=leader / 差=betweener / 追=chaser
 - **補正の順（仮置き・作者確認）**: 生値 → 緑加算 → 適性S倍率 → r
 - **デバフ（仮置き）**: ためらい4種だけ名前と mdb id で見て、1つにつき有効 +1（白と同じ）。金の +2 は載せない。それ以外の妨害（けん制・焦り・まなざし・緑× など）は特別扱いしない。U-tools の無効判定で落ちる想定
-- **ためらい4種**: 逃げためらい `200851`、先行ためらい `200881`、差しためらい `200911`、追込ためらい `200941`。`kind === minus` では取れない。minus は緑×。ためらいは白（`rarity: 1`、`iconId: 30011`）。カタログ未収録なので OCR は今 `unknown` になり得る。照合は名前または id
+- **ためらい4種**: 逃げためらい `200851`、先行ためらい `200881`、差しためらい `200911`、追込ためらい `200941`。`kind === minus` では取れない。minus は緑×。ためらいは白（カタログ `white`）。照合は名前または id。カタログに収録済み
 - **要求パ・根・賢（仮置き）**: 全コース表は作らない。開催ごとに人間が目標値を確認して入れる（レース単位。頭ごとではない）。シナリオ・サポカで同じコースでも目標が変わる。4ヶ月で新シナリオ、その間の開催は多くて8回程度なので、全表のメンテは割に合わない
 - **要求スタミナ（仮置き）**: 同じく開催ごとの手入力。掛かりなし／掛かりありの2値。スタミナ勝負コースは開催フラグ。有志ツールの移植はしない（ツールは確認用に外で使ってよい）
-- **パイプライン（仮置き・実装）**: `src/lib/score.ts` の `computeScore`（`effectiveIds` + `skillIds`）。直置き Strength は別経路のまま
+- **パイプライン（仮置き・実装）**: `src/lib/score.ts` の `computeScore`（`effectiveIds` + `skillIds`）。出走は `horses.score_input` → `scoreFromHorse` → Strength。直置きは算出不能時または「直置き」チェック時の逃げ
 - **開催条件とステ目標値の保存（仮置き・実装）**: `events.score_setup`（JSON）。型は `EventScoreSetup`（`scoreSetup.ts`）。コースは U-tools 金ドット36（`score-courses.json`、`npm run extract:courses`）。天候・バ場・季節と要求値は手打ち。管理画面「レースイベント設定」内。保存時に Worker が当該コース×4脚質の有効スキル id を U-tools から取得して `effectiveSkillIds` に固定。未設定なら直置きのみ
+- **出走材料（仮置き・実装）**: `horses.score_input`（ステ・適性・スキル名・id・脚質）。OCR はファジーで id 化（`skillFuzzy.ts`、カタログは id 付き）。脚質は逃／先／差／追。適性 S が1つだけなら初期選択。登録時に算出できれば Strength に載せて Seed へ
 
 ## 読み（未確定）
 
@@ -144,7 +145,7 @@ U-tools のバ身混ぜは使わない（[rejected.md](rejected.md)）。コー�
 
 ### 作業用の式（仮置き・実装）
 
-金3・加算先・A と未達 `1+(r−1)×M`。実装は `src/lib/score.ts` の `computeScore`。Neko確定ではない。有効リストは開催の `effectiveSkillIds`（`effectiveIdsFromScoreSetup`）。未取得時は緑以外全部有効。ためらいはリスト外でも白1。出走画面への接続と直置き併用はまだ。
+金3・加算先・A と未達 `1+(r−1)×M`。実装は `src/lib/score.ts` の `computeScore`。出走は `scoreFromHorse`（`score_input`＋開催 `score_setup`）→ Strength。Neko確定ではない。有効リストは開催の `effectiveSkillIds`。未取得時は緑以外全部有効。ためらいはリスト外でも白1。直置きは算出不能時の逃げ。
 
 ```
 S0 = 有効スキル数 + 2 × 金スキル数
@@ -169,7 +170,7 @@ S *= max(0, r賢≥1 ? 1+(r賢−1) : 1+(r賢−1)×6)
 
 ### 残る質問
 
-純関数のパイプラインは載せた。開催条件・ステ目標・有効スキル id スナップショットは `events.score_setup` に保存できる。残りは出走（ステ・スキル id・適性・脚質）を `computeScore` へ渡すこと。Nekoさんへの式確認は手土産のあと。OCR 脚質 UI は [next.md](next.md)。
+純関数と開催スナップショット、出走接続（`score_input` → Strength）まで載せた。Nekoさんへの式確認は手土産のあと。
 
 ## たたき台（原文）
 
