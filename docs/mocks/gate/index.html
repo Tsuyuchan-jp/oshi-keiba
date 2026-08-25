@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>入場</title>
+  <link rel="stylesheet" href="../bet-window/bet-shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body.tone-quiet .brand { color: #c8d0cc; }
+    body.tone-quiet .app-shell { background: #0c0e0f; border-color: #3a403c; }
+    @media (min-width: 900px) {
+      .app-shell {
+        width: min(26rem, calc(100vw - 4rem)) !important;
+        height: auto !important;
+        max-height: none !important;
+      }
+    }
+    .desk { padding: 1.1rem 1rem 1.15rem; overflow: auto; }
+    h1 {
+      margin: 0 0 .35rem;
+      font-size: 1.2rem;
+      letter-spacing: .14em;
+      color: #e8eeea;
+    }
+    .lead {
+      margin: 0 0 1rem;
+      font-size: .8rem;
+      color: #6aa8a4;
+      line-height: 1.55;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: .3rem;
+      font-size: .75rem;
+      color: #6aa8a4;
+      margin-bottom: .7rem;
+    }
+    input {
+      background: #101214;
+      color: #e8fffc;
+      border: 1px solid #2a3332;
+      padding: .55rem .6rem;
+      font: inherit;
+      font-size: 1rem;
+    }
+    .go {
+      width: 100%;
+      margin-top: .25rem;
+      background: #ff8a2a;
+      color: #140800;
+      border: 0;
+      padding: .85rem 1rem;
+      font: inherit;
+      font-weight: 800;
+      letter-spacing: .12em;
+      cursor: pointer;
+    }
+    .again {
+      width: 100%;
+      margin-top: .45rem;
+      background: transparent;
+      color: #c8d0cc;
+      border: 1px solid #3a4440;
+      padding: .7rem 1rem;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .more-btn {
+      appearance: none;
+      background: transparent;
+      border: 0;
+      color: #6aa8a4;
+      font: inherit;
+      font-size: 1.2rem;
+      line-height: 1;
+      padding: .15rem .35rem;
+      cursor: pointer;
+      letter-spacing: .05em;
+    }
+    .more-btn[aria-expanded="true"] { color: #e0b34a; }
+    .more-pop {
+      display: none;
+      position: absolute;
+      right: .55rem;
+      top: 2.7rem;
+      z-index: 8;
+      min-width: 8.5rem;
+      background: #121516;
+      border: 1px solid #3a4440;
+      padding: .25rem 0;
+    }
+    .more-pop.open { display: block; }
+    .more-pop a, .more-pop button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: 0;
+      color: #c8d0cc;
+      font: inherit;
+      font-size: .82rem;
+      padding: .45rem .75rem;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .chrome { position: relative; }
+    /* PC：枠の外・画面右下。スマホでは出さない */
+    .out-links {
+      display: none;
+      position: fixed;
+      right: 1rem;
+      bottom: calc(.85rem + env(safe-area-inset-bottom));
+      z-index: 6;
+      font-size: .75rem;
+    }
+    .out-links a {
+      color: rgba(232, 238, 234, .55);
+      text-decoration: none;
+      margin-left: .75rem;
+    }
+    .out-links a:hover { color: #e0b34a; }
+    @media (min-width: 900px) {
+      .out-links { display: block; }
+    }
+    dialog.howto {
+      max-width: 22rem;
+      background: #0c0e0f;
+      color: #e8eeea;
+      border: 1px solid #3a4440;
+      padding: 1rem 1.1rem;
+    }
+    dialog.howto::backdrop { background: rgba(0,0,0,.55); }
+    dialog.howto p { font-size: .85rem; color: #9aa8a4; line-height: 1.55; }
+    dialog.howto button { margin-top: .5rem; }
+  </style>
+</head>
+<body class="tone-quiet">
+  <div class="scene">
+    <div class="scene-bg"></div>
+    <div class="app-shell">
+      <header class="chrome">
+        <div>
+          <a class="brand" href="../venue-board/layout-venue.html">OSHI KEIBA</a>
+        </div>
+        <button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
+        <div class="more-pop" id="more-pop">
+          <button type="button" id="howto-open">使い方</button>
+          <a href="#">管理者</a>
+        </div>
+      </header>
+      <div class="desk">
+        <h1>入場</h1>
+        <p class="lead">表示名だけで入ります。個人パスワードはありません。スペは開催に参加したときに入ります。</p>
+        <form id="gate" action="#" method="get">
+          <label>表示名
+            <input name="display_name" required maxlength="40" autocomplete="nickname" placeholder="例：neko">
+          </label>
+          <label>共有パス
+            <input name="password" type="password" required autocomplete="current-password">
+          </label>
+          <button class="go" name="mode" value="register" type="submit">初めて入場</button>
+          <button class="again" name="mode" value="login" type="submit">登録済みでもう一度</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <nav class="out-links" aria-label="その他">
+    <a href="#">使い方</a>
+    <a href="#">管理者</a>
+  </nav>
+  <div class="mock-label" style="left:.75rem;right:auto">入場 · ⋯は枠内、PCは右下にも</div>
+  <dialog class="howto" id="howto">
+    <p>場内でオッズを見ます。馬券は「馬券を買う」から。初めての人は上のボタン、前に入った人は下です。</p>
+    <form method="dialog"><button type="submit">閉じる</button></form>
+  </dialog>
+  <script>
+    const btn = document.getElementById("more-btn");
+    const pop = document.getElementById("more-pop");
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const on = pop.classList.toggle("open");
+      btn.setAttribute("aria-expanded", on ? "true" : "false");
+    });
+    document.addEventListener("click", () => {
+      pop.classList.remove("open");
+      btn.setAttribute("aria-expanded", "false");
+    });
+    pop.addEventListener("click", (e) => e.stopPropagation());
+    const howto = document.getElementById("howto");
+    document.getElementById("howto-open").addEventListener("click", () => howto.showModal());
+    document.querySelector(".out-links").addEventListener("click", (e) => {
+      if (e.target.textContent === "使い方") {
+        e.preventDefault();
+        howto.showModal();
+      }
+    });
+    document.getElementById("gate").addEventListener("submit", (e) => {
+      e.preventDefault();
+      alert("モックです。本番では場内へ進みます。");
+    });
+  </script>
+</body>
+</html>
