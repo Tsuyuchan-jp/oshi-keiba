@@ -73,17 +73,10 @@
       border-bottom: 1px solid #0c1818;
       padding: .32rem .4rem;
     }
-    .led-meta .live {
-      display: inline-flex;
-      align-items: center;
-      gap: .35rem;
-    }
-    .led-meta .dot {
-      width: .45rem;
-      height: .45rem;
-      border-radius: 50%;
-      background: var(--led);
-      animation: blink 1.2s step-end infinite;
+    .led-meta .pill {
+      background: rgba(0, 232, 216, .12);
+      color: var(--led);
+      border: 1px solid rgba(0, 232, 216, .35);
     }
     table.win { table-layout: fixed; }
     table.win th:nth-child(1),
@@ -102,10 +95,12 @@
       white-space: nowrap;
       text-shadow: 0 0 8px rgba(0, 232, 216, .25);
     }
-    table.win td.runner {
-      width: 4.8rem;
-      max-width: 4.8rem;
-      color: #c8d4d3;
+    table.win td.style {
+      width: 2.1rem;
+      color: var(--led);
+      font-size: .82em;
+      letter-spacing: .08em;
+      text-align: center;
     }
     table.win td.odds {
       width: 6.4rem;
@@ -265,25 +260,25 @@
           <div class="who">neko · 12,800 スペ</div>
         </div>
         <div class="led-meta">
-          <span class="live"><span class="dot"></span>投票中</span>
+          <span class="pill"><span class="dot"></span>投票中</span>
           <span>現在 <strong id="now-clock">18:12</strong></span>
           <span>締切 <strong>18:40</strong></span>
         </div>
       </header>
       <section class="board">
         <div class="board-head">
-          <h1>第2回 本番　単勝</h1>
+          <h1>第2回 本番　単勝　芝・中　稍重</h1>
         </div>
         <div class="cols">
           <div class="sheet-wrap">
             <table class="win">
-              <thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th style="text-align:right">オッズ</th></tr></thead>
+              <thead><tr><th>#</th><th>ウマ娘</th><th>脚質</th><th>出走者</th><th style="text-align:right">オッズ</th></tr></thead>
               <tbody id="rows-a"></tbody>
             </table>
           </div>
           <div class="sheet-wrap col-b">
             <table class="win">
-              <thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th style="text-align:right">オッズ</th></tr></thead>
+              <thead><tr><th>#</th><th>ウマ娘</th><th>脚質</th><th>出走者</th><th style="text-align:right">オッズ</th></tr></thead>
               <tbody id="rows-b"></tbody>
             </table>
           </div>
@@ -347,30 +342,30 @@
       }
     })();
     const horses = [
-      [1, "サイレンススズカ", "あお", "3.2", "down", "0.2"],
-      [2, "スペシャルウィーク", "つゆ", "5.8", "", ""],
-      [3, "グラスワンダー", "ren", "8.1", "up", "0.4"],
-      [4, "セイウンスカイ", "neko", "12.4", "", ""],
-      [5, "エルコンドルパサー", "momo", "6.0", "down", "0.1"],
-      [6, "テイエムオペラオー", "kai", "15.2", "", ""],
-      [7, "ファインモーション", "yuki", "9.7", "up", "0.3"],
-      [8, "ナリタブライアン", "sora", "18.0", "", ""],
-      [9, "メジロマックイーン", "hana", "7.4", "", ""],
-      [10, "トウカイテイオー", "rio", "11.1", "up", "0.5"],
-      [11, "ビワハヤヒデ", "ken", "22.6", "", ""],
-      [12, "ミホノブルボン", "mai", "14.3", "down", "0.2"],
-      [13, "サクラバクシンオー", "leo", "16.8", "", ""],
-      [14, "タイキシャトル", "ami", "10.5", "", ""],
-      [15, "エアグルーヴ", "jun", "13.9", "up", "0.2"],
-      [16, "シンボリルドルフ", "tori", "4.6", "down", "0.3"],
-      [17, "オグリキャップ", "nana", "19.2", "", ""],
-      [18, "タマモクロス", "bee", "25.0", "", ""],
+      [1, "サイレンススズカ", "逃", "あお", "3.2", "down", "0.2"],
+      [2, "スペシャルウィーク", "先", "つゆ", "5.8", "", ""],
+      [3, "グラスワンダー", "差", "ren", "8.1", "up", "0.4"],
+      [4, "セイウンスカイ", "逃", "neko", "12.4", "", ""],
+      [5, "エルコンドルパサー", "先", "momo", "6.0", "down", "0.1"],
+      [6, "テイエムオペラオー", "追", "kai", "15.2", "", ""],
+      [7, "ファインモーション", "差", "yuki", "9.7", "up", "0.3"],
+      [8, "ナリタブライアン", "先", "sora", "18.0", "", ""],
+      [9, "メジロマックイーン", "追", "hana", "7.4", "", ""],
+      [10, "トウカイテイオー", "逃", "rio", "11.1", "up", "0.5"],
+      [11, "ビワハヤヒデ", "差", "ken", "22.6", "", ""],
+      [12, "ミホノブルボン", "逃", "mai", "14.3", "down", "0.2"],
+      [13, "サクラバクシンオー", "逃", "leo", "16.8", "", ""],
+      [14, "タイキシャトル", "先", "ami", "10.5", "", ""],
+      [15, "エアグルーヴ", "差", "jun", "13.9", "up", "0.2"],
+      [16, "シンボリルドルフ", "先", "tori", "4.6", "down", "0.3"],
+      [17, "オグリキャップ", "追", "nana", "19.2", "", ""],
+      [18, "タマモクロス", "追", "bee", "25.0", "", ""],
     ];
     function fill(el, list) {
-      for (const [n, uma, runner, odds, dir, d] of list) {
+      for (const [n, uma, style, runner, odds, dir, d] of list) {
         const tr = document.createElement("tr");
         if (n === 3) tr.className = "pulse";
-        tr.innerHTML = `<td class="num">${n}</td><td class="name">${uma}</td><td class="runner">${runner}</td>
+        tr.innerHTML = `<td class="num">${n}</td><td class="name">${uma}</td><td class="style">${style}</td><td class="runner">${runner}</td>
           <td class="odds">${dir ? `<span class="delta ${dir}">${dir === "up" ? "↑" : "↓"}${d}</span>` : `<span class="delta"></span>`}${odds}</td>`;
         el.appendChild(tr);
       }
