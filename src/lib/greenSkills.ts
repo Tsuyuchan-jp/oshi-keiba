@@ -1,4 +1,7 @@
 import greenJson from "../data/green-skills.json" with { type: "json" };
+import { evalGreenCondition, type GreenEvalContext } from "./greenCondition.ts";
+
+export type { GreenEvalContext };
 
 export type GreenBonus = {
   speed: number;
@@ -45,12 +48,14 @@ export function addGreenBonus(a: GreenBonus, b: GreenBonus): GreenBonus {
   };
 }
 
-/** 条件判定はしない。名前がマスタにあれば上昇量を足す。 */
-export function sumGreenBonusesByNames(names: string[]): GreenBonus {
+/** 開催条件＋脚質などで condition が立つ緑だけ足す。 */
+export function sumGreenBonusesByNames(names: string[], ctx: GreenEvalContext): GreenBonus {
   let acc = empty();
   for (const name of names) {
     const g = greenSkillByName(name);
-    if (g) acc = addGreenBonus(acc, g);
+    if (!g) continue;
+    if (!evalGreenCondition(g.condition, ctx)) continue;
+    acc = addGreenBonus(acc, g);
   }
   return acc;
 }
