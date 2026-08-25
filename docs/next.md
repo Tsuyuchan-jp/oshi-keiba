@@ -28,6 +28,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
+- 場内結果公開：払戻＋確定の横並び盤→全頭表（モック。本番未適用）— [layout-venue.html](mocks/venue-board/layout-venue.html)
 - 場内の締切後・結果公開を盤の続きとして仮置き（着は公開まで出さない。買うは投票中だけ）— [layout-venue.html](mocks/venue-board/layout-venue.html)
 - 入場デザイン仮置き・採用（静かな窓口トーン。⋯は枠内、PCは右下にも使い方／管理者）— [gate](mocks/gate/index.html)
 - 窓口デザイン仮置き（案A・マークカード・所持スペ帯・買うは下固定。ナビ名は窓口、見出しは発売所）— [quiet.html](mocks/bet-window/quiet.html)

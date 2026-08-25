@@ -211,7 +211,153 @@
       padding-top: .3rem;
       border-top: 1px solid #143230;
     }
-    .scene[data-phase="published"] .tickets { display: block; }
+    .scene[data-phase="published"][data-result="field"] .tickets { display: block; }
+    .scene[data-phase="published"][data-result="show"] .cols,
+    .scene[data-phase="published"][data-result="show"] .tickets { display: none; }
+    .result-tabs {
+      display: none;
+      gap: .35rem;
+      margin-left: auto;
+      flex: 0 0 auto;
+    }
+    .scene[data-phase="published"] .result-tabs { display: flex; }
+    .result-tabs button {
+      border: 1px solid #2a4040;
+      background: transparent;
+      color: var(--led-dim);
+      font: inherit;
+      font-size: .68rem;
+      letter-spacing: .08em;
+      padding: .2rem .45rem;
+      cursor: pointer;
+    }
+    .result-tabs button[aria-pressed="true"] {
+      color: #e0b34a;
+      border-color: #e0b34a;
+    }
+    /* お楽しみ：払戻（左）＋確定着順（右）。枠番色は使わない */
+    .jumbo {
+      display: none;
+      flex: 1 1 auto;
+      min-height: 0;
+      gap: 8px;
+    }
+    .scene[data-phase="published"][data-result="show"] .jumbo { display: flex; }
+    .j-panel {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      overflow: auto;
+      background: #0a0a0a;
+      border: 1px solid #1c3030;
+      display: flex;
+      flex-direction: column;
+    }
+    .j-pay { flex: 1.15; }
+    .j-fin { flex: .9; }
+    .j-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .5rem;
+      padding: .28rem .45rem;
+      font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif;
+      font-weight: 700;
+      letter-spacing: .08em;
+      font-size: .78rem;
+      flex: 0 0 auto;
+    }
+    .j-pay .j-head { background: #5aa0d0; color: #fff; }
+    .j-fin .j-head { background: #111; color: #e8fffc; border-bottom: 1px solid #2a1818; }
+    .kakutei {
+      background: #c4222a;
+      color: #fff;
+      padding: .12rem .45rem;
+      letter-spacing: .2em;
+      font-size: .72rem;
+    }
+    .j-body { padding: .35rem .4rem .45rem; flex: 1; }
+    .pay-row {
+      display: grid;
+      grid-template-columns: 3.4rem minmax(0, 1fr) auto;
+      gap: .35rem;
+      align-items: center;
+      padding: .28rem 0;
+      border-bottom: 1px solid #152018;
+      font-size: .82rem;
+    }
+    .pay-k {
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-align: center;
+      padding: .18rem 0;
+      color: #0a0a0a;
+    }
+    .pay-k.win { background: #4a8fd4; }
+    .pay-k.umaren { background: #e070a0; }
+    .pay-k.umatan { background: #e0b34a; }
+    .pay-k.trio { background: #5ec4d4; }
+    .pay-k.trif { background: #e07a30; }
+    .pay-sel {
+      font-family: "Chakra Petch", sans-serif;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: #fff;
+    }
+    .pay-amt {
+      font-family: "Chakra Petch", sans-serif;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: #ffe14a;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .pay-amt.void { color: var(--led); font-size: .78em; }
+    .fin-row {
+      display: grid;
+      grid-template-columns: 1.7rem 2.4rem minmax(0, 1fr);
+      gap: .35rem;
+      align-items: center;
+      padding: .32rem 0;
+      border-bottom: 1px solid #181818;
+    }
+    .fin-rk {
+      width: 1.35rem;
+      height: 1.35rem;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #3d6ea8;
+      color: #fff;
+      font-size: .62rem;
+      font-weight: 800;
+    }
+    .fin-n {
+      font-family: "Chakra Petch", sans-serif;
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: #ffe14a;
+      text-shadow: 0 0 10px rgba(255, 225, 74, .35);
+      font-variant-numeric: tabular-nums;
+    }
+    .fin-pop { color: #9aa8a4; font-size: .78rem; }
+    .fin-meta {
+      margin-top: .45rem;
+      color: #ffe14a;
+      font-size: .78rem;
+      letter-spacing: .06em;
+    }
+    .jumbo-hint {
+      display: none;
+      flex: 0 0 auto;
+      margin: .35rem 0 0;
+      font-size: .68rem;
+      color: var(--led-dim);
+      letter-spacing: .06em;
+    }
+    .scene[data-phase="published"][data-result="show"] .jumbo-hint { display: block; }
+    .scene[data-phase="published"][data-result="show"] .foot .hint { display: none; }
     .tickets-h {
       font-size: .68rem;
       letter-spacing: .12em;
@@ -330,6 +476,8 @@
         overflow: hidden;
       }
       .col-b { display: none; }
+      .jumbo { flex-direction: column; }
+      .j-pay, .j-fin { flex: 1 1 auto; }
       .foot { display: block; }
       .cta {
         display: flex;
@@ -368,7 +516,7 @@
   </style>
 </head>
 <body>
-  <div class="scene" data-slot="night" data-phase="voting">
+  <div class="scene" data-slot="night" data-phase="voting" data-result="show">
     <div class="scene-bg" aria-hidden="true"></div>
     <div class="app-shell">
       <header class="chrome">
@@ -385,7 +533,55 @@
       <section class="board">
         <div class="board-head">
           <h1>第2回 本番　単勝　芝・中　稍重</h1>
+          <div class="result-tabs" role="tablist" aria-label="結果の見方">
+            <button type="button" data-result="show">結果の盤</button>
+            <button type="button" data-result="field">全頭</button>
+          </div>
         </div>
+        <div class="jumbo" id="jumbo">
+          <article class="j-panel j-pay" aria-label="払戻">
+            <div class="j-head"><span>第2回</span><span>払戻</span></div>
+            <div class="j-body">
+              <div class="pay-row">
+                <span class="pay-k win">単勝</span>
+                <span class="pay-sel">1</span>
+                <span class="pay-amt">3.2倍</span>
+              </div>
+              <div class="pay-row">
+                <span class="pay-k umaren">馬連</span>
+                <span class="pay-sel">1 - 16</span>
+                <span class="pay-amt">18.0倍</span>
+              </div>
+              <div class="pay-row">
+                <span class="pay-k umatan">馬単</span>
+                <span class="pay-sel">1 → 16</span>
+                <span class="pay-amt">32.4倍</span>
+              </div>
+              <div class="pay-row">
+                <span class="pay-k trio">3連複</span>
+                <span class="pay-sel">1 - 2 - 16</span>
+                <span class="pay-amt">54.0倍</span>
+              </div>
+              <div class="pay-row">
+                <span class="pay-k trif">3連単</span>
+                <span class="pay-sel">—</span>
+                <span class="pay-amt void">特払い 8割戻し</span>
+              </div>
+            </div>
+          </article>
+          <article class="j-panel j-fin" aria-label="確定着順">
+            <div class="j-head"><span>着順</span><span class="kakutei">確定</span></div>
+            <div class="j-body">
+              <div class="fin-row"><span class="fin-rk">I</span><span class="fin-n">1</span><span class="fin-pop">1人気</span></div>
+              <div class="fin-row"><span class="fin-rk">II</span><span class="fin-n">16</span><span class="fin-pop">2人気</span></div>
+              <div class="fin-row"><span class="fin-rk">III</span><span class="fin-n">2</span><span class="fin-pop">3人気</span></div>
+              <div class="fin-row"><span class="fin-rk">IV</span><span class="fin-n">5</span><span class="fin-pop">4人気</span></div>
+              <div class="fin-row"><span class="fin-rk">V</span><span class="fin-n">9</span><span class="fin-pop">5人気</span></div>
+              <p class="fin-meta">芝 · 中 · 稍重</p>
+            </div>
+          </article>
+        </div>
+        <p class="jumbo-hint" id="jumbo-hint">左が払戻、右が確定。スワイプまたはタップで全頭</p>
         <div class="cols">
           <div class="sheet-wrap">
             <div class="sheet" role="table" aria-label="単勝オッズ">
@@ -522,6 +718,14 @@
     };
     const scene = document.querySelector(".scene");
     let phase = "voting";
+    let resultView = "show";
+    function setResult(v) {
+      resultView = v === "field" ? "field" : "show";
+      scene.dataset.result = resultView;
+      for (const b of document.querySelectorAll(".result-tabs [data-result]")) {
+        b.setAttribute("aria-pressed", b.dataset.result === resultView ? "true" : "false");
+      }
+    }
     function fill(el, list) {
       const live = phase === "voting";
       const showPlace = phase === "published";
@@ -586,7 +790,9 @@
         hint.textContent = "3連単は当たりの組み合わせに投票がなかったため、特払いです。この賭式に使ったスペの8割が戻ります。";
         metaNow.style.display = "none";
         metaClose.innerHTML = "払戻済み";
+        setResult("show");
       }
+      if (phase !== "published") setResult("show");
       for (const b of document.querySelectorAll(".phase-bar [data-phase]")) {
         b.setAttribute("aria-pressed", b.dataset.phase === phase ? "true" : "false");
       }
@@ -594,6 +800,7 @@
     }
     const pq = new URLSearchParams(location.search).get("phase");
     if (pq === "closed" || pq === "published" || pq === "voting") phase = pq;
+    const rq = new URLSearchParams(location.search).get("result");
     for (const b of document.querySelectorAll(".phase-bar [data-phase]")) {
       b.addEventListener("click", () => {
         phase = b.dataset.phase;
@@ -601,6 +808,30 @@
       });
     }
     applyPhase();
+    if (phase === "published" && rq === "field") setResult("field");
+    for (const b of document.querySelectorAll(".result-tabs [data-result]")) {
+      b.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        setResult(b.dataset.result);
+      });
+    }
+    const jumbo = document.getElementById("jumbo");
+    jumbo.addEventListener("click", () => {
+      if (phase === "published") setResult("field");
+    });
+    const boardEl = document.querySelector("section.board");
+    let swipeX = null;
+    boardEl.addEventListener("pointerdown", (e) => {
+      if (phase !== "published") return;
+      swipeX = e.clientX;
+    });
+    boardEl.addEventListener("pointerup", (e) => {
+      if (swipeX == null || phase !== "published") return;
+      const dx = e.clientX - swipeX;
+      swipeX = null;
+      if (dx < -48) setResult("field");
+      if (dx > 48) setResult("show");
+    });
     window.matchMedia("(min-width: 900px)").addEventListener("change", render);
     setInterval(() => {
       if (phase !== "voting") return;
