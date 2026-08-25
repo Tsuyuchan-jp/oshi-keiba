@@ -89,6 +89,7 @@ import {
 import { horsesAdminBody, ocrAdminScript } from "./lib/ocrAdmin";
 import { resolveStrength } from "./lib/scoreFromHorse";
 import { enrichScoreSetupWithEffects, scoreSetupFromForm } from "./lib/scoreSetup";
+import { normalizeShotMime } from "./lib/shotMime";
 import { eventScoreSetup } from "./lib/store";
 import type { UserRow } from "./lib/store";
 
@@ -172,9 +173,11 @@ async function putHorseShot(
   if (!env.SHOTS) throw new Error("画像の保存先がまだありません");
   if (file.size <= 0) throw new Error("画像が空です");
   if (file.size > MAX_SHOT_BYTES) throw new Error("画像が大きすぎます（2MBまで）");
+  const contentType = normalizeShotMime(file.type, file.name);
+  if (!contentType) throw new Error("対応形式は PNG / JPEG / WebP です");
   const key = `${eventId}/${horseId}`;
   await env.SHOTS.put(key, await file.arrayBuffer(), {
-    httpMetadata: { contentType: file.type || "image/png" },
+    httpMetadata: { contentType },
   });
   return key;
 }

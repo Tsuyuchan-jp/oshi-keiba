@@ -4,7 +4,7 @@
 
 第2回の努力目標として実装した。点の式は [score.md](score.md)。レース結果の動画・リプレイからの着順取得はしない（[rejected.md](rejected.md)）。
 
-**機能はクローズ。** 読取・脚質選択・ファジー ID 化・材料保存まで。細かい読取調整・表示 UI・受け入れ形式の追加などは後。登録は 1 頭ずつ（一括貼り付け枠は置かない）。
+**機能はクローズ。** 読取・脚質選択・ファジー ID 化・材料保存まで。細かい読取調整・表示 UI などは後。登録は 1 頭ずつ（一括貼り付け枠は置かない）。受け入れ画像は **PNG / JPEG / WebP**。
 
 ## 方針
 
@@ -55,7 +55,7 @@ OCR とスクショ保存は **`/admin/horses`**。いまの `/admin` 1枚には
 | 画像アップロード | `POST /admin/horse` の `shot`（OCR成功時のみ。読取に使ったファイル） | 別枠の保存 UI は置かない |
 | R2 バケット | `oshi-keiba-shots` | アプリ名と用途。D1 の `oshi-keiba` と揃える |
 | Worker バインディング | `SHOTS` | `DB` と同じ短さ |
-| オブジェクトキー | `{eventId}/{horseId}` | 開催を残す前提。拡張子は Content-Type で持つ |
+| オブジェクトキー | `{eventId}/{horseId}` | 開催を残す前提。拡張子は Content-Type で持つ（png / jpeg / webp） |
 | スキル辞書 | `src/data/skill-catalog.json` | リポジトリ内。OCR の種別。実行時 fetch しない。更新はファイル差し替え＋コミット |
 | 緑の内部上昇 | `src/data/green-skills.json` | mdb `skill_category=0`。評価点用。`npm run extract:greens` |
 

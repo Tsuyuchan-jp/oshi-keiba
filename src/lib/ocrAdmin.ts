@@ -3,9 +3,11 @@ import { horseSheetParts } from "./horseName";
 import { STYLE_OPTIONS } from "./horseScoreInput";
 import { catalogJsonForPage } from "./skillCatalog";
 import type { EventScoreSetup } from "./scoreSetup";
+import { ALLOWED_SHOT_MIME } from "./shotMime";
 import type { Board } from "./store";
 
 const KEY_LS = "oshi-keiba-gemini-key";
+const SHOT_ACCEPT = ALLOWED_SHOT_MIME.join(",");
 
 export function horsesAdminBody(
   board: Board,
@@ -46,10 +48,10 @@ export function horsesAdminBody(
           <button type="button" class="secondary" id="gemini-clear">消す</button>
         </div>
         <h3>スクショから読む</h3>
-        <p class="note">アプリ外で結合した完成画像を1枚。読取に成功した画像が、登録と同時に保存されます。評価点そのものは OCR では埋めません（材料だけ）。読まなくても下の直置きで登録できます（その場合スクショは残りません）。</p>
+        <p class="note">アプリ外で結合した完成画像を1枚（PNG / JPEG / WebP）。読取に成功した画像が、登録と同時に保存されます。評価点そのものは OCR では埋めません（材料だけ）。読まなくても下の直置きで登録できます（その場合スクショは残りません）。</p>
         ${setupNote}
         <div class="row">
-          <label>画像 <input id="ocr-file" type="file" accept="image/png,image/jpeg"></label>
+          <label>画像 <input id="ocr-file" type="file" accept="${SHOT_ACCEPT}"></label>
           <button type="button" id="ocr-run">読み取る</button>
           <button type="button" class="secondary" id="ocr-stop">停止</button>
         </div>
@@ -58,7 +60,7 @@ export function horsesAdminBody(
       <form id="horse-add" method="post" action="/admin/horse" enctype="multipart/form-data" class="row" style="margin-top:1rem;flex-wrap:wrap">
         <input type="hidden" name="ocr_ok" id="ocr-ok" value="">
         <input type="hidden" name="score_input" id="score-input" value="">
-        <input type="file" name="shot" id="shot-from-ocr" accept="image/png,image/jpeg" hidden>
+        <input type="file" name="shot" id="shot-from-ocr" accept="${SHOT_ACCEPT}" hidden>
         <label>ウマ娘名 <input name="uma_name" id="uma-name" required maxlength="40"></label>
         <label>出走者 <input name="runner_name" id="runner-name" required maxlength="40"></label>
         <label>出走脚質 <select name="style_key" id="style-key">${styleOpts}</select></label>
@@ -246,11 +248,25 @@ export function ocrAdminScript(canAutoScore: boolean): string {
     }
     throw new Error("JSONを直せませんでした");
   }
+  function resolveShotMime(file) {
+    let t = String(file.type || "").trim().toLowerCase();
+    if (t === "image/jpg") t = "image/jpeg";
+    if (!t) {
+      const n = String(file.name || "").toLowerCase();
+      if (n.endsWith(".webp")) t = "image/webp";
+      else if (n.endsWith(".png")) t = "image/png";
+      else if (n.endsWith(".jpg") || n.endsWith(".jpeg")) t = "image/jpeg";
+    }
+    const ok = ${JSON.stringify([...ALLOWED_SHOT_MIME])};
+    return ok.includes(t) ? t : null;
+  }
   document.getElementById("ocr-run")?.addEventListener("click", async () => {
     const file = document.getElementById("ocr-file")?.files?.[0];
     const apiKey = (keyInput?.value || localStorage.getItem(KEY_LS) || "").trim();
     if (!apiKey) { out.textContent = "キーを入れてください。"; return; }
     if (!file) { out.textContent = "画像を選んでください。"; return; }
+    const mime = resolveShotMime(file);
+    if (!mime) { out.textContent = "対応形式は PNG / JPEG / WebP です。"; return; }
     out.textContent = "読み取り中…";
     ac = new AbortController();
     try {
@@ -260,13 +276,14 @@ export function ocrAdminScript(canAutoScore: boolean): string {
         r.onerror = () => reject(new Error("画像を読めませんでした"));
         r.readAsDataURL(file);
       });
-      const b64 = String(dataUrl).replace(/^data:image\\/(png|jpeg);base64,/, "");
+      // MIME 追加に備えてプレフィックスは汎用で落とす
+      const b64 = String(dataUrl).replace(/^data:[^;]+;base64,/, "");
       const instruction = "あなたはウマ娘の詳細ステータス画面を読む。JSONだけ返す。nameはウマ娘名（二つ名・ランクなし）。statsはspeed stamina power guts wisdomの整数。aptitudesはturf dirt short mile medium long nige senkou sashi oikomiのS〜G。skillsは取得スキル名を最後まで。緑も金もデバフ（右回り×等）も落とさない。";
       const payload = {
         system_instruction: { parts: { text: instruction } },
         contents: [{ parts: [
           { text: "この画像のステータスをJSONで抽出してください。" },
-          { inline_data: { mime_type: file.type || "image/png", data: b64 } }
+          { inline_data: { mime_type: mime, data: b64 } }
         ] }],
         generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 8192 }
       };
