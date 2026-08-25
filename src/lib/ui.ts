@@ -16,6 +16,7 @@ import type {
   UserRow,
 } from "./store";
 import { numberByHorseId } from "./store";
+import { horseSheetParts } from "./horseName";
 import { IMPUTED_LAMBDA } from "./odds";
 
 export function formatOdds(n: number | null): string {
@@ -298,6 +299,15 @@ button.text-btn {
   font-size: inherit;
   text-decoration: underline;
 }
+.ocr-out {
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-size: .82rem;
+  white-space: pre-wrap;
+  background: #f7f3ea;
+  padding: .6rem .7rem;
+  min-height: 4rem;
+  margin: .6rem 0 0;
+}
 dialog.modal {
   max-width: 38rem;
   width: calc(100% - 2rem);
@@ -398,9 +408,10 @@ form.reauth { position: relative; }
 table.win-sheet { table-layout: fixed; }
 table.win-sheet th:nth-child(1),
 table.win-sheet td:nth-child(1) { width: 2.4rem; }
-table.win-sheet th:nth-child(3),
-table.win-sheet td:nth-child(3) { width: 4.2rem; }
-table.win-sheet td.name {
+table.win-sheet th:nth-child(4),
+table.win-sheet td:nth-child(4) { width: 4.2rem; }
+table.win-sheet td.name,
+table.win-sheet td.runner {
   font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
   white-space: nowrap;
   overflow: hidden;
@@ -533,6 +544,7 @@ export function layout(opts: {
   const phase = opts.eventStatus
     ? `<div class="phase ${headerPhaseKind(opts.eventStatus)}">${escapeHtml(statusLabel(opts.eventStatus))}${liveMark}</div>`
     : "";
+  const adminExtra = opts.admin ? `<a href="/admin/horses">出走</a>` : "";
   const memberNav = opts.admin
     ? ""
     : opts.user
@@ -558,6 +570,7 @@ export function layout(opts: {
       ${howto}
       ${logoutLink}
       <a href="/admin">${opts.admin ? "管理" : "管理者"}</a>
+      ${adminExtra}
     </nav>
   </header>
   <main>${opts.body}</main>
@@ -591,7 +604,7 @@ export function flashHtml(msg: string | null, isError = false): string {
   return `<div class="flash${isError ? " error" : ""}">${escapeHtml(msg)}</div>`;
 }
 
-/** 場内・投票用の単勝表（番号・名前・オッズのみ） */
+/** 場内・投票用の単勝表（番号・ウマ娘名・出走者・オッズ） */
 export function winSheetTable(board: Board): string {
   const votingLike =
     board.event.status === "voting" || board.event.status === "setup";
@@ -599,15 +612,17 @@ export function winSheetTable(board: Board): string {
     .filter((h) => !h.horse.scratched)
     .map((h) => {
       const odds = votingLike ? h.referenceOdds : h.confirmedOdds;
+      const parts = horseSheetParts(h.horse);
       return `<tr data-horse-id="${escapeHtml(h.horse.id)}" data-sel="${escapeHtml(h.horse.id)}">
         <td class="num-col">${h.number}</td>
-        <td class="name" title="${escapeHtml(h.horse.name)}">${escapeHtml(h.horse.name)}</td>
+        <td class="name" title="${escapeHtml(parts.umaName)}">${escapeHtml(parts.umaName)}</td>
+        <td class="runner" title="${escapeHtml(parts.runnerName)}">${escapeHtml(parts.runnerName)}</td>
         <td class="num odds-cell"><span class="odds-now">${formatOdds(odds)}</span><span class="odds-delta" hidden></span></td>
       </tr>`;
     })
     .join("");
   return `<table class="win-sheet">
-    <thead><tr><th>番号</th><th>ウマ娘名</th><th>オッズ</th></tr></thead>
+    <thead><tr><th>番号</th><th>ウマ娘名</th><th>出走者</th><th>オッズ</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
 }
@@ -671,10 +686,10 @@ export function horseOptions(board: Board, name: string, excludeIds: string[] = 
   const excl = new Set(excludeIds);
   return board.horses
     .filter((h) => !h.horse.scratched && !excl.has(h.horse.id))
-    .map(
-      (h) =>
-        `<option value="${escapeHtml(h.horse.id)}">${h.number}. ${escapeHtml(h.horse.name)}</option>`,
-    )
+    .map((h) => {
+      const p = horseSheetParts(h.horse);
+      return `<option value="${escapeHtml(h.horse.id)}">${h.number}. ${escapeHtml(p.umaName)}（${escapeHtml(p.runnerName)}）</option>`;
+    })
     .join("");
 }
 

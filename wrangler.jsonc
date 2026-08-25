@@ -20,5 +20,11 @@
       "database_id": "7145055f-edbc-4991-88bb-9ee62ce1a9f1",
       "migrations_dir": "./migrations"
     }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "SHOTS",
+      "bucket_name": "oshi-keiba-shots"
+    }
   ]
 }

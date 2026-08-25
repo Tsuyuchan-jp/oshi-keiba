@@ -26,6 +26,7 @@ import {
 import { newId } from "./auth";
 import { captureAdminUndo } from "./undo";
 import { clawbackBalance } from "./lifecycle";
+import { composeHorseName, horseSheetParts, parseHorseName } from "./horseName";
 
 export { clawbackBalance, joinButtonLabel } from "./lifecycle";
 
@@ -66,6 +67,9 @@ export type HorseRow = {
   id: string;
   event_id: string;
   name: string;
+  uma_name: string;
+  runner_name: string;
+  shot_key: string | null;
   strength: number;
   seed_source: string;
   scratched: number;
@@ -179,17 +183,17 @@ async function insertBlankEvent(
   return id;
 }
 
-const DEMO_HORSES: { name: string; strength: number }[] = [
-  { name: "仮・スペシャルウィーク", strength: 28 },
-  { name: "仮・サイレンススズカ", strength: 22 },
-  { name: "仮・トウカイテイオー", strength: 18 },
-  { name: "仮・ゴールドシップ", strength: 14 },
-  { name: "仮・メジロマックイーン", strength: 10 },
-  { name: "仮・オグリキャップ", strength: 8 },
-  { name: "仮・ダイワスカーレット", strength: 6 },
-  { name: "仮・ウオッカ", strength: 5 },
-  { name: "仮・エアグルーヴ", strength: 4 },
-  { name: "仮・テイエムオペラオー", strength: 3 },
+const DEMO_HORSES: { umaName: string; runnerName: string; strength: number }[] = [
+  { umaName: "仮・スペシャルウィーク", runnerName: "デモ", strength: 28 },
+  { umaName: "仮・サイレンススズカ", runnerName: "デモ", strength: 22 },
+  { umaName: "仮・トウカイテイオー", runnerName: "デモ", strength: 18 },
+  { umaName: "仮・ゴールドシップ", runnerName: "デモ", strength: 14 },
+  { umaName: "仮・メジロマックイーン", runnerName: "デモ", strength: 10 },
+  { umaName: "仮・オグリキャップ", runnerName: "デモ", strength: 8 },
+  { umaName: "仮・ダイワスカーレット", runnerName: "デモ", strength: 6 },
+  { umaName: "仮・ウオッカ", runnerName: "デモ", strength: 5 },
+  { umaName: "仮・エアグルーヴ", runnerName: "デモ", strength: 4 },
+  { umaName: "仮・テイエムオペラオー", runnerName: "デモ", strength: 3 },
 ];
 
 export async function getEventById(
@@ -255,7 +259,18 @@ export async function listHorses(
     .prepare("SELECT * FROM horses WHERE event_id = ? ORDER BY sort_order, created_at")
     .bind(eventId)
     .all<HorseRow>();
-  return results ?? [];
+  return (results ?? []).map(hydrateHorseRow);
+}
+
+function hydrateHorseRow(row: HorseRow): HorseRow {
+  const parts = horseSheetParts(row);
+  return {
+    ...row,
+    uma_name: parts.umaName,
+    runner_name: parts.runnerName,
+    shot_key: row.shot_key ?? null,
+    name: composeHorseName(parts.umaName, parts.runnerName) || row.name,
+  };
 }
 
 function normalizeBetRow(raw: Record<string, unknown>): BetRow {
@@ -653,30 +668,34 @@ export async function grantIfNeeded(
 export async function addHorse(
   db: D1Database,
   event: EventRow,
-  name: string,
+  umaName: string,
+  runnerName: string,
   strength: number,
   recordUndo = true,
 ): Promise<string> {
   if (event.status !== "setup") {
     throw new Error("名簿は投票開始後は閉じます（飛び入り禁止）");
   }
-  const trimmed = name.trim();
-  if (!trimmed) throw new Error("名前を入れてください");
+  const uma = umaName.trim();
+  const runner = runnerName.trim();
+  if (!uma) throw new Error("ウマ娘名を入れてください");
+  if (!runner) throw new Error("出走者を入れてください");
   if (!(strength >= 0)) throw new Error("相対評価点が不正です");
+  const combined = composeHorseName(uma, runner);
   const horses = await listHorses(db, event.id);
   const live = horses.filter((h) => h.scratched === 0).length;
   if (live >= MAX_LIVE_HORSES) {
     throw new Error(`頭数は ${MAX_LIVE_HORSES} まで`);
   }
-  if (recordUndo) await captureAdminUndo(db, `出走を追加（${trimmed}）`);
+  if (recordUndo) await captureAdminUndo(db, `出走を追加（${combined}）`);
   const id = newId();
   await db
     .prepare(
       `INSERT INTO horses (
-        id, event_id, name, strength, seed_source, scratched, sort_order, created_at
-      ) VALUES (?, ?, ?, ?, 'manual', 0, ?, ?)`,
+        id, event_id, name, uma_name, runner_name, strength, seed_source, scratched, sort_order, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, 'manual', 0, ?, ?)`,
     )
-    .bind(id, event.id, trimmed, strength, horses.length + 1, Date.now())
+    .bind(id, event.id, combined, uma, runner, strength, horses.length + 1, Date.now())
     .run();
   return id;
 }
@@ -685,31 +704,54 @@ export async function updateHorse(
   db: D1Database,
   event: EventRow,
   horseId: string,
-  name: string,
+  umaName: string,
+  runnerName: string,
   strength: number,
   recordUndo = true,
 ): Promise<void> {
   if (event.status !== "setup") {
     throw new Error("セットアップ中だけ修正できます");
   }
-  const trimmed = name.trim();
-  if (!trimmed) throw new Error("名前を入れてください");
+  const uma = umaName.trim();
+  const runner = runnerName.trim();
+  if (!uma) throw new Error("ウマ娘名を入れてください");
+  if (!runner) throw new Error("出走者を入れてください");
   if (!(strength >= 0)) throw new Error("相対評価点が不正です");
+  const combined = composeHorseName(uma, runner);
   const horse = await db
     .prepare("SELECT id FROM horses WHERE id = ? AND event_id = ?")
     .bind(horseId, event.id)
     .first();
   if (!horse) throw new Error("出走が見つかりません");
-  if (recordUndo) await captureAdminUndo(db, `出走を修正（${trimmed}）`);
+  if (recordUndo) await captureAdminUndo(db, `出走を修正（${combined}）`);
   await db
     .prepare(
-      "UPDATE horses SET name = ?, strength = ? WHERE id = ? AND event_id = ?",
+      "UPDATE horses SET name = ?, uma_name = ?, runner_name = ?, strength = ? WHERE id = ? AND event_id = ?",
     )
-    .bind(trimmed, strength, horseId, event.id)
+    .bind(combined, uma, runner, strength, horseId, event.id)
     .run();
 }
 
-/** 一括: 行ごと「名前、点数」 */
+export const MAX_SHOT_BYTES = 2_000_000;
+
+export async function setHorseShotKey(
+  db: D1Database,
+  event: EventRow,
+  horseId: string,
+  shotKey: string,
+): Promise<void> {
+  const horse = await db
+    .prepare("SELECT id FROM horses WHERE id = ? AND event_id = ?")
+    .bind(horseId, event.id)
+    .first();
+  if (!horse) throw new Error("出走が見つかりません");
+  await db
+    .prepare("UPDATE horses SET shot_key = ? WHERE id = ? AND event_id = ?")
+    .bind(shotKey, horseId, event.id)
+    .run();
+}
+
+/** 一括: ウマ娘、出走者、点数。旧「名前、点数」はウマ娘のみ（出走者は要手直し） */
 export async function bulkUpsertHorses(
   db: D1Database,
   event: EventRow,
@@ -723,35 +765,55 @@ export async function bulkUpsertHorses(
     .map((l) => l.trim())
     .filter(Boolean);
   if (lines.length === 0) throw new Error("貼り付け内容が空です");
-  const parsed: { name: string; strength: number }[] = [];
+  const parsed: { umaName: string; runnerName: string; strength: number }[] = [];
   for (const line of lines) {
-    const m = line.match(/^(.+?)[、,]\s*(-?\d+(?:\.\d+)?)\s*$/);
-    if (!m) throw new Error(`形式が違います: ${line}`);
-    const name = m[1].trim();
-    const strength = Number(m[2]);
-    if (!name) throw new Error(`名前が空です: ${line}`);
-    if (!(strength >= 0)) throw new Error(`点数が不正です: ${line}`);
-    parsed.push({ name, strength });
+    const three = line.match(/^(.+?)[、,]\s*(.+?)[、,]\s*(-?\d+(?:\.\d+)?)\s*$/);
+    const two = line.match(/^(.+?)[、,]\s*(-?\d+(?:\.\d+)?)\s*$/);
+    if (three) {
+      parsed.push({
+        umaName: three[1].trim(),
+        runnerName: three[2].trim(),
+        strength: Number(three[3]),
+      });
+    } else if (two) {
+      const split = parseHorseName(two[1].trim());
+      parsed.push({
+        umaName: split.umaName,
+        runnerName: split.runnerName,
+        strength: Number(two[2]),
+      });
+    } else {
+      throw new Error(`形式が違います: ${line}`);
+    }
+    const last = parsed[parsed.length - 1];
+    if (!last.umaName) throw new Error(`ウマ娘名が空です: ${line}`);
+    if (!(last.strength >= 0)) throw new Error(`点数が不正です: ${line}`);
   }
   await captureAdminUndo(db, `出走を一括反映（${parsed.length} 行）`);
   const existing = await listHorses(db, event.id);
-  const byName = new Map(existing.map((h) => [h.name, h]));
+  const byUma = new Map(existing.map((h) => [h.uma_name || parseHorseName(h.name).umaName, h]));
   let live = existing.filter((h) => !h.scratched).length;
   let n = 0;
-  for (const { name, strength } of parsed) {
-    const hit = byName.get(name);
+  for (const row of parsed) {
+    const hit = byUma.get(row.umaName);
     if (hit) {
-      await updateHorse(db, event, hit.id, name, strength, false);
+      await updateHorse(db, event, hit.id, row.umaName, row.runnerName, row.strength, false);
     } else {
       if (live >= MAX_LIVE_HORSES) {
         throw new Error(`頭数は ${MAX_LIVE_HORSES} まで（途中で上限）`);
       }
-      const id = await addHorse(db, event, name, strength, false);
-      byName.set(name, {
+      if (!row.runnerName) {
+        throw new Error(`出走者が空です: ${row.umaName}（3列「ウマ娘、出走者、点数」で入れてください）`);
+      }
+      const id = await addHorse(db, event, row.umaName, row.runnerName, row.strength, false);
+      byUma.set(row.umaName, {
         id,
         event_id: event.id,
-        name,
-        strength,
+        name: composeHorseName(row.umaName, row.runnerName),
+        uma_name: row.umaName,
+        runner_name: row.runnerName,
+        shot_key: null,
+        strength: row.strength,
         seed_source: "manual",
         scratched: 0,
         finish_place: null,
@@ -775,10 +837,19 @@ export async function seedDemoHorses(db: D1Database, event: EventRow): Promise<v
     db
       .prepare(
         `INSERT INTO horses (
-          id, event_id, name, strength, seed_source, scratched, sort_order, created_at
-        ) VALUES (?, ?, ?, ?, 'manual', 0, ?, ?)`,
+          id, event_id, name, uma_name, runner_name, strength, seed_source, scratched, sort_order, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, 'manual', 0, ?, ?)`,
       )
-      .bind(newId(), event.id, h.name, h.strength, i + 1, now),
+      .bind(
+        newId(),
+        event.id,
+        composeHorseName(h.umaName, h.runnerName),
+        h.umaName,
+        h.runnerName,
+        h.strength,
+        i + 1,
+        now,
+      ),
   );
   await db.batch(stmts);
 }
@@ -931,8 +1002,9 @@ export async function scratchHorse(
     .bind(horseId, event.id)
     .first<HorseRow>();
   if (!horse) throw new Error("出走が見つかりません");
-  if (horse.scratched) return 0;
-  await captureAdminUndo(db, `出走取消（${horse.name}）`);
+  const labeled = hydrateHorseRow(horse);
+  if (labeled.scratched) return 0;
+  await captureAdminUndo(db, `出走取消（${labeled.name}）`);
   const { results } = await db
     .prepare("SELECT * FROM bets WHERE event_id = ? AND refunded = 0")
     .bind(event.id)

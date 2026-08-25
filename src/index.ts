@@ -37,6 +37,7 @@ import {
   listUserPayouts,
   loadBoard,
   loginMember,
+  MAX_SHOT_BYTES,
   numberByHorseId,
   openNextEvent,
   openVoting,
@@ -48,6 +49,7 @@ import {
   revertVotingToSetup,
   savePlaces,
   scratchHorse,
+  setHorseShotKey,
   updateHorse,
   updateParams,
   upsertUser,
@@ -78,6 +80,8 @@ import {
   winSheetTable,
   adminOpsGuide,
 } from "./lib/ui";
+import { horseSheetParts } from "./lib/horseName";
+import { horsesAdminBody, ocrAdminScript } from "./lib/ocrAdmin";
 import type { UserRow } from "./lib/store";
 
 function msg(url: URL): { text: string | null; error: boolean } {
@@ -111,7 +115,7 @@ function adminReauthField(): string {
     </label>`;
 }
 
-function readAdminReauth(form: { get(name: string): FormDataEntryValue | string | null }): string {
+function readAdminReauth(form: { get(name: string): string | File | null }): string {
   const a = form.get("admin_reauth");
   const b = form.get("password");
   const first = typeof a === "string" ? a : "";
@@ -149,6 +153,22 @@ function memberPasswordOk(env: Env, password: string): boolean {
   const expected = env.MEMBER_PASSWORD;
   if (!expected) return false;
   return timingSafeEqualStr(password, expected);
+}
+
+async function putHorseShot(
+  env: Env,
+  eventId: string,
+  horseId: string,
+  file: File,
+): Promise<string> {
+  if (!env.SHOTS) throw new Error("画像の保存先がまだありません");
+  if (file.size <= 0) throw new Error("画像が空です");
+  if (file.size > MAX_SHOT_BYTES) throw new Error("画像が大きすぎます（2MBまで）");
+  const key = `${eventId}/${horseId}`;
+  await env.SHOTS.put(key, await file.arrayBuffer(), {
+    httpMetadata: { contentType: file.type || "image/png" },
+  });
+  return key;
 }
 
 export default {
@@ -325,7 +345,7 @@ export default {
             )
             .map(
               (h) =>
-                `<tr><td>${h.horse.finish_place}着</td><td>${h.number}. ${escapeHtml(h.horse.name)}</td></tr>`,
+                `<tr><td>${h.horse.finish_place}着</td><td>${h.number}. ${escapeHtml(horseSheetParts(h.horse).umaName)}（${escapeHtml(horseSheetParts(h.horse).runnerName)}）</td></tr>`,
             )
             .join("");
           publishedBlock = `
@@ -587,6 +607,27 @@ export default {
       }
 
       // —— 管理 ——
+      if (method === "GET" && path === "/admin/horses") {
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) return gate;
+        const board = await loadBoard(env.DB);
+        const m = msg(url);
+        return html(
+          layout({
+            title: "出走登録",
+            user: gate.user,
+            admin: true,
+            eventStatus: board.event.status,
+            body: `${flashHtml(m.text, m.error)}
+              <div class="card">
+                <h2>出走登録</h2>
+                ${horsesAdminBody(board, board.event.status === "setup")}
+              </div>`,
+            scripts: board.event.status === "setup" ? ocrAdminScript() : "",
+          }),
+        );
+      }
+
       if (method === "GET" && path === "/admin") {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
@@ -624,9 +665,13 @@ export default {
                 : h.horse.finish_place != null
                   ? `${h.horse.finish_place}着`
                   : "—";
+            const parts = horseSheetParts(h.horse);
+            const scratchAsk = JSON.stringify(
+              `「${parts.umaName}（${parts.runnerName}）」を出走取消し、このウマ娘を含む馬券を全額返還します。よろしいですか？`,
+            );
             const scratchBtn =
               e.status !== "published" && !h.horse.scratched
-                ? `<form method="post" action="/admin/scratch" onsubmit="return confirm(${escapeHtml(JSON.stringify(`「${h.horse.name}」を出走取消し、このウマ娘を含む馬券を全額返還します。よろしいですか？`))});">
+                ? `<form method="post" action="/admin/scratch" onsubmit="return confirm(${escapeHtml(scratchAsk)});">
                     <input type="hidden" name="horse_id" value="${h.horse.id}">
                     <button class="danger" type="submit">取消・返還</button>
                   </form>`
@@ -635,11 +680,12 @@ export default {
               e.status === "setup" && !h.horse.scratched
                 ? `<form method="post" action="/admin/horse-edit" class="row">
                     <input type="hidden" name="horse_id" value="${h.horse.id}">
-                    <input name="name" value="${escapeHtml(h.horse.name)}" required maxlength="40">
+                    <input name="uma_name" value="${escapeHtml(parts.umaName)}" required maxlength="40">
+                    <input name="runner_name" value="${escapeHtml(parts.runnerName)}" required maxlength="40">
                     <input name="strength" type="number" min="0" step="0.1" value="${h.horse.strength}" required style="width:5rem">
                     <button type="submit" class="secondary">更新</button>
                   </form>`
-                : `<div>${escapeHtml(h.horse.name)}<div class="muted">#${h.number || "—"} Strength ${h.horse.strength}　Seed ${h.seed.toFixed(0)}</div></div>`;
+                : `<div>${escapeHtml(parts.umaName)}（${escapeHtml(parts.runnerName)}）<div class="muted">#${h.number || "—"} Strength ${h.horse.strength}　Seed ${h.seed.toFixed(0)}</div></div>`;
             return `<tr class="${h.horse.scratched ? "scr" : ""}">
               <td>${edit}</td>
               <td class="num">${formatOddsWithUnit(h.referenceOdds)}</td>
@@ -925,17 +971,7 @@ export default {
                 ${strengthCalcModal()}
                 ${
                   e.status === "setup"
-                    ? `<form method="post" action="/admin/horse" class="row">
-                        <label>名前 <input name="name" required maxlength="40"></label>
-                        <label>Strength <input name="strength" type="number" min="0" step="0.1" value="10" required></label>
-                        <button type="submit">登録</button>
-                      </form>
-                      <form method="post" action="/admin/horses-bulk" style="margin-top:1rem">
-                        <label>一括（名前、点数を改行）
-                          <textarea name="bulk" rows="6" placeholder="スペシャルウィーク、28&#10;サイレンススズカ、22" style="width:100%"></textarea>
-                        </label>
-                        <button type="submit" class="secondary">一括反映</button>
-                      </form>`
+                    ? `<p class="note"><a href="/admin/horses">出走の登録・OCRへ</a></p>`
                     : `<p class="note">出走登録完了。飛び入り禁止。</p>`
                 }
                 <form id="places-form" method="post" action="/admin/places"></form>
@@ -1091,18 +1127,43 @@ export default {
       if (method === "POST" && path === "/admin/horse") {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
-        const form = await readForm(request);
         try {
           const board = await loadBoard(env.DB);
-          await addHorse(
+          const fd = await request.formData();
+          const id = await addHorse(
             env.DB,
             board.event,
-            form.get("name") ?? "",
-            Number(form.get("strength")),
+            String(fd.get("uma_name") ?? ""),
+            String(fd.get("runner_name") ?? ""),
+            Number(fd.get("strength")),
           );
-          return bounce("/admin", "登録しました");
+          const shot = fd.get("shot");
+          if (shot instanceof File && shot.size > 0) {
+            const key = await putHorseShot(env, board.event.id, id, shot);
+            await setHorseShotKey(env.DB, board.event, id, key);
+          }
+          return bounce("/admin/horses", "登録しました");
         } catch (err) {
-          return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
+          return bounce("/admin/horses", err instanceof Error ? err.message : "失敗", true);
+        }
+      }
+
+      if (method === "POST" && path === "/admin/horses/shot") {
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) return gate;
+        try {
+          const board = await loadBoard(env.DB);
+          const fd = await request.formData();
+          const horseId = String(fd.get("horse_id") ?? "");
+          const shot = fd.get("shot");
+          if (!(shot instanceof File) || shot.size <= 0) {
+            throw new Error("画像を選んでください");
+          }
+          const key = await putHorseShot(env, board.event.id, horseId, shot);
+          await setHorseShotKey(env.DB, board.event, horseId, key);
+          return bounce("/admin/horses", "スクショを保存しました");
+        } catch (err) {
+          return bounce("/admin/horses", err instanceof Error ? err.message : "失敗", true);
         }
       }
 
@@ -1116,7 +1177,8 @@ export default {
             env.DB,
             board.event,
             form.get("horse_id") ?? "",
-            form.get("name") ?? "",
+            form.get("uma_name") ?? "",
+            form.get("runner_name") ?? "",
             Number(form.get("strength")),
           );
           return bounce("/admin", "更新しました");
@@ -1136,9 +1198,9 @@ export default {
             board.event,
             form.get("bulk") ?? "",
           );
-          return bounce("/admin", `${n} 頭を反映しました`);
+          return bounce("/admin/horses", `${n} 頭を反映しました`);
         } catch (err) {
-          return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
+          return bounce("/admin/horses", err instanceof Error ? err.message : "失敗", true);
         }
       }
 
