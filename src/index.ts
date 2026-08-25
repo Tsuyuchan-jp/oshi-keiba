@@ -21,7 +21,6 @@ import {
 import { escapeHtml, html, json, readForm, redirect } from "./lib/http";
 import {
   addHorse,
-  bulkUpsertHorses,
   clearHorses,
   deleteMember,
   discardCurrentSetup,
@@ -1176,23 +1175,6 @@ export default {
           return bounce("/admin", "更新しました");
         } catch (err) {
           return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
-        }
-      }
-
-      if (method === "POST" && path === "/admin/horses-bulk") {
-        const gate = await requireAdmin(request, env);
-        if (gate instanceof Response) return gate;
-        const form = await readForm(request);
-        try {
-          const board = await loadBoard(env.DB);
-          const n = await bulkUpsertHorses(
-            env.DB,
-            board.event,
-            form.get("bulk") ?? "",
-          );
-          return bounce("/admin/horses", `${n} 頭を反映しました`);
-        } catch (err) {
-          return bounce("/admin/horses", err instanceof Error ? err.message : "失敗", true);
         }
       }
 

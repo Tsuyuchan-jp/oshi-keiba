@@ -26,7 +26,7 @@ import {
 import { newId } from "./auth";
 import { captureAdminUndo } from "./undo";
 import { clawbackBalance } from "./lifecycle";
-import { composeHorseName, horseSheetParts, parseHorseName } from "./horseName";
+import { composeHorseName, horseSheetParts } from "./horseName";
 
 export { clawbackBalance, joinButtonLabel } from "./lifecycle";
 
@@ -749,81 +749,6 @@ export async function setHorseShotKey(
     .prepare("UPDATE horses SET shot_key = ? WHERE id = ? AND event_id = ?")
     .bind(shotKey, horseId, event.id)
     .run();
-}
-
-/** 一括: ウマ娘、出走者、点数。旧「名前、点数」はウマ娘のみ（出走者は要手直し） */
-export async function bulkUpsertHorses(
-  db: D1Database,
-  event: EventRow,
-  text: string,
-): Promise<number> {
-  if (event.status !== "setup") {
-    throw new Error("セットアップ中だけ一括登録できます");
-  }
-  const lines = text
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean);
-  if (lines.length === 0) throw new Error("貼り付け内容が空です");
-  const parsed: { umaName: string; runnerName: string; strength: number }[] = [];
-  for (const line of lines) {
-    const three = line.match(/^(.+?)[、,]\s*(.+?)[、,]\s*(-?\d+(?:\.\d+)?)\s*$/);
-    const two = line.match(/^(.+?)[、,]\s*(-?\d+(?:\.\d+)?)\s*$/);
-    if (three) {
-      parsed.push({
-        umaName: three[1].trim(),
-        runnerName: three[2].trim(),
-        strength: Number(three[3]),
-      });
-    } else if (two) {
-      const split = parseHorseName(two[1].trim());
-      parsed.push({
-        umaName: split.umaName,
-        runnerName: split.runnerName,
-        strength: Number(two[2]),
-      });
-    } else {
-      throw new Error(`形式が違います: ${line}`);
-    }
-    const last = parsed[parsed.length - 1];
-    if (!last.umaName) throw new Error(`ウマ娘名が空です: ${line}`);
-    if (!(last.strength >= 0)) throw new Error(`点数が不正です: ${line}`);
-  }
-  await captureAdminUndo(db, `出走を一括反映（${parsed.length} 行）`);
-  const existing = await listHorses(db, event.id);
-  const byUma = new Map(existing.map((h) => [h.uma_name || parseHorseName(h.name).umaName, h]));
-  let live = existing.filter((h) => !h.scratched).length;
-  let n = 0;
-  for (const row of parsed) {
-    const hit = byUma.get(row.umaName);
-    if (hit) {
-      await updateHorse(db, event, hit.id, row.umaName, row.runnerName, row.strength, false);
-    } else {
-      if (live >= MAX_LIVE_HORSES) {
-        throw new Error(`頭数は ${MAX_LIVE_HORSES} まで（途中で上限）`);
-      }
-      if (!row.runnerName) {
-        throw new Error(`出走者が空です: ${row.umaName}（3列「ウマ娘、出走者、点数」で入れてください）`);
-      }
-      const id = await addHorse(db, event, row.umaName, row.runnerName, row.strength, false);
-      byUma.set(row.umaName, {
-        id,
-        event_id: event.id,
-        name: composeHorseName(row.umaName, row.runnerName),
-        uma_name: row.umaName,
-        runner_name: row.runnerName,
-        shot_key: null,
-        strength: row.strength,
-        seed_source: "manual",
-        scratched: 0,
-        finish_place: null,
-        sort_order: 0,
-      });
-      live += 1;
-    }
-    n += 1;
-  }
-  return n;
 }
 
 export async function seedDemoHorses(db: D1Database, event: EventRow): Promise<void> {

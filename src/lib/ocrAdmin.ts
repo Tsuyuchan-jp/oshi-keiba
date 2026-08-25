@@ -44,12 +44,6 @@ export function horsesAdminBody(board: Board, canSetup: boolean): string {
         <label>出走者 <input name="runner_name" id="runner-name" required maxlength="40"></label>
         <label>Strength <input name="strength" type="number" min="0" step="0.1" value="10" required></label>
         <button type="submit">登録</button>
-      </form>
-      <form method="post" action="/admin/horses-bulk" style="margin-top:1rem">
-        <label>一括（ウマ娘、出走者、点数を改行）
-          <textarea name="bulk" rows="6" placeholder="スペシャルウィーク、つゆちゃん、28&#10;サイレンススズカ、あさくら、22" style="width:100%"></textarea>
-        </label>
-        <button type="submit" class="secondary">一括反映</button>
       </form>`
     : `<p class="note">出走登録完了。飛び入り禁止。</p>`;
   return `<p class="note"><a href="/admin">管理トップへ戻る</a></p>

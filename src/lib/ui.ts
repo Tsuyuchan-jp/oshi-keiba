@@ -862,7 +862,7 @@ export function adminOpsGuide(board: Board): { now: string; next: string } {
   const live = board.horses.filter((h) => !h.horse.scratched);
   if (board.event.status === "setup") {
     if (live.length < 2) {
-      return { now, next: "出走を 2 頭以上登録してください（下の出走枠。一括貼り付け可）" };
+      return { now, next: "出走を 2 頭以上登録してください（ヘッダーの「出走」）" };
     }
     return { now, next: "締切日時を確認してから「投票開始」" };
   }
