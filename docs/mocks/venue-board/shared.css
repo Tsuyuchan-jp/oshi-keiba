@@ -1,0 +1,220 @@
+/* モック共通：アプリシェルの骨格 */
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: "IBM Plex Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-shell {
+  height: 100dvh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+.chrome {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .55rem .85rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.chrome .brand {
+  font-weight: 700;
+  font-size: .82rem;
+  letter-spacing: .12em;
+  text-decoration: none;
+  color: inherit;
+}
+
+.chrome .meta {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  font-size: .75rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .2rem .55rem;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  font-size: .68rem;
+}
+
+.pill .dot {
+  width: .45rem;
+  height: .45rem;
+  border-radius: 50%;
+  background: currentColor;
+  animation: blink 1.2s step-end infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+.board {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: .65rem .75rem .85rem;
+}
+
+.board-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: .55rem;
+}
+
+.board-head h1 {
+  margin: 0;
+  font-size: clamp(1rem, 2.8vw, 1.35rem);
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.deadline {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: clamp(.95rem, 2.5vw, 1.2rem);
+  letter-spacing: .04em;
+}
+
+.sheet-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+table.win {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: clamp(.82rem, 2.4vw, .95rem);
+}
+
+table.win th,
+table.win td {
+  padding: .42rem .5rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+table.win th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-align: left;
+  font-size: .68rem;
+  letter-spacing: .1em;
+  font-weight: 600;
+}
+
+table.win td.num {
+  width: 2.6rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+table.win td.name,
+table.win td.runner {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+table.win td.runner { width: 28%; color: var(--muted); font-size: .92em; }
+
+table.win td.odds {
+  width: 5.5rem;
+  text-align: right;
+  font-family: "IBM Plex Sans JP", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.12em;
+  letter-spacing: .02em;
+}
+
+table.win td.odds .delta {
+  display: inline-block;
+  margin-left: .35rem;
+  font-size: .72em;
+  font-weight: 700;
+}
+
+.foot {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .75rem;
+  margin-top: .55rem;
+  font-size: .72rem;
+  color: var(--muted);
+}
+
+.cta {
+  appearance: none;
+  border: 0;
+  border-radius: 8px;
+  padding: .55rem 1rem;
+  font: inherit;
+  font-weight: 700;
+  font-size: .82rem;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* サイト型レイアウト用 */
+.site-body {
+  min-height: 100dvh;
+  margin: 0;
+}
+.site-header {
+  border-bottom: 1px solid var(--line);
+  padding: .85rem 1.25rem;
+}
+.site-header-inner {
+  max-width: 920px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.site-main {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+.site-main .sheet-wrap {
+  max-height: none;
+  overflow: visible;
+}
+
+@keyframes pulse-row {
+  0% { background: var(--pulse); }
+  100% { background: transparent; }
+}
+tr.pulse { animation: pulse-row 1.5s ease-out; }

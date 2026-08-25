@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tone B — 紺盤 × ライム</title>
+  <link rel="stylesheet" href="./shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700&family=Chakra+Petch:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1524;
+      --ink: #e6eef8;
+      --muted: #8494a8;
+      --line: #1e3048;
+      --accent: #b6f26d;
+      --warn: #ffb020;
+      --pulse: rgba(182, 242, 109, .22);
+      --chrome: #0e1a2c;
+    }
+    body { background: var(--bg); color: var(--ink); }
+    .chrome { background: var(--chrome); border-bottom-color: #243952; }
+    .pill { background: rgba(182, 242, 109, .12); color: var(--accent); }
+    .deadline { color: var(--warn); font-family: "Chakra Petch", sans-serif; }
+    .board-head h1 { font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif; letter-spacing: .1em; }
+    .sheet-wrap {
+      background: linear-gradient(180deg, #0d1c30, #0a1624);
+      border-color: #2a4666;
+    }
+    table.win th { background: #122338; color: #8fa6c0; }
+    table.win td.num { color: #9ec0e6; font-family: "Chakra Petch", sans-serif; }
+    table.win td.odds {
+      color: var(--accent);
+      font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif;
+      text-shadow: 0 0 14px rgba(182, 242, 109, .2);
+    }
+    table.win td.odds .delta.up { color: #ff8f7a; }
+    table.win td.odds .delta.down { color: #7de0ff; }
+    .cta { background: var(--warn); color: #1a1204; }
+    .mock-label {
+      position: fixed; right: .75rem; bottom: calc(.75rem + env(safe-area-inset-bottom));
+      font-size: .68rem; color: #5a6a80; z-index: 9; pointer-events: none;
+    }
+    .who { color: var(--muted); font-size: .72rem; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="chrome">
+      <div>
+        <a class="brand" href="./index.html">OSHI KEIBA</a>
+        <div class="who">neko · 12,800 スペ</div>
+      </div>
+      <div class="meta">
+        <span class="pill"><span class="dot"></span>投票中</span>
+      </div>
+    </header>
+    <section class="board">
+      <div class="board-head">
+        <h1>第2回 本番</h1>
+        <div class="deadline">締切 18:40</div>
+      </div>
+      <div class="sheet-wrap">
+        <table class="win">
+          <thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th style="text-align:right">オッズ</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="foot">
+        <span>Tone B · 紺盤 × ライム（中継スコアボード寄り）</span>
+        <a class="cta" href="#">馬券を買う</a>
+      </div>
+    </section>
+  </div>
+  <div class="mock-label">tone-b</div>
+  <script src="./horses.js"></script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>場内ボード モック比較 — oshi-keiba</title>
+  <style>
+    :root {
+      --page: #1a1c1f;
+      --card: #24272c;
+      --ink: #e8eaed;
+      --muted: #9aa0a8;
+      --line: #3a3f47;
+      --accent: #d4a017;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: var(--page);
+      color: var(--ink);
+      line-height: 1.55;
+    }
+    .hub {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+    }
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      margin: 0 0 .4rem;
+    }
+    .lede {
+      color: var(--muted);
+      font-size: .92rem;
+      margin: 0 0 1.75rem;
+      max-width: 40rem;
+    }
+    h2 {
+      font-size: 1.05rem;
+      margin: 2.25rem 0 .75rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--line);
+      letter-spacing: .06em;
+    }
+    h2:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+    .note {
+      font-size: .85rem;
+      color: var(--muted);
+      margin: 0 0 1rem;
+      max-width: 42rem;
+    }
+    .grid {
+      display: grid;
+      gap: 1.25rem;
+      grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1rem 1.05rem 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: .65rem;
+    }
+    .card h3 {
+      margin: 0;
+      font-size: .95rem;
+      letter-spacing: .04em;
+    }
+    .card p {
+      margin: 0;
+      font-size: .82rem;
+      color: var(--muted);
+      flex: 1;
+    }
+    .card a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: .55rem .9rem;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #1a1408;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: .85rem;
+    }
+    .card a:hover { filter: brightness(1.08); }
+    .card.muted-card a {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-weight: 600;
+    }
+    .tag {
+      display: inline-block;
+      font-size: .68rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: .15rem;
+    }
+    ul.tips {
+      margin: .4rem 0 0;
+      padding-left: 1.1rem;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+    ul.tips li { margin: .25rem 0; }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="hub">
+    <h1>場内ボード — 生HTMLモック比較</h1>
+    <p class="lede">
+      方針 A（実況席）× 電光掲示。実装には繋いでいません。ブラウザで各HTMLを開き、スマホ幅でも見てください（DevTools の端末モード可）。
+    </p>
+
+    <h2>1. レイアウト比較（サイト感 vs 全画面アプリ）</h2>
+    <p class="note">
+      「ブラウザ内全画面」とスマホ対応は矛盾しません。スマホアプリも全画面です。難しいのは横に余白のあるサイト型のまま拡大することではなく、
+      <strong>画面全体をシェルにして、中だけスクロールする</strong>ことに寄せることです。
+    </p>
+    <div class="grid">
+      <article class="card muted-card">
+        <span class="tag">現状に近い</span>
+        <h3>サイト型</h3>
+        <p>全幅ヘッダー＋中央 max-width のメイン。左右に余白ができ、「ページを読んでいる」感じが出やすい。</p>
+        <a href="./layout-site.html">開く</a>
+      </article>
+      <article class="card">
+        <span class="tag">提案</span>
+        <h3>アプリシェル型</h3>
+        <p>100dvh でヘッダー固定、盤面が残り高さを埋める。表だけ縦スクロール。狭い幅でも「端末の中のアプリ」に見える。</p>
+        <a href="./layout-app.html">開く</a>
+      </article>
+    </div>
+    <ul class="tips">
+      <li>広いデスクトップでは「ページ全体を 920px に縮める」のではなく、盤の内側パディングや列幅で読みやすくする。</li>
+      <li>safe-area（ノッチ）と <code>100dvh</code> を使えば、モバイルブラウザのアドレスバー変動にも寄せやすい。</li>
+    </ul>
+
+    <h2>2. 電光掲示トーン比較（中身の雰囲気）</h2>
+    <p class="note">いずれもアプリシェル型。色と数字の性格だけ変えています。パルスは数秒ごとに自動で一度走ります。</p>
+    <div class="grid">
+      <article class="card">
+        <span class="tag">Tone A</span>
+        <h3>墨盤 × 琥珀</h3>
+        <p>ほぼ黒の盤に琥珀色のオッズ。古典的なトート／場内ビジョン寄りの第一候補。</p>
+        <a href="./tone-a-ink-amber.html">開く</a>
+      </article>
+      <article class="card">
+        <span class="tag">Tone B</span>
+        <h3>紺盤 × ライム</h3>
+        <p>競馬中継のスコアボード寄り。動いた行は黄緑、締切は暖色。やや「放送」っぽい。</p>
+        <a href="./tone-b-navy-lime.html">開く</a>
+      </article>
+      <article class="card">
+        <span class="tag">Tone C</span>
+        <h3>炭盤 × 赤電光</h3>
+        <p>番号とオッズを赤系電光に寄せた強め案。ワイワイは出やすいが、長時間だと目が疲れる可能性。</p>
+        <a href="./tone-c-char-red.html">開く</a>
+      </article>
+    </div>
+
+    <h2>見方のヒント</h2>
+    <ul class="tips">
+      <li>まずレイアウト2枚で「サイト感が消えるか」だけ見る。</li>
+      <li>次にトーン3枚で「競馬っぽい／見てて楽しい」を見る（ロビー感が出すぎていないか）。</li>
+      <li>買うUIは入れていません（場内＝読む・眺める）。</li>
+    </ul>
+  </div>
+</body>
+</html>

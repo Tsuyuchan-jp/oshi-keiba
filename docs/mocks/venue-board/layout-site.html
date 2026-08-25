@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>レイアウト：サイト型</title>
+  <link rel="stylesheet" href="./shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --paper: #fffdf8;
+      --ink: #1c2416;
+      --muted: #5c6554;
+      --line: #d5d0c4;
+      --accent: #2f5d3a;
+      --pulse: #ffe08a;
+      --odds: #1c2416;
+    }
+    body.site-body { background: var(--bg); color: var(--ink); }
+    .site-header { background: var(--paper); }
+    .brand { font-weight: 700; letter-spacing: .08em; text-decoration: none; color: var(--ink); }
+    .nav a { color: var(--accent); margin-left: .75rem; font-size: .85rem; }
+    .banner {
+      background: #fff3d8;
+      border: 1px solid #e4c98a;
+      padding: .55rem .75rem;
+      margin-bottom: 1rem;
+      font-size: .85rem;
+    }
+    .phase {
+      display: inline-block;
+      background: #2f5d3a;
+      color: #fff;
+      padding: .15rem .5rem;
+      border-radius: 4px;
+      font-size: .72rem;
+      font-weight: 700;
+    }
+    table.win { background: var(--paper); }
+    table.win th { background: #efeae0; color: var(--muted); }
+    table.win td.odds { color: var(--odds); }
+    table.win td.odds .delta.up { color: #a33; }
+    table.win td.odds .delta.down { color: #2f5d3a; }
+    .mock-label {
+      position: fixed;
+      right: .75rem;
+      bottom: .75rem;
+      background: #1c2416;
+      color: #fff;
+      font-size: .72rem;
+      padding: .35rem .6rem;
+      border-radius: 6px;
+      opacity: .85;
+      z-index: 9;
+    }
+    .back { font-size: .8rem; }
+  </style>
+</head>
+<body class="site-body">
+  <header class="site-header">
+    <div class="site-header-inner">
+      <div>
+        <a class="brand" href="./index.html">推し競馬</a>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:.25rem">neko さん　12800 スペ</div>
+      </div>
+      <nav class="nav">
+        <span class="phase">投票中 LIVE</span>
+        <a href="#">場内</a>
+        <a href="#">投票</a>
+        <a class="back" href="./index.html">一覧へ</a>
+      </nav>
+    </div>
+  </header>
+  <main class="site-main">
+    <div class="banner">モック：現状に近い「サイト型」。左右に余白があり、スクロールはページ全体。</div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:1rem;margin-bottom:.75rem">
+      <h1 style="margin:0;font-size:1.25rem;letter-spacing:.06em">第2回 本番</h1>
+      <div style="font-variant-numeric:tabular-nums;font-weight:700">締切 18:40</div>
+    </div>
+    <div class="sheet-wrap">
+      <table class="win">
+        <thead>
+          <tr><th>#</th><th>ウマ娘名</th><th>出走者</th><th style="text-align:right">オッズ</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p style="margin:1rem 0 0;font-size:.85rem;color:var(--muted)">場内では出走表と単勝オッズを見ます。馬券は「投票」から。</p>
+    <p style="margin:.5rem 0 0"><a href="#" style="color:var(--accent);font-weight:700">馬券を買う →</a></p>
+  </main>
+  <div class="mock-label">layout: site</div>
+  <script>
+    const horses = [
+      [1, "サイレンススズカ", "あお", "3.2", "down", "0.2"],
+      [2, "スペシャルウィーク", "つゆ", "5.8", "", ""],
+      [3, "グラスワンダー", "ren", "8.1", "up", "0.4"],
+      [4, "セイウンスカイ", "neko", "12.4", "", ""],
+      [5, "エルコンドルパサー", "momo", "6.0", "down", "0.1"],
+      [6, "テイエムオペラオー", "kai", "15.2", "", ""],
+      [7, "ファインモーション", "yuki", "9.7", "up", "0.3"],
+      [8, "ナリタブライアン", "sora", "18.0", "", ""],
+      [9, "メジロマックイーン", "hana", "7.4", "", ""],
+      [10, "トウカイテイオー", "rio", "11.1", "up", "0.5"],
+      [11, "ビワハヤヒデ", "ken", "22.6", "", ""],
+      [12, "ミホノブルボン", "mai", "14.3", "down", "0.2"],
+    ];
+    const tb = document.getElementById("rows");
+    for (const [n, uma, runner, odds, dir, d] of horses) {
+      const tr = document.createElement("tr");
+      if (n === 3) tr.className = "pulse";
+      tr.innerHTML = `<td class="num">${n}</td><td class="name">${uma}</td><td class="runner">${runner}</td>
+        <td class="odds">${odds}${dir ? `<span class="delta ${dir}">${dir === "up" ? "↑" : "↓"}${d}</span>` : ""}</td>`;
+      tb.appendChild(tr);
+    }
+    setInterval(() => {
+      const tr = tb.children[2];
+      tr.classList.remove("pulse");
+      void tr.offsetWidth;
+      tr.classList.add("pulse");
+    }, 4000);
+  </script>
+</body>
+</html>
