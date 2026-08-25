@@ -8,7 +8,7 @@
 
 ## そのあと
 
-- 場内デザインを本番へ（モック仮置き。実装は後）— [venue-board](mocks/venue-board/layout-venue.html)
+- 場内デザインを本番へ（採用済みモック。実装は後）— [venue-board](mocks/venue-board/layout-venue.html)
 - 窓口デザインを本番へ（案A・マークカード仮置き。実装は後）— [quiet.html](mocks/bet-window/quiet.html)
 - 入場デザインを本番へ（モック仮置き。実装は後）— [gate](mocks/gate/index.html)
 - Neko長明さんへの評価点の式確認（手土産＝動く実装は揃った）— [score.md](score.md)
@@ -28,6 +28,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
+- 場内デザイン採用（投票中〜締切〜結果公開。払戻＋縦長確定→全頭。着差なし。本番未適用）— [layout-venue.html](mocks/venue-board/layout-venue.html)
 - 場内結果公開：払戻＋確定の横並び盤→全頭表（モック。本番未適用）— [layout-venue.html](mocks/venue-board/layout-venue.html)
 - 場内の締切後・結果公開を盤の続きとして仮置き（着は公開まで出さない。買うは投票中だけ）— [layout-venue.html](mocks/venue-board/layout-venue.html)
 - 入場デザイン仮置き・採用（静かな窓口トーン。⋯は枠内、PCは右下にも使い方／管理者）— [gate](mocks/gate/index.html)
