@@ -32,16 +32,23 @@
       border-bottom: 1px solid #1a3332;
       font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif;
       letter-spacing: .04em;
+      align-items: center;
     }
     .chrome .brand { color: var(--led); }
     .who { color: var(--led-dim); font-size: .72rem; }
     .led-meta {
       display: flex;
+      align-items: center;
       gap: .85rem;
       color: var(--led);
       font-variant-numeric: tabular-nums;
       font-weight: 600;
       font-size: .82rem;
+      line-height: 1;
+    }
+    .led-meta > span {
+      display: inline-flex;
+      align-items: center;
     }
     .led-meta strong { color: #fff; font-weight: 700; }
     .board { padding: .35rem .45rem .55rem; }
@@ -79,42 +86,47 @@
       border: 0;
     }
     .led-meta .pill .dot { background: currentColor; }
-    table.win { table-layout: fixed; }
+    table.win { table-layout: fixed; width: 100%; }
     table.win th:nth-child(1),
     table.win td.num {
-      width: 1.7rem;
-      padding-left: .15rem;
-      padding-right: .15rem;
+      width: 1.55rem;
+      padding-left: .1rem;
+      padding-right: .1rem;
       color: #fff;
       font-family: "Chakra Petch", sans-serif;
       text-shadow: 0 0 6px rgba(255,255,255,.25);
     }
+    table.win th:nth-child(2),
     table.win td.name {
+      width: auto;
       color: var(--led);
       font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
       letter-spacing: 0;
       white-space: nowrap;
-      overflow: visible;
-      text-overflow: clip;
+      overflow: hidden;
+      text-overflow: ellipsis;
       text-shadow: 0 0 8px rgba(0, 232, 216, .25);
     }
+    table.win th:nth-child(3),
     table.win td.runner {
-      width: 4.2rem;
-      max-width: 4.2rem;
+      width: 6.5rem;
       color: #c8d4d3;
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
+    table.win th:nth-child(4),
     table.win td.style {
-      width: 2.35rem;
-      padding-left: .1rem;
-      padding-right: .1rem;
+      width: 1.7rem;
+      padding-left: 0;
+      padding-right: 0;
       color: var(--led);
       font-size: .78em;
       letter-spacing: 0;
       text-align: center;
       white-space: nowrap;
     }
+    table.win th:nth-child(5),
     table.win td.odds {
       width: 6.4rem;
       white-space: nowrap;
@@ -257,7 +269,6 @@
         margin: 0;
         overflow: hidden;
       }
-      table.win td.runner { width: 4.2rem; max-width: 4.2rem; }
       .foot { justify-content: flex-end; }
       .cta { min-width: 11rem; text-align: center; }
     }
