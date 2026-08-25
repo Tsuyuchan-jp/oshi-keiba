@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>レイアウト：場内に掲示板</title>
+  <title>レイアウト：場の中の横長掲示板</title>
   <link rel="stylesheet" href="./shared.css">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700&family=Chakra+Petch:wght@600;700&display=swap" rel="stylesheet">
   <style>
@@ -19,63 +19,28 @@
     body { background: #050607; color: var(--ink); }
     .scene {
       position: relative;
-      height: 100dvh;
-      height: 100vh;
+      min-height: 100dvh;
+      min-height: 100vh;
       overflow: hidden;
     }
-    /* 夜のスタンドから芝を見る雰囲気（写真なし・CSSのみ） */
-    .sky {
+    .scene-bg {
       position: absolute;
       inset: 0;
-      background:
-        radial-gradient(ellipse 80% 50% at 50% 100%, rgba(80, 90, 40, .35), transparent 55%),
-        radial-gradient(ellipse 40% 30% at 20% 10%, rgba(255, 220, 140, .08), transparent 50%),
-        radial-gradient(ellipse 30% 25% at 80% 8%, rgba(255, 200, 80, .07), transparent 45%),
-        linear-gradient(180deg, #0a1020 0%, #12161c 42%, #1a2218 70%, #243018 100%);
       z-index: 0;
-    }
-    .flood {
-      position: absolute;
-      top: 0;
-      left: 8%;
-      right: 8%;
-      height: 28%;
-      background: radial-gradient(ellipse at 50% 0%, rgba(255, 236, 180, .18), transparent 70%);
-      pointer-events: none;
-      z-index: 1;
-    }
-    .turf {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 28%;
       background:
-        repeating-linear-gradient(
-          90deg,
-          rgba(46, 92, 42, .55) 0 12px,
-          rgba(38, 78, 36, .55) 12px 24px
-        ),
-        linear-gradient(180deg, rgba(20, 28, 16, .2), #1a2a14);
-      border-top: 3px solid #c4a574;
-      z-index: 1;
-    }
-    .rail {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 27%;
-      height: 6px;
-      background: linear-gradient(#e8d5a8, #8a7348);
-      z-index: 2;
-      box-shadow: 0 8px 24px rgba(0,0,0,.4);
+        linear-gradient(180deg, rgba(5, 6, 10, .45), rgba(5, 8, 6, .55)),
+        url("./venue-night-9x16.png") center / cover no-repeat;
     }
     .scene .app-shell {
       position: relative;
       z-index: 3;
-      background: transparent;
+      background: rgba(8, 9, 10, .92);
+      border: 1px solid #3d3420;
+      box-shadow:
+        0 0 0 1px rgba(240, 180, 41, .1),
+        0 18px 50px rgba(0, 0, 0, .5);
     }
-    .chrome { background: rgba(8, 9, 10, .72); backdrop-filter: blur(8px); border-bottom-color: #3a3428; }
+    .chrome { background: rgba(8, 9, 10, .85); border-bottom-color: #3a3428; }
     .pill { background: rgba(240, 180, 41, .12); color: var(--accent); }
     .deadline { color: var(--accent); font-family: "Chakra Petch", sans-serif; }
     .board-head h1 { font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif; }
@@ -100,39 +65,52 @@
       font-size: .68rem; color: #9aa080; z-index: 9; pointer-events: none;
       background: rgba(0,0,0,.5); padding: .3rem .55rem; border-radius: 6px;
     }
+    .cols { display: flex; gap: 0; min-height: 0; flex: 1; }
+    .cols .sheet-wrap { flex: 1; }
 
-    /* 狭い幅：盤が画面いっぱい（いま気に入っている手触り） */
-    @media (max-width: 719px) {
-      .sky, .flood, .turf, .rail { display: none; }
-      .scene .app-shell { background: #070808; }
-    }
-
-    /* 広い幅：場の中に「実物の掲示板」がある。盤は伸ばさない */
-    @media (min-width: 720px) {
+    /* スマホ：盤はほぼ画面いっぱい。端だけ場が見える */
+    @media (max-width: 899px) {
+      .scene { height: 100dvh; height: 100vh; }
       .scene .app-shell {
-        max-width: 28rem;
-        width: 100%;
-        margin: 1.5rem auto;
-        height: calc(100dvh - 3rem);
-        background: #0c0d0e;
-        border: 1px solid #4a3f28;
+        height: 100%;
+        margin: 8px;
+        width: calc(100% - 16px);
         border-radius: 10px;
-        box-shadow:
-          0 0 0 1px rgba(240, 180, 41, .12),
-          0 24px 60px rgba(0, 0, 0, .55),
-          0 0 80px rgba(240, 180, 41, .08);
         overflow: hidden;
       }
-      .scene .app-shell .board { padding: .75rem .85rem 1rem; }
+      .col-b { display: none; }
+    }
+
+    /* PC：横長のビジョン。全幅にはしない。縦に引き伸ばさない */
+    @media (min-width: 900px) {
+      .scene {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100dvh;
+        height: 100vh;
+      }
+      .scene-bg {
+        background:
+          linear-gradient(180deg, rgba(5, 6, 10, .4), rgba(5, 8, 6, .5)),
+          url("./venue-night-16x9.png") center / cover no-repeat;
+      }
+      .scene .app-shell {
+        width: min(68rem, calc(100vw - 4rem));
+        height: auto;
+        max-height: min(36rem, calc(100dvh - 4rem));
+        margin: 0;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .scene .app-shell .board { padding: .75rem 1rem 1rem; }
+      table.win td.runner { width: 22%; }
     }
   </style>
 </head>
 <body>
   <div class="scene">
-    <div class="sky" aria-hidden="true"></div>
-    <div class="flood" aria-hidden="true"></div>
-    <div class="turf" aria-hidden="true"></div>
-    <div class="rail" aria-hidden="true"></div>
+    <div class="scene-bg" aria-hidden="true"></div>
     <div class="app-shell">
       <header class="chrome">
         <div>
@@ -148,20 +126,80 @@
           <h1>第2回 本番</h1>
           <div class="deadline">締切 18:40</div>
         </div>
-        <div class="sheet-wrap">
-          <table class="win">
-            <thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th style="text-align:right">オッズ</th></tr></thead>
-            <tbody id="rows"></tbody>
-          </table>
+        <div class="cols">
+          <div class="sheet-wrap">
+            <table class="win">
+              <thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th style="text-align:right">オッズ</th></tr></thead>
+              <tbody id="rows-a"></tbody>
+            </table>
+          </div>
+          <div class="sheet-wrap col-b">
+            <table class="win">
+              <thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th style="text-align:right">オッズ</th></tr></thead>
+              <tbody id="rows-b"></tbody>
+            </table>
+          </div>
         </div>
         <div class="foot">
-          <span>狭い幅＝盤全画面／広い幅＝場の中の掲示板</span>
+          <span>端に場／PCは横長ビジョン</span>
           <a class="cta" href="#">馬券を買う</a>
         </div>
       </section>
     </div>
   </div>
-  <div class="mock-label">layout: venue · 幅を変えて見てください</div>
-  <script src="./horses.js"></script>
+  <div class="mock-label">layout: venue wide · 幅を変えて見てください</div>
+  <script>
+    const horses = [
+      [1, "サイレンススズカ", "あお", "3.2", "down", "0.2"],
+      [2, "スペシャルウィーク", "つゆ", "5.8", "", ""],
+      [3, "グラスワンダー", "ren", "8.1", "up", "0.4"],
+      [4, "セイウンスカイ", "neko", "12.4", "", ""],
+      [5, "エルコンドルパサー", "momo", "6.0", "down", "0.1"],
+      [6, "テイエムオペラオー", "kai", "15.2", "", ""],
+      [7, "ファインモーション", "yuki", "9.7", "up", "0.3"],
+      [8, "ナリタブライアン", "sora", "18.0", "", ""],
+      [9, "メジロマックイーン", "hana", "7.4", "", ""],
+      [10, "トウカイテイオー", "rio", "11.1", "up", "0.5"],
+      [11, "ビワハヤヒデ", "ken", "22.6", "", ""],
+      [12, "ミホノブルボン", "mai", "14.3", "down", "0.2"],
+      [13, "サクラバクシンオー", "leo", "16.8", "", ""],
+      [14, "タイキシャトル", "ami", "10.5", "", ""],
+      [15, "エアグルーヴ", "jun", "13.9", "up", "0.2"],
+      [16, "シンボリルドルフ", "tori", "4.6", "down", "0.3"],
+      [17, "オグリキャップ", "nana", "19.2", "", ""],
+      [18, "タマモクロス", "bee", "25.0", "", ""],
+    ];
+    function fill(el, list) {
+      for (const [n, uma, runner, odds, dir, d] of list) {
+        const tr = document.createElement("tr");
+        if (n === 3) tr.className = "pulse";
+        tr.innerHTML = `<td class="num">${n}</td><td class="name">${uma}</td><td class="runner">${runner}</td>
+          <td class="odds">${odds}${dir ? `<span class="delta ${dir}">${dir === "up" ? "↑" : "↓"}${d}</span>` : ""}</td>`;
+        el.appendChild(tr);
+      }
+    }
+    function render() {
+      const a = document.getElementById("rows-a");
+      const b = document.getElementById("rows-b");
+      a.innerHTML = "";
+      b.innerHTML = "";
+      const wide = window.matchMedia("(min-width: 900px)").matches;
+      if (wide) {
+        fill(a, horses.slice(0, 9));
+        fill(b, horses.slice(9));
+      } else {
+        fill(a, horses);
+      }
+    }
+    render();
+    window.matchMedia("(min-width: 900px)").addEventListener("change", render);
+    setInterval(() => {
+      const tr = document.querySelector("#rows-a tr.pulse") || document.querySelector("#rows-a tr");
+      if (!tr) return;
+      tr.classList.remove("pulse");
+      void tr.offsetWidth;
+      tr.classList.add("pulse");
+    }, 4000);
+  </script>
 </body>
 </html>
