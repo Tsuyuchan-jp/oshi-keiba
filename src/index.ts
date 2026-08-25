@@ -884,7 +884,11 @@ export default {
                     const confirmOnSubmit = (form, msg) => {
                       if (!form) return;
                       form.addEventListener("submit", (ev) => {
-                        if (!confirm(msg)) ev.preventDefault();
+                        ev.preventDefault();
+                        const dlg = form.closest("dialog");
+                        if (dlg) dlg.close();
+                        if (window.confirm(msg)) form.submit();
+                        else if (dlg) dlg.showModal();
                       });
                     };
                     const undoLabel = ${JSON.stringify(undoMeta?.action_label ?? "")};
@@ -905,14 +909,10 @@ export default {
                       document.getElementById("revert-voting-form"),
                       "投票を取り消して出走登録に戻します。この開催の票は全額戻り、配ったスペも戻します。\\n\\n本当に戻しますか？",
                     );
-                    const resetForm = document.getElementById("reset-form");
-                    if (resetForm) {
-                      resetForm.addEventListener("submit", (ev) => {
-                        const msg =
-                          "デモを初期化します。\\n\\n開催・票は消えます。名前は残し、残高は 0 になります。スペは配りません。\\n\\n本当に初期化しますか？";
-                        if (!confirm(msg)) ev.preventDefault();
-                      });
-                    }
+                    confirmOnSubmit(
+                      document.getElementById("reset-form"),
+                      "デモを初期化します。\\n\\n開催・票は消えます。名前は残し、残高は 0 になります。スペは配りません。\\n\\n本当に初期化しますか？",
+                    );
                     document.querySelectorAll("input.no-autofill").forEach((el) => {
                       el.addEventListener("focus", () => el.removeAttribute("readonly"));
                     });
