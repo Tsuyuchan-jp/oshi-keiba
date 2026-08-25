@@ -1,10 +1,18 @@
 /**
  * 開催条件とステ目標値（events.score_setup）。
  * コースは U-tools 金ドット36。mdb 値はマスタから導出。
+ * 有効スキル id は保存時にそのコース×4脚質だけ取得してスナップショットする。
  */
 import coursesJson from "../data/score-courses.json" with { type: "json" };
 import type { GreenEvalContext } from "./greenCondition.ts";
 import type { RaceRequirements } from "./score.ts";
+import {
+  fetchEffectiveSkillIdsForCourse,
+  parseEffectiveSkillIdsByStyle,
+  resolveEffectStyleKey,
+  type EffectStyleKey,
+  type EffectiveSkillIdsByStyle,
+} from "./utoolsEffects.ts";
 
 export type EventRaceConditions = {
   /** U-tools courseId の文字列 */
@@ -17,6 +25,13 @@ export type EventRaceConditions = {
 export type EventScoreSetup = {
   conditions: EventRaceConditions;
   requirements: RaceRequirements;
+  /**
+   * 保存時に取った U-tools ranked スキル id（コース×脚質）。
+   * 未取得の旧データは undefined（計算時は緑以外全部有効扱い）。
+   */
+  effectiveSkillIds?: EffectiveSkillIdsByStyle;
+  /** ISO。リスト取得時刻 */
+  effectsFetchedAt?: string;
 };
 
 export type ScoreCourse = {
@@ -128,7 +143,7 @@ export function parseScoreSetup(raw: unknown): EventScoreSetup | null {
     return null;
   }
 
-  return {
+  const setup: EventScoreSetup = {
     conditions: { courseKey, weather, groundCondition, season },
     requirements: {
       speedCap,
@@ -139,6 +154,47 @@ export function parseScoreSetup(raw: unknown): EventScoreSetup | null {
       guts,
       wisdom,
     },
+  };
+
+  const ids = parseEffectiveSkillIdsByStyle(root.effectiveSkillIds);
+  if (ids) setup.effectiveSkillIds = ids;
+  const fetchedAt = root.effectsFetchedAt;
+  if (typeof fetchedAt === "string" && fetchedAt.trim()) {
+    setup.effectsFetchedAt = fetchedAt.trim();
+  }
+
+  return setup;
+}
+
+/**
+ * 開催に保存された有効スキル id。脚質未解決・未取得なら null。
+ */
+export function effectiveIdsFromScoreSetup(
+  setup: EventScoreSetup,
+  style: string | EffectStyleKey,
+): ReadonlySet<number> | null {
+  const key = resolveEffectStyleKey(style);
+  if (!key || !setup.effectiveSkillIds) return null;
+  const list = setup.effectiveSkillIds[key];
+  if (!list?.length) return null;
+  return new Set(list);
+}
+
+/**
+ * 保存直前: U-tools から当該コースの4脚質を取り直す。
+ */
+export async function enrichScoreSetupWithEffects(
+  setup: EventScoreSetup,
+  fetchImpl?: typeof fetch,
+): Promise<EventScoreSetup> {
+  const effectiveSkillIds = await fetchEffectiveSkillIdsForCourse(
+    setup.conditions.courseKey,
+    { fetchImpl },
+  );
+  return {
+    ...setup,
+    effectiveSkillIds,
+    effectsFetchedAt: new Date().toISOString(),
   };
 }
 

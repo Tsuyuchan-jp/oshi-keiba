@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  effectiveIdsFromScoreSetup,
   getScoreCourse,
   greenCtxFromScoreSetup,
   listScoreCourses,
@@ -25,6 +26,17 @@ const SAMPLE = {
     guts: 400,
     wisdom: 600,
   },
+};
+
+const SAMPLE_WITH_IDS = {
+  ...SAMPLE,
+  effectiveSkillIds: {
+    runner: [201601, 200261],
+    leader: [201601],
+    betweener: [201601],
+    chaser: [201601],
+  },
+  effectsFetchedAt: "2026-08-25T00:00:00.000Z",
 };
 
 test("金ドット36コースが入っている", () => {
@@ -97,4 +109,15 @@ test("フォーム: 揃えば通る", () => {
   };
   const setup = scoreSetupFromForm((n) => map[n] ?? "");
   assert.deepEqual(setup, SAMPLE);
+});
+
+test("effectiveSkillIds の往復と脚質 lookup", () => {
+  const parsed = parseScoreSetup(SAMPLE_WITH_IDS);
+  assert.ok(parsed?.effectiveSkillIds);
+  const again = parseScoreSetup(serializeScoreSetup(parsed));
+  assert.deepEqual(again, SAMPLE_WITH_IDS);
+  const set = effectiveIdsFromScoreSetup(parsed!, "逃");
+  assert.ok(set?.has(201601));
+  assert.ok(set?.has(200261));
+  assert.equal(effectiveIdsFromScoreSetup(parsed!, "不明"), null);
 });

@@ -82,7 +82,7 @@ import {
 } from "./lib/ui";
 import { horseSheetParts } from "./lib/horseName";
 import { horsesAdminBody, ocrAdminScript } from "./lib/ocrAdmin";
-import { scoreSetupFromForm } from "./lib/scoreSetup";
+import { enrichScoreSetupWithEffects, scoreSetupFromForm } from "./lib/scoreSetup";
 import type { UserRow } from "./lib/store";
 
 function msg(url: URL): { text: string | null; error: boolean } {
@@ -1119,9 +1119,13 @@ export default {
                     ),
                   )
                 : undefined,
-            score_setup: scoreSetupFromForm((name) =>
-              String(form.get(name) ?? ""),
-            ),
+            score_setup: await (async () => {
+              const base = scoreSetupFromForm((name) =>
+                String(form.get(name) ?? ""),
+              );
+              if (!base) return null;
+              return enrichScoreSetupWithEffects(base);
+            })(),
           });
           return bounce("/admin", "レースイベント設定を保存しました");
         } catch (err) {

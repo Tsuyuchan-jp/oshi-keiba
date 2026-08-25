@@ -34,6 +34,23 @@ test("有効リスト外の白は落とす", () => {
   assert.deepEqual(s.countedNames, ["地固め"]);
 });
 
+test("effectiveIds + skillIds で絞る", () => {
+  const s = skillBase(["地固め", "コンセントレーション"], {
+    effectiveIds: new Set([201601]),
+    skillIds: [201601, 200261],
+  });
+  assert.deepEqual(s.countedNames, ["地固め"]);
+});
+
+test("ためらい id は effectiveIds 外でも白1", () => {
+  const s = skillBase(["逃げためらい", "地固め"], {
+    effectiveIds: new Set([201601]),
+    skillIds: [200851, 201601],
+  });
+  assert.equal(s.tameraiCount, 1);
+  assert.equal(s.effectiveCount, 2);
+});
+
 test("達成Aと未達M", () => {
   assert.equal(achieveMult(1, 4), 1);
   assert.ok(Math.abs(achieveMult(1.2, 4) - 1.05) < 1e-9);

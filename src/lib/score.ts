@@ -40,13 +40,23 @@ export type RaceRequirements = {
 
 export type ScoreInput = {
   skillNames: string[];
+  /**
+   * skillNames と対になる mdb id。OCR が ID 化したあと渡す。
+   * effectiveIds 指定時に使う。欠けた要素は無効扱い（ためらいは名前で救済）。
+   */
+  skillIds?: ReadonlyArray<number | null | undefined>;
   stats: HorseStats;
   aptitudes: HorseAptitudes;
   req: RaceRequirements;
   greenCtx: GreenEvalContext;
   /**
-   * U-tools 有効スキル名。未指定なら緑マスタ以外を全部有効とみなす。
+   * U-tools 有効スキル id。未指定なら名前リスト（effectiveNames）または緑以外全部。
    * ためらい4種はリスト外でも常に有効。
+   */
+  effectiveIds?: ReadonlySet<number>;
+  /**
+   * 互換用。effectiveIds が無いときの名前集合。
+   * 未指定なら緑以外を全部有効とみなす。
    */
   effectiveNames?: ReadonlySet<string>;
 };
@@ -80,6 +90,9 @@ const TAMERAI = new Set([
   "追込ためらい",
 ]);
 
+/** ためらい4種の mdb id（リスト外でも常に有効） */
+export const TAMERAI_IDS = new Set([200851, 200881, 200911, 200941]);
+
 const DIST_S = 1.1;
 const SURFACE_S = 1.05;
 const STYLE_S = 1.1;
@@ -96,27 +109,49 @@ function isTamerai(name: string): boolean {
   return TAMERAI.has(name.trim());
 }
 
+function isTameraiId(id: number | null | undefined): boolean {
+  return id != null && TAMERAI_IDS.has(id);
+}
+
 function isGold(name: string): boolean {
   const kind = classifySkillName(name).kind;
   return kind === "gold";
 }
 
+export type SkillBaseOptions = {
+  effectiveIds?: ReadonlySet<number>;
+  skillIds?: ReadonlyArray<number | null | undefined>;
+  effectiveNames?: ReadonlySet<string>;
+};
+
 /** スキル土台 S0。緑は除外。金は有効に含めたうえで +2。ためらいは常に白1。 */
 export function skillBase(
   skillNames: string[],
-  effectiveNames?: ReadonlySet<string>,
+  effectiveNamesOrOpts?: ReadonlySet<string> | SkillBaseOptions,
 ): SkillBaseBreakdown {
+  const opts: SkillBaseOptions =
+    effectiveNamesOrOpts instanceof Set || effectiveNamesOrOpts == null
+      ? { effectiveNames: effectiveNamesOrOpts ?? undefined }
+      : effectiveNamesOrOpts;
+
   const countedNames: string[] = [];
   let goldCount = 0;
   let tameraiCount = 0;
 
-  for (const raw of skillNames) {
-    const name = raw.trim();
+  for (let i = 0; i < skillNames.length; i++) {
+    const name = skillNames[i]!.trim();
     if (!name) continue;
     if (isGreenMaster(name)) continue;
 
-    const tamerai = isTamerai(name);
-    if (!tamerai && effectiveNames && !effectiveNames.has(name)) continue;
+    const id = opts.skillIds?.[i] ?? null;
+    const tamerai = isTamerai(name) || isTameraiId(id);
+    if (!tamerai) {
+      if (opts.effectiveIds) {
+        if (id == null || !opts.effectiveIds.has(id)) continue;
+      } else if (opts.effectiveNames && !opts.effectiveNames.has(name)) {
+        continue;
+      }
+    }
 
     countedNames.push(name);
     if (tamerai) {
@@ -178,7 +213,11 @@ function adjustStats(
 }
 
 export function computeScore(input: ScoreInput): ScoreBreakdown {
-  const skill = skillBase(input.skillNames, input.effectiveNames);
+  const skill = skillBase(input.skillNames, {
+    effectiveIds: input.effectiveIds,
+    skillIds: input.skillIds,
+    effectiveNames: input.effectiveNames,
+  });
   const green = sumGreenBonusesByNames(input.skillNames, input.greenCtx);
   const adjusted = adjustStats(input.stats, green, input.aptitudes);
   const req = input.req;
