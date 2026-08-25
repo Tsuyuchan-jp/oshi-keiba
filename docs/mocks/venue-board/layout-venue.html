@@ -51,7 +51,7 @@
       align-items: center;
     }
     .led-meta strong { color: #fff; font-weight: 700; }
-    .board { padding: .35rem .45rem .55rem; }
+    .board { padding: .35rem .45rem .55rem; min-height: 0; overflow: auto; }
     .board-head {
       font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif;
       color: var(--led);
@@ -67,6 +67,12 @@
       border: 0;
     }
     .led-meta .pill .dot { background: currentColor; }
+    /* 締切・公開は明滅しない */
+    .led-meta .pill.idle .dot { animation: none; opacity: .85; }
+    .led-meta .pill.done {
+      background: rgba(0, 232, 216, .12);
+      color: var(--led);
+    }
     .sheet-wrap {
       background: #000;
       border: 0;
@@ -79,10 +85,12 @@
       --col-runner: 5.5rem;
       --col-style: 1.7rem;
       --col-odds: 6.2rem;
+      --col-place: 0px;
       --sheet-pad-y: .32rem;
       --sheet-pad-x: .35rem;
       font-size: clamp(.78rem, 1.8vw, .9rem);
     }
+    .scene[data-phase="published"] .sheet { --col-place: 1.85rem; }
     .sheet-row {
       display: grid;
       grid-template-columns:
@@ -90,7 +98,8 @@
         minmax(0, 1fr)
         var(--col-runner)
         var(--col-style)
-        var(--col-odds);
+        var(--col-odds)
+        var(--col-place);
       align-items: center;
       column-gap: .2rem;
       padding: var(--sheet-pad-y) .15rem;
@@ -157,6 +166,20 @@
     .c-odds .delta.down { color: var(--led); }
     .sheet-row.pulse { animation: pulse-row 1.5s ease-out; }
     .sheet-row.head .c-odds { color: var(--led-dim); font-size: .68em; text-shadow: none; }
+    .c-place {
+      display: none;
+      color: #fff;
+      font-family: "Chakra Petch", sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .scene[data-phase="published"] .c-place { display: block; }
+    .sheet-row.head .c-place { color: var(--led-dim); font-size: .68em; }
+    .sheet-row.place-1 { box-shadow: inset 3px 0 0 #e0b34a; }
+    .sheet-row.place-2 { box-shadow: inset 3px 0 0 #c8d0cc; }
+    .sheet-row.place-3 { box-shadow: inset 3px 0 0 #c47a3a; }
     .cta {
       background: var(--odds);
       color: #140800;
@@ -173,7 +196,63 @@
       margin-top: .45rem;
       gap: .5rem;
     }
-    .foot .hint { display: none; }
+    .foot .hint {
+      display: none;
+      color: var(--led-dim);
+      font-size: .72rem;
+      line-height: 1.45;
+    }
+    .scene:not([data-phase="voting"]) .cta { display: none; }
+    .scene:not([data-phase="voting"]) .foot .hint { display: block; }
+    .tickets {
+      display: none;
+      flex: 0 0 auto;
+      margin-top: .35rem;
+      padding-top: .3rem;
+      border-top: 1px solid #143230;
+    }
+    .scene[data-phase="published"] .tickets { display: block; }
+    .tickets-h {
+      font-size: .68rem;
+      letter-spacing: .12em;
+      color: var(--led-dim);
+      margin: 0 0 .2rem;
+    }
+    .t-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: .55rem;
+      align-items: baseline;
+      font-size: .78rem;
+      padding: .12rem 0;
+      border-bottom: 1px solid #0c1818;
+    }
+    .t-row .lab { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .t-row .yen { font-variant-numeric: tabular-nums; color: #c8d4d3; }
+    .t-row .res { color: var(--led-dim); white-space: nowrap; }
+    .t-row .res.hit { color: var(--odds); font-weight: 700; }
+    .phase-bar {
+      position: fixed;
+      left: .75rem;
+      bottom: calc(2.55rem + env(safe-area-inset-bottom));
+      z-index: 10;
+      display: flex;
+      gap: .3rem;
+      font-size: .72rem;
+    }
+    .phase-bar button {
+      border: 1px solid #4a3f28;
+      background: rgba(8, 9, 10, .75);
+      color: #c4b896;
+      padding: .28rem .5rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .phase-bar button[aria-pressed="true"] {
+      background: #f0b429;
+      color: #1a1204;
+      border-color: #f0b429;
+    }
     .scene {
       position: relative;
       min-height: 100dvh;
@@ -283,23 +362,24 @@
         overflow: hidden;
       }
       .foot { justify-content: flex-end; }
+      .scene:not([data-phase="voting"]) .foot { justify-content: flex-start; }
       .cta { min-width: 11rem; text-align: center; }
     }
   </style>
 </head>
 <body>
-  <div class="scene" data-slot="night">
+  <div class="scene" data-slot="night" data-phase="voting">
     <div class="scene-bg" aria-hidden="true"></div>
     <div class="app-shell">
       <header class="chrome">
         <div>
           <a class="brand" href="./index.html">OSHI KEIBA</a>
-          <div class="who">neko · 12,800 スペ</div>
+          <div class="who" id="who-line">neko · 12,800 スペ</div>
         </div>
         <div class="led-meta">
-          <span class="pill"><span class="dot"></span>投票中</span>
-          <span>現在 <strong id="now-clock">18:12</strong></span>
-          <span>締切 <strong>18:40</strong></span>
+          <span class="pill" id="phase-pill"><span class="dot"></span><span id="phase-label">投票中</span></span>
+          <span id="meta-now">現在 <strong id="now-clock">18:12</strong></span>
+          <span id="meta-close">締切 <strong>18:40</strong></span>
         </div>
       </header>
       <section class="board">
@@ -315,6 +395,7 @@
                 <span class="c-runner" role="columnheader">出走者</span>
                 <span class="c-style" role="columnheader">脚質</span>
                 <span class="c-odds" role="columnheader">オッズ</span>
+                <span class="c-place" role="columnheader">着</span>
               </div>
               <div id="rows-a"></div>
             </div>
@@ -327,17 +408,41 @@
                 <span class="c-runner" role="columnheader">出走者</span>
                 <span class="c-style" role="columnheader">脚質</span>
                 <span class="c-odds" role="columnheader">オッズ</span>
+                <span class="c-place" role="columnheader">着</span>
               </div>
               <div id="rows-b"></div>
             </div>
           </div>
         </div>
+        <div class="tickets" id="tickets">
+          <div class="tickets-h">自分の馬券</div>
+          <div class="t-row">
+            <span class="lab">単勝 1 サイレンススズカ</span>
+            <span class="yen">200</span>
+            <span class="res hit">的中 +640</span>
+          </div>
+          <div class="t-row">
+            <span class="lab">馬連 1-3</span>
+            <span class="yen">100</span>
+            <span class="res">外れ</span>
+          </div>
+          <div class="t-row">
+            <span class="lab">3連単 1→2→16</span>
+            <span class="yen">100</span>
+            <span class="res">特払い（8割戻し）</span>
+          </div>
+        </div>
         <div class="foot">
-          <span class="hint"></span>
-          <a class="cta" href="#">馬券を買う</a>
+          <span class="hint" id="phase-hint"></span>
+          <a class="cta" href="../bet-window/quiet.html">馬券を買う</a>
         </div>
       </section>
     </div>
+  </div>
+  <div class="phase-bar" role="group" aria-label="開催の面">
+    <button type="button" data-phase="voting">投票中</button>
+    <button type="button" data-phase="closed">締切</button>
+    <button type="button" data-phase="published">結果公開</button>
   </div>
   <div class="slot-bar" role="group" aria-label="背景の時間帯">
     <button type="button" data-slot="auto">自動</button>
@@ -345,7 +450,7 @@
     <button type="button" data-slot="dusk">夕方</button>
     <button type="button" data-slot="night">ナイター</button>
   </div>
-  <div class="mock-label">端の芝が見えるか・時間帯を切替</div>
+  <div class="mock-label" id="mock-label">端の芝が見えるか・時間帯と面を切替</div>
   <script>
     (function slotBg() {
       const scene = document.querySelector(".scene");
@@ -410,19 +515,32 @@
       [17, "オグリキャップ", "追込", "nana", "19.2", "", ""],
       [18, "タマモクロス", "追込", "bee", "25.0", "", ""],
     ];
+    /* 通し番号のまま。公開まで着は出さない */
+    const places = {
+      1: 1, 16: 2, 2: 3, 5: 4, 9: 5, 14: 6, 7: 7, 3: 8,
+      15: 9, 10: 10, 12: 11, 4: 12, 6: 13, 13: 14, 8: 15, 11: 16, 17: 17, 18: 18,
+    };
+    const scene = document.querySelector(".scene");
+    let phase = "voting";
     function fill(el, list) {
+      const live = phase === "voting";
+      const showPlace = phase === "published";
       for (const [n, uma, style, runner, odds, dir, d] of list) {
         const row = document.createElement("div");
-        row.className = "sheet-row" + (n === 3 ? " pulse" : "");
+        const plc = places[n];
+        row.className = "sheet-row";
+        if (live && n === 3) row.classList.add("pulse");
+        if (showPlace && plc <= 3) row.classList.add("place-" + plc);
         row.setAttribute("role", "row");
-        const delta = dir
+        const delta = live && dir
           ? `<span class="delta ${dir}">${dir === "up" ? "↑" : "↓"}${d}</span>`
           : `<span class="delta"></span>`;
         row.innerHTML = `<span class="c-num" role="cell">${n}</span>
           <span class="c-name" role="cell">${uma}</span>
           <span class="c-runner" role="cell">${runner}</span>
           <span class="c-style" role="cell">${style}</span>
-          <span class="c-odds" role="cell">${delta}${odds}</span>`;
+          <span class="c-odds" role="cell">${delta}${odds}</span>
+          <span class="c-place" role="cell">${showPlace ? plc : ""}</span>`;
         el.appendChild(row);
       }
     }
@@ -439,9 +557,53 @@
         fill(a, horses);
       }
     }
-    render();
+    function applyPhase() {
+      scene.dataset.phase = phase;
+      const pill = document.getElementById("phase-pill");
+      const label = document.getElementById("phase-label");
+      const who = document.getElementById("who-line");
+      const hint = document.getElementById("phase-hint");
+      const metaNow = document.getElementById("meta-now");
+      const metaClose = document.getElementById("meta-close");
+      pill.classList.remove("idle", "done");
+      if (phase === "voting") {
+        label.textContent = "投票中";
+        who.textContent = "neko · 12,800 スペ";
+        hint.textContent = "";
+        metaNow.style.display = "";
+        metaClose.innerHTML = "締切 <strong>18:40</strong>";
+      } else if (phase === "closed") {
+        label.textContent = "投票締切";
+        pill.classList.add("idle");
+        who.textContent = "neko · 12,800 スペ";
+        hint.textContent = "単勝・馬連・馬単・3連複は成立予定です。3連単は特払い予定です。この賭式に使ったスペの8割が戻ります。着順はまだ出ません。";
+        metaNow.style.display = "none";
+        metaClose.innerHTML = "確定配当";
+      } else {
+        label.textContent = "結果公開";
+        pill.classList.add("idle", "done");
+        who.textContent = "neko · 13,120 スペ";
+        hint.textContent = "3連単は当たりの組み合わせに投票がなかったため、特払いです。この賭式に使ったスペの8割が戻ります。";
+        metaNow.style.display = "none";
+        metaClose.innerHTML = "払戻済み";
+      }
+      for (const b of document.querySelectorAll(".phase-bar [data-phase]")) {
+        b.setAttribute("aria-pressed", b.dataset.phase === phase ? "true" : "false");
+      }
+      render();
+    }
+    const pq = new URLSearchParams(location.search).get("phase");
+    if (pq === "closed" || pq === "published" || pq === "voting") phase = pq;
+    for (const b of document.querySelectorAll(".phase-bar [data-phase]")) {
+      b.addEventListener("click", () => {
+        phase = b.dataset.phase;
+        applyPhase();
+      });
+    }
+    applyPhase();
     window.matchMedia("(min-width: 900px)").addEventListener("change", render);
     setInterval(() => {
+      if (phase !== "voting") return;
       const row = document.querySelector("#rows-a .sheet-row.pulse") || document.querySelector("#rows-a .sheet-row");
       if (!row) return;
       row.classList.remove("pulse");
