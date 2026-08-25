@@ -2,4 +2,5 @@
 interface Env {
   SESSION_SECRET: string;
   MEMBER_PASSWORD: string;
+  ALLOW_DEMO_RESET?: string;
 }

@@ -1,3 +1,4 @@
 ADMIN_PASSWORD=demo-admin
 MEMBER_PASSWORD=loh
 SESSION_SECRET=local-dev-session-secret-change-me
+ALLOW_DEMO_RESET=1

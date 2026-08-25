@@ -485,11 +485,11 @@ export function howToModal(): string {
     <h2>使い方</h2>
     <section class="howto-sec">
       <h3>スペ</h3>
-      <p>仮想のポイント「スペ」で馬券を買います。最初に 3000 スペが入ります。買う単位は 100 スペです。</p>
+      <p>仮想のポイント「スペ」で馬券を買います。開催の投票が始まったあと、「参加する」でその回のスペが入ります。買う単位は 100 スペです。前回からの残りは持ち越されます。</p>
     </section>
     <section class="howto-sec">
       <h3>場内と投票</h3>
-      <p>場内では出走表と単勝のオッズを見ます。馬券を買うときは「馬券を買う」から投票ページへ進んでください。投票が始まる前は、場内でお待ちください。</p>
+      <p>場内では出走表と単勝のオッズを見ます。馬券を買うときはヘッダーの「投票」か「馬券を買う」から投票ページへ進んでください。まだ参加していないときは、投票ページで開催への参加だけ出ます。投票が始まる前は、場内でお待ちください。</p>
     </section>
     <section class="howto-sec">
       <h3>番号</h3>
@@ -862,7 +862,10 @@ export function adminOpsGuide(board: Board): { now: string; next: string } {
     }
     return { now, next: "着順を確認し、出走枠の「結果を公開して払戻する」" };
   }
-  return { now, next: "結果公開済みです。次のレースは下の「デモ初期化」から（誤タップ注意）" };
+  if (board.event.status === "published") {
+    return { now, next: "「次の開催を開く」。誤って開いたら出走登録中に破棄できる" };
+  }
+  return { now, next: "結果公開済みです。次のレースは「次の開催を開く」" };
 }
 
 /** 管理画面: 定義 → 物語 → 式 */
@@ -877,7 +880,7 @@ export function formulaPanel(board: Board): string {
       </thead>
       <tbody>
         <tr><td>残高</td><td>仮想のユーザー所持額</td><td>今持っているスペ</td></tr>
-        <tr><td>G</td><td>毎週配る仮想ポイント</td><td>口座に足す額。オッズの式には入らない。G を変えても S と E は動かない</td></tr>
+        <tr><td>G</td><td>毎週配る仮想ポイント</td><td>その開催に参加した人へ1回。口座に足す。オッズの式には入らない。G を変えても S と E は動かない</td></tr>
         <tr><td>単位</td><td>投票の刻み</td><td>一度に賭けられる最小のスペ</td></tr>
         <tr><td>Strength</td><td>相対評価点</td><td>単勝 Seed の比。連勝には載せない。メンバーには出さない</td></tr>
         <tr><td>Seed</td><td>単勝の仮想初期投票額</td><td>投票中の参考だけ。確定には入れない</td></tr>

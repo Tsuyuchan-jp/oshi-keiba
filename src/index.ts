@@ -22,9 +22,14 @@ import { escapeHtml, html, json, readForm, redirect } from "./lib/http";
 import {
   addHorse,
   bulkUpsertHorses,
+  clearHorses,
   deleteMember,
+  discardCurrentSetup,
   forceClose,
   getUser,
+  hasJoinedEvent,
+  joinButtonLabel,
+  joinEvent,
   listAllBets,
   listEventPayouts,
   listMembers,
@@ -33,12 +38,14 @@ import {
   loadBoard,
   loginMember,
   numberByHorseId,
+  openNextEvent,
   openVoting,
   placeBet,
   publishResults,
   redoMyBets,
   registerMember,
   resetDemo,
+  revertVotingToSetup,
   savePlaces,
   scratchHorse,
   updateHorse,
@@ -85,6 +92,10 @@ function bounce(path: string, text: string, error = false): Response {
   u.searchParams.set("msg", text);
   if (error) u.searchParams.set("err", "1");
   return redirect(u.pathname + u.search);
+}
+
+function demoResetAllowed(env: Env): boolean {
+  return env.ALLOW_DEMO_RESET === "1";
 }
 
 /** 確認用パス。name=password にするとブラウザがログイン情報を流し込む */
@@ -161,7 +172,7 @@ export default {
             body: `${flashHtml(m.text, m.error)}
               <div class="card">
                 <h1>入室</h1>
-                <p class="note">表示名だけで入ります。個人パスワードはありません。</p>
+                <p class="note">表示名だけで入ります。個人パスワードはありません。スペはその開催に参加したときに入ります。</p>
                 <form method="post" action="/login" class="row" style="margin-bottom:1.25rem">
                   <input type="hidden" name="mode" value="register">
                   <label>表示名 <input name="display_name" required maxlength="40" autocomplete="nickname"></label>
@@ -381,10 +392,29 @@ export default {
           return redirect("/bet");
         }
         const live = board.event.status === "voting";
+        const joined = await hasJoinedEvent(env.DB, board.event.id, user.id);
         const myBets = await listUserBets(env.DB, board.event.id, user.id);
         const grouped = groupMyBets(myBets, board);
 
-        const canBuy = board.event.status === "voting";
+        if (live && !joined) {
+          return html(
+            layout({
+              title: "投票",
+              user,
+              eventStatus: board.event.status,
+              body: `${flashHtml(m.text, m.error)}
+              <div class="card">
+                <h1>投票</h1>
+                <p class="bal-now"><span class="bal-k">いまの所持</span><strong>${formatPt(user.balance)}</strong></p>
+                <form method="post" action="/bet/join">
+                  <p class="cta"><button type="submit">${escapeHtml(joinButtonLabel(board.event.title))}</button></p>
+                </form>
+              </div>`,
+            }),
+          );
+        }
+
+        const canBuy = board.event.status === "voting" && joined;
         const form = canBuy
           ? `<form method="post" action="/bet" class="bet-form" id="bet-form">
               <input type="hidden" name="kind" value="${kind}">
@@ -520,6 +550,22 @@ export default {
         }
       }
 
+      if (method === "POST" && path === "/bet/join") {
+        const gate = await requireMember(request, env);
+        if (gate instanceof Response) return gate;
+        try {
+          const board = await loadBoard(env.DB);
+          await joinEvent(env.DB, board.event, gate.user);
+          return bounce("/bet", "参加しました");
+        } catch (e) {
+          return bounce(
+            "/bet",
+            e instanceof Error ? e.message : "参加に失敗",
+            true,
+          );
+        }
+      }
+
       if (method === "POST" && path === "/bet/redo") {
         const gate = await requireMember(request, env);
         if (gate instanceof Response) return gate;
@@ -557,6 +603,7 @@ export default {
           undoMeta = null;
         }
         const ops = adminOpsGuide(board);
+        const allowDemo = demoResetAllowed(env);
 
         const horseRows = board.horses
           .map((h) => {
@@ -697,12 +744,31 @@ export default {
                   <form method="post" action="/admin/close" onsubmit="return confirm(${escapeHtml(JSON.stringify("強制締切します。投票を止め、確定配当に切り替えます。よろしいですか？"))});">
                     <button class="danger" type="submit"${e.status !== "voting" ? " disabled" : ""}>強制締切</button>
                   </form>
+                  <form method="post" action="/admin/next-event" onsubmit="return confirm(${escapeHtml(JSON.stringify("次の開催を開きます。いまの結果は残し、新しい出走登録に入ります。よろしいですか？"))});">
+                    <button type="submit"${e.status !== "published" ? " disabled" : ""}>次の開催を開く</button>
+                  </form>
                 </div>
                 <p class="note">着順の保存と結果公開は、下の出走枠にあります。</p>
                 <div class="ops-aside">
-                  <h3>復旧（普段は使わない）</h3>
+                  <h3>逃げ（設定・出走のやり直し）</h3>
                   <div class="row">
-                    <button type="button" class="secondary" id="reset-open">デモ初期化</button>
+                    <form method="post" action="/admin/clear-horses" onsubmit="return confirm(${escapeHtml(JSON.stringify("この開催の出走をすべて消します。開催自体は残ります。よろしいですか？"))});">
+                      <button type="submit" class="secondary"${e.status !== "setup" ? " disabled" : ""}>出走を空にする</button>
+                    </form>
+                    <form method="post" action="/admin/discard-event" onsubmit="return confirm(${escapeHtml(JSON.stringify("この開催を破棄し、直前の公開済み開催へ戻します。残高は消しません。よろしいですか？"))});">
+                      <button type="submit" class="danger"${e.status !== "setup" ? " disabled" : ""}>この開催を破棄</button>
+                    </form>
+                    <form method="post" action="/admin/revert-voting" onsubmit="return confirm(${escapeHtml(JSON.stringify("投票を取り消して出走登録に戻します。この開催の票は全額戻り、配ったスペも戻します。よろしいですか？"))});">
+                      <button type="submit" class="danger"${e.status !== "voting" ? " disabled" : ""}>投票を取り消して登録に戻す</button>
+                    </form>
+                  </div>
+                  <h3>復旧（Undo${allowDemo ? "・デモ初期化" : ""}）</h3>
+                  <div class="row">
+                    ${
+                      allowDemo
+                        ? `<button type="button" class="secondary" id="reset-open">デモ初期化</button>`
+                        : ""
+                    }
                     ${
                       undoMeta
                         ? `<button type="button" class="danger" id="undo-open">操作を戻す</button>`
@@ -728,10 +794,12 @@ export default {
                     </div>
                   </form>
                 </dialog>
-                <dialog class="modal" id="reset-modal">
-                  <h2>デモ初期化</h2>
-                  <p><strong>いまの出走・投票・残高を消して、最初からやり直します。</strong></p>
-                  <p>メンバーの表示名は残ります。残高は全員 3000 スペに揃います。このあと「操作を戻す」で初期化前に戻せるのは、初期化が直前の操作である場合だけです。</p>
+                ${
+                  allowDemo
+                    ? `<dialog class="modal" id="reset-modal">
+                  <h2>デモ初期化（ローカルのみ）</h2>
+                  <p><strong>開催・出走・投票・付与を消し、残高を 0 にします。</strong></p>
+                  <p>メンバーの表示名は残ります。スペは配り直しません。本番ではこの操作は出ません。</p>
                   <form method="post" action="/admin/reset" id="reset-form" class="reauth" autocomplete="off">
                     <div class="row">
                       ${adminReauthField()}
@@ -739,7 +807,9 @@ export default {
                       <button type="button" class="secondary" id="reset-cancel">やめる</button>
                     </div>
                   </form>
-                </dialog>
+                </dialog>`
+                    : ""
+                }
                 <script>
                   (() => {
                     const bindDlg = (dlg, openBtn, cancel) => {
@@ -779,7 +849,7 @@ export default {
                     if (resetForm) {
                       resetForm.addEventListener("submit", (ev) => {
                         const msg =
-                          "デモを初期化します。\\n\\n出走・投票は消えます。メンバー名は残し、残高は全員 3000 スペになります。\\n\\n本当に初期化しますか？";
+                          "デモを初期化します。\\n\\n開催・票は消えます。名前は残し、残高は 0 になります。スペは配りません。\\n\\n本当に初期化しますか？";
                         if (!confirm(msg)) ev.preventDefault();
                       });
                     }
@@ -1036,6 +1106,54 @@ export default {
         }
       }
 
+      if (method === "POST" && path === "/admin/next-event") {
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) return gate;
+        try {
+          const board = await loadBoard(env.DB);
+          await openNextEvent(env.DB, board.event);
+          return bounce("/admin", "次の開催を開きました。タイトルと締切を入れてください");
+        } catch (err) {
+          return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
+        }
+      }
+
+      if (method === "POST" && path === "/admin/clear-horses") {
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) return gate;
+        try {
+          const board = await loadBoard(env.DB);
+          await clearHorses(env.DB, board.event);
+          return bounce("/admin", "出走を空にしました");
+        } catch (err) {
+          return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
+        }
+      }
+
+      if (method === "POST" && path === "/admin/discard-event") {
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) return gate;
+        try {
+          const board = await loadBoard(env.DB);
+          await discardCurrentSetup(env.DB, board.event);
+          return bounce("/admin", "開催を破棄しました");
+        } catch (err) {
+          return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
+        }
+      }
+
+      if (method === "POST" && path === "/admin/revert-voting") {
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) return gate;
+        try {
+          const board = await loadBoard(env.DB);
+          await revertVotingToSetup(env.DB, board.event);
+          return bounce("/admin", "投票を取り消し、出走登録に戻しました");
+        } catch (err) {
+          return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
+        }
+      }
+
       if (method === "POST" && path === "/admin/scratch") {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
@@ -1115,13 +1233,16 @@ export default {
       if (method === "POST" && path === "/admin/reset") {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
+        if (!demoResetAllowed(env)) {
+          return bounce("/admin", "デモ初期化はローカルだけです", true);
+        }
         const form = await readForm(request);
         const password = readAdminReauth(form);
         if (!timingSafeEqualStr(password, env.ADMIN_PASSWORD)) {
           return bounce("/admin", "管理者パスが違います（初期化していません）", true);
         }
         await resetDemo(env.DB);
-        return bounce("/admin", "デモを初期化しました（メンバーは 3000 スペ、名前は残しています）");
+        return bounce("/admin", "デモを初期化しました（名前は残し、残高は 0 です）");
       }
 
       return html(

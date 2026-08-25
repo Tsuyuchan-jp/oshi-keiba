@@ -25,6 +25,9 @@ import {
 } from "./odds";
 import { newId } from "./auth";
 import { captureAdminUndo } from "./undo";
+import { clawbackBalance } from "./lifecycle";
+
+export { clawbackBalance, joinButtonLabel } from "./lifecycle";
 
 export type EventStatus = "setup" | "voting" | "closed" | "published";
 
@@ -47,12 +50,15 @@ export type EventRow = {
   created_at: number;
   /** カンマ区切り。単勝は常に含む */
   enabled_kinds: string;
+  /** 1 ならメンバー画面の開催 */
+  is_current: number;
 };
 
 function normalizeEvent(row: EventRow): EventRow {
   return {
     ...row,
     enabled_kinds: serializeEnabledKinds(parseEnabledKinds(row.enabled_kinds)),
+    is_current: Number(row.is_current) ? 1 : 0,
   };
 }
 
@@ -137,10 +143,41 @@ export type Board = {
   pools: KindPool[];
 };
 
-const DEMO_EVENT_ID = "demo-week";
 /** 試運転: 頭数 2〜18 */
 const MIN_LIVE_HORSES = 2;
 const MAX_LIVE_HORSES = 18;
+
+const INSERT_EVENT_SQL = `INSERT INTO events (
+        id, title, status, grant_g, bet_unit, seed_pool_s, pull_e, takeout_d,
+        w_time_floor, w_time_exp, enabled_kinds, created_at, is_current
+      ) VALUES (?, ?, 'setup', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+async function insertBlankEvent(
+  db: D1Database,
+  current: boolean,
+  title = "",
+): Promise<string> {
+  const id = newId();
+  const now = Date.now();
+  await db
+    .prepare(INSERT_EVENT_SQL)
+    .bind(
+      id,
+      title,
+      DEFAULTS.grantG,
+      DEFAULTS.betUnit,
+      DEFAULTS.seedPoolS,
+      DEFAULTS.pullE,
+      DEFAULTS.takeoutD,
+      DEFAULTS.wTimeFloor,
+      DEFAULTS.wTimeExp,
+      DEFAULT_ENABLED_KINDS,
+      now,
+      current ? 1 : 0,
+    )
+    .run();
+  return id;
+}
 
 const DEMO_HORSES: { name: string; strength: number }[] = [
   { name: "仮・スペシャルウィーク", strength: 28 },
@@ -155,43 +192,38 @@ const DEMO_HORSES: { name: string; strength: number }[] = [
   { name: "仮・テイエムオペラオー", strength: 3 },
 ];
 
-export async function ensureEvent(db: D1Database): Promise<EventRow> {
-  const existing = await db
-    .prepare("SELECT * FROM events WHERE id = ?")
-    .bind(DEMO_EVENT_ID)
-    .first<EventRow>();
-  if (existing) return normalizeEvent(existing);
-  const now = Date.now();
-  await db
-    .prepare(
-      `INSERT INTO events (
-        id, title, status, grant_g, bet_unit, seed_pool_s, pull_e, takeout_d,
-        w_time_floor, w_time_exp, enabled_kinds, created_at
-      ) VALUES (?, ?, 'setup', ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .bind(
-      DEMO_EVENT_ID,
-      "推し活イベントレース（試運転）",
-      DEFAULTS.grantG,
-      DEFAULTS.betUnit,
-      DEFAULTS.seedPoolS,
-      DEFAULTS.pullE,
-      DEFAULTS.takeoutD,
-      DEFAULTS.wTimeFloor,
-      DEFAULTS.wTimeExp,
-      DEFAULT_ENABLED_KINDS,
-      now,
-    )
-    .run();
-  return (await getEvent(db))!;
-}
-
-export async function getEvent(db: D1Database): Promise<EventRow | null> {
+export async function getEventById(
+  db: D1Database,
+  id: string,
+): Promise<EventRow | null> {
   const row = await db
     .prepare("SELECT * FROM events WHERE id = ?")
-    .bind(DEMO_EVENT_ID)
+    .bind(id)
     .first<EventRow>();
   return row ? normalizeEvent(row) : null;
+}
+
+async function pickCurrentEvent(db: D1Database): Promise<EventRow | null> {
+  const current = await db
+    .prepare("SELECT * FROM events WHERE is_current = 1 ORDER BY created_at DESC LIMIT 1")
+    .first<EventRow>();
+  if (current) return normalizeEvent(current);
+  const latest = await db
+    .prepare("SELECT * FROM events ORDER BY created_at DESC LIMIT 1")
+    .first<EventRow>();
+  if (!latest) return null;
+  await db
+    .prepare("UPDATE events SET is_current = CASE WHEN id = ? THEN 1 ELSE 0 END")
+    .bind(latest.id)
+    .run();
+  return normalizeEvent({ ...latest, is_current: 1 });
+}
+
+export async function ensureEvent(db: D1Database): Promise<EventRow> {
+  const existing = await pickCurrentEvent(db);
+  if (existing) return existing;
+  const id = await insertBlankEvent(db, true, "推し活イベントレース");
+  return (await getEventById(db, id))!;
 }
 
 export async function maybeAutoClose(
@@ -210,7 +242,7 @@ export async function maybeAutoClose(
       )
       .bind(now, event.id)
       .run();
-    return (await getEvent(db))!;
+    return (await getEventById(db, event.id))!;
   }
   return event;
 }
@@ -531,7 +563,7 @@ export async function upsertUser(
   return user;
 }
 
-/** 初めて入室: 同名ありは拒否。口座作成＋G */
+/** 初めて入室: 同名ありは拒否。口座作成。G は開催参加時 */
 export async function registerMember(
   db: D1Database,
   displayName: string,
@@ -544,12 +576,10 @@ export async function registerMember(
     .bind(name)
     .first<UserRow>();
   if (existing) throw new Error("この名前はすでに使われています");
-  const event = await ensureEvent(db);
-  const user = await upsertUser(db, name, "member");
-  return grantIfNeeded(db, event, user);
+  return upsertUser(db, name, "member");
 }
 
-/** 登録済み再入室: 名前なしは拒否 */
+/** 登録済み再入室: 名前なしは拒否。G は開催参加時 */
 export async function loginMember(
   db: D1Database,
   displayName: string,
@@ -561,8 +591,32 @@ export async function loginMember(
     .bind(name)
     .first<UserRow>();
   if (!existing) throw new Error("この名前は登録されていません");
-  const event = await ensureEvent(db);
-  return grantIfNeeded(db, event, existing);
+  return existing;
+}
+
+export async function hasJoinedEvent(
+  db: D1Database,
+  eventId: string,
+  userId: string,
+): Promise<boolean> {
+  const row = await db
+    .prepare("SELECT user_id FROM grants WHERE event_id = ? AND user_id = ?")
+    .bind(eventId, userId)
+    .first();
+  return !!row;
+}
+
+/** 投票中の初回参加。G を1回だけ足す */
+export async function joinEvent(
+  db: D1Database,
+  event: EventRow,
+  user: UserRow,
+): Promise<UserRow> {
+  if (user.role !== "member") throw new Error("メンバーだけ参加できます");
+  if (event.status !== "voting") {
+    throw new Error("参加できるのは投票中だけです");
+  }
+  return grantIfNeeded(db, event, user);
 }
 
 export async function getUser(
@@ -773,6 +827,9 @@ export async function placeBet(
   amount: number,
 ): Promise<{ selection_key: string }> {
   if (event.status !== "voting") throw new Error("投票期間外です");
+  if (!(await hasJoinedEvent(db, event.id, user.id))) {
+    throw new Error("この開催にはまだ参加していません");
+  }
   if (!kindIsEnabled(event.enabled_kinds, kind)) {
     throw new Error("この賭式は今回のレースでは使えません");
   }
@@ -827,6 +884,9 @@ export async function redoMyBets(
   user: UserRow,
 ): Promise<number> {
   if (event.status !== "voting") throw new Error("やりなおしは投票中だけです");
+  if (!(await hasJoinedEvent(db, event.id, user.id))) {
+    throw new Error("この開催にはまだ参加していません");
+  }
   const { results } = await db
     .prepare(
       "SELECT * FROM bets WHERE event_id = ? AND user_id = ? AND refunded = 0",
@@ -1126,7 +1186,113 @@ export async function deleteMember(
   return user.display_name;
 }
 
-/** 試運転MVP: 票・出走を消し、メンバー残高を G（3000）に揃える。名前は残す */
+/** 公開済みのあと、空の setup をカレントにする。口座は残す */
+export async function openNextEvent(db: D1Database, event: EventRow): Promise<void> {
+  if (event.status !== "published") {
+    throw new Error("次の開催を開けるのは結果公開のあとだけです");
+  }
+  await captureAdminUndo(db, "次の開催を開く");
+  await db.prepare("UPDATE events SET is_current = 0").run();
+  await insertBlankEvent(db, true, "");
+}
+
+/** setup のカレントを捨て、直前の開催をカレントに戻す */
+export async function discardCurrentSetup(
+  db: D1Database,
+  event: EventRow,
+): Promise<void> {
+  if (event.status !== "setup") {
+    throw new Error("破棄できるのは出走登録中だけです");
+  }
+  await captureAdminUndo(db, "この開催を破棄");
+  await db.batch([
+    db.prepare("DELETE FROM payouts WHERE event_id = ?").bind(event.id),
+    db.prepare("DELETE FROM bets WHERE event_id = ?").bind(event.id),
+    db.prepare("DELETE FROM grants WHERE event_id = ?").bind(event.id),
+    db.prepare("DELETE FROM horses WHERE event_id = ?").bind(event.id),
+    db.prepare("DELETE FROM events WHERE id = ?").bind(event.id),
+  ]);
+  const prev = await db
+    .prepare("SELECT * FROM events ORDER BY created_at DESC LIMIT 1")
+    .first<EventRow>();
+  if (prev) {
+    await db
+      .prepare("UPDATE events SET is_current = CASE WHEN id = ? THEN 1 ELSE 0 END")
+      .bind(prev.id)
+      .run();
+  } else {
+    await insertBlankEvent(db, true, "推し活イベントレース");
+  }
+}
+
+/** setup 中の出走だけ消す */
+export async function clearHorses(db: D1Database, event: EventRow): Promise<void> {
+  if (event.status !== "setup") {
+    throw new Error("出走を空にできるのは出走登録中だけです");
+  }
+  await captureAdminUndo(db, "出走を空にする");
+  await db.prepare("DELETE FROM horses WHERE event_id = ?").bind(event.id).run();
+}
+
+/** 投票中を setup に戻す。票は全額返還。この開催の G は巻き戻す */
+export async function revertVotingToSetup(
+  db: D1Database,
+  event: EventRow,
+): Promise<void> {
+  if (event.status !== "voting") {
+    throw new Error("戻せるのは投票中だけです");
+  }
+  await captureAdminUndo(db, "投票を取り消して登録に戻す");
+  const now = Date.now();
+  const { results: betRows } = await db
+    .prepare("SELECT * FROM bets WHERE event_id = ? AND refunded = 0")
+    .bind(event.id)
+    .all();
+  const bets = (betRows ?? []).map((r) =>
+    normalizeBetRow(r as Record<string, unknown>),
+  );
+  const stmts = [];
+  for (const b of bets) {
+    stmts.push(
+      db.prepare("UPDATE bets SET refunded = 1 WHERE id = ?").bind(b.id),
+      db
+        .prepare("UPDATE users SET balance = balance + ? WHERE id = ?")
+        .bind(b.amount, b.user_id),
+      db
+        .prepare(
+          "INSERT INTO payouts (id, event_id, user_id, bet_id, amount, kind, created_at) VALUES (?, ?, ?, ?, ?, 'redo', ?)",
+        )
+        .bind(newId(), event.id, b.user_id, b.id, b.amount, now),
+    );
+  }
+  if (stmts.length) {
+    for (let i = 0; i < stmts.length; i += 40) {
+      await db.batch(stmts.slice(i, i + 40));
+    }
+  }
+  const { results: grantRows } = await db
+    .prepare("SELECT user_id, amount FROM grants WHERE event_id = ?")
+    .bind(event.id)
+    .all<{ user_id: string; amount: number }>();
+  for (const g of grantRows ?? []) {
+    const u = await getUser(db, g.user_id);
+    if (!u) continue;
+    const next = clawbackBalance(u.balance, g.amount);
+    await db
+      .prepare("UPDATE users SET balance = ? WHERE id = ?")
+      .bind(next, u.id)
+      .run();
+  }
+  await db.prepare("DELETE FROM grants WHERE event_id = ?").bind(event.id).run();
+  await db
+    .prepare(
+      "UPDATE events SET status = 'setup', voting_opened_at = NULL, closed_at = NULL WHERE id = ?",
+    )
+    .bind(event.id)
+    .run();
+}
+
+/** ローカル実機用。開催・票を消し、残高は 0。名前は残す。G は配らない */
 export async function resetDemo(db: D1Database): Promise<void> {
   await captureAdminUndo(db, "デモ初期化");
   await db.batch([
@@ -1137,9 +1303,5 @@ export async function resetDemo(db: D1Database): Promise<void> {
     db.prepare("DELETE FROM events"),
     db.prepare("UPDATE users SET balance = 0"),
   ]);
-  const event = await ensureEvent(db);
-  const members = await listMembers(db);
-  for (const m of members) {
-    await grantIfNeeded(db, event, m);
-  }
+  await insertBlankEvent(db, true, "推し活イベントレース");
 }
