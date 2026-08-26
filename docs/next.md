@@ -28,7 +28,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
-- 管理の開催設定タブ（タイトル・締切・G・単位・賭式・S/E/D/w・評価点の開催条件。危険操作は進行。未確認。本番未適用）— [settings.html](mocks/admin-dash/settings.html)
+- 管理の開催設定タブ（上から今日のレース→評価点の条件→参考数字。未確認。本番未適用）— [settings.html](mocks/admin-dash/settings.html)
 - 管理のオッズタブ採用（5賭式同時。左・単勝全頭、右・連勝2×2は実票のみ。参考／確定。枠内スクロール。賭式切替は不採用。本番未適用）— [odds.html](mocks/admin-dash/odds.html)
 - 出走タブのスクショは元画像をCSSで上端だけ見せる（別切り抜きファイルなし。見出し右に小さく。モーダルは薄暗い）— [horses.html](mocks/admin-dash/horses.html)
 - 管理の台帳タブ採用（左・残高／右・全投票。枠内スクロール。絞り込みは賭式・結果・誰・額。本番未適用）— [ledger.html](mocks/admin-dash/ledger.html)
