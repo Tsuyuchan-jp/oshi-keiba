@@ -109,7 +109,7 @@
 - 賭式のオンオフは setup だけ
 - 出走の登録名はウマ娘名と出走者を分ける（OCR はウマ娘名へ。詳細は [ocr.md](ocr.md)）
 - 管理は将来ページに分ける。OCR は `/admin/horses`。読取成功の画像が登録時に R2 へ。表示は後回し。[ocr.md](ocr.md)
-- 刷新のモック（電光は移さない。PC全画面。ナビは進行・出走登録・出走・台帳・オッズ・開催設定）。進行上段は4段。下段はフェーズで変える。出走タブは採用（評価点名簿と行の掛け算内訳。脚質は逃げ・先行・差し・追込。Strength とは書かない。OCRは出走登録。スクショは右ペイン見出しの右に CSS で上端だけ見せる（別ファイルなし）。クリックで薄暗いモーダル、高さ最大の縮小、ダブルクリックで拡大スクロール。Esc か余白で閉じる）。台帳は採用（左右とも枠内スクロール。全投票は賭式・結果・誰・額で絞る）。オッズは採用（5賭式を同時表示。単勝全頭、連勝は実票がある買い目だけ。参考／確定。評価点・Seedは出さない）— [progress-places.html](mocks/admin-dash/progress-places.html)・[horses.html](mocks/admin-dash/horses.html)・[ledger.html](mocks/admin-dash/ledger.html)・[odds.html](mocks/admin-dash/odds.html)
+- 刷新のモック（電光は移さない。PC全画面。ナビは進行・出走登録・出走・台帳・オッズ・開催設定）。進行上段は4段。下段はフェーズで変える。出走タブは採用（評価点名簿と行の掛け算内訳。脚質は逃げ・先行・差し・追込。Strength とは書かない。OCRは出走登録。スクショは右ペイン見出しの右に CSS で上端だけ見せる（別ファイルなし）。クリックで薄暗いモーダル、高さ最大の縮小、ダブルクリックで拡大スクロール。Esc か余白で閉じる）。台帳は採用（左右とも枠内スクロール。全投票は賭式・結果・誰・額で絞る）。オッズは採用（5賭式を同時表示。単勝全頭、連勝は実票がある買い目だけ。参考／確定。評価点・Seedは出さない）。開催設定はモック（アコーディオンにしない。タイトル・締切・G・単位・賭式・S/E/D/w・評価点の開催条件。次の開催・破棄・Undoは進行）— [progress-places.html](mocks/admin-dash/progress-places.html)・[horses.html](mocks/admin-dash/horses.html)・[ledger.html](mocks/admin-dash/ledger.html)・[odds.html](mocks/admin-dash/odds.html)・[settings.html](mocks/admin-dash/settings.html)
 - **本番デプロイ**は `ocr.md` の「デプロイ（忘れない）」。R2 作成と D1 `--remote` を `deploy` の前にやる
 - デモ初期化: 本番では出さない。ローカルは `ALLOW_DEMO_RESET=1`。表示名は残す。開催・票を消し残高は 0。G は配らない
 - 投票開始後は Undo・メンバー削除を普段押さない

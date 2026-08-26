@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>管理 · 開催設定</title>
+  <link rel="stylesheet" href="./shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="settings-page">
+  <div class="dash">
+    <nav class="side" aria-label="管理">
+      <div class="mark">OSHI KEIBA · 管理</div>
+      <a href="./progress-places.html">進行</a>
+      <a class="ghost" href="#">出走登録</a>
+      <a href="./horses.html">出走</a>
+      <a href="./ledger.html">台帳</a>
+      <a href="./odds.html">オッズ</a>
+      <a class="on" href="./settings.html">開催設定</a>
+    </nav>
+    <div class="main">
+      <section class="hero odds-hero">
+        <div class="hero-top">
+          <h1>開催設定</h1>
+          <span class="phase" id="phase-pill">出走登録中</span>
+          <p class="sort-links">
+            <a href="#" id="view-setup" class="on">出走登録中</a>
+            ·
+            <a href="#" id="view-voting">投票中</a>
+          </p>
+          <div class="ctas" style="margin:0">
+            <button type="submit" class="primary" form="settings-form">保存</button>
+          </div>
+        </div>
+        <p class="note">投票開始後は普段いじらない。タイトル・締切・S・E・w・D は投票中も保存できる（Undo 1手）。賭式のオンオフは登録中だけ。λ は触らない。次の開催・破棄・Undo は進行タブ。</p>
+        <p class="settings-flash" id="flash" hidden></p>
+      </section>
+      <form class="settings-desk" id="settings-form">
+        <section class="work settings-id">
+          <div class="work-head">
+            <h2>この開催</h2>
+          </div>
+          <div class="settings-scroll">
+            <div class="settings-fields">
+              <label style="grid-column: 1 / -1">タイトル
+                <input name="title" value="第2回 本番">
+              </label>
+              <label>日時締切（JST）
+                <input name="closes_at" type="datetime-local" value="2026-08-30T18:00">
+              </label>
+              <label>G（スペ）
+                <span class="hint">参加1回。入場だけでは配らない</span>
+                <input name="grant_g" type="number" min="0" step="1" value="3000">
+              </label>
+              <label>単位（スペ）
+                <input name="bet_unit" type="number" min="1" step="1" value="100">
+              </label>
+            </div>
+            <p class="ops-k" style="margin:1rem 0 .4rem">賭式</p>
+            <p class="note" id="kinds-note" style="margin:0 0 .45rem"></p>
+            <div class="kind-opts" id="kinds"></div>
+          </div>
+        </section>
+        <section class="work settings-params">
+          <div class="work-head">
+            <h2>参考オッズの数字</h2>
+          </div>
+          <div class="settings-scroll">
+            <p class="note" style="margin:0 0 .65rem">確定の払いは実票だけ。ここは投票中の参考に使う。メンバーには出さない。第2回の仮置き。</p>
+            <div class="settings-fields">
+              <label>S · Seed 合計
+                <span class="hint">評価点の比で配る山</span>
+                <input name="seed_pool_s" type="number" min="0" step="1" value="80000">
+              </label>
+              <label>E · 票量の目安
+                <span class="hint">近づくと Seed が薄くなる。賭け上限ではない</span>
+                <input name="pull_e" type="number" min="0" step="1" value="100000">
+              </label>
+              <label>D · 控除（％）
+                <span class="hint">確定も参考も同じ率</span>
+                <input name="takeout_d" type="number" min="0" max="99" step="1" value="20">
+              </label>
+              <label>w時 下限
+                <span class="hint">時計だけでは 0 にしない</span>
+                <input name="w_time_floor" type="number" min="0" max="0.99" step="0.05" value="0.8">
+              </label>
+              <label>w時 指数
+                <input name="w_time_exp" type="number" min="0.2" max="4" step="0.1" value="1">
+              </label>
+            </div>
+            <p class="note" style="margin:.7rem 0 0">λ は 1 の定数。管理では出さない。</p>
+          </div>
+        </section>
+        <section class="work settings-score">
+          <div class="work-head">
+            <h2>評価点の開催条件</h2>
+            <span class="odds-meta">未設定なら直置きのみ。Strength とは書かない</span>
+          </div>
+          <div class="settings-scroll">
+            <p class="note" style="margin:0 0 .65rem">コースは U-tools 金ドット36。天候・バ場・季節と目標値は開催ごと。保存時に有効スキル id をコース×4脚質で取り直して固定する。</p>
+            <div class="settings-fields">
+              <label>コース
+                <select name="score_course">
+                  <option value="">（未設定）</option>
+                  <option value="10606" selected>東京 2400m（芝）</option>
+                  <option value="10907">阪神 2400m（芝）</option>
+                  <option value="10807">京都 2000m（芝）</option>
+                  <option value="10504">中山 2000m（芝）</option>
+                  <option value="10611">東京 1600m（ダート）</option>
+                </select>
+              </label>
+              <label>天候
+                <select name="score_weather">
+                  <option value="1" selected>晴</option>
+                  <option value="2">曇</option>
+                  <option value="3">雨</option>
+                  <option value="4">雪</option>
+                </select>
+              </label>
+              <label>バ場
+                <select name="score_ground_condition">
+                  <option value="1" selected>良</option>
+                  <option value="2">稍重</option>
+                  <option value="3">重</option>
+                  <option value="4">不良</option>
+                </select>
+              </label>
+              <label>季節
+                <select name="score_season">
+                  <option value="1" selected>春</option>
+                  <option value="2">夏</option>
+                  <option value="3">秋</option>
+                  <option value="4">冬</option>
+                </select>
+              </label>
+              <label>要求スピード
+                <span class="hint">継承突破なしカンスト</span>
+                <input name="score_speed_cap" type="number" min="1" step="1" value="2150">
+              </label>
+              <label>要求パ
+                <input name="score_power" type="number" min="1" step="1" value="1600">
+              </label>
+              <label>要求根
+                <input name="score_guts" type="number" min="1" step="1" value="1200">
+              </label>
+              <label>要求賢
+                <input name="score_wisdom" type="number" min="1" step="1" value="1600">
+              </label>
+              <label>要求スタ（掛かりなし）
+                <input name="score_stamina_no" type="number" min="1" step="1" value="600">
+              </label>
+              <label>要求スタ（掛かりあり）
+                <input name="score_stamina_with" type="number" min="1" step="1" value="720">
+              </label>
+              <label class="kind-opt" style="margin-top:1.4rem">
+                <input type="checkbox" name="score_stamina_race">
+                スタミナ勝負コース
+              </label>
+            </div>
+            <p class="note" id="effects-note" style="margin:.7rem 0 0">有効スキル id（保存時取得）: 逃 128 / 先 131 / 差 126 / 追 119 · 2026-08-25T12:04Z</p>
+          </div>
+        </section>
+      </form>
+    </div>
+  </div>
+  <div class="mock-label">管理モック · 開催設定 · 本番未適用</div>
+  <script>
+    let setup = true;
+    function paintKinds() {
+      const locked = !setup;
+      document.getElementById("kinds-note").textContent = setup
+        ? "単勝は必須。ほかは投票開始前だけ変えられる。初期は全部オン。"
+        : "投票開始後は賭式を変えない。いま有効: 単勝、馬連、馬単、3連複、3連単。";
+      document.getElementById("kinds").innerHTML = [
+        ["単勝（必須）", true, true],
+        ["馬連", false, locked],
+        ["馬単", false, locked],
+        ["3連複", false, locked],
+        ["3連単", false, locked],
+      ].map(([lab, always, dis]) =>
+        `<label class="kind-opt"><input type="checkbox" checked${always || dis ? " disabled" : ""}> ${lab}</label>`
+      ).join("");
+    }
+    function paintPhase() {
+      const pill = document.getElementById("phase-pill");
+      pill.textContent = setup ? "出走登録中" : "投票中";
+      pill.classList.toggle("live", !setup);
+      document.getElementById("view-setup").classList.toggle("on", setup);
+      document.getElementById("view-voting").classList.toggle("on", !setup);
+      paintKinds();
+    }
+    document.getElementById("view-setup").addEventListener("click", (e) => {
+      e.preventDefault(); setup = true; paintPhase();
+    });
+    document.getElementById("view-voting").addEventListener("click", (e) => {
+      e.preventDefault(); setup = false; paintPhase();
+    });
+    document.getElementById("settings-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const flash = document.getElementById("flash");
+      flash.hidden = false;
+      flash.textContent = "モックです。保存しません。";
+    });
+    paintPhase();
+  </script>
+</body>
+</html>

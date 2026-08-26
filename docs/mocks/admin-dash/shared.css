@@ -47,15 +47,18 @@ button, select { font: inherit; }
 }
 /* 台帳：ページはスクロールせず、左右の枠だけ縦に動く */
 body.ledger-page,
-body.odds-page { overflow: hidden; }
+body.odds-page,
+body.settings-page { overflow: hidden; }
 body.ledger-page .dash,
-body.odds-page .dash {
+body.odds-page .dash,
+body.settings-page .dash {
   height: 100dvh;
   min-height: 0;
   overflow: hidden;
 }
 body.ledger-page .main,
-body.odds-page .main {
+body.odds-page .main,
+body.settings-page .main {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -64,9 +67,11 @@ body.odds-page .main {
   padding: 1rem 1.25rem 2.4rem;
 }
 body.ledger-page .hero,
-body.odds-page .hero { flex: 0 0 auto; }
+body.odds-page .hero,
+body.settings-page .hero { flex: 0 0 auto; }
 body.ledger-page .ledger-desk,
-body.odds-page .odds-desk {
+body.odds-page .odds-desk,
+body.settings-page .settings-desk {
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -126,6 +131,92 @@ body.odds-page .odds-hero .note {
   margin: .35rem 0 0;
   color: #5c6570;
   font-size: .8rem;
+}
+/* 開催設定：左・開催と賭式、右・参考の数字、下・評価点の条件 */
+.settings-desk {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  grid-template-rows: minmax(12rem, auto) minmax(0, 1fr);
+  grid-template-areas:
+    "id params"
+    "score score";
+  gap: .7rem;
+  min-height: 0;
+  height: 100%;
+}
+.settings-id { grid-area: id; }
+.settings-params { grid-area: params; }
+.settings-score { grid-area: score; }
+body.settings-page .settings-desk .work {
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: .75rem .85rem .85rem;
+}
+.settings-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+.settings-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10.2rem, 1fr));
+  gap: .55rem .7rem;
+}
+.settings-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: .18rem;
+  font-size: .72rem;
+  color: #6b7380;
+}
+.settings-fields .hint {
+  font-weight: 400;
+  color: #8a929c;
+}
+.settings-fields input,
+.settings-fields select {
+  font: inherit;
+  padding: .32rem .4rem;
+  border: 1px solid #c5ccd6;
+  border-radius: 6px;
+  color: #1c2128;
+  background: #fff;
+}
+.settings-fields input:disabled,
+.settings-fields select:disabled {
+  background: #f4f6f9;
+  color: #6b7380;
+}
+.kind-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem .55rem;
+}
+.kind-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: .82rem;
+  color: #1c2128;
+  background: #f4f6f9;
+  border: 1px solid #e2e6ec;
+  border-radius: 6px;
+  padding: .28rem .55rem;
+}
+body.settings-page .odds-hero .note {
+  margin: .35rem 0 0;
+  color: #5c6570;
+  font-size: .8rem;
+}
+.settings-flash {
+  margin: .4rem 0 0;
+  font-size: .8rem;
+  font-weight: 700;
+  color: #2b6cb0;
+  min-height: 1.1em;
 }
 .table-scroll {
   flex: 1 1 auto;
@@ -450,6 +541,14 @@ table.plain td.num, table.plain th.num {
 .sort-links a { color: #2b6cb0; text-decoration: none; }
 .sort-links a.on { color: #1c2128; font-weight: 700; }
 @media (max-width: 1199px) {
+  body.settings-page .settings-desk {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto minmax(14rem, 1fr);
+    grid-template-areas:
+      "id"
+      "params"
+      "score";
+  }
   body.odds-page .odds-desk {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: minmax(14rem, 1.15fr) minmax(11rem, 1fr) minmax(11rem, 1fr);
@@ -462,11 +561,14 @@ table.plain td.num, table.plain th.num {
 @media (max-width: 899px) {
   .ledger-desk { grid-template-columns: 1fr; }
   body.ledger-page,
-  body.odds-page { overflow: auto; }
+  body.odds-page,
+  body.settings-page { overflow: auto; }
   body.ledger-page .dash,
-  body.odds-page .dash { height: auto; min-height: 100dvh; }
+  body.odds-page .dash,
+  body.settings-page .dash { height: auto; min-height: 100dvh; }
   body.ledger-page .main,
-  body.odds-page .main { height: auto; overflow: visible; }
+  body.odds-page .main,
+  body.settings-page .main { height: auto; overflow: visible; }
   body.ledger-page .ledger-desk { flex: none; }
   body.ledger-page .ledger-desk .work { height: min(70vh, 28rem); }
   body.odds-page .odds-desk {
@@ -476,6 +578,14 @@ table.plain td.num, table.plain th.num {
     flex: none;
   }
   body.odds-page .odds-desk .work { height: min(52vh, 20rem); }
+  body.settings-page .settings-desk {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    flex: none;
+  }
+  body.settings-page .settings-desk .work { height: auto; overflow: visible; }
+  body.settings-page .settings-scroll { overflow: visible; }
 }
 .tag {
   font-size: .68rem;
