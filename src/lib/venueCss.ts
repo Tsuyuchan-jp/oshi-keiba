@@ -1,4 +1,6 @@
-/** 場内（voting）用。モック layout-venue.html。管理・窓口には載せない */
+/** 場内電光。オーバーレイは memberShellCss。LED・盤面はここ */
+import { MEMBER_OVERLAY_CSS } from "./memberShellCss.ts";
+
 export const VENUE_CSS = `
 :root {
   --bg: #070808;
@@ -49,93 +51,7 @@ a { color: inherit; }
   gap: .35rem;
   flex: 0 0 auto;
 }
-.more-btn {
-  appearance: none;
-  background: transparent;
-  border: 0;
-  color: var(--led-dim);
-  font: inherit;
-  font-size: 1.2rem;
-  line-height: 1;
-  padding: .15rem .35rem;
-  cursor: pointer;
-  letter-spacing: .05em;
-}
-.more-btn[aria-expanded="true"] { color: #e0b34a; }
-.more-pop {
-  display: none;
-  position: absolute;
-  right: 0;
-  top: 2.2rem;
-  z-index: 8;
-  min-width: 8.5rem;
-  background: #121516;
-  border: 1px solid #3a4440;
-  padding: .25rem 0;
-}
-.more-pop.open { display: block; }
-.more-pop a, .more-pop button {
-  display: block;
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: 0;
-  color: #c8d0cc;
-  font-family: "IBM Plex Sans JP", sans-serif;
-  font-size: .82rem;
-  letter-spacing: 0;
-  padding: .45rem .75rem;
-  text-decoration: none;
-  cursor: pointer;
-}
-.out-links {
-  display: none;
-  position: fixed;
-  right: 1rem;
-  bottom: calc(.85rem + env(safe-area-inset-bottom));
-  z-index: 11;
-  font-size: .75rem;
-}
-.out-links a {
-  color: rgba(232, 238, 234, .55);
-  text-decoration: none;
-  margin-left: .75rem;
-}
-.out-links a:hover { color: #e0b34a; }
-@media (min-width: 900px) {
-  .out-links { display: block; }
-}
-#howto-modal {
-  max-width: 22rem;
-  background: #0c0e0f;
-  color: #e8eeea;
-  border: 1px solid #3a4440;
-  padding: 1rem 1.1rem;
-}
-#howto-modal::backdrop { background: rgba(0,0,0,.55); }
-#howto-modal h2 { margin: 0 0 .65rem; font-size: 1rem; color: #e8eeea; }
-#howto-modal .howto-sec { margin: 0 0 .85rem; }
-#howto-modal .howto-sec h3 {
-  margin: 0 0 .25rem;
-  font-size: .78rem;
-  letter-spacing: .06em;
-  color: #c8d0cc;
-}
-#howto-modal .howto-sec p {
-  margin: 0;
-  font-size: .85rem;
-  color: #9aa8a4;
-  line-height: 1.55;
-}
-#howto-modal button {
-  margin-top: .5rem;
-  font: inherit;
-  background: #1c1810;
-  color: #e0b34a;
-  border: 1px solid #e0b34a;
-  padding: .35rem .7rem;
-  cursor: pointer;
-}
+${MEMBER_OVERLAY_CSS}
 .led-meta {
   display: flex;
   align-items: center;
@@ -673,7 +589,8 @@ a { color: inherit; }
   .cta { min-width: 11rem; text-align: center; }
 }
 .scene[data-phase="closed"] .cta,
-.scene[data-phase="published"] .cta { display: none; }
+.scene[data-phase="published"] .cta,
+.scene[data-phase="setup"] .cta { display: none; }
 .scene[data-phase="closed"] #meta-now,
 .scene[data-phase="published"] #meta-now { display: none; }
 `;

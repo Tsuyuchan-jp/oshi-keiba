@@ -52,15 +52,12 @@ import {
 import { applyAdminUndo } from "./lib/undo";
 import {
   BOARD_FLASH_SCRIPT,
-  flashHtml,
   formatPt,
   groupMyBets,
-  layout,
   livePollScript,
   parseJstInput,
+  plainErrorPage,
   statusLabel,
-  winSheetTable,
-  kindVoidNotes,
 } from "./lib/ui";
 import { tryAdminGet } from "./lib/adminRoutes";
 import { resolveVenueSlot, venueBoardPage, venueTicketsHtml } from "./lib/venueLayout";
@@ -269,54 +266,24 @@ export default {
         const user = session ? await getUser(env.DB, session.userId) : null;
         const board = await loadBoard(env.DB);
         const m = msg(url);
-        const live = board.event.status === "voting";
 
-        if (
-          board.event.status === "voting" ||
-          board.event.status === "closed" ||
-          board.event.status === "published"
-        ) {
-          let ticketsHtml: string | undefined;
-          if (board.event.status === "published" && user && user.role === "member") {
-            const bets = await listUserBets(env.DB, board.event.id, user.id);
-            const payouts = await listUserPayouts(env.DB, board.event.id, user.id);
-            ticketsHtml = venueTicketsHtml(bets, payouts, board);
-          }
-          return html(
-            venueBoardPage({
-              board,
-              user,
-              flash: m,
-              slot: resolveVenueSlot(url.searchParams.get("slot")),
-              ticketsHtml,
-              scripts:
-                board.event.status === "voting"
-                  ? livePollScript("/api/board", "win")
-                  : "",
-            }),
-          );
+        let ticketsHtml: string | undefined;
+        if (board.event.status === "published" && user && user.role === "member") {
+          const bets = await listUserBets(env.DB, board.event.id, user.id);
+          const payouts = await listUserPayouts(env.DB, board.event.id, user.id);
+          ticketsHtml = venueTicketsHtml(bets, payouts, board);
         }
-
-        let cta = "";
-        if (board.event.status === "setup") {
-          cta = `<p class="note">投票開始までお待ちください。</p>`;
-        }
-
         return html(
-          layout({
-            title: "場内",
+          venueBoardPage({
+            board,
             user,
-            eventStatus: board.event.status,
-            live,
-            scripts: live ? livePollScript("/api/board", "win") : "",
-            body: `${flashHtml(m.text, m.error)}
-              <div class="card">
-                <h1>${escapeHtml(board.event.title)}</h1>
-                <p class="muted">場内（単勝オッズ）</p>
-                ${winSheetTable(board)}
-                ${kindVoidNotes(board)}
-                ${cta}
-              </div>`,
+            flash: m,
+            slot: resolveVenueSlot(url.searchParams.get("slot")),
+            ticketsHtml,
+            scripts:
+              board.event.status === "voting"
+                ? livePollScript("/api/board", "win")
+                : "",
           }),
         );
       }
@@ -805,19 +772,13 @@ export default {
       }
 
       return html(
-        layout({
-          title: "Not Found",
-          body: `<div class="card"><p>ページがありません。</p></div>`,
-        }),
+        plainErrorPage("Not Found", "ページがありません。"),
         404,
       );
     } catch (error) {
       console.error("Unhandled error:", error);
       return html(
-        layout({
-          title: "エラー",
-          body: `<div class="card"><p>内部エラーです。</p></div>`,
-        }),
+        plainErrorPage("エラー", "内部エラーです。"),
         500,
       );
     }

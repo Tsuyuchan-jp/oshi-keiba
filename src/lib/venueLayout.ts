@@ -372,6 +372,7 @@ export function venueBoardPage(opts: {
   ticketsHtml?: string;
 }): string {
   const status = opts.board.event.status;
+  const isSetup = status === "setup";
   const closed = status === "closed";
   const published = status === "published";
   const who = opts.user
@@ -386,11 +387,23 @@ export function venueBoardPage(opts: {
   const rows = venueWinSheetRows(opts.board);
   const pillClass = published
     ? "pill idle done"
-    : closed
+    : closed || isSetup
       ? "pill idle"
       : "pill";
-  const phaseLabel = published ? "結果公開" : closed ? "投票締切" : "投票中";
-  const phaseAttr = published ? "published" : closed ? "closed" : "voting";
+  const phaseLabel = published
+    ? "結果公開"
+    : closed
+      ? "投票締切"
+      : isSetup
+        ? "出走登録中"
+        : "投票中";
+  const phaseAttr = published
+    ? "published"
+    : closed
+      ? "closed"
+      : isSetup
+        ? "setup"
+        : "voting";
   const metaNow =
     closed || published
       ? ""
@@ -399,7 +412,9 @@ export function venueBoardPage(opts: {
     ? `<span id="meta-close">払戻済み</span>`
     : closed
       ? `<span id="meta-close">確定配当</span>`
-      : `<span id="meta-close">締切 <strong>${escapeHtml(closeHm)}</strong></span>`;
+      : isSetup
+        ? `<span id="meta-close">投票開始前</span>`
+        : `<span id="meta-close">締切 <strong>${escapeHtml(closeHm)}</strong></span>`;
   const resultTabs = published
     ? `<div class="result-tabs" role="tablist" aria-label="結果の見方">
         <button type="button" data-result="show" aria-pressed="true">結果の盤</button>
@@ -421,7 +436,9 @@ export function venueBoardPage(opts: {
     ? `<div class="foot"><span class="hint" id="phase-hint">${escapeHtml(venuePublishedHint(opts.board))}</span></div>`
     : closed
       ? `<div class="foot"><span class="hint" id="phase-hint">${escapeHtml(venueClosedHint(opts.board))}</span></div>`
-      : `<div class="foot"><a class="cta" href="${ctaHref}">馬券を買う</a></div>`;
+      : isSetup
+        ? `<div class="foot"><span class="hint" id="phase-hint">投票開始までお待ちください。</span></div>`
+        : `<div class="foot"><a class="cta" href="${ctaHref}">馬券を買う</a></div>`;
   const head = sheetHeadHtml(published);
   return `<!doctype html>
 <html lang="ja">
