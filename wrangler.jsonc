@@ -9,6 +9,10 @@
     "MEMBER_PASSWORD": "loh"
   },
   "workers_dev": true,
+  // 場内背景（日中／夕方／ナイター）。Worker 未一致のパスだけ静的配信
+  "assets": {
+    "directory": "./public"
+  },
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1

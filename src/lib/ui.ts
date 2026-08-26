@@ -507,7 +507,7 @@ export function howToModal(): string {
     </section>
     <section class="howto-sec">
       <h3>場内と投票</h3>
-      <p>場内では出走表と単勝のオッズを見ます。馬券を買うときはヘッダーの「投票」か「馬券を買う」から投票ページへ進んでください。まだ参加していないときは、投票ページで開催への参加だけ出ます。投票が始まる前は、場内でお待ちください。</p>
+      <p>場内では出走表と単勝のオッズを見ます。馬券を買うときは「馬券を買う」から窓口へ進んでください。まだ参加していないときは、窓口で開催への参加だけ出ます。投票が始まる前は、場内でお待ちください。</p>
     </section>
     <section class="howto-sec">
       <h3>番号</h3>
@@ -774,9 +774,10 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
     const n = Number(s);
     return Number.isFinite(n) ? n : null;
   };
+  const rowSel = "tbody tr[data-sel], tbody tr[data-horse-id], .sheet-row[data-sel], .sheet-row[data-horse-id]";
   const seedFromDom = () => {
     const m = new Map();
-    for (const tr of document.querySelectorAll("tbody tr[data-sel], tbody tr[data-horse-id]")) {
+    for (const tr of document.querySelectorAll(rowSel)) {
       const key = tr.getAttribute("data-sel") || tr.getAttribute("data-horse-id");
       const cell = tr.querySelector(".odds-now");
       if (!cell || !key) continue;
@@ -790,7 +791,7 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
     const next = new Map();
     const items = payload.kinds?.[kind] || [];
     for (const it of items) next.set(it.key, it.odds);
-    for (const tr of document.querySelectorAll("tbody tr[data-sel], tbody tr[data-horse-id]")) {
+    for (const tr of document.querySelectorAll(rowSel)) {
       const key = tr.getAttribute("data-sel") || tr.getAttribute("data-horse-id");
       const cell = tr.querySelector(".odds-now");
       if (!cell || !key) continue;
@@ -828,7 +829,7 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
     }
     prev = next;
     setTimeout(() => {
-      document.querySelectorAll("tr.pulse-row").forEach((el) => el.classList.remove("pulse-row"));
+      document.querySelectorAll(".pulse-row").forEach((el) => el.classList.remove("pulse-row"));
     }, 1400);
   };
   const tick = async () => {

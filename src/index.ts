@@ -69,6 +69,7 @@ import {
 } from "./lib/ui";
 import { tryAdminGet } from "./lib/adminRoutes";
 import { horseSheetParts } from "./lib/horseName";
+import { resolveVenueSlot, venueVotingPage } from "./lib/venueLayout";
 import {
   parseHorseScoreInput,
   serializeHorseScoreInput,
@@ -293,13 +294,21 @@ export default {
         const m = msg(url);
         const live = board.event.status === "voting";
 
+        if (board.event.status === "voting") {
+          return html(
+            venueVotingPage({
+              board,
+              user,
+              flash: m,
+              slot: resolveVenueSlot(url.searchParams.get("slot")),
+              scripts: livePollScript("/api/board", "win"),
+            }),
+          );
+        }
+
         let cta = "";
         if (board.event.status === "setup") {
           cta = `<p class="note">投票開始までお待ちください。</p>`;
-        } else if (board.event.status === "voting") {
-          cta = user
-            ? `<p class="cta"><a class="btn" href="/bet">馬券を買う</a></p>`
-            : `<p class="cta"><a class="btn" href="/login">入室して馬券を買う</a></p>`;
         }
 
         let publishedBlock = "";
