@@ -364,9 +364,11 @@ export function ocrAdminScript(canAutoScore: boolean): string {
       syncScoreInput();
       if (out) out.textContent = lines.join("\\n");
       if (statusEl) statusEl.textContent = (uma || file.name || "画像") + " を読みました。下の欄を確認して登録。";
+      clearOcrFileInput();
     } catch (err) {
       const msg = (err && err.name === "AbortError") ? "停止しました。" : (err instanceof Error ? err.message : String(err));
       say(msg);
+      clearOcrFileInput();
     }
   }
   function currentFile() {
@@ -375,19 +377,11 @@ export function ocrAdminScript(canAutoScore: boolean): string {
   function takeFile(file) {
     if (!file) { say("画像を受け取れませんでした。もう一度選んでください。"); return; }
     heldFile = file;
-    // 選んだ表示を残す。空にすると OS の「選択されていません」に戻る
-    if (fileEl && typeof DataTransfer !== "undefined") {
-      try {
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        fileEl.files = dt.files;
-      } catch {}
-    }
     say((file.name || "画像") + " を選びました。読み取るを押してください。");
   }
-  fileEl?.addEventListener("click", () => {
-    fileEl.value = "";
-  });
+  function clearOcrFileInput() {
+    if (fileEl) fileEl.value = "";
+  }
   fileEl?.addEventListener("change", () => {
     const f = fileEl.files && fileEl.files[0];
     if (!f) { say("ファイルが空です。もう一度選んでください。"); return; }
