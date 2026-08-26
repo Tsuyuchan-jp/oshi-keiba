@@ -28,7 +28,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
-- 進行の逃げ操作は3案を比較（下段帯／右レール／折りたたみ。未決。本番未適用）— [progress-places.html](mocks/admin-dash/progress-places.html)
+- 進行の逃げ操作は4案を比較（下段帯／右レール／折りたたみ／開閉レール。未決。本番未適用）— [progress-places.html](mocks/admin-dash/progress-places.html)
 - 管理刷新モック6タブ採用（進行・出走登録・出走・台帳・オッズ・開催設定。本番未適用）— [admin-dash](mocks/admin-dash/index.html)
 - 管理の出走登録タブ採用（左・名簿、右・1頭の作業台。OCRまたは直置き。掛かりスタミナ2欄。スクショは左寄せ全画面。適性はバ場／距離／脚質。一括なし。本番未適用）— [register.html](mocks/admin-dash/register.html)
 - 管理の開催設定タブ採用（上から今日のレース→評価点の条件→参考数字。賭式はボタン。本番の入力グリッドは不採用。本番未適用）— [settings.html](mocks/admin-dash/settings.html)

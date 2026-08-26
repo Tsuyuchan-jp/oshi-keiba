@@ -113,6 +113,9 @@
     </div>
     <aside class="escape-rail" id="escape-rail" hidden></aside>
   </div>
+  <button type="button" class="escape-handle" id="escape-handle" hidden>逃げ・復旧</button>
+  <div class="escape-scrim" id="escape-scrim" hidden></div>
+  <aside class="escape-drawer" id="escape-drawer" hidden></aside>
   <div class="phase-bar" role="group" aria-label="開催の面">
     <button type="button" data-phase="setup">出走登録中</button>
     <button type="button" data-phase="voting">投票中</button>
@@ -127,6 +130,7 @@
     <button type="button" data-escape="band">下段の帯</button>
     <button type="button" data-escape="rail">右レール</button>
     <button type="button" data-escape="fold">折りたたみ</button>
+    <button type="button" data-escape="drawer">開閉レール</button>
   </div>
   <dialog class="esc-dlg" id="esc-dlg">
     <h2 id="esc-dlg-t"></h2>
@@ -170,6 +174,7 @@
     let phase = "voting";
     let layout = "split";
     let escapeMode = "band";
+    let escOpen = false;
     let places = Array(N).fill(null);
     let pick = null;
     let saved = false;
@@ -472,24 +477,42 @@
       });
     }
 
+    function setDrawer(open) {
+      escOpen = open && escapeMode === "drawer";
+      document.body.toggleAttribute("data-esc-open", escOpen);
+      document.getElementById("escape-handle").setAttribute("aria-expanded", escOpen ? "true" : "false");
+    }
+
     function paintEscape() {
       const rail = document.getElementById("escape-rail");
+      const drawer = document.getElementById("escape-drawer");
       const mount = document.getElementById("escape-mount");
+      const handle = document.getElementById("escape-handle");
       const inner = escapeInner();
       rail.hidden = escapeMode !== "rail";
+      drawer.hidden = escapeMode !== "drawer";
+      handle.hidden = escapeMode !== "drawer";
+      document.getElementById("escape-scrim").hidden = escapeMode !== "drawer";
+      mount.innerHTML = "";
+      rail.innerHTML = "";
+      drawer.innerHTML = "";
       if (escapeMode === "rail") {
         rail.innerHTML = `<p class="esc-k">逃げ・復旧</p><p class="esc-note">本線ではない。パスと確認が要る。</p>${inner}`;
-        mount.innerHTML = "";
         bindEscapeBtns(rail);
       } else if (escapeMode === "fold") {
         mount.innerHTML = `<details class="escape-fold"><summary>逃げ・復旧（普段開かない）</summary><p class="esc-note">本線ではない。パスと確認が要る。</p>${inner}</details>`;
-        rail.innerHTML = "";
         bindEscapeBtns(mount);
+      } else if (escapeMode === "drawer") {
+        drawer.innerHTML = `<div class="esc-top"><p class="esc-k" style="margin:0">逃げ・復旧</p><button type="button" id="esc-drawer-close" aria-label="閉じる">×</button></div>
+          <p class="esc-note">本線ではない。パスと確認が要る。</p>${inner}`;
+        bindEscapeBtns(drawer);
+        document.getElementById("esc-drawer-close").addEventListener("click", () => setDrawer(false));
       } else {
         mount.innerHTML = `<section class="escape-band"><p class="esc-k">逃げ・復旧 · 本線ではない</p>${inner}</section>`;
-        rail.innerHTML = "";
         bindEscapeBtns(mount);
       }
+      if (escapeMode !== "drawer") setDrawer(false);
+      else document.body.toggleAttribute("data-esc-open", escOpen);
       for (const b of document.querySelectorAll(".escape-bar [data-escape]")) {
         b.setAttribute("aria-pressed", b.dataset.escape === escapeMode ? "true" : "false");
       }
@@ -534,7 +557,7 @@
     const pq = new URLSearchParams(location.search);
     if (["setup", "voting", "closed", "published"].includes(pq.get("phase"))) phase = pq.get("phase");
     if (pq.get("layout") === "slots" || pq.get("layout") === "split") layout = pq.get("layout");
-    if (["band", "rail", "fold"].includes(pq.get("escape"))) escapeMode = pq.get("escape");
+    if (["band", "rail", "fold", "drawer"].includes(pq.get("escape"))) escapeMode = pq.get("escape");
     if (phase === "published") places = FINISH.slice();
 
     for (const b of document.querySelectorAll(".phase-bar [data-phase]")) {
@@ -569,6 +592,15 @@
         paint();
       });
     }
+    document.getElementById("escape-handle").addEventListener("click", () => {
+      setDrawer(!escOpen);
+    });
+    document.getElementById("escape-scrim").addEventListener("click", () => setDrawer(false));
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape" || !escOpen) return;
+      if (document.getElementById("esc-dlg").open) return;
+      setDrawer(false);
+    });
     document.getElementById("esc-cancel").addEventListener("click", () => {
       document.getElementById("esc-dlg").close();
     });
