@@ -109,7 +109,9 @@
         </div>
       </section>
       <section class="work" id="work"></section>
+      <div id="escape-mount"></div>
     </div>
+    <aside class="escape-rail" id="escape-rail" hidden></aside>
   </div>
   <div class="phase-bar" role="group" aria-label="開催の面">
     <button type="button" data-phase="setup">出走登録中</button>
@@ -121,6 +123,20 @@
     <button type="button" data-layout="split">案3 採用</button>
     <button type="button" data-layout="slots">案2 不採用</button>
   </div>
+  <div class="escape-bar" role="group" aria-label="逃げの見せ方">
+    <button type="button" data-escape="band">下段の帯</button>
+    <button type="button" data-escape="rail">右レール</button>
+    <button type="button" data-escape="fold">折りたたみ</button>
+  </div>
+  <dialog class="esc-dlg" id="esc-dlg">
+    <h2 id="esc-dlg-t"></h2>
+    <p id="esc-dlg-p"></p>
+    <label>管理者パス <input type="password" autocomplete="off"></label>
+    <div class="ctas" style="margin:0">
+      <button type="button" class="danger" id="esc-ok">実行する</button>
+      <button type="button" id="esc-cancel">やめる</button>
+    </div>
+  </dialog>
   <div class="mock-label">管理モック · 進行 · 本番未適用</div>
   <script>
     const HORSES = [
@@ -153,6 +169,7 @@
     const N = HORSES.length;
     let phase = "voting";
     let layout = "split";
+    let escapeMode = "band";
     let places = Array(N).fill(null);
     let pick = null;
     let saved = false;
@@ -402,10 +419,96 @@
       });
     }
 
+    const ESC = {
+      clear: {
+        t: "出走を空にする",
+        p: "この開催の出走をすべて消します。開催自体は残ります。",
+      },
+      discard: {
+        t: "この開催を破棄",
+        p: "この開催を破棄し、直前の公開済み開催へ戻します。残高は消しません。",
+      },
+      revert: {
+        t: "投票を取り消して登録に戻す",
+        p: "投票を止め、出走登録に戻します。この開催の票は全額戻り、配ったスペも戻します。",
+      },
+      undo: {
+        t: "直前の操作を戻す",
+        p: "戻す操作: レースイベント設定を保存。出走・票・残高・払戻がその直前に戻ります。この Undo 自体は戻せません。",
+      },
+      member: {
+        t: "メンバー削除",
+        p: "表示名を名簿から消します。票と残高の扱いは本番どおり確認します。",
+      },
+      demo: {
+        t: "デモ初期化（ローカルのみ）",
+        p: "開催・出走・投票・付与を消し、残高を 0 にします。名前は残します。本番では出ません。",
+      },
+    };
+
+    function escapeInner() {
+      const setup = phase === "setup";
+      const voting = phase === "voting";
+      return `<div class="esc-grid">
+        <div>
+          <p class="esc-k">開催を戻す</p>
+          <button type="button" data-esc="clear"${setup ? "" : " disabled"}>出走を空にする</button>
+          <button type="button" class="danger" data-esc="discard"${setup ? "" : " disabled"}>この開催を破棄</button>
+          <button type="button" class="danger" data-esc="revert"${voting ? "" : " disabled"}>投票を取り消して登録に戻す</button>
+        </div>
+        <div>
+          <p class="esc-k">復旧</p>
+          <button type="button" class="danger" data-esc="undo">操作を戻す</button>
+          <p class="esc-note">戻せる操作: レースイベント設定を保存（10:12 JST）</p>
+          <button type="button" data-esc="member">メンバー削除</button>
+          <button type="button" data-esc="demo">デモ初期化（ローカル）</button>
+        </div>
+      </div>`;
+    }
+
+    function bindEscapeBtns(root) {
+      root.querySelectorAll("[data-esc]").forEach((b) => {
+        b.addEventListener("click", () => openEsc(b.dataset.esc));
+      });
+    }
+
+    function paintEscape() {
+      const rail = document.getElementById("escape-rail");
+      const mount = document.getElementById("escape-mount");
+      const inner = escapeInner();
+      rail.hidden = escapeMode !== "rail";
+      if (escapeMode === "rail") {
+        rail.innerHTML = `<p class="esc-k">逃げ・復旧</p><p class="esc-note">本線ではない。パスと確認が要る。</p>${inner}`;
+        mount.innerHTML = "";
+        bindEscapeBtns(rail);
+      } else if (escapeMode === "fold") {
+        mount.innerHTML = `<details class="escape-fold"><summary>逃げ・復旧（普段開かない）</summary><p class="esc-note">本線ではない。パスと確認が要る。</p>${inner}</details>`;
+        rail.innerHTML = "";
+        bindEscapeBtns(mount);
+      } else {
+        mount.innerHTML = `<section class="escape-band"><p class="esc-k">逃げ・復旧 · 本線ではない</p>${inner}</section>`;
+        rail.innerHTML = "";
+        bindEscapeBtns(mount);
+      }
+      for (const b of document.querySelectorAll(".escape-bar [data-escape]")) {
+        b.setAttribute("aria-pressed", b.dataset.escape === escapeMode ? "true" : "false");
+      }
+    }
+
+    function openEsc(id) {
+      const spec = ESC[id];
+      if (!spec) return;
+      document.getElementById("esc-dlg-t").textContent = spec.t;
+      document.getElementById("esc-dlg-p").textContent = spec.p;
+      document.getElementById("esc-dlg").showModal();
+    }
+
     function paint() {
       document.body.dataset.phase = phase;
+      document.body.dataset.escape = escapeMode;
       paintHero();
       paintWork();
+      paintEscape();
     }
 
     document.getElementById("btn-open").addEventListener("click", () => {
@@ -431,6 +534,7 @@
     const pq = new URLSearchParams(location.search);
     if (["setup", "voting", "closed", "published"].includes(pq.get("phase"))) phase = pq.get("phase");
     if (pq.get("layout") === "slots" || pq.get("layout") === "split") layout = pq.get("layout");
+    if (["band", "rail", "fold"].includes(pq.get("escape"))) escapeMode = pq.get("escape");
     if (phase === "published") places = FINISH.slice();
 
     for (const b of document.querySelectorAll(".phase-bar [data-phase]")) {
@@ -456,6 +560,22 @@
         paint();
       });
     }
+    for (const b of document.querySelectorAll(".escape-bar [data-escape]")) {
+      b.addEventListener("click", () => {
+        escapeMode = b.dataset.escape;
+        const u = new URL(location.href);
+        u.searchParams.set("escape", escapeMode);
+        history.replaceState(null, "", u);
+        paint();
+      });
+    }
+    document.getElementById("esc-cancel").addEventListener("click", () => {
+      document.getElementById("esc-dlg").close();
+    });
+    document.getElementById("esc-ok").addEventListener("click", () => {
+      document.getElementById("esc-dlg").close();
+      alert("モックです。実行しません。");
+    });
     paint();
   </script>
 </body>
