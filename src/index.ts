@@ -69,7 +69,7 @@ import {
 } from "./lib/ui";
 import { tryAdminGet } from "./lib/adminRoutes";
 import { horseSheetParts } from "./lib/horseName";
-import { resolveVenueSlot, venueVotingPage } from "./lib/venueLayout";
+import { resolveVenueSlot, venueBoardPage } from "./lib/venueLayout";
 import {
   parseHorseScoreInput,
   serializeHorseScoreInput,
@@ -294,14 +294,17 @@ export default {
         const m = msg(url);
         const live = board.event.status === "voting";
 
-        if (board.event.status === "voting") {
+        if (board.event.status === "voting" || board.event.status === "closed") {
           return html(
-            venueVotingPage({
+            venueBoardPage({
               board,
               user,
               flash: m,
               slot: resolveVenueSlot(url.searchParams.get("slot")),
-              scripts: livePollScript("/api/board", "win"),
+              scripts:
+                board.event.status === "voting"
+                  ? livePollScript("/api/board", "win")
+                  : "",
             }),
           );
         }

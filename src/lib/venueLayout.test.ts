@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  formatVenueClosedHint,
   resolveVenueSlot,
   venueHorseRowHtml,
   venueSlotFromClock,
@@ -41,4 +42,13 @@ test("時間帯は JST。?slot= があれば固定", () => {
   assert.equal(venueSlotFromClock(nightJst), "night");
   assert.equal(resolveVenueSlot("night", noonJst), "night");
   assert.equal(resolveVenueSlot(null, noonJst), "day");
+});
+
+test("締切注は成立／特払い予定と着は出さない", () => {
+  assert.equal(
+    formatVenueClosedHint(["単勝", "馬連"], ["3連単"]),
+    "単勝・馬連は成立予定です。3連単は特払い予定です。この賭式に使ったスペの8割が戻ります。着順はまだ出ません。",
+  );
+  assert.equal(formatVenueClosedHint([], []), "着順はまだ出ません。");
+  assert.doesNotMatch(formatVenueClosedHint(["単勝"], ["3連単"]), /Seed|評価点|控除/);
 });

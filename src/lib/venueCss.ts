@@ -281,6 +281,12 @@ a { color: inherit; }
 }
 .sheet-row.pulse,
 .sheet-row.pulse-row { animation: pulse-row 1.5s ease-out; }
+.led-meta .pill.idle .dot { animation: none; opacity: .85; }
+.foot .hint {
+  color: var(--led-dim);
+  font-size: .72rem;
+  line-height: 1.45;
+}
 .cta {
   background: var(--odds);
   color: #140800;
@@ -400,6 +406,9 @@ a { color: inherit; }
     overflow: hidden;
   }
   .foot { justify-content: flex-end; }
+  .scene[data-phase="closed"] .foot { justify-content: flex-start; }
   .cta { min-width: 11rem; text-align: center; }
 }
+.scene[data-phase="closed"] .cta { display: none; }
+.scene[data-phase="closed"] #meta-now { display: none; }
 `;

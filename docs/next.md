@@ -4,12 +4,12 @@
 
 ## 現在進行中
 
-- 場内 `voting` のモック差し替え（実機確認）。通るまで締切・公開・窓口・入場は増やさない — [layout-venue.html](mocks/venue-board/layout-venue.html)
+- 場内 `closed` のモック差し替え（実機確認）。通るまで公開・窓口・入場は増やさない — [layout-venue.html](mocks/venue-board/layout-venue.html)
 
 ## そのあと
 
 - 票が入ったら台帳の絞り込み実機 — [ledger.html](mocks/admin-dash/ledger.html)
-- 場内 `closed` / `published` → 窓口（マークカード）→ 入場。管理6タブは閉じた — [venue-board](mocks/venue-board/layout-venue.html)・[quiet.html](mocks/bet-window/quiet.html)・[gate](mocks/gate/index.html)
+- 場内 `published` → 窓口（マークカード）→ 入場。管理6タブと場内 voting は閉じた — [venue-board](mocks/venue-board/layout-venue.html)・[quiet.html](mocks/bet-window/quiet.html)・[gate](mocks/gate/index.html)
 - OCR: 読み取ったスキルのうち有効スキルにあるものも不採用になっている問題を改善。あわせて OCR のテキスト誤認識がそのまま通って不採用になる点も改善 — [ocr.md](ocr.md)
 - Neko長明さんへの評価点の式確認（手土産＝動く実装は揃った）— [score.md](score.md)
 - OCR / 評価点の細かい調整（読取・表示 UI など）— [ocr.md](ocr.md)・[score.md](score.md)
@@ -27,6 +27,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
+- 場内 voting を電光モックで差し替え（LED・背景3種・⋯・ライブ5秒。ユーザー実機 OK。締切・公開は別）— [layout-venue.html](mocks/venue-board/layout-venue.html)
 - 管理6タブ見た目差し替えを閉じる（開催設定〜進行・登録・出走・台帳・オッズ。ユーザー実機 OK。開催設定の見出しは本番「イベント概要／レギュレーション」が正。票入り台帳絞り込みとメンバー画面は別）— [admin-dash](mocks/admin-dash/index.html)
 - 出走内訳は S 倍率を先に出し算出式を後ろへ（小数第3位・一行式ラベル付き）— [horses.html](mocks/admin-dash/horses.html)
 - 進行タブ全フェーズ実機（投票開始〜強制締切〜着順保存〜公開。開閉レール確認。公開後着順は読み専用に修正。票なしのため台帳絞り込みは未）— [progress-places.html](mocks/admin-dash/progress-places.html)

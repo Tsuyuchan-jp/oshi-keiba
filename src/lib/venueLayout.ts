@@ -1,10 +1,15 @@
 /**
- * 場内の投票中面。HTML 構造・クラスはモック、name / 既存 id・挙動は本番。
- * 締切・公開・窓口・入場はまだ和紙レイアウト。
+ * 場内の投票中・締切面。HTML 構造・クラスはモック、name / 既存 id・挙動は本番。
+ * 公開・窓口・入場はまだ和紙レイアウト。
  */
 import { escapeHtml } from "./http.ts";
 import { parseHorseScoreInput } from "./horseScoreInput.ts";
 import { horseSheetParts } from "./horseName.ts";
+import {
+  BET_KIND_LABEL,
+  BET_KINDS,
+  parseEnabledKinds,
+} from "./bets.ts";
 import { getScoreCourse, GROUND_CONDITION_OPTIONS } from "./scoreSetup.ts";
 import { eventScoreSetup, type Board, type UserRow } from "./store.ts";
 import {
@@ -14,6 +19,7 @@ import {
   toJstInput,
 } from "./ui.ts";
 import {
+  formatVenueClosedHint,
   VENUE_DIST_JA,
   venueHorseRowHtml,
   venueStyleLabel,
@@ -62,10 +68,27 @@ export function venueWinSheetRows(board: Board): string {
         umaName: parts.umaName,
         runnerName: parts.runnerName,
         styleLabel: venueStyleLabel(input?.styleKey),
-        odds: h.referenceOdds,
+        odds:
+          board.event.status === "voting" || board.event.status === "setup"
+            ? h.referenceOdds
+            : h.confirmedOdds,
       });
     })
     .join("");
+}
+
+export function venueClosedHint(board: Board): string {
+  const enabled = new Set(parseEnabledKinds(board.event.enabled_kinds));
+  const ok: string[] = [];
+  const spe: string[] = [];
+  for (const k of BET_KINDS) {
+    if (!enabled.has(k)) continue;
+    const p = board.pools.find((x) => x.kind === k);
+    if (!p || p.voidSpecial == null) continue;
+    if (p.voidSpecial) spe.push(BET_KIND_LABEL[k]);
+    else ok.push(BET_KIND_LABEL[k]);
+  }
+  return formatVenueClosedHint(ok, spe);
 }
 
 function venueChromeScript(): string {
@@ -159,13 +182,14 @@ function venueChromeScript(): string {
 </script>`;
 }
 
-export function venueVotingPage(opts: {
+export function venueBoardPage(opts: {
   board: Board;
   user: UserRow | null;
   flash: { text: string | null; error: boolean };
   slot: VenueSlot;
   scripts?: string;
 }): string {
+  const closed = opts.board.event.status === "closed";
   const who = opts.user
     ? `${escapeHtml(opts.user.display_name)} · ${formatPt(opts.user.balance)}`
     : "";
@@ -178,6 +202,17 @@ export function venueVotingPage(opts: {
     ? flashHtml(opts.flash.text, opts.flash.error)
     : "";
   const rows = venueWinSheetRows(opts.board);
+  const pillClass = closed ? "pill idle" : "pill";
+  const phaseLabel = closed ? "投票締切" : "投票中";
+  const metaNow = closed
+    ? ""
+    : `<span id="meta-now">現在 <strong id="now-clock"></strong></span>`;
+  const metaClose = closed
+    ? `<span id="meta-close">確定配当</span>`
+    : `<span id="meta-close">締切 <strong>${escapeHtml(closeHm)}</strong></span>`;
+  const foot = closed
+    ? `<div class="foot"><span class="hint" id="phase-hint">${escapeHtml(venueClosedHint(opts.board))}</span></div>`
+    : `<div class="foot"><a class="cta" href="${ctaHref}">馬券を買う</a></div>`;
   return `<!doctype html>
 <html lang="ja">
 <head>
@@ -190,7 +225,7 @@ export function venueVotingPage(opts: {
   <style>${VENUE_CSS}</style>
 </head>
 <body>
-  <div class="scene" data-slot="${opts.slot}" data-phase="voting">
+  <div class="scene" data-slot="${opts.slot}" data-phase="${closed ? "closed" : "voting"}">
     <div class="scene-bg" aria-hidden="true"></div>
     <div class="app-shell">
       <header class="chrome">
@@ -200,9 +235,9 @@ export function venueVotingPage(opts: {
         </div>
         <div class="chrome-end">
           <div class="led-meta">
-            <span class="pill" id="phase-pill"><span class="dot"></span><span id="phase-label">投票中</span></span>
-            <span id="meta-now">現在 <strong id="now-clock"></strong></span>
-            <span id="meta-close">締切 <strong>${escapeHtml(closeHm)}</strong></span>
+            <span class="${pillClass}" id="phase-pill"><span class="dot"></span><span id="phase-label">${phaseLabel}</span></span>
+            ${metaNow}
+            ${metaClose}
           </div>
           <button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
           <div class="more-pop" id="more-pop">
@@ -243,9 +278,7 @@ export function venueVotingPage(opts: {
             </div>
           </div>
         </div>
-        <div class="foot">
-          <a class="cta" href="${ctaHref}">馬券を買う</a>
-        </div>
+        ${foot}
       </section>
     </div>
   </div>

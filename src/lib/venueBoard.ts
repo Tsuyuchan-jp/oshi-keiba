@@ -63,3 +63,16 @@ export function venueHorseRowHtml(opts: {
     <span class="c-odds" role="cell"><span class="odds-now">${formatOdds(opts.odds)}</span></span>
   </div>`;
 }
+
+/** 締切盤の注。着は出さない。成立／特払いが分かるときだけ先に書く */
+export function formatVenueClosedHint(okLabels: string[], specialLabels: string[]): string {
+  const parts: string[] = [];
+  if (okLabels.length) parts.push(`${okLabels.join("・")}は成立予定です。`);
+  if (specialLabels.length) {
+    parts.push(
+      `${specialLabels.join("・")}は特払い予定です。この賭式に使ったスペの8割が戻ります。`,
+    );
+  }
+  parts.push("着順はまだ出ません。");
+  return parts.join("");
+}
