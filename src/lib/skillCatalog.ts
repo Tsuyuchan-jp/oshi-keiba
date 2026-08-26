@@ -6,6 +6,7 @@ export type SkillKind =
   | "white"
   | "unique"
   | "evo"
+  | "scenario"
   | "minus"
   | "inherit"
   | "special"
@@ -17,6 +18,7 @@ const KIND_JA: Record<SkillKind, string> = {
   white: "白",
   unique: "固有",
   evo: "進化",
+  scenario: "シナリオ",
   minus: "デバフ",
   inherit: "継承",
   special: "特殊",

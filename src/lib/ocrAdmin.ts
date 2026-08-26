@@ -19,7 +19,7 @@ function aptChip(label: string, rank: string): string {
 
 function skillChipClass(kind: string): string {
   if (kind === "green") return "green";
-  if (kind === "evo") return "evo";
+  if (kind === "evo" || kind === "scenario") return "evo";
   if (kind === "gold" || kind === "unique" || kind === "special") return "gold";
   if (kind === "minus") return "minus";
   return "white";
@@ -197,7 +197,7 @@ export function ocrAdminScript(
   const TAMERAI_IDS = new Set(${JSON.stringify([...TAMERAI_IDS])});
   const TAMERAI_NAMES = new Set(["逃げためらい","先行ためらい","差しためらい","追込ためらい"]);
   const FUZZY_TH = 0.45;
-  const KIND_JA = { green: "緑", gold: "金", white: "白", unique: "固有", evo: "進化", minus: "デバフ", inherit: "継承", special: "特殊", rare: "金", normal: "白", unknown: "未分類" };
+  const KIND_JA = { green: "緑", gold: "金", white: "白", unique: "固有", evo: "進化", scenario: "シナリオ", minus: "デバフ", inherit: "継承", special: "特殊", rare: "金", normal: "白", unknown: "未分類" };
   // skillFuzzy.ts と同期: エイリアス・編集距離≤1・同名の unique/inherit/継承進化
   const ALIAS = { "千銀万錬": "千鍛万錬", "千段万錬": "千鍛万錬", "千錬万錬": "千鍛万錬" };
   const STYLE_LABEL = { runner: "逃", leader: "先", betweener: "差", chaser: "追" };
@@ -336,7 +336,7 @@ export function ocrAdminScript(
   }
   function chipKind(kind) {
     if (kind === "green") return "green";
-    if (kind === "evo") return "evo";
+    if (kind === "evo" || kind === "scenario") return "evo";
     if (kind === "gold" || kind === "unique" || kind === "rare" || kind === "special") return "gold";
     if (kind === "minus") return "minus";
     return "white";
@@ -378,7 +378,7 @@ export function ocrAdminScript(
     if (!n) return false;
     if (GREEN_NAMES.has(n)) return false;
     if (TAMERAI_NAMES.has(n) || (id != null && TAMERAI_IDS.has(id))) return true;
-    if (kind === "unique" || kind === "evo") return true;
+    if (kind === "unique" || kind === "evo" || kind === "scenario") return true;
     const style = styleEl && styleEl.value;
     const list = style && EFFECTIVE_BY_STYLE ? EFFECTIVE_BY_STYLE[style] : null;
     if (list && list.length) return id != null && list.indexOf(id) >= 0;
@@ -414,7 +414,9 @@ export function ocrAdminScript(
     const goldLike = effective.filter((h) => {
       const n = String(h.name || "").trim();
       if (h.kind === "gold") return true;
-      if (h.kind === "unique" || h.kind === "evo") return !GREEN_NAMES.has(n);
+      if (h.kind === "unique" || h.kind === "evo" || h.kind === "scenario") {
+        return !GREEN_NAMES.has(n);
+      }
       return false;
     }).length;
     const rejected = okHits.filter(

@@ -18,18 +18,21 @@ test("skillCountsInBase: リスト外は false、ためらいは true", () => {
   assert.equal(skillCountsInBase("逃げためらい", 200851, ids), true);
 });
 
-test("skillCountsAsGoldLike: gold / unique / 非緑 evo", () => {
+test("skillCountsAsGoldLike: gold / unique / 非緑 evo / scenario", () => {
   assert.equal(skillCountsAsGoldLike("円弧のマエストロ"), true);
   assert.equal(skillCountsAsGoldLike("波乱注意砲！"), true);
   assert.equal(skillCountsAsGoldLike("鎧袖一触"), true);
+  assert.equal(skillCountsAsGoldLike("湯切りの妙技"), true);
+  assert.equal(skillCountsAsGoldLike("麺の極意、見つけたり"), true);
   assert.equal(skillCountsAsGoldLike("右回りの輪舞曲"), false);
   assert.equal(skillCountsAsGoldLike("地固め"), false);
 });
 
-test("skillCountsInBase: 固有・進化はリスト外でも true（緑マスタ重複は除く）", () => {
+test("skillCountsInBase: 固有・進化・シナリオはリスト外でも true（緑マスタ重複は除く）", () => {
   const ids = new Set([201601]);
   assert.equal(skillCountsInBase("波乱注意砲！", 10071, ids), true);
   assert.equal(skillCountsInBase("鎧袖一触", 101701211, ids), true);
+  assert.equal(skillCountsInBase("湯切りの妙技", 414041, ids), true);
   assert.equal(skillCountsInBase("右回りの輪舞曲", 106701211, ids), false);
 });
 
@@ -40,14 +43,19 @@ test("金は有効1＋追加2で計3", () => {
   assert.equal(s.base, 2 + 2);
 });
 
-test("固有・進化はリスト外でも金同等（枚数1＋+2）", () => {
-  const s = skillBase(["波乱注意砲！", "鎧袖一触", "地固め"], {
+test("固有・進化・シナリオはリスト外でも金同等（枚数1＋+2）", () => {
+  const s = skillBase(["波乱注意砲！", "鎧袖一触", "湯切りの妙技", "地固め"], {
     effectiveIds: new Set([201601]),
-    skillIds: [10071, 101701211, 201601],
+    skillIds: [10071, 101701211, 414041, 201601],
   });
-  assert.deepEqual(s.countedNames, ["波乱注意砲！", "鎧袖一触", "地固め"]);
-  assert.equal(s.goldCount, 2);
-  assert.equal(s.base, 3 + 4);
+  assert.deepEqual(s.countedNames, [
+    "波乱注意砲！",
+    "鎧袖一触",
+    "湯切りの妙技",
+    "地固め",
+  ]);
+  assert.equal(s.goldCount, 3);
+  assert.equal(s.base, 4 + 6);
 });
 
 test("緑マスタ重複の進化は土台に入れない", () => {

@@ -134,19 +134,16 @@ function isGold(name: string): boolean {
   return kind === "gold";
 }
 
-/** 固有・進化は仮に金同等（リスト外でも採用＋+2）。緑マスタ名は除外。本番リスト整備後に外す想定 */
-function isUniqueOrEvo(name: string): boolean {
+/** 固有・進化・シナリオは仮に金同等（リスト外でも採用＋+2）。緑マスタ名は除外 */
+function isProvisionalGoldLike(name: string): boolean {
   const kind = classifySkillName(name).kind;
-  return kind === "unique" || kind === "evo";
-}
-
-/** 緑マスタに無い固有・進化だけ金扱い */
-function isGoldLikeUniqueOrEvo(name: string): boolean {
-  return isUniqueOrEvo(name) && !isGreenMaster(name);
+  if (kind === "scenario") return !isGreenMaster(name);
+  if (kind === "unique" || kind === "evo") return !isGreenMaster(name);
+  return false;
 }
 
 function isGoldLike(name: string): boolean {
-  return isGold(name) || isGoldLikeUniqueOrEvo(name);
+  return isGold(name) || isProvisionalGoldLike(name);
 }
 
 /** 土台の金枚数（+2）に入るか。表示の「金相当」と一致 */
@@ -160,7 +157,7 @@ export type SkillBaseOptions = {
   effectiveNames?: ReadonlySet<string>;
 };
 
-/** スキル土台 S0。緑は除外。金・（緑以外の）固有・進化は有効に含めたうえで +2。ためらいは常に白1。 */
+/** スキル土台 S0。緑は除外。金・（緑以外の）固有・進化・シナリオは有効に含めたうえで +2。ためらいは常に白1。 */
 export function skillBase(
   skillNames: string[],
   effectiveNamesOrOpts?: ReadonlySet<string> | SkillBaseOptions,
@@ -181,7 +178,7 @@ export function skillBase(
 
     const id = opts.skillIds?.[i] ?? null;
     const tamerai = isTamerai(name) || isTameraiId(id);
-    const forceAdopt = tamerai || isGoldLikeUniqueOrEvo(name);
+    const forceAdopt = tamerai || isProvisionalGoldLike(name);
     if (!forceAdopt) {
       if (opts.effectiveIds) {
         if (id == null || !opts.effectiveIds.has(id)) continue;
@@ -307,7 +304,7 @@ export function isTameraiName(name: string): boolean {
   return isTamerai(name);
 }
 
-/** 土台 S0 に枚数として入るか（緑は除外。緑以外の固有・進化・ためらいはリスト外でも true） */
+/** 土台 S0 に枚数として入るか（緑は除外。緑以外の固有・進化・シナリオ・ためらいはリスト外でも true） */
 export function skillCountsInBase(
   name: string,
   id: number | null | undefined,
@@ -317,7 +314,7 @@ export function skillCountsInBase(
   if (!n) return false;
   if (isGreenMaster(n)) return false;
   if (isTamerai(n) || isTameraiId(id)) return true;
-  if (isGoldLikeUniqueOrEvo(n)) return true;
+  if (isProvisionalGoldLike(n)) return true;
   if (effectiveIds) return id != null && effectiveIds.has(id);
   return true;
 }
