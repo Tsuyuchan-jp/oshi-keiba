@@ -548,15 +548,20 @@ export function adminRegisterPage(
       document.getElementById("shot-open")?.addEventListener("click", () => {
         const img = document.querySelector("#shot-open img");
         if (full && img) full.src = img.getAttribute("src") || "";
+        sc?.classList.add("fit");
+        sc?.classList.remove("read");
         dlg?.showModal();
       });
-      sc?.addEventListener("dblclick", () => { sc.classList.toggle("fit"); sc.classList.toggle("read"); });
-      const closeShot = (ev) => {
-        if (ev.target instanceof HTMLImageElement) return;
+      const onShotClick = (ev) => {
+        if (ev.target instanceof HTMLImageElement) {
+          sc?.classList.toggle("fit");
+          sc?.classList.toggle("read");
+          return;
+        }
         dlg?.close();
       };
-      sc?.addEventListener("click", closeShot);
-      dlg?.addEventListener("click", closeShot);
+      sc?.addEventListener("click", onShotClick);
+      dlg?.addEventListener("click", onShotClick);
       const ddlg = document.getElementById("drop-horse-modal");
       document.querySelectorAll("[data-drop-id]").forEach((btn) => {
         btn.addEventListener("click", (ev) => {
@@ -788,13 +793,16 @@ export function adminHorsesPage(board: Board, selId: string | null, reauth: stri
           dlg?.showModal();
         });
       });
-      sc?.addEventListener("dblclick", () => { sc.classList.toggle("fit"); sc.classList.toggle("read"); });
-      const closeShot = (ev) => {
-        if (ev.target instanceof HTMLImageElement) return;
+      const onShotClick = (ev) => {
+        if (ev.target instanceof HTMLImageElement) {
+          sc?.classList.toggle("fit");
+          sc?.classList.toggle("read");
+          return;
+        }
         dlg?.close();
       };
-      sc?.addEventListener("click", closeShot);
-      dlg?.addEventListener("click", closeShot);
+      sc?.addEventListener("click", onShotClick);
+      dlg?.addEventListener("click", onShotClick);
       const sdlg = document.getElementById("scratch-modal");
       document.querySelectorAll("[data-scratch-id]").forEach((btn) => {
         btn.addEventListener("click", (ev) => {
