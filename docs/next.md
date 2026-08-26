@@ -4,7 +4,7 @@
 
 ## 現在進行中
 
-- 管理画面刷新のモック比較（進行ホームの着順：案2スロット／案3左右。未採用）— [admin-dash](mocks/admin-dash/progress-places.html)
+- 管理画面刷新のモック（着順は案3採用。他タブは未稿）— [admin-dash](mocks/admin-dash/progress-places.html)
 
 ## そのあと
 
@@ -28,6 +28,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
+- 管理進行の着順は案3採用（左・未着順1列、右は上から折る2列。案2スロットは不採用。他タブ未稿。本番未適用）— [progress-places.html](mocks/admin-dash/progress-places.html)
 - 場内・窓口モックに入場と同じ ⋯（枠内右上。PCは枠外右下に使い方／管理者。スマホは⋯だけ。使い方に特払い段落。入場はログアウトなし。本番未適用）— [layout-venue.html](mocks/venue-board/layout-venue.html)・[quiet.html](mocks/bet-window/quiet.html)・[gate](mocks/gate/index.html)
 - 場内デザイン採用（投票中〜締切〜結果公開。払戻＋縦長確定→全頭。着差なし。本番未適用）— [layout-venue.html](mocks/venue-board/layout-venue.html)
 - 場内結果公開：払戻＋確定の横並び盤→全頭表（モック。本番未適用）— [layout-venue.html](mocks/venue-board/layout-venue.html)
