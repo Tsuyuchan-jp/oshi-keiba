@@ -507,15 +507,14 @@ export function adminHorsesPage(board: Board, selId: string | null, reauth: stri
     .join("");
   const current = board.horses.find((h) => h.horse.id === sel) ?? board.horses[0];
   const pipe = current ? pipeHtml(current, board) : `<p class="note">まだいません</p>`;
-  return `<section class="hero"><div class="hero-top"><h1>出走</h1>${phasePill(board.event.status)}</div>
-      <p class="note">評価点はメンバーに出さない。行を選ぶと掛け算の内訳。OCRと直置きの編集は出走登録。</p></section>
+  return `<section class="hero"><div class="hero-top"><h1>出走</h1>${phasePill(board.event.status)}</div></section>
     <div class="horses-desk">
       <section class="work"><h2>名簿</h2>
         <table class="plain" id="roster"><thead><tr>
-          <th>#</th><th>ウマ娘</th><th>出走者</th><th>脚質</th><th>評価点</th><th></th><th>Seed</th><th></th>
+          <th>#</th><th>ウマ娘</th><th>出走者</th><th>脚質</th><th class="num">評価点</th><th></th><th class="num">Seed</th><th></th>
         </tr></thead><tbody>${rows || `<tr><td colspan="8">まだいません</td></tr>`}</tbody></table>
       </section>
-      <aside class="work pipe">${pipe}</aside>
+      <aside class="pipe">${pipe}</aside>
     </div>
     <dialog class="shot-dlg" id="shot-dlg"><div class="shot-scroller fit" id="shot-scroller"><img id="shot-full" alt=""></div></dialog>
     <dialog class="modal" id="scratch-modal">
@@ -538,13 +537,18 @@ export function adminHorsesPage(board: Board, selId: string | null, reauth: stri
       });
       const dlg = document.getElementById("shot-dlg");
       const full = document.getElementById("shot-full");
+      const sc = document.getElementById("shot-scroller");
       document.querySelectorAll("[data-shot]").forEach((btn) => {
         btn.addEventListener("click", (ev) => {
           ev.stopPropagation();
           if (full) full.src = btn.getAttribute("data-shot") || "";
+          sc?.classList.add("fit");
+          sc?.classList.remove("read");
           dlg?.showModal();
         });
       });
+      sc?.addEventListener("dblclick", () => { sc.classList.toggle("fit"); sc.classList.toggle("read"); });
+      dlg?.addEventListener("click", (ev) => { if (ev.target === dlg) dlg.close(); });
       const sdlg = document.getElementById("scratch-modal");
       document.querySelectorAll("[data-scratch-id]").forEach((btn) => {
         btn.addEventListener("click", (ev) => {

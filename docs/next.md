@@ -4,7 +4,7 @@
 
 ## 現在進行中
 
-- 採用済みモックの本番移植（**管理は 6 タブ骨格＋開催設定・オッズ・台帳をモック差し替え。他タブの面は未差し替え。実機確認待ち。メンバー画面は未着手**。デプロイは明示依頼があるまでしない）— [venue-board](mocks/venue-board/layout-venue.html)・[quiet.html](mocks/bet-window/quiet.html)・[gate](mocks/gate/index.html)・[admin-dash](mocks/admin-dash/index.html)
+- 採用済みモックの本番移植（**管理は 6 タブ骨格＋開催設定・オッズ・台帳・出走をモック差し替え。進行・出走登録の面は未差し替え。実機確認待ち。メンバー画面は未着手**。デプロイは明示依頼があるまでしない）— [venue-board](mocks/venue-board/layout-venue.html)・[quiet.html](mocks/bet-window/quiet.html)・[gate](mocks/gate/index.html)・[admin-dash](mocks/admin-dash/index.html)
 
 ## そのあと
 
@@ -24,6 +24,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
+- 出走タブをモック HTML の箱で差し替え（名簿＋内訳。注釈なし。取消・スクショは残す）— [horses.html](mocks/admin-dash/horses.html)
 - 台帳タブをモック HTML の箱で差し替え（枠内スクロール。額フィルタはすべて／500以上／3000以上。ヒーロー注なし）— [ledger.html](mocks/admin-dash/ledger.html)
 - オッズタブをモック HTML の箱で差し替え（5賭式同時・使わない賭式は空パネル。ヒーロー注なし。内部計算モーダルは残す）— [odds.html](mocks/admin-dash/odds.html)
 - 開催設定タブをモック HTML の箱で差し替え（既存 name/POST。フェーズ切替バーは出さない。D は 0〜0.99）— [settings.html](mocks/admin-dash/settings.html)

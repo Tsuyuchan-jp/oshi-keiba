@@ -250,9 +250,15 @@ body.ledger-page .filters label {
 body.ledger-page .filters select {
   min-width: 6.5rem; background: #fff; border: 1px solid #c5ccd6; padding: .28rem .4rem; color: inherit;
 }
-.register-desk, .horses-desk {
+.register-desk {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(22rem, .95fr);
+  gap: 1rem;
+  align-items: start;
+}
+.horses-desk {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(22rem, 0.95fr);
   gap: 1rem;
   align-items: start;
 }
@@ -281,30 +287,48 @@ body.ledger-page .filters select {
 }
 .filters { display: flex; flex-wrap: wrap; gap: .45rem .7rem; margin: 0 0 .55rem; }
 .filters label { font-size: .78rem; }
-.pipe { position: sticky; top: .75rem; }
-.pipe-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .65rem; margin-bottom: .45rem; }
+.pipe {
+  background: #fff; border: 1px solid #d5d9e0; border-radius: 10px;
+  padding: 1rem 1.1rem 1.15rem; position: sticky; top: .75rem;
+}
+.pipe h2 { margin: 0 0 .2rem; font-size: 1.02rem; }
+.pipe-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .65rem .85rem; align-items: start; margin-bottom: .45rem; }
+.pipe-head .note { margin: 0; }
 .pipe-step { border-top: 1px solid #eef0f3; padding: .45rem 0; font-size: .85rem; }
+.pipe-step:first-of-type { border-top: 0; padding-top: 0; }
 .pipe-k { font-size: .68rem; letter-spacing: .06em; color: #6b7380; font-weight: 700; margin: 0 0 .15rem; }
+.pipe-v { font-variant-numeric: tabular-nums; }
 .pipe-final { font-size: 1.35rem; font-weight: 800; font-variant-numeric: tabular-nums; margin: .35rem 0 0; }
 .pipe-eq { font-size: .78rem; color: #3d4550; margin: .15rem 0 0; }
 .shot-thumb {
-  display: block; width: 10.6rem; height: 4.15rem; overflow: hidden; padding: 0;
-  border: 1px solid #d5d9e0; border-radius: 6px; background: #1a1c1f; cursor: pointer;
+  display: block; width: 10.6rem; height: 4.15rem; overflow: hidden; margin: 0; padding: 0;
+  border: 1px solid #d5d9e0; border-radius: 6px; background: #1a1c1f; cursor: pointer; flex: 0 0 auto;
 }
 .shot-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
 .shot-none {
-  width: 10.6rem; height: 4.15rem; border: 1px dashed #c5ccd6; border-radius: 6px;
-  color: #6b7380; font-size: .72rem; display: flex; align-items: center; justify-content: center;
+  width: 10.6rem; height: 4.15rem; margin: 0; padding: .35rem .45rem;
+  border: 1px dashed #c5ccd6; border-radius: 6px;
+  color: #6b7380; font-size: .72rem; display: flex; align-items: center; justify-content: center; text-align: center;
 }
 dialog.shot-dlg {
-  width: min(96vw, 72rem); max-width: none; height: min(94vh, 52rem);
-  border: 0; padding: 0; background: #121416;
+  width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh;
+  margin: 0; padding: 0; border: 0; background: transparent;
 }
-dialog.shot-dlg::backdrop { background: rgba(10, 12, 16, .72); }
-.shot-scroller { height: 100%; overflow: auto; }
-.shot-scroller.fit img { max-height: 94vh; width: auto; max-width: 100%; }
-.shot-scroller.read img { max-height: none; width: auto; }
+dialog.shot-dlg[open] { display: block; }
+dialog.shot-dlg::backdrop { background: rgba(18, 22, 28, .42); }
+.shot-scroller {
+  width: 100%; height: 100%; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.shot-scroller.fit img {
+  height: 100dvh; width: auto; max-width: 100vw; display: block; user-select: none; cursor: zoom-in;
+}
+.shot-scroller.read { display: block; overflow: auto; }
+.shot-scroller.read img {
+  height: auto; width: auto; max-width: none; display: block; margin: 0 auto; user-select: none; cursor: zoom-out;
+}
 table.plain tbody tr[data-id] { cursor: pointer; }
+table.plain tbody tr[data-id]:hover { background: #f4f7fb; }
 table.plain tbody tr.on { background: #e8f0fa; }
 .mini-grid { display: grid; grid-template-columns: 1fr 1fr; grid-auto-flow: column; gap: .2rem .75rem; }
 .mini-row {
@@ -506,5 +530,6 @@ body.settings-page .settings-bot.work { background: #eef1f5; border-color: #d5d9
   body.ledger-page .main { height: auto; overflow: visible; }
   body.ledger-page .ledger-desk { flex: none; }
   body.ledger-page .ledger-desk .work { height: min(70vh, 28rem); }
+  .pipe { position: static; }
 }
 `;
