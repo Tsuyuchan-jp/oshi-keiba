@@ -4,7 +4,7 @@
 
 ## 現在進行中
 
-- 管理画面刷新のモック（進行＋出走＋台帳＋オッズ＋開催設定は採用。出走登録はモック）— [admin-dash](mocks/admin-dash/progress-places.html)
+（管理刷新のモック6タブは採用。本番適用はしない）
 
 ## そのあと
 
@@ -28,7 +28,8 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
-- 管理の出走登録タブ（左・名簿、右・1頭の作業台。OCRまたは直置き。掛かりスタミナ2欄。スクショは左寄せ全画面。一括なし。未確認。本番未適用）— [register.html](mocks/admin-dash/register.html)
+- 管理刷新モック6タブ採用（進行・出走登録・出走・台帳・オッズ・開催設定。本番未適用）— [admin-dash](mocks/admin-dash/index.html)
+- 管理の出走登録タブ採用（左・名簿、右・1頭の作業台。OCRまたは直置き。掛かりスタミナ2欄。スクショは左寄せ全画面。適性はバ場／距離／脚質。一括なし。本番未適用）— [register.html](mocks/admin-dash/register.html)
 - 管理の開催設定タブ採用（上から今日のレース→評価点の条件→参考数字。賭式はボタン。本番の入力グリッドは不採用。本番未適用）— [settings.html](mocks/admin-dash/settings.html)
 - 管理のオッズタブ採用（5賭式同時。左・単勝全頭、右・連勝2×2は実票のみ。参考／確定。枠内スクロール。賭式切替は不採用。本番未適用）— [odds.html](mocks/admin-dash/odds.html)
 - 出走タブのスクショは元画像をCSSで上端だけ見せる（別切り抜きファイルなし。見出し右に小さく。モーダルは薄暗い）— [horses.html](mocks/admin-dash/horses.html)
