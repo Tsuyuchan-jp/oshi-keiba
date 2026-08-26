@@ -178,14 +178,13 @@ export default {
           const setup = eventScoreSetup(board.event);
           let scoreInput = parseHorseScoreInput(String(fd.get("score_input") ?? ""));
           const styleRaw = String(fd.get("style_key") ?? "").trim();
-          if (scoreInput && styleRaw) {
+          if (!styleRaw) throw new Error("脚質を選んでください");
+          if (scoreInput) {
             const parsed = parseHorseScoreInput({
               ...scoreInput,
               styleKey: styleRaw,
             });
             scoreInput = parsed;
-          } else if (scoreInput && !styleRaw) {
-            scoreInput = { ...scoreInput, styleKey: null };
           }
           const forceManual = String(fd.get("strength_manual") ?? "") === "1";
           const resolved = resolveStrength({
@@ -236,10 +235,11 @@ export default {
           const setup = eventScoreSetup(board.event);
           let scoreInput = parseHorseScoreInput(existing.horse.score_input);
           const styleRaw = String(form.get("style_key") ?? "").trim();
+          if (!styleRaw) throw new Error("脚質を選んでください");
           if (scoreInput) {
             scoreInput = parseHorseScoreInput({
               ...scoreInput,
-              styleKey: styleRaw || null,
+              styleKey: styleRaw,
             });
           }
           const forceManual = String(form.get("strength_manual") ?? "") === "1";
