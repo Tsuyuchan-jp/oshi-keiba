@@ -541,12 +541,25 @@ body.register-page .register-desk .work {
 }
 .reg-stat .k { display: block; font-size: .65rem; color: #6b7380; }
 .reg-stat .v { font-weight: 700; font-variant-numeric: tabular-nums; }
-.reg-chips { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .55rem; }
+.reg-chips { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .55rem; align-items: center; }
 .reg-chip {
   font-size: .72rem;
   padding: .12rem .4rem;
   border-radius: 999px;
   background: #eef0f3;
+  border: 1px solid transparent;
+}
+.reg-chip.s {
+  background: #dbe7f6;
+  border-color: #2b6cb0;
+  color: #1a3a66;
+  font-weight: 800;
+}
+.reg-slash {
+  color: #8a929c;
+  font-weight: 700;
+  padding: 0 .2rem;
+  user-select: none;
 }
 .reg-chip.gold { background: #f4ead0; }
 .reg-chip.green { background: #dceee0; }
