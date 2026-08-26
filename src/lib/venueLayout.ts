@@ -1,6 +1,5 @@
 /**
  * 場内の投票中・締切・結果公開。HTML 構造・クラスはモック、name / 既存 id・挙動は本番。
- * 窓口・入場はまだ和紙レイアウト。
  */
 import { escapeHtml } from "./http.ts";
 import { parseHorseScoreInput } from "./horseScoreInput.ts";
@@ -38,6 +37,7 @@ import {
   type VenueSlot,
 } from "./venueBoard.ts";
 import { VENUE_CSS } from "./venueCss.ts";
+import { memberMoreScript } from "./memberShell.ts";
 
 export type { VenueSlot };
 export { resolveVenueSlot } from "./venueBoard.ts";
@@ -327,41 +327,6 @@ function venueChromeScript(published: boolean): string {
   splitSheet();
   mq.addEventListener("change", splitSheet);
 
-  const moreBtn = document.getElementById("more-btn");
-  const morePop = document.getElementById("more-pop");
-  const howto = document.getElementById("howto-modal");
-  if (moreBtn && morePop) {
-    moreBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const on = morePop.classList.toggle("open");
-      moreBtn.setAttribute("aria-expanded", on ? "true" : "false");
-    });
-    document.addEventListener("click", () => {
-      morePop.classList.remove("open");
-      moreBtn.setAttribute("aria-expanded", "false");
-    });
-    morePop.addEventListener("click", (e) => e.stopPropagation());
-  }
-  const openHowto = (ev) => {
-    ev.preventDefault();
-    if (howto && howto.showModal) howto.showModal();
-    if (morePop && moreBtn) {
-      morePop.classList.remove("open");
-      moreBtn.setAttribute("aria-expanded", "false");
-    }
-  };
-  document.getElementById("howto-open")?.addEventListener("click", openHowto);
-  document.getElementById("howto-out")?.addEventListener("click", openHowto);
-  if (howto) {
-    howto.addEventListener("click", (ev) => {
-      const r = howto.getBoundingClientRect();
-      const inside =
-        ev.clientX >= r.left && ev.clientX <= r.right &&
-        ev.clientY >= r.top && ev.clientY <= r.bottom;
-      if (!inside) howto.close();
-    });
-  }
-
   ${
     published
       ? `function setResult(v) {
@@ -523,6 +488,7 @@ export function venueBoardPage(opts: {
     <a href="/admin">管理者</a>
   </nav>
   ${howToModal()}
+  ${memberMoreScript()}
   ${venueChromeScript(published)}
   ${opts.scripts ?? ""}
 </body>
