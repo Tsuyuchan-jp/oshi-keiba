@@ -222,6 +222,34 @@ table.plain td.num, table.plain th.num { text-align: right; font-variant-numeric
   gap: 1rem;
   align-items: start;
 }
+body.ledger-page { overflow: hidden; }
+body.ledger-page .dash { height: 100dvh; min-height: 0; overflow: hidden; }
+body.ledger-page .main {
+  display: flex; flex-direction: column; min-height: 0; height: 100%; overflow: hidden;
+  padding: 1rem 1.25rem 2.4rem;
+}
+body.ledger-page .hero { flex: 0 0 auto; }
+body.ledger-page .ledger-desk {
+  flex: 1 1 auto; min-height: 0; height: 100%; align-items: stretch;
+}
+body.ledger-page .ledger-desk .work {
+  min-height: 0; height: 100%; display: flex; flex-direction: column;
+  overflow: hidden; margin-bottom: 0;
+}
+.ledger-del {
+  border: 1px solid #c5ccd6; background: #fff; color: inherit;
+  padding: .28rem .55rem; border-radius: 6px; cursor: pointer; font-size: .78rem;
+}
+.filter-count { font-size: .78rem; color: #6b7380; margin: 0 0 .35rem; flex: 0 0 auto; }
+body.ledger-page .filters {
+  flex: 0 0 auto; align-items: flex-end; margin: 0 0 .5rem;
+}
+body.ledger-page .filters label {
+  font-size: .68rem; letter-spacing: .04em; color: #6b7380;
+}
+body.ledger-page .filters select {
+  min-width: 6.5rem; background: #fff; border: 1px solid #c5ccd6; padding: .28rem .4rem; color: inherit;
+}
 .register-desk, .horses-desk {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(22rem, .95fr);
@@ -473,5 +501,10 @@ body.settings-page .settings-bot.work { background: #eef1f5; border-color: #d5d9
     display: flex; flex-direction: column; height: auto; flex: none;
   }
   body.odds-page .odds-desk .work { height: min(52vh, 20rem); }
+  body.ledger-page { overflow: auto; }
+  body.ledger-page .dash { height: auto; min-height: 100dvh; }
+  body.ledger-page .main { height: auto; overflow: visible; }
+  body.ledger-page .ledger-desk { flex: none; }
+  body.ledger-page .ledger-desk .work { height: min(70vh, 28rem); }
 }
 `;

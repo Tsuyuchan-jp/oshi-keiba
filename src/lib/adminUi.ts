@@ -566,29 +566,15 @@ export function adminLedgerPage(opts: {
   const memberRows = opts.members
     .map((u) => `<tr><td>${escapeHtml(u.display_name)}</td><td class="num">${formatPt(u.balance)}</td></tr>`)
     .join("");
-  return `<section class="hero"><div class="hero-top"><h1>台帳</h1>${phasePill(opts.board.event.status)}</div>
-      <p class="note">左が口座、右が馬券。板はオッズタブ。</p></section>
+  return `<section class="hero"><div class="hero-top"><h1>台帳</h1>${phasePill(opts.board.event.status)}</div></section>
     <div class="ledger-desk">
       <section class="work">
         <div class="work-head"><h2>残高</h2>
-          <button type="button" class="secondary" id="member-del-open">メンバー削除</button></div>
-        <table class="plain"><thead><tr><th>名前</th><th class="num">残高</th></tr></thead>
-          <tbody>${memberRows || `<tr><td colspan="2" class="muted">まだいません</td></tr>`}</tbody></table>
-        <dialog class="modal" id="member-del-modal">
-          <h2>メンバー削除</h2>
-          <form method="post" action="/admin/member-delete" id="member-del-form">
-            <div class="row">
-              <label>削除する人
-                <select name="user_id" id="member-del-select" required>
-                  <option value="">—</option>
-                  ${opts.members.map((u) => `<option value="${escapeHtml(u.id)}" data-name="${escapeHtml(u.display_name)}">${escapeHtml(u.display_name)}（${formatPt(u.balance)}）</option>`).join("")}
-                </select>
-              </label>
-              <button class="danger" type="submit">削除する</button>
-              <button type="button" class="secondary" id="member-del-cancel">やめる</button>
-            </div>
-          </form>
-        </dialog>
+          <button type="button" class="ledger-del" id="member-del-open">メンバー削除</button></div>
+        <div class="table-scroll">
+          <table class="plain"><thead><tr><th>名前</th><th class="num">残高</th></tr></thead>
+            <tbody>${memberRows || `<tr><td colspan="2" class="muted">まだいません</td></tr>`}</tbody></table>
+        </div>
       </section>
       <section class="work">
         <div class="work-head"><h2>全投票</h2>
@@ -607,15 +593,44 @@ export function adminLedgerPage(opts: {
           <label>誰 <select id="f-who"><option value="">全員</option>
             ${opts.members.map((u) => `<option>${escapeHtml(u.display_name)}</option>`).join("")}
           </select></label>
+          <label>額 <select id="f-amt"><option value="">すべて</option>
+            <option value="500">500以上</option>
+            <option value="3000">3000以上</option></select></label>
         </div>
-        <table class="plain" id="bets-table"><thead><tr><th>誰</th><th>賭式</th><th>組み合わせ</th><th>額</th><th>結果</th><th>確定配当</th><th>収支</th></tr></thead>
-          <tbody>${opts.betRows || `<tr><td colspan="7" class="muted">なし</td></tr>`}</tbody></table>
+        <p class="filter-count" id="f-count"></p>
+        <div class="table-scroll">
+          <table class="plain" id="bets-table"><thead><tr>
+            <th>誰</th><th>賭式</th><th>組み合わせ</th>
+            <th class="num">額</th><th>結果</th><th class="num">確定配当</th><th class="num">収支</th>
+          </tr></thead>
+            <tbody>${opts.betRows || `<tr><td colspan="7" class="muted">なし</td></tr>`}</tbody></table>
+        </div>
       </section>
     </div>
+    <dialog class="modal" id="member-del-modal">
+      <h2>メンバー削除</h2>
+      <form method="post" action="/admin/member-delete" id="member-del-form">
+        <div class="row">
+          <label>削除する人
+            <select name="user_id" id="member-del-select" required>
+              <option value="">—</option>
+              ${opts.members.map((u) => `<option value="${escapeHtml(u.id)}" data-name="${escapeHtml(u.display_name)}">${escapeHtml(u.display_name)}（${formatPt(u.balance)}）</option>`).join("")}
+            </select>
+          </label>
+          <button class="danger" type="submit">削除する</button>
+          <button type="button" class="secondary" id="member-del-cancel">やめる</button>
+        </div>
+      </form>
+    </dialog>
     <script>
       const dlg = document.getElementById("member-del-modal");
       document.getElementById("member-del-open")?.addEventListener("click", () => dlg?.showModal());
       document.getElementById("member-del-cancel")?.addEventListener("click", () => dlg?.close());
+      dlg?.addEventListener("click", (ev) => {
+        const r = dlg.getBoundingClientRect();
+        const inside = ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom;
+        if (!inside) dlg.close();
+      });
       const form = document.getElementById("member-del-form");
       const sel = document.getElementById("member-del-select");
       form?.addEventListener("submit", (ev) => {
@@ -627,14 +642,27 @@ export function adminLedgerPage(opts: {
       const kind = document.getElementById("f-kind");
       const res = document.getElementById("f-res");
       const who = document.getElementById("f-who");
+      const amt = document.getElementById("f-amt");
+      const countEl = document.getElementById("f-count");
       const apply = () => {
-        document.querySelectorAll("#bets-table tbody tr[data-kind]").forEach((tr) => {
-          tr.hidden = !((!kind.value || tr.dataset.kind === kind.value) && (!res.value || tr.dataset.res === res.value) && (!who.value || tr.dataset.who === who.value));
+        const rows = document.querySelectorAll("#bets-table tbody tr[data-kind]");
+        let shown = 0;
+        rows.forEach((tr) => {
+          const min = amt.value ? Number(amt.value) : 0;
+          const ok = (!kind.value || tr.dataset.kind === kind.value)
+            && (!res.value || tr.dataset.res === res.value)
+            && (!who.value || tr.dataset.who === who.value)
+            && Number(tr.dataset.amt || 0) >= min;
+          tr.hidden = !ok;
+          if (ok) shown++;
         });
+        if (countEl) countEl.textContent = "表示 " + shown + " / " + rows.length + " 件";
       };
       kind?.addEventListener("change", apply);
       res?.addEventListener("change", apply);
       who?.addEventListener("change", apply);
+      amt?.addEventListener("change", apply);
+      apply();
     </script>`;
 }
 
@@ -972,7 +1000,7 @@ export function betRowHtml(
   else if (e.status === "published") res = "miss";
   const moveClass =
     settled.move != null && settled.move > 0 ? "move-plus" : settled.move != null && settled.move < 0 ? "move-minus" : "";
-  return `<tr class="${b.refunded ? "scr" : ""}" data-kind="${escapeHtml(b.kind)}" data-res="${res}" data-who="${escapeHtml(b.display_name)}">
+  return `<tr class="${b.refunded ? "scr" : ""}" data-kind="${escapeHtml(b.kind)}" data-res="${res}" data-who="${escapeHtml(b.display_name)}" data-amt="${b.amount}">
     <td>${escapeHtml(b.display_name)}</td>
     <td>${escapeHtml(BET_KIND_LABEL[b.kind])}</td>
     <td>${escapeHtml(label)}</td>

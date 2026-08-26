@@ -40,7 +40,13 @@ export function layoutAdmin(opts: {
     ? flashHtml(opts.flash.text, opts.flash.error)
     : "";
   const pageClass =
-    opts.tab === "settings" ? "settings-page" : opts.tab === "odds" ? "odds-page" : "";
+    opts.tab === "settings"
+      ? "settings-page"
+      : opts.tab === "odds"
+        ? "odds-page"
+        : opts.tab === "ledger"
+          ? "ledger-page"
+          : "";
   const mainFlash = opts.tab === "settings" ? "" : flash;
   return `<!doctype html>
 <html lang="ja">
