@@ -5,6 +5,7 @@ import {
   computeScore,
   ratioMult,
   skillBase,
+  skillCountsAsGoldLike,
   skillCountsInBase,
   speedMult,
   staminaMult,
@@ -15,6 +16,14 @@ test("skillCountsInBase: リスト外は false、ためらいは true", () => {
   assert.equal(skillCountsInBase("地固め", 201601, ids), true);
   assert.equal(skillCountsInBase("別のスキル", 999999, ids), false);
   assert.equal(skillCountsInBase("逃げためらい", 200851, ids), true);
+});
+
+test("skillCountsAsGoldLike: gold / unique / 非緑 evo", () => {
+  assert.equal(skillCountsAsGoldLike("円弧のマエストロ"), true);
+  assert.equal(skillCountsAsGoldLike("波乱注意砲！"), true);
+  assert.equal(skillCountsAsGoldLike("鎧袖一触"), true);
+  assert.equal(skillCountsAsGoldLike("右回りの輪舞曲"), false);
+  assert.equal(skillCountsAsGoldLike("地固め"), false);
 });
 
 test("skillCountsInBase: 固有・進化はリスト外でも true（緑マスタ重複は除く）", () => {

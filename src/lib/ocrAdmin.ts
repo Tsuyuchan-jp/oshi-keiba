@@ -4,7 +4,7 @@ import { catalogJsonForPage, classifySkillName } from "./skillCatalog";
 import type { EventScoreSetup } from "./scoreSetup";
 import { ALLOWED_SHOT_MIME } from "./shotMime";
 import { greenSkillByName } from "./greenSkills";
-import { skillCountsInBase, TAMERAI_IDS } from "./score";
+import { skillCountsAsGoldLike, skillCountsInBase, TAMERAI_IDS } from "./score";
 import type { EffectiveSkillIdsByStyle } from "./utoolsEffects";
 import type { Board } from "./store";
 
@@ -59,6 +59,7 @@ export function registerMaterialsHtml(
   const effective = accepted.filter((h) =>
     skillCountsInBase(h.name, h.id, effectiveIds),
   );
+  const goldLike = effective.filter((h) => skillCountsAsGoldLike(h.name)).length;
   const rejected = accepted.filter(
     (h) =>
       !isGreen(h.name) && !skillCountsInBase(h.name, h.id, effectiveIds),
@@ -83,7 +84,7 @@ export function registerMaterialsHtml(
       <span class="reg-slash" aria-hidden="true">/</span>
       ${aptChip("逃げ", ap.nige)}${aptChip("先行", ap.senkou)}${aptChip("差し", ap.sashi)}${aptChip("追込", ap.oikomi)}
     </div>
-    <p class="set-k" style="margin-top:.85rem">有効スキル（${effective.length}）</p>
+    <p class="set-k" style="margin-top:.85rem">有効スキル（総有効スキル数 ${effective.length} / 金相当スキル数 ${goldLike}）</p>
     <div class="reg-chips">${skillChipsHtml(effective, "なし")}</div>
     <p class="set-k" style="margin-top:.85rem">緑スキル</p>
     <div class="reg-chips">${skillChipsHtml(greens, "なし")}</div>
@@ -410,6 +411,12 @@ export function ocrAdminScript(
     const missHits = lastHits.filter((h) => !h.ok);
     const greens = okHits.filter((h) => GREEN_NAMES.has(String(h.name || "").trim()));
     const effective = okHits.filter((h) => countsInBase(h.name, h.id, h.kind));
+    const goldLike = effective.filter((h) => {
+      const n = String(h.name || "").trim();
+      if (h.kind === "gold") return true;
+      if (h.kind === "unique" || h.kind === "evo") return !GREEN_NAMES.has(n);
+      return false;
+    }).length;
     const rejected = okHits.filter(
       (h) => !GREEN_NAMES.has(String(h.name || "").trim()) && !countsInBase(h.name, h.id, h.kind),
     );
@@ -430,7 +437,7 @@ export function ocrAdminScript(
         '<span class="reg-slash" aria-hidden="true">/</span>' +
         aptChip("逃げ", ap.nige) + aptChip("先行", ap.senkou) + aptChip("差し", ap.sashi) + aptChip("追込", ap.oikomi) +
       "</div>" +
-      '<p class="set-k" style="margin-top:.85rem">有効スキル（' + effective.length + "）</p>" +
+      '<p class="set-k" style="margin-top:.85rem">有効スキル（総有効スキル数 ' + effective.length + " / 金相当スキル数 " + goldLike + "）</p>" +
       '<div class="reg-chips">' + chipsHtml(effective, "なし") + "</div>" +
       '<p class="set-k" style="margin-top:.85rem">緑スキル</p>' +
       '<div class="reg-chips">' + chipsHtml(greens, "なし") + "</div>" +

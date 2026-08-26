@@ -149,6 +149,11 @@ function isGoldLike(name: string): boolean {
   return isGold(name) || isGoldLikeUniqueOrEvo(name);
 }
 
+/** 土台の金枚数（+2）に入るか。表示の「金相当」と一致 */
+export function skillCountsAsGoldLike(name: string): boolean {
+  return isGoldLike(name.trim());
+}
+
 export type SkillBaseOptions = {
   effectiveIds?: ReadonlySet<number>;
   skillIds?: ReadonlyArray<number | null | undefined>;
