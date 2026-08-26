@@ -458,6 +458,10 @@ export function adminRegisterPage(
               </div>
               ${styleSeg(scoreIn?.styleKey)}
               ${scoreIn ? registerMaterialsHtml(scoreIn) : ""}
+              <div class="reg-preview">
+                <span class="lab">評価点</span>
+                <span class="num">${escapeHtml(String(edit.horse.strength))}</span>
+              </div>
               <div class="reg-score-in" style="margin-top:.85rem;max-width:10rem">
                 <label>評価点<input name="strength" id="strength" type="number" min="0" step="0.1" value="${edit.horse.strength}" required></label>
               </div>

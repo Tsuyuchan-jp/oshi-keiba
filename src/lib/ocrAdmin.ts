@@ -31,13 +31,14 @@ export function registerMaterialsHtml(input: HorseScoreInput): string {
       return `<span class="reg-chip ${skillChipClass(c.kind)}">${escapeHtml(c.name)}</span>`;
     })
     .join("");
-  return `<div class="reg-stats">
+  return `    <div class="reg-stats">
       <div class="reg-stat"><span class="k">速</span><span class="v">${st.speed}</span></div>
       <div class="reg-stat"><span class="k">スタ</span><span class="v">${st.stamina}</span></div>
       <div class="reg-stat"><span class="k">パ</span><span class="v">${st.power}</span></div>
       <div class="reg-stat"><span class="k">根</span><span class="v">${st.guts}</span></div>
       <div class="reg-stat"><span class="k">賢</span><span class="v">${st.wisdom}</span></div>
     </div>
+    <p class="set-k" style="margin-top:.85rem">適性</p>
     <div class="reg-chips">
       ${aptChip("芝", ap.turf)}${aptChip("ダ", ap.dirt)}
       <span class="reg-slash" aria-hidden="true">/</span>
@@ -45,6 +46,7 @@ export function registerMaterialsHtml(input: HorseScoreInput): string {
       <span class="reg-slash" aria-hidden="true">/</span>
       ${aptChip("逃げ", ap.nige)}${aptChip("先行", ap.senkou)}${aptChip("差し", ap.sashi)}${aptChip("追込", ap.oikomi)}
     </div>
+    <p class="set-k" style="margin-top:.85rem">スキル</p>
     <div class="reg-chips">${skills || `<span class="reg-chip">スキルなし</span>`}</div>`;
 }
 
@@ -78,14 +80,25 @@ export function horsesAdminBody(
         <input type="file" name="shot" id="shot-from-ocr" class="admin-offscreen" accept="${SHOT_ACCEPT}" tabindex="-1">
         <input id="ocr-file" class="admin-offscreen" type="file" accept="${SHOT_ACCEPT}" tabindex="-1">
         <select name="style_key" id="style-key" class="admin-offscreen" tabindex="-1">${styleOpts}</select>
-        <p class="odds-meta" id="ocr-status"></p>
         <div id="mode-idle">
           <div class="reg-drop" id="ocr-drop" role="button" tabindex="0">
-            <strong>完成スクショを置く</strong>
-            <p>クリックで選ぶか、ここにドロップ。PNG / JPEG / WebP。</p>
+            <div class="reg-drop-idle">
+              <strong>完成スクショを置く</strong>
+              <p>クリックで選ぶか、ここにドロップ。PNG / JPEG / WebP。</p>
+            </div>
+            <div class="reg-drop-picked">
+              <img class="reg-drop-thumb" id="ocr-drop-img" alt="">
+              <div>
+                <strong id="ocr-drop-name">画像を選びました</strong>
+                <p>クリックで差し替え</p>
+              </div>
+            </div>
           </div>
           <p class="reg-alt"><button type="button" id="to-manual">スクショなしで直置きする</button></p>
-          <div class="ctas" style="margin-top:.7rem">
+          <div class="reg-cue" id="ocr-cue" hidden>
+            <p id="ocr-status"></p>
+          </div>
+          <div class="ctas">
             <button type="button" id="ocr-run">読み取る</button>
             <button type="button" id="ocr-stop">停止</button>
           </div>
@@ -105,10 +118,6 @@ export function horsesAdminBody(
               <p class="set-k" style="margin-top:.85rem">出走脚質</p>
               <div class="set-seg" id="styles">${styleBtns}</div>
               <div id="ocr-materials"></div>
-              <div class="reg-preview" id="score-preview-wrap">
-                <span class="lab">登録時に算出する評価点（OCR は材料だけ）</span>
-                <span class="num" id="score-preview">—</span>
-              </div>
               <div id="manual-block">
                 <div class="reg-score-in" style="margin-top:.85rem;max-width:10rem">
                   <label>評価点（直置き）<input name="strength" id="strength" type="number" min="0" step="0.1" value="10"></label>
@@ -218,8 +227,10 @@ export function ocrAdminScript(canAutoScore: boolean): string {
   const manualEl = document.getElementById("strength-manual");
   const formEl = document.getElementById("horse-add");
   const fileEl = document.getElementById("ocr-file");
+  const cueEl = document.getElementById("ocr-cue");
   function say(msg) {
     if (statusEl) statusEl.textContent = msg;
+    if (cueEl) cueEl.hidden = !msg;
   }
   function esc(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -282,8 +293,9 @@ export function ocrAdminScript(canAutoScore: boolean): string {
     const skills = lastHits.filter((h) => h.ok).map((h) =>
       '<span class="reg-chip ' + chipKind(h.kind) + '">' + esc(h.name) + "</span>"
     ).join("");
-    const miss = lastHits.filter((h) => !h.ok).map((h) =>
-      '<span class="reg-chip minus" title="未採用">' + esc(h.input) + "</span>"
+    const missHits = lastHits.filter((h) => !h.ok);
+    const miss = missHits.map((h) =>
+      '<span class="reg-chip skip">' + esc(h.input) + "</span>"
     ).join("");
     el.innerHTML =
       '<div class="reg-stats">' +
@@ -293,6 +305,7 @@ export function ocrAdminScript(canAutoScore: boolean): string {
         '<div class="reg-stat"><span class="k">根</span><span class="v">' + esc(st.guts) + "</span></div>" +
         '<div class="reg-stat"><span class="k">賢</span><span class="v">' + esc(st.wisdom) + "</span></div>" +
       "</div>" +
+      '<p class="set-k" style="margin-top:.85rem">適性</p>' +
       '<div class="reg-chips">' +
         aptChip("芝", ap.turf) + aptChip("ダ", ap.dirt) +
         '<span class="reg-slash" aria-hidden="true">/</span>' +
@@ -300,13 +313,23 @@ export function ocrAdminScript(canAutoScore: boolean): string {
         '<span class="reg-slash" aria-hidden="true">/</span>' +
         aptChip("逃げ", ap.nige) + aptChip("先行", ap.senkou) + aptChip("差し", ap.sashi) + aptChip("追込", ap.oikomi) +
       "</div>" +
-      '<div class="reg-chips">' + (skills || '<span class="reg-chip">スキルなし</span>') + miss + "</div>";
+      '<p class="set-k" style="margin-top:.85rem">スキル</p>' +
+      '<div class="reg-chips">' + (skills || '<span class="reg-chip">スキルなし</span>') + "</div>" +
+      (miss
+        ? '<p class="set-k" style="margin-top:.85rem">不採用</p><div class="reg-chips">' + miss + "</div>"
+        : "");
   }
-  function showShotPreview(file) {
-    const img = document.getElementById("reg-shot-img");
+  function showHeldPreview(file) {
+    const dropImg = document.getElementById("ocr-drop-img");
+    const readImg = document.getElementById("reg-shot-img");
+    const drop = document.getElementById("ocr-drop");
+    const nameEl = document.getElementById("ocr-drop-name");
     if (shotUrl) URL.revokeObjectURL(shotUrl);
     shotUrl = file ? URL.createObjectURL(file) : null;
-    if (img) img.src = shotUrl || "";
+    if (dropImg) dropImg.src = shotUrl || "";
+    if (readImg) readImg.src = shotUrl || "";
+    drop?.classList.toggle("has-file", !!file);
+    if (nameEl) nameEl.textContent = file ? (file.name || "画像を選びました") : "";
   }
   function setMode(mode) {
     if (!formEl) return;
@@ -337,7 +360,7 @@ export function ocrAdminScript(canAutoScore: boolean): string {
     lastHits = [];
     ocrShot = null;
     heldFile = null;
-    showShotPreview(null);
+    showHeldPreview(null);
     const flag = document.getElementById("ocr-ok");
     const slot = document.getElementById("shot-from-ocr");
     if (flag) flag.value = "";
@@ -364,14 +387,7 @@ export function ocrAdminScript(canAutoScore: boolean): string {
     updateHint();
   }
   function updateHint() {
-    const prev = document.getElementById("score-preview");
-    const wrap = document.getElementById("score-preview-wrap");
     const manual = !!(manualEl && manualEl.checked);
-    const hasDraft = !!draft;
-    const style = styleEl?.value;
-    const autoReady = CAN_AUTO && hasDraft && !!style && !manual;
-    if (wrap) wrap.hidden = !hasDraft || manual;
-    if (prev) prev.textContent = autoReady ? "自動" : "—";
     formEl?.classList.toggle("need-score", !!(formEl && (formEl.dataset.mode === "manual" || (formEl.dataset.mode === "read" && (!CAN_AUTO || manual)))));
     if (strengthEl) {
       const need = formEl && (formEl.dataset.mode === "manual" || (formEl.dataset.mode === "read" && (!CAN_AUTO || manual)));
@@ -491,7 +507,7 @@ export function ocrAdminScript(canAutoScore: boolean): string {
       paintStyleBtns();
       lastHits = hits;
       attachOcrShot(file);
-      showShotPreview(file);
+      showHeldPreview(file);
       if (manualEl) manualEl.checked = false;
       syncScoreInput();
       paintMaterials();
@@ -510,6 +526,7 @@ export function ocrAdminScript(canAutoScore: boolean): string {
   function takeFile(file) {
     if (!file) { say("画像を受け取れませんでした。もう一度選んでください。"); return; }
     heldFile = file;
+    showHeldPreview(file);
     say((file.name || "画像") + " を選びました。読み取るを押してください。");
   }
   function clearOcrFileInput() {
