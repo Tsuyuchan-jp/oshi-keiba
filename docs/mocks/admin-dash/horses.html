@@ -40,10 +40,20 @@
             <tbody></tbody>
           </table>
         </section>
-        <aside class="pipe" id="pipe" aria-live="polite"></aside>
+        <aside class="pipe" id="pipe" aria-live="polite">        </aside>
       </div>
     </div>
   </div>
+  <dialog class="shot-dlg" id="shot-dlg">
+    <div class="shot-bar">
+      <button type="button" id="shot-zoom">拡大</button>
+      <span class="shot-hint" id="shot-zoom-lab" style="color:#9aa3ad;margin:0">幅に合わせて縦スクロール。ダブルクリックでも拡大</span>
+      <form method="dialog" style="margin-left:auto"><button type="submit">閉じる</button></form>
+    </div>
+    <div class="shot-scroller" id="shot-scroller">
+      <img id="shot-full" alt="育成スクショ（全体）">
+    </div>
+  </dialog>
   <div class="mock-label">管理モック · 出走 · 本番未適用</div>
   <script>
     const ROSTER = [
@@ -207,7 +217,19 @@
         ] },
     ];
 
+    const SHOT = "./sample-shot.png";
     let sel = 1;
+    let shotZoom = false;
+
+    function shotBlock(hasShot) {
+      if (!hasShot) {
+        return `<div class="shot-none">スクショなし（直置き）</div>`;
+      }
+      return `<button type="button" class="shot-thumb" id="shot-open" aria-label="スクショを全画面で見る">
+          <img src="${SHOT}" alt="上端（ステ・適性）。クリックで全体">
+        </button>
+        <p class="shot-hint">上端の切り取り。クリックで全体を縦スクロール</p>`;
+    }
 
     function paintList() {
       const tb = document.querySelector("#roster tbody");
@@ -236,6 +258,7 @@
       if (h.source === "manual") {
         el.innerHTML = `<h2>${h.n} ${h.uma}</h2>
           <p class="note">${h.run} · ${h.style}</p>
+          ${shotBlock(false)}
           <div class="pipe-step">
             <div class="pipe-k">経路</div>
             <div>直置き。${h.why}</div>
@@ -250,6 +273,7 @@
       const s = h.skill;
       el.innerHTML = `<h2>${h.n} ${h.uma}</h2>
         <p class="note">${h.run} · ${h.style} · 作者仮置きの式（Neko未確定）</p>
+        ${shotBlock(true)}
         <div class="pipe-step">
           <div class="pipe-k">土台（スキル）</div>
           <div class="pipe-v">有効 ${s.eff} ＋ 金×2（${s.gold}枚）＋ ためらい ${s.tam}＝ <b>${s.base}</b></div>
@@ -273,10 +297,35 @@
         </div>`;
     }
 
+    function applyShotZoom() {
+      const img = document.getElementById("shot-full");
+      const btn = document.getElementById("shot-zoom");
+      img.classList.toggle("zoom", shotZoom);
+      btn.textContent = shotZoom ? "縮小" : "拡大";
+    }
+    function openShot() {
+      const dlg = document.getElementById("shot-dlg");
+      const img = document.getElementById("shot-full");
+      img.src = SHOT;
+      shotZoom = false;
+      applyShotZoom();
+      dlg.showModal();
+    }
     function paint() {
       paintList();
       paintPipe();
+      const open = document.getElementById("shot-open");
+      if (open) open.addEventListener("click", openShot);
     }
+    document.getElementById("shot-zoom").addEventListener("click", () => {
+      shotZoom = !shotZoom;
+      applyShotZoom();
+    });
+    document.getElementById("shot-full").addEventListener("dblclick", (e) => {
+      e.preventDefault();
+      shotZoom = !shotZoom;
+      applyShotZoom();
+    });
     paint();
   </script>
 </body>
