@@ -137,7 +137,7 @@ export async function tryAdminGet(
   }
 
   if (path === "/admin/register") {
-    const page = adminRegisterPage(board, url.searchParams.get("edit"), m);
+    const page = adminRegisterPage(board, url.searchParams.get("edit"), m, adminReauthField());
     return html(
       layoutAdmin({
         title: "出走登録",

@@ -285,20 +285,43 @@ body.ledger-page .filters select {
 .reg-list { display: flex; flex-direction: column; gap: .2rem; }
 .reg-row {
   display: grid;
-  grid-template-columns: 1.6rem minmax(0, 1fr) auto;
-  gap: .35rem .5rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .35rem;
   align-items: center;
-  padding: .4rem .45rem;
+  padding: .25rem .3rem .25rem .2rem;
   border-radius: 6px;
-  text-decoration: none;
   border: 1px solid transparent;
 }
 .reg-row:hover, .reg-row.on { background: #f4f7fb; }
 .reg-row.on { background: #e8f0fa; }
+.reg-row-link {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr) auto;
+  gap: .35rem .5rem;
+  align-items: center;
+  min-width: 0;
+  padding: .25rem .25rem;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 4px;
+}
 .reg-row .n { font-weight: 700; font-variant-numeric: tabular-nums; color: #6b7380; }
 .reg-row .who { min-width: 0; }
 .reg-row .uma { display: block; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .reg-row .run { display: block; font-size: .72rem; color: #6b7380; }
+.reg-unlist {
+  font: inherit;
+  font-size: .72rem;
+  font-weight: 700;
+  padding: .28rem .5rem;
+  border-radius: 6px;
+  border: 1px solid #d5d9e0;
+  background: #fff;
+  color: #6b7380;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.reg-unlist:hover { border-color: #a33; color: #a33; background: #fdf4f4; }
 .admin-offscreen {
   position: fixed; left: 0; top: 0; width: 1px; height: 1px; opacity: 0; overflow: hidden; margin: 0; padding: 0; border: 0;
 }

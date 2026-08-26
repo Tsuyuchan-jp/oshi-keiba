@@ -68,7 +68,7 @@ function bindDlgScript(): string {
       });
     }
   };
-  ["reset","undo","clear-horses","discard-event","revert-voting","scratch"].forEach((id) => {
+  ["reset","undo","clear-horses","discard-event","revert-voting","scratch","drop-horse"].forEach((id) => {
     bindDlg(document.getElementById(id + "-modal"), document.getElementById(id + "-open"), document.getElementById(id + "-cancel"));
   });
   const confirmOnSubmit = (form, msg) => {
@@ -402,6 +402,7 @@ export function adminRegisterPage(
   board: Board,
   editId: string | null,
   flash?: { text: string | null; error: boolean },
+  reauth = "",
 ): { body: string; scripts: string } {
   const setup = eventScoreSetup(board.event);
   const canSetup = board.event.status === "setup";
@@ -411,11 +412,18 @@ export function adminRegisterPage(
       const p = horseSheetParts(h.horse);
       const on = edit?.horse.id === h.horse.id ? " on" : "";
       const man = h.horse.seed_source === "manual";
-      return `<a class="reg-row${on}" href="/admin/register?edit=${escapeHtml(h.horse.id)}">
-        <span class="n">${h.number}</span>
-        <span class="who"><span class="uma">${escapeHtml(p.umaName)}</span><span class="run">${escapeHtml(p.runnerName)}</span></span>
-        <span class="tag${man ? " warn" : ""}">${man ? "直置き" : "自動"}</span>
-      </a>`;
+      const dropBtn =
+        canSetup && !h.horse.scratched
+          ? `<button type="button" class="reg-unlist" data-drop-id="${escapeHtml(h.horse.id)}" data-drop-name="${escapeHtml(p.umaName)}（${escapeHtml(p.runnerName)}）">外す</button>`
+          : "";
+      return `<div class="reg-row${on}">
+        <a class="reg-row-link" href="/admin/register?edit=${escapeHtml(h.horse.id)}">
+          <span class="n">${h.number}</span>
+          <span class="who"><span class="uma">${escapeHtml(p.umaName)}</span><span class="run">${escapeHtml(p.runnerName)}</span></span>
+          <span class="tag${man ? " warn" : ""}">${man ? "直置き" : "自動"}</span>
+        </a>
+        ${dropBtn}
+      </div>`;
     })
     .join("");
   const flashEl = flash?.text
@@ -443,6 +451,10 @@ export function adminRegisterPage(
       ? `<button type="button" class="reg-shot-btn" id="shot-open" aria-label="スクショを大きく見る">
           <img class="reg-shot" src="/admin/shot/${escapeHtml(edit.horse.id)}" alt=""></button>`
       : `<div class="reg-shot empty">スクショなし</div>`;
+    const auto = scoreFromHorse(setup, scoreIn);
+    const manualBox =
+      edit.horse.seed_source === "manual" &&
+      !(auto && auto.strength === edit.horse.strength);
     benchTitle = "直し";
     benchMeta = escapeHtml(p.umaName);
     nextAdd = `<a class="reg-next" href="/admin/register">＋ 次の1頭を登録</a>`;
@@ -466,7 +478,7 @@ export function adminRegisterPage(
                 <label>評価点<input name="strength" id="strength" type="number" min="0" step="0.1" value="${edit.horse.strength}" required></label>
               </div>
               <label class="kind-opt" style="margin-top:.55rem">
-                <input type="checkbox" name="strength_manual" id="strength-manual" value="1"${edit.horse.seed_source === "manual" ? " checked" : ""}>
+                <input type="checkbox" name="strength_manual" id="strength-manual" value="1"${manualBox ? " checked" : ""}>
                 評価点を直置き
               </label>
               <div class="ctas">
@@ -502,6 +514,18 @@ export function adminRegisterPage(
       </section>
     </div>
     <dialog class="shot-dlg shot-dlg-left" id="shot-dlg"><div class="shot-scroller fit" id="shot-scroller"><img id="shot-full" alt=""></div></dialog>
+    <dialog class="modal" id="drop-horse-modal">
+      <h2>名簿から外す</h2>
+      <p id="drop-horse-p"></p>
+      <p class="note">出走タブの「取消」（馬券の全額返還）ではありません。投票開始前の、この頭の登録を消します。</p>
+      <form method="post" action="/admin/horse-drop" id="drop-horse-form" class="reauth" autocomplete="off"
+        data-confirm="この頭を名簿から消します。出走取消（返還）ではありません。よろしいですか？">
+        <input type="hidden" name="horse_id" id="drop-horse-id">
+        <div class="row">${reauth}<button class="danger" type="submit">名簿から外す</button>
+          <button type="button" class="secondary" id="drop-horse-cancel">やめる</button></div>
+      </form>
+    </dialog>
+    ${bindDlgScript()}
     <script>
       const dlg = document.getElementById("shot-dlg");
       const full = document.getElementById("shot-full");
@@ -518,6 +542,17 @@ export function adminRegisterPage(
       };
       sc?.addEventListener("click", closeShot);
       dlg?.addEventListener("click", closeShot);
+      const ddlg = document.getElementById("drop-horse-modal");
+      document.querySelectorAll("[data-drop-id]").forEach((btn) => {
+        btn.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          document.getElementById("drop-horse-id").value = btn.getAttribute("data-drop-id");
+          document.getElementById("drop-horse-p").textContent =
+            "「" + btn.getAttribute("data-drop-name") + "」を名簿から消します。";
+          ddlg?.showModal();
+        });
+      });
       const styles = document.getElementById("styles");
       const styleEl = document.getElementById("style-key");
       styles?.querySelectorAll("[data-s]").forEach((b) => {

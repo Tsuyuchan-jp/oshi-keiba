@@ -23,6 +23,7 @@ import {
   clearHorses,
   deleteMember,
   discardCurrentSetup,
+  dropHorse,
   forceClose,
   getUser,
   hasJoinedEvent,
@@ -651,6 +652,7 @@ export default {
             {
               strength: resolved.strength,
               scoreInputJson: serializeHorseScoreInput(scoreInput),
+              seedSource: resolved.source,
             },
           );
           if (ocrOk && shot instanceof File) {
@@ -706,10 +708,28 @@ export default {
             {
               strength: resolved.strength,
               scoreInputJson: serializeHorseScoreInput(scoreInput),
+              seedSource: resolved.source,
               keepScoreInput: false,
             },
           );
           return bounce("/admin/register", "更新しました");
+        } catch (err) {
+          return bounce("/admin/register", err instanceof Error ? err.message : "失敗", true);
+        }
+      }
+
+      if (method === "POST" && path === "/admin/horse-drop") {
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) return gate;
+        const form = await readForm(request);
+        const password = readAdminReauth(form);
+        if (!timingSafeEqualStr(password, env.ADMIN_PASSWORD)) {
+          return bounce("/admin/register", "管理者パスが違います（外していません）", true);
+        }
+        try {
+          const board = await loadBoard(env.DB);
+          await dropHorse(env.DB, board.event, form.get("horse_id") ?? "");
+          return bounce("/admin/register", "名簿から外しました");
         } catch (err) {
           return bounce("/admin/register", err instanceof Error ? err.message : "失敗", true);
         }

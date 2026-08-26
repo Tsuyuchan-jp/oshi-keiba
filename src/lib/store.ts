@@ -688,6 +688,8 @@ export type AddHorseOpts = {
   strength: number;
   /** 評価点材料。無い頭は直置きのみ */
   scoreInputJson?: string | null;
+  /** 未指定は manual（デモ投入など） */
+  seedSource?: "auto" | "manual";
   recordUndo?: boolean;
 };
 
@@ -720,12 +722,13 @@ export async function addHorse(
     throw new Error(`頭数は ${MAX_LIVE_HORSES} まで`);
   }
   if (recordUndo) await captureAdminUndo(db, `出走を追加（${combined}）`);
+  const source = o.seedSource === "auto" ? "auto" : "manual";
   const id = newId();
   await db
     .prepare(
       `INSERT INTO horses (
         id, event_id, name, uma_name, runner_name, strength, score_input, seed_source, scratched, sort_order, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'manual', 0, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
     )
     .bind(
       id,
@@ -735,6 +738,7 @@ export async function addHorse(
       runner,
       o.strength,
       scoreInput,
+      source,
       horses.length + 1,
       Date.now(),
     )
@@ -745,6 +749,7 @@ export async function addHorse(
 export type UpdateHorseOpts = {
   strength: number;
   scoreInputJson?: string | null;
+  seedSource?: "auto" | "manual";
   /** true なら score_input を触らない（Strength だけ直置き） */
   keepScoreInput?: boolean;
   recordUndo?: boolean;
@@ -789,11 +794,33 @@ export async function updateHorse(
     o.scoreInputJson == null || o.scoreInputJson === ""
       ? null
       : o.scoreInputJson;
+  const source = o.seedSource === "auto" ? "auto" : "manual";
   await db
     .prepare(
-      "UPDATE horses SET name = ?, uma_name = ?, runner_name = ?, strength = ?, score_input = ? WHERE id = ? AND event_id = ?",
+      "UPDATE horses SET name = ?, uma_name = ?, runner_name = ?, strength = ?, score_input = ?, seed_source = ? WHERE id = ? AND event_id = ?",
     )
-    .bind(combined, uma, runner, o.strength, scoreInput, horseId, event.id)
+    .bind(combined, uma, runner, o.strength, scoreInput, source, horseId, event.id)
+    .run();
+}
+
+/** setup 中だけ。取消（返還）ではなく登録そのものを消す */
+export async function dropHorse(
+  db: D1Database,
+  event: EventRow,
+  horseId: string,
+): Promise<void> {
+  if (event.status !== "setup") {
+    throw new Error("投票開始後は名簿から外せません。出走タブの取消を使ってください");
+  }
+  const row = await db
+    .prepare("SELECT name FROM horses WHERE id = ? AND event_id = ?")
+    .bind(horseId, event.id)
+    .first<{ name: string }>();
+  if (!row) throw new Error("出走が見つかりません");
+  await captureAdminUndo(db, `名簿から外す（${row.name}）`);
+  await db
+    .prepare("DELETE FROM horses WHERE id = ? AND event_id = ?")
+    .bind(horseId, event.id)
     .run();
 }
 
