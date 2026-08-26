@@ -285,3 +285,17 @@ export function computeScore(input: ScoreInput): ScoreBreakdown {
 export function isTameraiName(name: string): boolean {
   return isTamerai(name);
 }
+
+/** 土台 S0 に枚数として入るか（緑は除外。有効リスト外はためらい以外 false） */
+export function skillCountsInBase(
+  name: string,
+  id: number | null | undefined,
+  effectiveIds?: ReadonlySet<number> | null,
+): boolean {
+  const n = name.trim();
+  if (!n) return false;
+  if (isGreenMaster(n)) return false;
+  if (isTamerai(n) || isTameraiId(id)) return true;
+  if (effectiveIds) return id != null && effectiveIds.has(id);
+  return true;
+}

@@ -5,6 +5,8 @@ import { scoreFromHorse } from "./scoreFromHorse";
 import { eventScoreSetup, numberByHorseId } from "./store";
 import type { Board, EventRow, HorseBoard, UserRow, BetRow } from "./store";
 import type { UndoMeta } from "./undo";
+import { effectiveIdsFromScoreSetup } from "./scoreSetup";
+import greenJson from "../data/green-skills.json" with { type: "json" };
 import {
   adminOpsGuide,
   flashHtml,
@@ -473,7 +475,16 @@ export function adminRegisterPage(
                 <label>出走者<input name="runner_name" id="runner-name" value="${escapeHtml(p.runnerName)}" required maxlength="40"></label>
               </div>
               ${styleSeg(scoreIn?.styleKey)}
-              ${scoreIn ? registerMaterialsHtml(scoreIn) : ""}
+              ${
+                scoreIn
+                  ? registerMaterialsHtml(
+                      scoreIn,
+                      scoreIn.styleKey && setup
+                        ? effectiveIdsFromScoreSetup(setup, scoreIn.styleKey)
+                        : null,
+                    )
+                  : ""
+              }
               <div class="reg-preview">
                 <span class="lab">評価点</span>
                 <span class="num">${escapeHtml(String(edit.horse.strength))}</span>
@@ -569,7 +580,15 @@ export function adminRegisterPage(
         });
       });
     </script>`;
-  return { body, scripts: canSetup ? ocrAdminScript(!!setup) : "" };
+  const greenNames = (greenJson as { skills: { name: string }[] }).skills.map(
+    (s) => s.name,
+  );
+  return {
+    body,
+    scripts: canSetup
+      ? ocrAdminScript(!!setup, setup?.effectiveSkillIds ?? null, greenNames)
+      : "",
+  };
 }
 
 function styleLabel(key: string | null | undefined): string {

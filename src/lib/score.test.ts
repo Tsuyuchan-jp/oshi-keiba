@@ -5,9 +5,17 @@ import {
   computeScore,
   ratioMult,
   skillBase,
+  skillCountsInBase,
   speedMult,
   staminaMult,
 } from "./score.ts";
+
+test("skillCountsInBase: リスト外は false、ためらいは true", () => {
+  const ids = new Set([201601]);
+  assert.equal(skillCountsInBase("地固め", 201601, ids), true);
+  assert.equal(skillCountsInBase("別のスキル", 999999, ids), false);
+  assert.equal(skillCountsInBase("逃げためらい", 200851, ids), true);
+});
 
 test("金は有効1＋追加2で計3", () => {
   const s = skillBase(["円弧のマエストロ", "地固め"]);

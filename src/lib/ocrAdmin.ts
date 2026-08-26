@@ -3,6 +3,8 @@ import { STYLE_OPTIONS, type HorseScoreInput } from "./horseScoreInput";
 import { catalogJsonForPage, classifySkillName } from "./skillCatalog";
 import type { EventScoreSetup } from "./scoreSetup";
 import { ALLOWED_SHOT_MIME } from "./shotMime";
+import { skillCountsInBase, TAMERAI_IDS } from "./score";
+import type { EffectiveSkillIdsByStyle } from "./utoolsEffects";
 import type { Board } from "./store";
 
 const KEY_LS = "oshi-keiba-gemini-key";
@@ -16,27 +18,52 @@ function aptChip(label: string, rank: string): string {
 
 function skillChipClass(kind: string): string {
   if (kind === "green") return "green";
-  if (kind === "gold" || kind === "unique" || kind === "evo") return "gold";
+  if (kind === "gold" || kind === "unique" || kind === "evo" || kind === "special")
+    return "gold";
   if (kind === "minus") return "minus";
   return "white";
 }
 
+function skillChipsHtml(
+  items: { name: string; kind: string }[],
+  emptyLabel: string,
+): string {
+  if (items.length === 0) {
+    return `<span class="reg-chip">${escapeHtml(emptyLabel)}</span>`;
+  }
+  return items
+    .map(
+      (h) =>
+        `<span class="reg-chip ${skillChipClass(h.kind)}">${escapeHtml(h.name)}</span>`,
+    )
+    .join("");
+}
+
 /** 読取材料のチップ。掛かりスタミナ2欄は出さない */
-export function registerMaterialsHtml(input: HorseScoreInput): string {
+export function registerMaterialsHtml(
+  input: HorseScoreInput,
+  effectiveIds?: ReadonlySet<number> | null,
+): string {
   const st = input.stats;
   const ap = input.aptitudes;
-  const skills = input.skillNames
-    .map((n) => {
-      const c = classifySkillName(n);
-      return `<span class="reg-chip ${skillChipClass(c.kind)}">${escapeHtml(c.name)}</span>`;
-    })
-    .join("");
-  const skipped = (input.skippedSkillNames ?? [])
-    .map((n) => `<span class="reg-chip skip">${escapeHtml(n)}</span>`)
-    .join("");
-  const okCount = input.skillNames.length;
-  const skipCount = (input.skippedSkillNames ?? []).length;
-  const skillHeading = `スキル（${okCount} / 落ち ${skipCount}）`;
+  const accepted: { name: string; kind: string; id: number | null }[] = [];
+  for (let i = 0; i < input.skillNames.length; i++) {
+    const name = input.skillNames[i]!;
+    const id = input.skillIds[i] ?? null;
+    const c = classifySkillName(name);
+    accepted.push({ name: c.name || name, kind: c.kind, id });
+  }
+  const effective = accepted.filter((h) =>
+    skillCountsInBase(h.name, h.id, effectiveIds),
+  );
+  const rejected = accepted.filter(
+    (h) => !skillCountsInBase(h.name, h.id, effectiveIds),
+  );
+  const skipped = (input.skippedSkillNames ?? []).map((n) => ({
+    name: n,
+    kind: "unknown",
+  }));
+
   return `    <div class="reg-stats">
       <div class="reg-stat"><span class="k">速</span><span class="v">${st.speed}</span></div>
       <div class="reg-stat"><span class="k">スタ</span><span class="v">${st.stamina}</span></div>
@@ -52,13 +79,12 @@ export function registerMaterialsHtml(input: HorseScoreInput): string {
       <span class="reg-slash" aria-hidden="true">/</span>
       ${aptChip("逃げ", ap.nige)}${aptChip("先行", ap.senkou)}${aptChip("差し", ap.sashi)}${aptChip("追込", ap.oikomi)}
     </div>
-    <p class="set-k" style="margin-top:.85rem">${escapeHtml(skillHeading)}</p>
-    <div class="reg-chips">${skills || `<span class="reg-chip">スキルなし</span>`}</div>
-    ${
-      skipped
-        ? `<p class="set-k" style="margin-top:.85rem">不採用</p><div class="reg-chips">${skipped}</div>`
-        : ""
-    }`;
+    <p class="set-k" style="margin-top:.85rem">有効スキル（${effective.length}）</p>
+    <div class="reg-chips">${skillChipsHtml(effective, "なし")}</div>
+    <p class="set-k" style="margin-top:.85rem">不採用スキル</p>
+    <div class="reg-chips">${skillChipsHtml(rejected, "なし")}</div>
+    <p class="set-k" style="margin-top:.85rem">OCR落ちスキル</p>
+    <div class="reg-chips">${skillChipsHtml(skipped, "なし")}</div>`;
 }
 
 export function horsesAdminBody(
@@ -148,13 +174,21 @@ export function horsesAdminBody(
 }
 
 /** ブラウザ用。カタログ＋Dice ファジーでスキルを ID 化する */
-export function ocrAdminScript(canAutoScore: boolean): string {
+export function ocrAdminScript(
+  canAutoScore: boolean,
+  effectiveByStyle: EffectiveSkillIdsByStyle | null = null,
+  greenNames: readonly string[] = [],
+): string {
   const catalog = catalogJsonForPage();
   return `<script>
 (function () {
   const KEY_LS = ${JSON.stringify(KEY_LS)};
   const CATALOG = ${catalog};
   const CAN_AUTO = ${canAutoScore ? "true" : "false"};
+  const EFFECTIVE_BY_STYLE = ${JSON.stringify(effectiveByStyle)};
+  const GREEN_NAMES = new Set(${JSON.stringify([...greenNames])});
+  const TAMERAI_IDS = new Set(${JSON.stringify([...TAMERAI_IDS])});
+  const TAMERAI_NAMES = new Set(["逃げためらい","先行ためらい","差しためらい","追込ためらい"]);
   const FUZZY_TH = 0.45;
   const KIND_JA = { green: "緑", gold: "金", white: "白", unique: "固有", evo: "進化", minus: "デバフ", inherit: "継承", special: "特殊", rare: "金", normal: "白", unknown: "未分類" };
   // skillFuzzy.ts と同期: エイリアス・編集距離≤1・同名の unique/inherit/継承進化
@@ -295,7 +329,7 @@ export function ocrAdminScript(canAutoScore: boolean): string {
   }
   function chipKind(kind) {
     if (kind === "green") return "green";
-    if (kind === "gold" || kind === "unique" || kind === "evo" || kind === "rare") return "gold";
+    if (kind === "gold" || kind === "unique" || kind === "evo" || kind === "rare" || kind === "special") return "gold";
     if (kind === "minus") return "minus";
     return "white";
   }
@@ -331,6 +365,22 @@ export function ocrAdminScript(canAutoScore: boolean): string {
       b.classList.toggle("on", b.dataset.s === (styleEl && styleEl.value));
     });
   }
+  function countsInBase(name, id) {
+    const n = String(name || "").trim();
+    if (!n) return false;
+    if (GREEN_NAMES.has(n)) return false;
+    if (TAMERAI_NAMES.has(n) || (id != null && TAMERAI_IDS.has(id))) return true;
+    const style = styleEl && styleEl.value;
+    const list = style && EFFECTIVE_BY_STYLE ? EFFECTIVE_BY_STYLE[style] : null;
+    if (list && list.length) return id != null && list.indexOf(id) >= 0;
+    return true;
+  }
+  function chipsHtml(items, emptyLabel, skipClass) {
+    if (!items.length) return '<span class="reg-chip">' + esc(emptyLabel) + "</span>";
+    return items.map((h) =>
+      '<span class="reg-chip ' + (skipClass || chipKind(h.kind)) + '">' + esc(h.name) + "</span>"
+    ).join("");
+  }
 
   let ac = null;
   let ocrShot = null;
@@ -350,13 +400,9 @@ export function ocrAdminScript(canAutoScore: boolean): string {
     const ap = draft.aptitudes;
     const okHits = lastHits.filter((h) => h.ok);
     const missHits = lastHits.filter((h) => !h.ok);
-    const skills = okHits.map((h) =>
-      '<span class="reg-chip ' + chipKind(h.kind) + '">' + esc(h.name) + "</span>"
-    ).join("");
-    const miss = missHits.map((h) =>
-      '<span class="reg-chip skip">' + esc(h.input) + "</span>"
-    ).join("");
-    const skillHeading = "スキル（" + okHits.length + " / 落ち " + missHits.length + "）";
+    const effective = okHits.filter((h) => countsInBase(h.name, h.id));
+    const rejected = okHits.filter((h) => !countsInBase(h.name, h.id));
+    const ocrMiss = missHits.map((h) => ({ name: h.input, kind: "unknown" }));
     el.innerHTML =
       '<div class="reg-stats">' +
         '<div class="reg-stat"><span class="k">速</span><span class="v">' + esc(st.speed) + "</span></div>" +
@@ -373,11 +419,12 @@ export function ocrAdminScript(canAutoScore: boolean): string {
         '<span class="reg-slash" aria-hidden="true">/</span>' +
         aptChip("逃げ", ap.nige) + aptChip("先行", ap.senkou) + aptChip("差し", ap.sashi) + aptChip("追込", ap.oikomi) +
       "</div>" +
-      '<p class="set-k" style="margin-top:.85rem">' + esc(skillHeading) + "</p>" +
-      '<div class="reg-chips">' + (skills || '<span class="reg-chip">スキルなし</span>') + "</div>" +
-      (miss
-        ? '<p class="set-k" style="margin-top:.85rem">不採用</p><div class="reg-chips">' + miss + "</div>"
-        : "");
+      '<p class="set-k" style="margin-top:.85rem">有効スキル（' + effective.length + "）</p>" +
+      '<div class="reg-chips">' + chipsHtml(effective, "なし") + "</div>" +
+      '<p class="set-k" style="margin-top:.85rem">不採用スキル</p>' +
+      '<div class="reg-chips">' + chipsHtml(rejected, "なし") + "</div>" +
+      '<p class="set-k" style="margin-top:.85rem">OCR落ちスキル</p>' +
+      '<div class="reg-chips">' + chipsHtml(ocrMiss, "なし", "skip") + "</div>";
   }
   function showHeldPreview(file) {
     const dropImg = document.getElementById("ocr-drop-img");
@@ -455,7 +502,17 @@ export function ocrAdminScript(canAutoScore: boolean): string {
       strengthEl.required = !!need;
     }
   }
-  styleEl?.addEventListener("change", syncScoreInput);
+  styleEl?.addEventListener("change", () => {
+    syncScoreInput();
+    paintMaterials();
+  });
+  document.getElementById("styles")?.querySelectorAll("[data-s]").forEach((b) => {
+    b.addEventListener("click", () => {
+      if (styleEl) styleEl.value = b.dataset.s || "";
+      paintStyleBtns();
+      styleEl?.dispatchEvent(new Event("change"));
+    });
+  });
   manualEl?.addEventListener("change", updateHint);
 
   document.getElementById("ocr-stop")?.addEventListener("click", () => {
