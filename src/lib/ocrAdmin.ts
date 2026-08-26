@@ -1,5 +1,4 @@
 import { escapeHtml } from "./http";
-import { horseSheetParts } from "./horseName";
 import { STYLE_OPTIONS } from "./horseScoreInput";
 import { catalogJsonForPage } from "./skillCatalog";
 import type { EventScoreSetup } from "./scoreSetup";
@@ -10,74 +9,63 @@ const KEY_LS = "oshi-keiba-gemini-key";
 const SHOT_ACCEPT = ALLOWED_SHOT_MIME.join(",");
 
 export function horsesAdminBody(
-  board: Board,
+  _board: Board,
   canSetup: boolean,
-  scoreSetup: EventScoreSetup | null,
-  opts?: { embedded?: boolean },
+  _scoreSetup: EventScoreSetup | null,
+  _opts?: { embedded?: boolean },
 ): string {
-  const rows = board.horses
-    .map((h) => {
-      const p = horseSheetParts(h.horse);
-      const shot = h.horse.shot_key ? "あり" : "なし";
-      const hasMat = h.horse.score_input ? "材料あり" : "—";
-      return `<tr>
-        <td>${h.number}</td>
-        <td>${escapeHtml(p.umaName)}</td>
-        <td>${escapeHtml(p.runnerName)}</td>
-        <td>${h.horse.strength}</td>
-        <td>${hasMat}</td>
-        <td>${shot}</td>
-      </tr>`;
-    })
+  if (!canSetup) {
+    return `<p class="reg-locked">投票開始後は出走を足せません。直しと内訳は出走タブ。</p>`;
+  }
+  const styleBtns = [
+    ["runner", "逃げ"],
+    ["leader", "先行"],
+    ["betweener", "差し"],
+    ["chaser", "追込"],
+  ]
+    .map(([k, lab]) => `<button type="button" data-s="${k}">${lab}</button>`)
     .join("");
-  const setupNote = scoreSetup
-    ? `<p class="note">開催条件あり。脚質と OCR 材料が揃えば評価点を自動算出します。直置きチェック時だけ手入力が正になります。</p>`
-    : `<p class="note">開催条件（ステ目標）が未設定です。いまは評価点直置きのみ。開催設定で「開催条件とステ目標値」を入れてください。</p>`;
   const styleOpts = [
     `<option value="">未選択</option>`,
     ...STYLE_OPTIONS.map(
       (o) => `<option value="${o.key}">${escapeHtml(o.label)}</option>`,
     ),
   ].join("");
-  const setup = canSetup
-    ? `<section class="ocr-box">
-        <h3>Gemini API キー</h3>
-        <p class="note">このブラウザにだけ残します。サーバには送りません。Google AI Studio で発行してください。無料枠のまま、課金アカウントは付けないでください。他人と共有しないでください。</p>
-        <div class="row">
-          <label>キー <input id="gemini-key" type="password" autocomplete="off"></label>
-          <button type="button" id="gemini-save">このブラウザに保存</button>
-          <button type="button" class="secondary" id="gemini-clear">消す</button>
-        </div>
-        <h3>スクショから読む</h3>
-        <p class="note">アプリ外で結合した完成画像を1枚（PNG / JPEG / WebP）。読取に成功した画像が、登録と同時に保存されます。評価点そのものは OCR では埋めません（材料だけ）。読まなくても下の直置きで登録できます（その場合スクショは残りません）。</p>
-        ${setupNote}
-        <div class="row">
-          <label>画像 <input id="ocr-file" type="file" accept="${SHOT_ACCEPT}"></label>
-          <button type="button" id="ocr-run">読み取る</button>
-          <button type="button" class="secondary" id="ocr-stop">停止</button>
-        </div>
-        <pre class="ocr-out" id="ocr-out"></pre>
-      </section>
-      <form id="horse-add" method="post" action="/admin/horse" enctype="multipart/form-data" class="row" style="margin-top:1rem;flex-wrap:wrap">
+  // file / 隠し欄は table-scroll の外（overflow 内だとピッカーが2頭目から開かない）
+  return `<input id="ocr-file" class="admin-offscreen" type="file" accept="${SHOT_ACCEPT}" tabindex="-1">
+      <form id="horse-add" method="post" action="/admin/horse" enctype="multipart/form-data">
         <input type="hidden" name="ocr_ok" id="ocr-ok" value="">
         <input type="hidden" name="score_input" id="score-input" value="">
-        <input type="file" name="shot" id="shot-from-ocr" accept="${SHOT_ACCEPT}" hidden>
-        <label>ウマ娘名 <input name="uma_name" id="uma-name" required maxlength="40"></label>
-        <label>出走者 <input name="runner_name" id="runner-name" required maxlength="40"></label>
-        <label>出走脚質 <select name="style_key" id="style-key">${styleOpts}</select></label>
-        <label>評価点 <input name="strength" id="strength" type="number" min="0" step="0.1" value="10" required></label>
-        <label><input type="checkbox" name="strength_manual" id="strength-manual" value="1"> 評価点を直置き</label>
-        <button type="submit">登録</button>
-      </form>
-      <p class="note" id="score-hint">脚質適性に S が1つだけなら脚質を初期選択します。開催条件があり脚質と材料が揃うと、登録時に算出値を評価点に載せます。</p>`
-    : `<p class="note">出走登録完了。飛び入り禁止。</p>`;
-  const back = opts?.embedded ? "" : `<p class="note"><a href="/admin">進行へ戻る</a></p>`;
-  return `${back}
-    ${setup}
-    ${opts?.embedded ? "" : `<table style="margin-top:1rem">
-      <thead><tr><th>#</th><th>ウマ娘名</th><th>出走者</th><th>評価点</th><th>材料</th><th>スクショ</th></tr></thead>
-      <tbody>${rows || `<tr><td colspan="6">まだいません</td></tr>`}</tbody>
-    </table>`}`;
+        <input type="file" name="shot" id="shot-from-ocr" class="admin-offscreen" accept="${SHOT_ACCEPT}" tabindex="-1">
+        <select name="style_key" id="style-key" class="admin-offscreen" tabindex="-1">${styleOpts}</select>
+        <div class="table-scroll" id="bench">
+          <label class="reg-drop" id="ocr-drop" for="ocr-file">
+            <strong>完成スクショを置く</strong>
+            <p>アプリ外で結合した1枚。PNG / JPEG / WebP。</p>
+          </label>
+          <p class="reg-alt"><button type="button" id="to-manual">スクショなしで直置きする</button></p>
+          <div class="ctas" style="margin-top:.7rem">
+            <button type="button" id="ocr-run">読み取る</button>
+            <button type="button" id="ocr-stop">停止</button>
+          </div>
+          <div class="reg-names" style="margin-top:.85rem">
+            <label>ウマ娘名<input name="uma_name" id="uma-name" required maxlength="40"></label>
+            <label>出走者<input name="runner_name" id="runner-name" required maxlength="40"></label>
+          </div>
+          <p class="set-k" style="margin-top:.85rem">出走脚質</p>
+          <div class="set-seg" id="styles">${styleBtns}</div>
+          <div class="reg-score-in" style="margin-top:.85rem;max-width:10rem">
+            <label>評価点<input name="strength" id="strength" type="number" min="0" step="0.1" value="10" required></label>
+          </div>
+          <label class="kind-opt" style="margin-top:.55rem">
+            <input type="checkbox" name="strength_manual" id="strength-manual" value="1"> 評価点を直置き
+          </label>
+          <div class="ctas">
+            <button type="submit" class="primary">登録</button>
+          </div>
+          <pre class="ocr-out" id="ocr-out"></pre>
+        </div>
+      </form>`;
 }
 
 /** ブラウザ用。カタログ＋Dice ファジーでスキルを ID 化する */
@@ -170,9 +158,17 @@ export function ocrAdminScript(canAutoScore: boolean): string {
   const strengthEl = document.getElementById("strength");
   const manualEl = document.getElementById("strength-manual");
   const hint = document.getElementById("score-hint");
-  if (keyInput) keyInput.value = localStorage.getItem(KEY_LS) || "";
+  const fileEl = document.getElementById("ocr-file");
+  function pickGeminiKey(raw) {
+    const s = String(raw || "").trim();
+    const m = s.match(/AIza[0-9A-Za-z_-]+/);
+    return m ? m[0] : s;
+  }
+  if (keyInput) keyInput.value = pickGeminiKey(localStorage.getItem(KEY_LS) || "");
   document.getElementById("gemini-save")?.addEventListener("click", () => {
-    localStorage.setItem(KEY_LS, keyInput.value.trim());
+    const v = pickGeminiKey(keyInput?.value);
+    localStorage.setItem(KEY_LS, v);
+    if (keyInput) keyInput.value = v;
     if (out) out.textContent = "キーをこのブラウザに保存しました。";
   });
   document.getElementById("gemini-clear")?.addEventListener("click", () => {
@@ -180,9 +176,20 @@ export function ocrAdminScript(canAutoScore: boolean): string {
     if (keyInput) keyInput.value = "";
     if (out) out.textContent = "キーを消しました。";
   });
+  document.getElementById("to-manual")?.addEventListener("click", () => {
+    if (manualEl) manualEl.checked = true;
+    strengthEl?.focus();
+  });
+  function paintStyleBtns() {
+    document.getElementById("styles")?.querySelectorAll("[data-s]").forEach((b) => {
+      b.classList.toggle("on", b.dataset.s === (styleEl && styleEl.value));
+    });
+  }
 
   let ac = null;
   let ocrShot = null;
+  /** @type {File | null} */
+  let heldFile = null;
   /** @type {any} */
   let draft = null;
 
@@ -262,14 +269,13 @@ export function ocrAdminScript(canAutoScore: boolean): string {
     const ok = ${JSON.stringify([...ALLOWED_SHOT_MIME])};
     return ok.includes(t) ? t : null;
   }
-  document.getElementById("ocr-run")?.addEventListener("click", async () => {
-    const file = document.getElementById("ocr-file")?.files?.[0];
-    const apiKey = (keyInput?.value || localStorage.getItem(KEY_LS) || "").trim();
-    if (!apiKey) { out.textContent = "キーを入れてください。"; return; }
-    if (!file) { out.textContent = "画像を選んでください。"; return; }
+  async function runOcr(file) {
+    const apiKey = pickGeminiKey(keyInput?.value || localStorage.getItem(KEY_LS) || "");
+    if (!apiKey) { if (out) out.textContent = "キーを入れてください。"; return; }
+    if (!file) { fileEl?.click(); return; }
     const mime = resolveShotMime(file);
-    if (!mime) { out.textContent = "対応形式は PNG / JPEG / WebP です。"; return; }
-    out.textContent = "読み取り中…";
+    if (!mime) { if (out) out.textContent = "対応形式は PNG / JPEG / WebP です。"; return; }
+    if (out) out.textContent = "読み取り中…";
     ac = new AbortController();
     try {
       const dataUrl = await new Promise((resolve, reject) => {
@@ -332,6 +338,7 @@ export function ocrAdminScript(canAutoScore: boolean): string {
       };
       const sole = soleStyle(aptitudes);
       if (styleEl) styleEl.value = sole;
+      paintStyleBtns();
       const lines = [];
       lines.push("ウマ娘名\\t" + uma);
       lines.push("スピード\\t" + draft.stats.speed);
@@ -350,11 +357,34 @@ export function ocrAdminScript(canAutoScore: boolean): string {
       }
       attachOcrShot(file);
       syncScoreInput();
-      out.textContent = lines.join("\\n");
+      if (out) out.textContent = lines.join("\\n");
     } catch (err) {
-      if (err && err.name === "AbortError") out.textContent = "停止しました。";
-      else out.textContent = err instanceof Error ? err.message : String(err);
+      if (out) {
+        if (err && err.name === "AbortError") out.textContent = "停止しました。";
+        else out.textContent = err instanceof Error ? err.message : String(err);
+      }
     }
+  }
+  function takeFile(file) {
+    if (!file) return;
+    heldFile = file;
+    if (fileEl) fileEl.value = "";
+    runOcr(file);
+  }
+  fileEl?.addEventListener("change", () => {
+    const f = fileEl.files && fileEl.files[0];
+    if (f) takeFile(f);
+  });
+  const drop = document.getElementById("ocr-drop");
+  drop?.addEventListener("dragover", (e) => { e.preventDefault(); });
+  drop?.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) takeFile(f);
+  });
+  document.getElementById("ocr-run")?.addEventListener("click", () => {
+    if (!heldFile) { fileEl?.click(); return; }
+    runOcr(heldFile);
   });
   document.getElementById("horse-add")?.addEventListener("submit", (ev) => {
     syncScoreInput();

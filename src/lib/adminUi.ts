@@ -15,7 +15,6 @@ import {
   formulaPanel,
   headerPhaseKind,
   statusLabel,
-  strengthCalcModal,
   toJstInput,
 } from "./ui";
 import { horsesAdminBody, ocrAdminScript } from "./ocrAdmin";
@@ -374,9 +373,35 @@ export function adminProgressPage(opts: {
   };
 }
 
+const STYLE_BTN: { key: string; label: string }[] = [
+  { key: "runner", label: "逃げ" },
+  { key: "leader", label: "先行" },
+  { key: "betweener", label: "差し" },
+  { key: "chaser", label: "追込" },
+];
+
+function styleSeg(selected: string | null | undefined): string {
+  const cur = selected || "";
+  const btns = STYLE_BTN.map(
+    (o) =>
+      `<button type="button"${o.key === cur ? ` class="on"` : ""} data-s="${o.key}">${o.label}</button>`,
+  ).join("");
+  const opts = [
+    `<option value="">未選択</option>`,
+    ...STYLE_OPTIONS.map((o) => {
+      const sel = o.key === cur ? " selected" : "";
+      return `<option value="${o.key}"${sel}>${escapeHtml(o.label)}</option>`;
+    }),
+  ].join("");
+  return `<p class="set-k" style="margin-top:.85rem">出走脚質</p>
+      <div class="set-seg" id="styles">${btns}</div>
+      <select name="style_key" id="style-key" class="admin-offscreen" tabindex="-1">${opts}</select>`;
+}
+
 export function adminRegisterPage(
   board: Board,
   editId: string | null,
+  flash?: { text: string | null; error: boolean },
 ): { body: string; scripts: string } {
   const setup = eventScoreSetup(board.event);
   const canSetup = board.event.status === "setup";
@@ -393,40 +418,79 @@ export function adminRegisterPage(
       </a>`;
     })
     .join("");
-  let bench = horsesAdminBody(board, canSetup, setup, { embedded: true });
+  const flashEl = flash?.text
+    ? `<p class="settings-flash${flash.error ? " err" : ""}">${escapeHtml(flash.text)}</p>`
+    : "";
+  const keyBar = canSetup
+    ? `<p class="reg-key" style="margin:0 0 0 auto">キー
+        <input id="gemini-key" type="text" autocomplete="off" spellcheck="false" aria-label="Gemini API キー">
+        <button type="button" id="gemini-save">保存</button>
+        ·
+        <button type="button" id="gemini-clear">消す</button></p>`
+    : "";
+  let benchTitle = "次の1頭";
+  let benchMeta = "選ぶ → 読む → 登録";
+  let benchInner = horsesAdminBody(board, canSetup, setup, { embedded: true });
+  if (!canSetup) {
+    benchTitle = "登録済み";
+    benchMeta = "飛び入り禁止";
+  }
   if (canSetup && edit && !edit.horse.scratched) {
     const p = horseSheetParts(edit.horse);
     const scoreIn = parseHorseScoreInput(edit.horse.score_input);
-    const styleOpts = STYLE_OPTIONS.map((o) => {
-      const sel = scoreIn?.styleKey === o.key ? " selected" : "";
-      return `<option value="${o.key}"${sel}>${o.label}</option>`;
-    }).join("");
     const shot = edit.horse.shot_key
-      ? `<button type="button" class="shot-thumb" id="shot-open"><img src="/admin/shot/${escapeHtml(edit.horse.id)}" alt=""></button>`
-      : `<p class="note">スクショなし</p>`;
-    bench = `<h2>直し · ${escapeHtml(p.umaName)}</h2>
-      <form method="post" action="/admin/horse-edit" class="row">
+      ? `<button type="button" class="reg-shot-btn" id="shot-open" aria-label="スクショを大きく見る">
+          <img class="reg-shot" src="/admin/shot/${escapeHtml(edit.horse.id)}" alt=""></button>`
+      : `<div class="reg-shot empty">スクショなし</div>`;
+    benchTitle = "直し";
+    benchMeta = escapeHtml(p.umaName);
+    benchInner = `<form method="post" action="/admin/horse-edit" id="horse-edit">
         <input type="hidden" name="horse_id" value="${escapeHtml(edit.horse.id)}">
-        <label>ウマ娘名 <input name="uma_name" value="${escapeHtml(p.umaName)}" required maxlength="40"></label>
-        <label>出走者 <input name="runner_name" value="${escapeHtml(p.runnerName)}" required maxlength="40"></label>
-        <label>出走脚質 <select name="style_key"><option value="">未選択</option>${styleOpts}</select></label>
-        <label>評価点 <input name="strength" type="number" min="0" step="0.1" value="${edit.horse.strength}" required></label>
-        <label class="kind-opt"><input type="checkbox" name="strength_manual" value="1"${edit.horse.seed_source === "manual" ? " checked" : ""}> 評価点を直置き</label>
-        <button type="submit">更新</button>
-      </form>
-      <p class="note"><a href="/admin/register">次の1頭を登録する</a></p>${shot}`;
+        <div class="table-scroll" id="bench">
+          <div class="reg-bench">
+            ${shot}
+            <div>
+              <div class="reg-names">
+                <label>ウマ娘名<input name="uma_name" id="uma-name" value="${escapeHtml(p.umaName)}" required maxlength="40"></label>
+                <label>出走者<input name="runner_name" id="runner-name" value="${escapeHtml(p.runnerName)}" required maxlength="40"></label>
+              </div>
+              ${styleSeg(scoreIn?.styleKey)}
+              <div class="reg-score-in" style="margin-top:.85rem;max-width:10rem">
+                <label>評価点<input name="strength" id="strength" type="number" min="0" step="0.1" value="${edit.horse.strength}" required></label>
+              </div>
+              <label class="kind-opt" style="margin-top:.55rem">
+                <input type="checkbox" name="strength_manual" id="strength-manual" value="1"${edit.horse.seed_source === "manual" ? " checked" : ""}>
+                評価点を直置き
+              </label>
+              <div class="ctas">
+                <button type="submit" class="primary">更新</button>
+                <a href="/admin/register">次の1頭を登録する</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>`;
   }
-  const body = `<section class="hero">
-      <div class="hero-top"><h1>出走登録</h1>${phasePill(board.event.status)}<span>${board.horses.length} / 18</span></div>
-      <p class="note">1頭ずつ。完成スクショを読んで登録するか、スクショなしの直置き。掛かりスタミナ2欄はまだ置かない。</p>
+  const body = `<section class="hero settings-hero">
+      <div class="hero-top">
+        <h1>出走登録</h1>${phasePill(board.event.status)}
+        <span id="count">${board.horses.length} / 18</span>
+        ${keyBar}
+      </div>
+      ${flashEl}
     </section>
     <div class="register-desk">
-      <section class="work"><div class="work-head"><h2>名簿</h2></div>
-        <div class="reg-list">${list || `<p class="note">まだいません</p>`}</div></section>
-      <section class="work">${bench}</section>
+      <section class="work">
+        <div class="work-head"><h2>名簿</h2><span class="odds-meta">登録済み</span></div>
+        <div class="table-scroll"><div class="reg-list" id="list">${list || `<p class="reg-locked">まだいません</p>`}</div></div>
+      </section>
+      <section class="work">
+        <div class="work-head"><h2 id="bench-title">${escapeHtml(benchTitle)}</h2>
+          <span class="odds-meta" id="bench-meta">${benchMeta}</span></div>
+        ${benchInner}
+      </section>
     </div>
-    ${strengthCalcModal()}
-    <dialog class="shot-dlg" id="shot-dlg"><div class="shot-scroller fit" id="shot-scroller"><img id="shot-full" alt=""></div></dialog>
+    <dialog class="shot-dlg shot-dlg-left" id="shot-dlg"><div class="shot-scroller fit" id="shot-scroller"><img id="shot-full" alt=""></div></dialog>
     <script>
       const dlg = document.getElementById("shot-dlg");
       const full = document.getElementById("shot-full");
@@ -438,8 +502,19 @@ export function adminRegisterPage(
       });
       sc?.addEventListener("dblclick", () => { sc.classList.toggle("fit"); sc.classList.toggle("read"); });
       dlg?.addEventListener("click", (ev) => { if (ev.target === dlg) dlg.close(); });
+      const styles = document.getElementById("styles");
+      const styleEl = document.getElementById("style-key");
+      styles?.querySelectorAll("[data-s]").forEach((b) => {
+        b.addEventListener("click", () => {
+          if (styleEl) styleEl.value = b.dataset.s || "";
+          styles.querySelectorAll("[data-s]").forEach((x) => {
+            x.classList.toggle("on", x.dataset.s === (styleEl && styleEl.value));
+          });
+          styleEl?.dispatchEvent(new Event("change"));
+        });
+      });
     </script>`;
-  return { body, scripts: canSetup && !edit ? ocrAdminScript(!!setup) : "" };
+  return { body, scripts: canSetup ? ocrAdminScript(!!setup) : "" };
 }
 
 function styleLabel(key: string | null | undefined): string {

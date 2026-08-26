@@ -172,8 +172,6 @@ details.terms-box summary { cursor: pointer; font-size: .9rem; padding: .35rem 0
   padding: .1rem .4rem; border-radius: 4px; background: #eef4fb; color: #2b6cb0;
 }
 .tag.warn { background: #f8eee4; color: #8a4b12; }
-.work-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .4rem .75rem; margin-bottom: .35rem; }
-.work-head h2 { margin: 0; }
 .sort-links { font-size: .82rem; color: #5c6570; }
 .sort-links a { color: #2b6cb0; text-decoration: none; }
 .sort-links a.on { color: #1c2128; font-weight: 700; }
@@ -273,9 +271,10 @@ body.ledger-page .filters select {
 }
 .register-desk {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(22rem, .95fr);
-  gap: 1rem;
-  align-items: start;
+  grid-template-columns: minmax(15.5rem, 0.68fr) minmax(0, 1.5fr);
+  gap: .7rem;
+  min-height: 0;
+  height: 100%;
 }
 .horses-desk {
   display: grid;
@@ -286,26 +285,72 @@ body.ledger-page .filters select {
 .reg-list { display: flex; flex-direction: column; gap: .2rem; }
 .reg-row {
   display: grid;
-  grid-template-columns: 2rem minmax(0, 1fr) auto;
-  gap: .4rem;
+  grid-template-columns: 1.6rem minmax(0, 1fr) auto;
+  gap: .35rem .5rem;
   align-items: center;
-  padding: .4rem .5rem;
+  padding: .4rem .45rem;
   border-radius: 6px;
   text-decoration: none;
   border: 1px solid transparent;
 }
-.reg-row:hover, .reg-row.on { background: #e8f0fa; }
-.reg-row .n { font-weight: 800; color: #2b6cb0; font-variant-numeric: tabular-nums; }
-.reg-row .uma { display: block; font-weight: 700; }
-.reg-row .run { display: block; font-size: .78rem; color: #6b7380; }
-.reg-drop {
-  border: 1px dashed #c5ccd6;
-  border-radius: 10px;
-  padding: 1.4rem 1rem;
-  text-align: center;
-  cursor: pointer;
-  background: #f7f8fa;
+.reg-row:hover, .reg-row.on { background: #f4f7fb; }
+.reg-row.on { background: #e8f0fa; }
+.reg-row .n { font-weight: 700; font-variant-numeric: tabular-nums; color: #6b7380; }
+.reg-row .who { min-width: 0; }
+.reg-row .uma { display: block; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.reg-row .run { display: block; font-size: .72rem; color: #6b7380; }
+.admin-offscreen {
+  position: fixed; left: 0; top: 0; width: 1px; height: 1px; opacity: 0; overflow: hidden; margin: 0; padding: 0; border: 0;
 }
+.reg-drop {
+  border: 2px dashed #c5ccd6;
+  border-radius: 12px;
+  min-height: 16rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: #f7f8fa;
+  cursor: pointer;
+  padding: 1.2rem;
+}
+.reg-drop strong { font-size: 1.05rem; }
+.reg-drop p { margin: .35rem 0 0; color: #6b7380; font-size: .85rem; }
+.reg-alt { margin-top: .85rem; text-align: center; }
+.reg-alt button {
+  font: inherit; border: 0; background: none; color: #2b6cb0; cursor: pointer; text-decoration: underline;
+}
+.reg-bench {
+  display: grid;
+  grid-template-columns: 8.2rem minmax(0, 1fr);
+  gap: .9rem 1rem;
+  align-items: start;
+}
+.reg-shot {
+  width: 8.2rem; height: 12.5rem; object-fit: cover; object-position: top;
+  border-radius: 8px; border: 1px solid #d5d9e0; background: #1a1c1f; display: block;
+}
+.reg-shot-btn { padding: 0; border: 0; background: none; cursor: pointer; border-radius: 8px; }
+.reg-shot.empty {
+  display: flex; align-items: center; justify-content: center;
+  color: #8a929c; font-size: .75rem; background: #f4f6f9;
+}
+.reg-names { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; }
+.reg-names label, .reg-score-in label {
+  display: flex; flex-direction: column; gap: .2rem; font-size: .7rem; color: #6b7380;
+}
+.reg-names input, .reg-score-in input {
+  font: inherit; font-size: 1.12rem; font-weight: 700; padding: .35rem .45rem;
+  border: 0; border-bottom: 2px solid #c5ccd6; border-radius: 0; background: transparent;
+}
+.reg-names input:focus, .reg-score-in input:focus { outline: none; border-bottom-color: #2b6cb0; }
+.reg-key { font-size: .78rem; color: #6b7380; display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .5rem; }
+.reg-key input {
+  font: inherit; min-width: 12rem; padding: .2rem .4rem; border: 1px solid #c5ccd6; border-radius: 6px; background: #fff;
+}
+.reg-key button { font: inherit; border: 0; background: none; color: #2b6cb0; cursor: pointer; }
+.reg-locked { margin: 0; font-size: 1.02rem; font-weight: 700; }
 .filters { display: flex; flex-wrap: wrap; gap: .45rem .7rem; margin: 0 0 .55rem; }
 .filters label { font-size: .78rem; }
 .pipe {
@@ -506,6 +551,32 @@ body.settings-page .ctas button {
 .set-metric input:focus { outline: none; }
 .set-metric .d { display: block; font-size: .68rem; color: #8a929c; line-height: 1.35; margin-top: .15rem; }
 body.settings-page .settings-bot.work { background: #eef1f5; border-color: #d5d9e0; }
+/* 出走登録：モック register.html の箱。file は overflow の外 */
+body.register-page { overflow: hidden; }
+body.register-page .dash { height: 100dvh; min-height: 0; overflow: hidden; }
+body.register-page .main {
+  display: flex; flex-direction: column; min-height: 0; height: 100%; overflow: hidden;
+  padding: 1rem 1.25rem 2.4rem;
+}
+body.register-page .hero { flex: 0 0 auto; }
+body.register-page .register-desk {
+  flex: 1 1 auto; min-height: 0; height: 100%;
+}
+body.register-page .register-desk .work {
+  min-height: 0; height: 100%; display: flex; flex-direction: column;
+  overflow: hidden; margin-bottom: 0; padding: .8rem .9rem .9rem;
+}
+body.register-page #horse-add,
+body.register-page #horse-edit {
+  display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto; height: 100%;
+}
+body.register-page .settings-hero { padding: .7rem 1rem .75rem; margin-bottom: .55rem; }
+body.register-page .settings-hero .hero-top { align-items: center; }
+body.register-page .work .ctas button {
+  border: 1px solid #c5ccd6; background: #fff; color: inherit; padding: .45rem .8rem; border-radius: 6px; cursor: pointer;
+}
+body.register-page .work .ctas .primary { background: #2b6cb0; border-color: #2b6cb0; color: #fff; font-weight: 700; }
+body.register-page .work .ctas a { align-self: center; font-size: .85rem; color: #2b6cb0; }
 .work-head {
   display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
   gap: .4rem .75rem; margin-bottom: .35rem; flex: 0 0 auto;
@@ -551,6 +622,12 @@ body.settings-page .settings-bot.work { background: #eef1f5; border-color: #d5d9
   body.ledger-page .main { height: auto; overflow: visible; }
   body.ledger-page .ledger-desk { flex: none; }
   body.ledger-page .ledger-desk .work { height: min(70vh, 28rem); }
+  body.register-page { overflow: auto; }
+  body.register-page .dash { height: auto; min-height: 100dvh; }
+  body.register-page .main { height: auto; overflow: visible; }
+  body.register-page .register-desk { display: flex; flex-direction: column; height: auto; flex: none; }
+  body.register-page .register-desk .work { height: min(70vh, 28rem); }
+  .reg-bench { grid-template-columns: 1fr; }
   .pipe { position: static; }
 }
 `;

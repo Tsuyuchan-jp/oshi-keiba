@@ -4,7 +4,7 @@
 
 ## 現在進行中
 
-- 採用済みモックの本番移植（**管理は 6 タブ骨格＋開催設定・オッズ・台帳・出走・進行をモック差し替え。出走登録の面は未差し替え。実機確認待ち。メンバー画面は未着手**。デプロイは明示依頼があるまでしない）— [venue-board](mocks/venue-board/layout-venue.html)・[quiet.html](mocks/bet-window/quiet.html)・[gate](mocks/gate/index.html)・[admin-dash](mocks/admin-dash/index.html)
+- 採用済みモックの本番移植（**管理は 6 タブ骨格＋開催設定・オッズ・台帳・出走・進行・出走登録をモック差し替え。登録のチップ作業台は後回し。実機確認待ち。メンバー画面は未着手**。デプロイは明示依頼があるまでしない）— [venue-board](mocks/venue-board/layout-venue.html)・[quiet.html](mocks/bet-window/quiet.html)・[gate](mocks/gate/index.html)・[admin-dash](mocks/admin-dash/index.html)
 
 ## そのあと
 
@@ -24,6 +24,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
+- 出走登録タブをモック HTML の箱で差し替え（左名簿・右作業台。キーはヒーロー右・password にしない。#ocr-file はスクロール外。チップ作業台は後回し）— [register.html](mocks/admin-dash/register.html)
 - 進行タブをモック HTML の箱で差し替え（説明注なし。フェーズ比較バーは出さない。着順案3・開閉レールは残す）— [progress-places.html](mocks/admin-dash/progress-places.html)
 - 出走タブをモック HTML の箱で差し替え（名簿＋内訳。注釈なし。取消・スクショは残す）— [horses.html](mocks/admin-dash/horses.html)
 - 台帳タブをモック HTML の箱で差し替え（枠内スクロール。額フィルタはすべて／500以上／3000以上。ヒーロー注なし）— [ledger.html](mocks/admin-dash/ledger.html)

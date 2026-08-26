@@ -46,8 +46,10 @@ export function layoutAdmin(opts: {
         ? "odds-page"
         : opts.tab === "ledger"
           ? "ledger-page"
-          : "";
-  const mainFlash = opts.tab === "settings" ? "" : flash;
+          : opts.tab === "register"
+            ? "register-page"
+            : "";
+  const mainFlash = opts.tab === "settings" || opts.tab === "register" ? "" : flash;
   return `<!doctype html>
 <html lang="ja">
 <head>

@@ -137,14 +137,13 @@ export async function tryAdminGet(
   }
 
   if (path === "/admin/register") {
-    const page = adminRegisterPage(board, url.searchParams.get("edit"));
+    const page = adminRegisterPage(board, url.searchParams.get("edit"), m);
     return html(
       layoutAdmin({
         title: "出走登録",
         tab: "register",
         user: gate.user,
         eventStatus: board.event.status,
-        flash: m,
         body: page.body,
         scripts: page.scripts,
       }),
