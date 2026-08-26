@@ -45,6 +45,72 @@ button, select { font: inherit; }
   min-width: 0;
   padding: 1rem 1.25rem 4.5rem;
 }
+/* 台帳：ページはスクロールせず、左右の枠だけ縦に動く */
+body.ledger-page { overflow: hidden; }
+body.ledger-page .dash {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+body.ledger-page .main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  padding: 1rem 1.25rem 2.4rem;
+}
+body.ledger-page .hero { flex: 0 0 auto; }
+body.ledger-page .ledger-desk {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+body.ledger-page .ledger-desk .work {
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.table-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+.table-scroll thead th {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1;
+}
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem .7rem;
+  align-items: flex-end;
+  margin: 0 0 .5rem;
+  flex: 0 0 auto;
+}
+.filters label {
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+  font-size: .68rem;
+  letter-spacing: .04em;
+  color: #6b7380;
+}
+.filters select {
+  min-width: 6.5rem;
+  background: #fff;
+  border: 1px solid #c5ccd6;
+  padding: .28rem .4rem;
+  color: inherit;
+}
+.filter-count {
+  font-size: .78rem;
+  color: #6b7380;
+  margin: 0 0 .35rem;
+}
 .hero {
   background: #fff;
   border: 1px solid #d5d9e0;
@@ -328,6 +394,11 @@ table.plain td.num, table.plain th.num {
 .sort-links a.on { color: #1c2128; font-weight: 700; }
 @media (max-width: 899px) {
   .ledger-desk { grid-template-columns: 1fr; }
+  body.ledger-page { overflow: auto; }
+  body.ledger-page .dash { height: auto; min-height: 100dvh; }
+  body.ledger-page .main { height: auto; overflow: visible; }
+  body.ledger-page .ledger-desk { flex: none; }
+  body.ledger-page .ledger-desk .work { height: min(70vh, 28rem); }
 }
 .tag {
   font-size: .68rem;

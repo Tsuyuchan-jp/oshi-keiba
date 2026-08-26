@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="./shared.css">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="ledger-page">
   <div class="dash">
     <nav class="side" aria-label="管理">
       <div class="mark">OSHI KEIBA · 管理</div>
@@ -22,20 +22,22 @@
       <section class="hero">
         <div class="hero-top">
           <h1>台帳</h1>
-          <span class="phase live">投票中</span>
+          <span class="phase" id="phase-pill">投票中</span>
         </div>
-        <p class="note" style="margin:.45rem 0 0;color:#5c6570;font-size:.85rem">左が口座、右が馬券。組み合わせの板はオッズ。公開前の結果・確定配当・収支は空。</p>
+        <p class="note" style="margin:.45rem 0 0;color:#5c6570;font-size:.85rem">左が口座、右が馬券。枠の中だけスクロールする。板はオッズタブ。絞り込みの結果列は、下の見本切替で公開後を見られる。</p>
       </section>
       <div class="ledger-desk">
         <section class="work">
           <div class="work-head">
             <h2>残高</h2>
-            <button type="button" class="secondary" id="del" style="border:1px solid #c5ccd6;background:#fff;padding:.28rem .55rem;border-radius:6px;cursor:pointer;font-size:.78rem">メンバー削除</button>
+            <button type="button" id="del" style="border:1px solid #c5ccd6;background:#fff;padding:.28rem .55rem;border-radius:6px;cursor:pointer;font-size:.78rem">メンバー削除</button>
           </div>
-          <table class="plain">
-            <thead><tr><th>名前</th><th class="num">残高</th></tr></thead>
-            <tbody id="bal"></tbody>
-          </table>
+          <div class="table-scroll">
+            <table class="plain">
+              <thead><tr><th>名前</th><th class="num">残高</th></tr></thead>
+              <tbody id="bal"></tbody>
+            </table>
+          </div>
         </section>
         <section class="work">
           <div class="work-head">
@@ -44,17 +46,59 @@
               <a href="#" id="ord-new" class="on">新しい順</a>
               ·
               <a href="#" id="ord-name">名前順</a>
+              ·
+              <a href="#" id="view-live" class="on">投票中</a>
+              ·
+              <a href="#" id="view-pub">公開後</a>
             </p>
           </div>
-          <table class="plain">
-            <thead>
-              <tr>
-                <th>誰</th><th>賭式</th><th>組み合わせ</th>
-                <th class="num">額</th><th>結果</th><th class="num">確定配当</th><th class="num">収支</th>
-              </tr>
-            </thead>
-            <tbody id="bets"></tbody>
-          </table>
+          <div class="filters">
+            <label>賭式
+              <select id="f-kind">
+                <option value="">すべて</option>
+                <option>単勝</option>
+                <option>馬連</option>
+                <option>馬単</option>
+                <option>3連複</option>
+                <option>3連単</option>
+              </select>
+            </label>
+            <label>結果
+              <select id="f-res">
+                <option value="">すべて</option>
+                <option value="pending">未確定</option>
+                <option value="hit">的中</option>
+                <option value="miss">外れ</option>
+                <option value="special">特払い</option>
+                <option value="refund">取消</option>
+              </select>
+            </label>
+            <label>誰
+              <select id="f-who">
+                <option value="">全員</option>
+              </select>
+            </label>
+            <label>額
+              <select id="f-amt">
+                <option value="">すべて</option>
+                <option value="100">100</option>
+                <option value="200">200以上</option>
+                <option value="300">300以上</option>
+              </select>
+            </label>
+          </div>
+          <p class="filter-count" id="f-count"></p>
+          <div class="table-scroll">
+            <table class="plain">
+              <thead>
+                <tr>
+                  <th>誰</th><th>賭式</th><th>組み合わせ</th>
+                  <th class="num">額</th><th>結果</th><th class="num">確定配当</th><th class="num">収支</th>
+                </tr>
+              </thead>
+              <tbody id="bets"></tbody>
+            </table>
+          </div>
         </section>
       </div>
     </div>
@@ -65,24 +109,55 @@
       ["aki", 12600], ["neko", 12800], ["mai", 12100], ["yuu", 12900],
       ["ken", 11800], ["sora", 12400], ["haru", 13000], ["nao", 12200],
       ["kei", 11500], ["jun", 12700], ["ren", 11900], ["taka", 12300],
+      ["aya", 11600], ["mika", 12150], ["shin", 11400], ["rio", 12500],
+      ["nori", 10900], ["emi", 13200], ["go", 10800], ["lin", 11700],
     ];
     const BETS = [
-      { t: 12, who: "aki", kind: "単勝", lab: "1 サイレンススズカ", amt: 200 },
-      { t: 11, who: "neko", kind: "馬連", lab: "1-16", amt: 100 },
-      { t: 10, who: "mai", kind: "単勝", lab: "16 シンボリルドルフ", amt: 300 },
-      { t: 9, who: "yuu", kind: "3連複", lab: "1-2-16", amt: 100 },
-      { t: 8, who: "ken", kind: "馬単", lab: "16→1", amt: 100 },
-      { t: 7, who: "sora", kind: "単勝", lab: "5 エルコンドルパサー", amt: 200 },
-      { t: 6, who: "neko", kind: "単勝", lab: "1 サイレンススズカ", amt: 200 },
-      { t: 5, who: "haru", kind: "馬連", lab: "1-5", amt: 100 },
-      { t: 4, who: "nao", kind: "3連単", lab: "1→16→2", amt: 100 },
-      { t: 3, who: "taka", kind: "単勝", lab: "2 スペシャルウィーク", amt: 400 },
-      { t: 2, who: "jun", kind: "馬単", lab: "1→2", amt: 100 },
-      { t: 1, who: "ren", kind: "単勝", lab: "9 メジロマックイーン", amt: 100 },
+      { t: 24, who: "lin", kind: "単勝", lab: "9 メジロマックイーン", amt: 100, res: "miss", odds: "7.4", move: -100 },
+      { t: 23, who: "go", kind: "馬連", lab: "2-16", amt: 100, res: "miss", odds: "—", move: -100 },
+      { t: 22, who: "emi", kind: "単勝", lab: "1 サイレンススズカ", amt: 500, res: "hit", odds: "3.2", move: 1100 },
+      { t: 21, who: "nori", kind: "3連単", lab: "1→2→5", amt: 100, res: "special", odds: "—", move: 80 },
+      { t: 20, who: "rio", kind: "馬単", lab: "1→16", amt: 200, res: "hit", odds: "32.4", move: 6280 },
+      { t: 19, who: "shin", kind: "単勝", lab: "11 ビワハヤヒデ", amt: 100, res: "miss", odds: "—", move: -100 },
+      { t: 18, who: "mika", kind: "3連複", lab: "1-2-16", amt: 100, res: "hit", odds: "54.0", move: 5300 },
+      { t: 17, who: "aya", kind: "単勝", lab: "4 セイウンスカイ", amt: 200, res: "refund", odds: "—", move: 200 },
+      { t: 16, who: "taka", kind: "単勝", lab: "2 スペシャルウィーク", amt: 400, res: "miss", odds: "—", move: -400 },
+      { t: 15, who: "ren", kind: "単勝", lab: "9 メジロマックイーン", amt: 100, res: "miss", odds: "—", move: -100 },
+      { t: 14, who: "jun", kind: "馬単", lab: "1→2", amt: 100, res: "miss", odds: "—", move: -100 },
+      { t: 13, who: "nao", kind: "3連単", lab: "1→16→2", amt: 100, res: "special", odds: "—", move: 80 },
+      { t: 12, who: "aki", kind: "単勝", lab: "1 サイレンススズカ", amt: 200, res: "hit", odds: "3.2", move: 440 },
+      { t: 11, who: "neko", kind: "馬連", lab: "1-16", amt: 100, res: "hit", odds: "18.0", move: 1700 },
+      { t: 10, who: "mai", kind: "単勝", lab: "16 シンボリルドルフ", amt: 300, res: "miss", odds: "—", move: -300 },
+      { t: 9, who: "yuu", kind: "3連複", lab: "1-2-16", amt: 100, res: "hit", odds: "54.0", move: 5300 },
+      { t: 8, who: "ken", kind: "馬単", lab: "16→1", amt: 100, res: "miss", odds: "—", move: -100 },
+      { t: 7, who: "sora", kind: "単勝", lab: "5 エルコンドルパサー", amt: 200, res: "miss", odds: "—", move: -200 },
+      { t: 6, who: "neko", kind: "単勝", lab: "1 サイレンススズカ", amt: 200, res: "hit", odds: "3.2", move: 440 },
+      { t: 5, who: "haru", kind: "馬連", lab: "1-5", amt: 100, res: "miss", odds: "—", move: -100 },
+      { t: 4, who: "kei", kind: "単勝", lab: "10 トウカイテイオー", amt: 100, res: "miss", odds: "—", move: -100 },
+      { t: 3, who: "taka", kind: "3連複", lab: "1-5-9", amt: 100, res: "miss", odds: "—", move: -100 },
+      { t: 2, who: "jun", kind: "馬連", lab: "2-5", amt: 200, res: "miss", odds: "—", move: -200 },
+      { t: 1, who: "ren", kind: "単勝", lab: "3 グラスワンダー", amt: 100, res: "refund", odds: "—", move: 100 },
     ];
+    const RES_LABEL = {
+      pending: "—",
+      hit: "的中",
+      miss: "外れ",
+      special: "特払い（8割戻し）",
+      refund: "取消",
+    };
     let order = "new";
+    let settled = false;
+    let fKind = "";
+    let fRes = "";
+    let fWho = "";
+    let fAmt = "";
 
     function yen(n) { return n.toLocaleString("ja-JP"); }
+    function signed(n) {
+      if (n > 0) return "+" + yen(n);
+      if (n < 0) return yen(n);
+      return "0";
+    }
 
     function paintBal() {
       document.getElementById("bal").innerHTML = MEMBERS.map(([n, b]) =>
@@ -90,34 +165,76 @@
       ).join("");
     }
 
+    function filtered() {
+      return BETS.filter((b) => {
+        if (fKind && b.kind !== fKind) return false;
+        if (fWho && b.who !== fWho) return false;
+        if (fAmt === "100" && b.amt !== 100) return false;
+        if (fAmt === "200" && b.amt < 200) return false;
+        if (fAmt === "300" && b.amt < 300) return false;
+        const res = settled ? b.res : "pending";
+        if (fRes && res !== fRes) return false;
+        return true;
+      });
+    }
+
     function paintBets() {
-      const rows = BETS.slice();
+      const rows = filtered();
       if (order === "name") rows.sort((a, b) => a.who.localeCompare(b.who, "ja") || b.t - a.t);
       else rows.sort((a, b) => b.t - a.t);
-      document.getElementById("bets").innerHTML = rows.map((b) =>
-        `<tr>
+      document.getElementById("bets").innerHTML = rows.map((b) => {
+        const res = settled ? b.res : "pending";
+        const odds = settled && (res === "hit") ? b.odds + "倍" : "—";
+        const move = settled ? signed(b.move) : "—";
+        const moveCls = settled && b.move > 0 ? " style=\"color:#2f6f4e\"" : (settled && b.move < 0 ? " style=\"color:#a33\"" : "");
+        return `<tr>
           <td>${b.who}</td>
           <td>${b.kind}</td>
           <td>${b.lab}</td>
           <td class="num">${yen(b.amt)}</td>
-          <td>—</td>
-          <td class="num">—</td>
-          <td class="num">—</td>
-        </tr>`
-      ).join("");
+          <td>${RES_LABEL[res]}</td>
+          <td class="num">${odds}</td>
+          <td class="num"${moveCls}>${move}</td>
+        </tr>`;
+      }).join("") || `<tr><td colspan="7" style="color:#6b7380">該当なし</td></tr>`;
+      document.getElementById("f-count").textContent =
+        "表示 " + rows.length + " / " + BETS.length + " 件";
       document.getElementById("ord-new").classList.toggle("on", order === "new");
       document.getElementById("ord-name").classList.toggle("on", order === "name");
+      document.getElementById("view-live").classList.toggle("on", !settled);
+      document.getElementById("view-pub").classList.toggle("on", settled);
+      const pill = document.getElementById("phase-pill");
+      pill.textContent = settled ? "結果公開" : "投票中";
+      pill.classList.toggle("live", !settled);
+      pill.classList.toggle("done", settled);
     }
 
+    const whoSel = document.getElementById("f-who");
+    whoSel.innerHTML += MEMBERS.map(([n]) => `<option>${n}</option>`).join("");
+
     document.getElementById("ord-new").addEventListener("click", (e) => {
-      e.preventDefault();
-      order = "new";
-      paintBets();
+      e.preventDefault(); order = "new"; paintBets();
     });
     document.getElementById("ord-name").addEventListener("click", (e) => {
-      e.preventDefault();
-      order = "name";
-      paintBets();
+      e.preventDefault(); order = "name"; paintBets();
+    });
+    document.getElementById("view-live").addEventListener("click", (e) => {
+      e.preventDefault(); settled = false; paintBets();
+    });
+    document.getElementById("view-pub").addEventListener("click", (e) => {
+      e.preventDefault(); settled = true; paintBets();
+    });
+    document.getElementById("f-kind").addEventListener("change", (e) => {
+      fKind = e.target.value; paintBets();
+    });
+    document.getElementById("f-res").addEventListener("change", (e) => {
+      fRes = e.target.value; paintBets();
+    });
+    document.getElementById("f-who").addEventListener("change", (e) => {
+      fWho = e.target.value; paintBets();
+    });
+    document.getElementById("f-amt").addEventListener("change", (e) => {
+      fAmt = e.target.value; paintBets();
     });
     document.getElementById("del").addEventListener("click", () => {
       alert("モックです。本番では確認のうえ口座と票を消します。投票中は板が動きます。");

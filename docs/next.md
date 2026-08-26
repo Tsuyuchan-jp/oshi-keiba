@@ -4,7 +4,7 @@
 
 ## 現在進行中
 
-- 管理画面刷新のモック（進行＋出走は採用。台帳を切った。他タブ未稿）— [admin-dash](mocks/admin-dash/progress-places.html)
+- 管理画面刷新のモック（進行＋出走＋台帳は採用。他タブ未稿）— [admin-dash](mocks/admin-dash/progress-places.html)
 
 ## そのあと
 
@@ -28,7 +28,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
-- 管理の台帳タブモック（左・残高／右・全投票。公開前は結果空。本番未適用）— [ledger.html](mocks/admin-dash/ledger.html)
+- 管理の台帳タブ採用（左・残高／右・全投票。枠内スクロール。絞り込みは賭式・結果・誰・額。本番未適用）— [ledger.html](mocks/admin-dash/ledger.html)
 - 管理の出走タブ採用（評価点名簿＋行の掛け算内訳。脚質は逃げ・先行・差し・追込。Strengthなし。OCR編集は出さない。本番未適用）— [horses.html](mocks/admin-dash/horses.html)
 - 管理進行ホームの下段をフェーズで変える（votingは単勝参考＋直近票。着順は案3のまま。本番未適用）— [progress-places.html](mocks/admin-dash/progress-places.html)
 - 管理進行の着順は案3採用（左・未着順1列、右は上から折る2列。案2スロットは不採用。他タブ未稿。本番未適用）— [progress-places.html](mocks/admin-dash/progress-places.html)
