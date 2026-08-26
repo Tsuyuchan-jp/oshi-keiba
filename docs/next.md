@@ -4,10 +4,12 @@
 
 ## 現在進行中
 
-- （なし。次の着手を確認中）
+- （なし）
 
 ## そのあと
 
+- 整理パス2（構造）: setup 場内を電光に寄せ旧 `layout()` CSS 退役／venue・bet・gate の scene・chrome CSS 共通化 — パス1報告
+- 整理パス2: `index` の member ルート分割／`store` は結合テスト追加後に分割 — パス1報告
 - 票入り台帳の絞り込み実機 — [ledger.html](mocks/admin-dash/ledger.html)
 - OCR: 読み取ったスキルのうち有効スキルにあるものも不採用になっている問題を改善。あわせて OCR のテキスト誤認識がそのまま通って不採用になる点も改善 — [ocr.md](ocr.md)
 - Neko長明さんへの評価点の式確認（手土産＝動く実装は揃った）— [score.md](score.md)
@@ -26,6 +28,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
+- 整理パス1（安全な整理）: `ui.ts` 死コード削除・メンバー⋯スクリプト共通化。`npm test` 75 パス — レビュー報告はチャット
 - 入場をゲートモックで差し替え（1枚2ボタン・⋯にログアウトなし。ユーザー実機 OK）。メンバー画面の見た目差し替えクローズ — [gate](mocks/gate/index.html)
 - 窓口をマークカードで差し替え（quiet トーン・入れ子 form 修正含む。ユーザー実機 OK）— [quiet.html](mocks/bet-window/quiet.html)
 - 場内 published を電光モックで差し替え（払戻盤＋確定盤→全頭。着差なし。ユーザー実機 OK）— [layout-venue.html](mocks/venue-board/layout-venue.html)
