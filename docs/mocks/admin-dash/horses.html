@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>管理 · 出走</title>
+  <link rel="stylesheet" href="./shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="dash">
+    <nav class="side" aria-label="管理">
+      <div class="mark">OSHI KEIBA · 管理</div>
+      <a href="./progress-places.html">進行</a>
+      <a class="ghost" href="#">出走登録</a>
+      <a class="on" href="./horses.html">出走</a>
+      <a class="ghost" href="#">台帳</a>
+      <a class="ghost" href="#">オッズ</a>
+      <a class="ghost" href="#">開催設定</a>
+    </nav>
+    <div class="main">
+      <section class="hero">
+        <div class="hero-top">
+          <h1>出走</h1>
+          <span class="phase live">投票中</span>
+        </div>
+        <p class="note" style="margin:.45rem 0 0;color:#5c6570;font-size:.85rem">評価点はメンバーに出さない。行を選ぶと掛け算の内訳。OCRと直置きの編集は出走登録。Strength とは書かない。</p>
+      </section>
+      <div class="horses-desk">
+        <section class="work">
+          <h2>名簿</h2>
+          <p class="note">自動は computeScore → 評価点 → Seed。直置きは逃げ。</p>
+          <table class="plain" id="roster">
+            <thead>
+              <tr>
+                <th>#</th><th>ウマ娘</th><th>出走者</th><th>脚質</th>
+                <th>評価点</th><th></th><th>Seed</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </section>
+        <aside class="pipe" id="pipe" aria-live="polite"></aside>
+      </div>
+    </div>
+  </div>
+  <div class="mock-label">管理モック · 出走 · 本番未適用</div>
+  <script>
+    const ROSTER = [
+      { n: 1, uma: "サイレンススズカ", run: "neko", style: "逃", score: 18.4, seed: 9200, source: "auto",
+        skill: { base: 14, eff: 10, gold: 2, tam: 1 },
+        green: "速+40 賢+20（条件成立の緑だけ）",
+        apt: "距離S ×1.1　脚質S ×1.1",
+        mult: [
+          ["スピード", "r=1.12 → ×1.030（超過は /4）"],
+          ["スタミナ", "掛かりなし達成 → ×1.00"],
+          ["パワー", "r=0.96 → ×0.840（未達 ×4）"],
+          ["根性", "r=1.05 → ×1.005（超過は /10）"],
+          ["賢さ", "r=1.08 → ×1.080（達成はそのまま）"],
+        ] },
+      { n: 2, uma: "スペシャルウィーク", run: "aki", style: "先", score: 12.1, seed: 6050, source: "auto",
+        skill: { base: 11, eff: 9, gold: 1, tam: 0 },
+        green: "パ+30",
+        apt: "バ場S ×1.05",
+        mult: [
+          ["スピード", "r=1.00 → ×1.000"],
+          ["スタミナ", "掛かりありだけ未達 → ×0.80"],
+          ["パワー", "r=1.10 → ×1.025"],
+          ["根性", "r=0.95 → ×0.900"],
+          ["賢さ", "r=1.02 → ×1.020"],
+        ] },
+      { n: 3, uma: "グラスワンダー", run: "yuu", style: "差", score: 9.6, seed: 4800, source: "manual",
+        why: "脚質は選んであるが OCR 材料が足りず算出不能。直置きが正。" },
+      { n: 4, uma: "セイウンスカイ", run: "ken", style: "逃", score: 7.2, seed: 3600, source: "auto",
+        skill: { base: 8, eff: 8, gold: 0, tam: 0 },
+        green: "なし",
+        apt: "Sなし",
+        mult: [
+          ["スピード", "r=1.00 → ×1.000"],
+          ["スタミナ", "×1.00"],
+          ["パワー", "r=0.88 → ×0.520"],
+          ["根性", "r=1.00 → ×1.000"],
+          ["賢さ", "r=0.94 → ×0.640"],
+        ] },
+      { n: 5, uma: "エルコンドルパサー", run: "mai", style: "先", score: 11.8, seed: 5900, source: "auto",
+        skill: { base: 12, eff: 10, gold: 1, tam: 0 },
+        green: "速+20 パ+20",
+        apt: "距離S ×1.1",
+        mult: [
+          ["スピード", "r=1.06 → ×1.015"],
+          ["スタミナ", "×1.00"],
+          ["パワー", "r=1.00 → ×1.000"],
+          ["根性", "r=1.10 → ×1.010"],
+          ["賢さ", "r=0.98 → ×0.880"],
+        ] },
+      { n: 6, uma: "テイエムオペラオー", run: "rio", style: "差", score: 6.4, seed: 3200, source: "auto",
+        skill: { base: 9, eff: 7, gold: 1, tam: 1 },
+        green: "スタ+40",
+        apt: "脚質S ×1.1",
+        mult: [
+          ["スピード", "r=0.99 → ×1.000（未達は見ない）"],
+          ["スタミナ", "×1.00"],
+          ["パワー", "r=0.90 → ×0.600"],
+          ["根性", "r=1.00 → ×1.000"],
+          ["賢さ", "r=0.91 → ×0.460"],
+        ] },
+      { n: 7, uma: "ファインモーション", run: "sora", style: "先", score: 8.5, seed: 4250, source: "auto",
+        skill: { base: 10, eff: 8, gold: 1, tam: 0 },
+        green: "賢+40",
+        apt: "脚質S ×1.1",
+        mult: [
+          ["スピード", "r=1.04 → ×1.010"],
+          ["スタミナ", "×1.00"],
+          ["パワー", "r=0.97 → ×0.880"],
+          ["根性", "r=1.02 → ×1.002"],
+          ["賢さ", "r=1.15 → ×1.150"],
+        ] },
+      { n: 8, uma: "ナリタブライアン", run: "haru", style: "追", score: 5.9, seed: 2950, source: "manual",
+        why: "直置きチェック。手入力が Seed に使われる。" },
+      { n: 9, uma: "メジロマックイーン", run: "nao", style: "差", score: 10.2, seed: 5100, source: "auto",
+        skill: { base: 11, eff: 9, gold: 1, tam: 0 },
+        green: "スタ+20 根+20",
+        apt: "距離S ×1.1　バ場S ×1.05",
+        mult: [
+          ["スピード", "r=1.08 → ×1.020"],
+          ["スタミナ", "×1.00"],
+          ["パワー", "r=1.12 → ×1.030"],
+          ["根性", "r=1.20 → ×1.020"],
+          ["賢さ", "r=1.00 → ×1.000"],
+        ] },
+      { n: 10, uma: "トウカイテイオー", run: "kei", style: "先", score: 7.8, seed: 3900, source: "auto",
+        skill: { base: 9, eff: 9, gold: 0, tam: 0 },
+        green: "速+20",
+        apt: "距離S ×1.1",
+        mult: [
+          ["スピード", "r=1.03 → ×1.008"],
+          ["スタミナ", "×0.80"],
+          ["パワー", "r=1.00 → ×1.000"],
+          ["根性", "r=0.98 → ×0.960"],
+          ["賢さ", "r=1.05 → ×1.050"],
+        ] },
+      { n: 11, uma: "ビワハヤヒデ", run: "jun", style: "差", score: 4.8, seed: 2400, source: "auto",
+        skill: { base: 7, eff: 7, gold: 0, tam: 0 },
+        green: "なし",
+        apt: "Sなし",
+        mult: [
+          ["スピード", "r=1.00 → ×1.000"],
+          ["スタミナ", "勝負コース・掛かりなし未達 → ×0.20"],
+          ["パワー", "r=0.85 → ×0.400"],
+          ["根性", "r=1.00 → ×1.000"],
+          ["賢さ", "r=0.90 → ×0.400"],
+        ] },
+      { n: 12, uma: "ミホノブルボン", run: "ren", style: "逃", score: 6.7, seed: 3350, source: "auto",
+        skill: { base: 8, eff: 6, gold: 1, tam: 0 },
+        green: "速+40",
+        apt: "脚質S ×1.1",
+        mult: [
+          ["スピード", "r=1.10 → ×1.025"],
+          ["スタミナ", "×1.00"],
+          ["パワー", "r=0.92 → ×0.680"],
+          ["根性", "r=0.94 → ×0.880"],
+          ["賢さ", "r=0.96 → ×0.760"],
+        ] },
+      { n: 13, uma: "サクラバクシンオー", run: "aya", style: "逃", score: 6.1, seed: 3050, source: "auto",
+        skill: { base: 8, eff: 8, gold: 0, tam: 0 },
+        green: "速+20",
+        apt: "距離S ×1.1",
+        mult: [
+          ["スピード", "r=1.20 → ×1.050"],
+          ["スタミナ", "×0.40"],
+          ["パワー", "r=0.95 → ×0.800"],
+          ["根性", "r=1.00 → ×1.000"],
+          ["賢さ", "r=1.00 → ×1.000"],
+        ] },
+      { n: 14, uma: "タイキシャトル", run: "mika", style: "先", score: 8.0, seed: 4000, source: "auto",
+        skill: { base: 10, eff: 8, gold: 1, tam: 0 },
+        green: "パ+40",
+        apt: "バ場S ×1.05　脚質S ×1.1",
+        mult: [
+          ["スピード", "r=1.02 → ×1.005"],
+          ["スタミナ", "×1.00"],
+          ["パワー", "r=1.08 → ×1.020"],
+          ["根性", "r=1.00 → ×1.000"],
+          ["賢さ", "r=1.04 → ×1.040"],
+        ] },
+      { n: 15, uma: "エアグルーヴ", run: "shin", style: "差", score: 6.9, seed: 3450, source: "auto",
+        skill: { base: 9, eff: 7, gold: 1, tam: 0 },
+        green: "根+20",
+        apt: "Sなし",
+        mult: [
+          ["スピード", "r=1.00 → ×1.000"],
+          ["スタミナ", "×1.00"],
+          ["パワー", "r=0.93 → ×0.720"],
+          ["根性", "r=1.15 → ×1.015"],
+          ["賢さ", "r=0.97 → ×0.820"],
+        ] },
+      { n: 16, uma: "シンボリルドルフ", run: "taka", style: "先", score: 14.0, seed: 7000, source: "auto",
+        skill: { base: 13, eff: 9, gold: 2, tam: 0 },
+        green: "速+20 賢+20",
+        apt: "距離S ×1.1　脚質S ×1.1",
+        mult: [
+          ["スピード", "r=1.15 → ×1.038"],
+          ["スタミナ", "×1.00"],
+          ["パワー", "r=1.05 → ×1.013"],
+          ["根性", "r=1.08 → ×1.008"],
+          ["賢さ", "r=1.12 → ×1.120"],
+        ] },
+    ];
+
+    let sel = 1;
+
+    function paintList() {
+      const tb = document.querySelector("#roster tbody");
+      tb.innerHTML = ROSTER.map((h) =>
+        `<tr data-n="${h.n}" class="${h.n === sel ? "on" : ""}">
+          <td>${h.n}</td>
+          <td>${h.uma}</td>
+          <td>${h.run}</td>
+          <td>${h.style}</td>
+          <td>${h.score.toFixed(1)}</td>
+          <td>${h.source === "manual" ? `<span class="tag warn">直置き</span>` : `<span class="tag">自動</span>`}</td>
+          <td>${h.seed.toLocaleString("ja-JP")}</td>
+        </tr>`
+      ).join("");
+      tb.querySelectorAll("tr[data-n]").forEach((tr) => {
+        tr.addEventListener("click", () => {
+          sel = Number(tr.dataset.n);
+          paint();
+        });
+      });
+    }
+
+    function paintPipe() {
+      const h = ROSTER.find((x) => x.n === sel);
+      const el = document.getElementById("pipe");
+      if (h.source === "manual") {
+        el.innerHTML = `<h2>${h.n} ${h.uma}</h2>
+          <p class="note">${h.run} · ${h.style}</p>
+          <div class="pipe-step">
+            <div class="pipe-k">経路</div>
+            <div>直置き。${h.why}</div>
+          </div>
+          <div class="pipe-step">
+            <div class="pipe-k">評価点（Seed の比）</div>
+            <div class="pipe-final">${h.score.toFixed(1)}</div>
+          </div>
+          <p class="note">式の確認対象は自動算出の頭。直しは出走登録。</p>`;
+        return;
+      }
+      const s = h.skill;
+      el.innerHTML = `<h2>${h.n} ${h.uma}</h2>
+        <p class="note">${h.run} · ${h.style} · 作者仮置きの式（Neko未確定）</p>
+        <div class="pipe-step">
+          <div class="pipe-k">土台（スキル）</div>
+          <div class="pipe-v">有効 ${s.eff} ＋ 金×2（${s.gold}枚）＋ ためらい ${s.tam}＝ <b>${s.base}</b></div>
+          <p class="pipe-eq">緑は枚数に入れない。ためらいは白1。</p>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-k">緑 → ステへ</div>
+          <div>${h.green}</div>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-k">適性S</div>
+          <div>${h.apt}</div>
+        </div>
+        ${h.mult.map(([k, v]) =>
+          `<div class="pipe-step"><div class="pipe-k">${k}</div><div class="pipe-v">${v}</div></div>`
+        ).join("")}
+        <div class="pipe-step">
+          <div class="pipe-k">評価点 → Seed</div>
+          <div class="pipe-final">${h.score.toFixed(1)}</div>
+          <p class="pipe-eq">Seed ${h.seed.toLocaleString("ja-JP")}（単勝参考の比。連勝には載せない）</p>
+        </div>`;
+    }
+
+    function paint() {
+      paintList();
+      paintPipe();
+    }
+    paint();
+  </script>
+</body>
+</html>
