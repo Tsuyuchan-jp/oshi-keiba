@@ -58,6 +58,11 @@ function pickStyleRank(
   }
 }
 
+import {
+  type StrategicSkillRow,
+  strategicMapFromRows,
+} from "./strategicSkills.ts";
+
 export type ScoreFromHorseResult = {
   breakdown: ScoreBreakdown;
   /** Seed / Strength に載せる値（小数1桁） */
@@ -69,6 +74,7 @@ export type ScoreFromHorseResult = {
 export function scoreFromHorse(
   setup: EventScoreSetup | null | undefined,
   input: HorseScoreInput | null | undefined,
+  strategicSkills?: readonly StrategicSkillRow[] | null,
 ): ScoreFromHorseResult | null {
   if (!setup || !input?.styleKey) return null;
   const course = getScoreCourse(setup.conditions.courseKey);
@@ -91,6 +97,14 @@ export function scoreFromHorse(
   });
 
   const effectiveIds = effectiveIdsFromScoreSetup(setup, style) ?? undefined;
+  const strategicById = strategicSkills?.length
+    ? new Map(
+        [...strategicMapFromRows(strategicSkills).entries()].map(([id, r]) => [
+          id,
+          { points: r.points },
+        ]),
+      )
+    : undefined;
 
   const breakdown = computeScore({
     skillNames: input.skillNames,
@@ -100,6 +114,7 @@ export function scoreFromHorse(
     req: setup.requirements,
     greenCtx,
     effectiveIds,
+    strategicById,
   });
 
   if (!Number.isFinite(breakdown.score) || breakdown.score < 0) return null;
@@ -117,9 +132,10 @@ export function resolveStrength(opts: {
   input: HorseScoreInput | null | undefined;
   manualStrength: number;
   forceManual: boolean;
+  strategicSkills?: readonly StrategicSkillRow[] | null;
 }): { strength: number; source: "auto" | "manual" } {
   if (!opts.forceManual) {
-    const auto = scoreFromHorse(opts.setup, opts.input);
+    const auto = scoreFromHorse(opts.setup, opts.input, opts.strategicSkills);
     if (auto) return { strength: auto.strength, source: "auto" };
   }
   if (!(opts.manualStrength >= 0) || !Number.isFinite(opts.manualStrength)) {

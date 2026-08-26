@@ -5,6 +5,12 @@ import type { EventScoreSetup } from "./scoreSetup";
 import { ALLOWED_SHOT_MIME } from "./shotMime";
 import { greenSkillByName } from "./greenSkills";
 import { skillCountsAsGoldLike, skillCountsInBase, TAMERAI_IDS } from "./score";
+import {
+  partitionSkills,
+  strategicCandidates,
+  strategicMapFromRows,
+  type StrategicSkillRow,
+} from "./strategicSkills";
 import type { EffectiveSkillIdsByStyle } from "./utoolsEffects";
 import type { Board } from "./store";
 
@@ -40,10 +46,28 @@ function skillChipsHtml(
     .join("");
 }
 
+function strategicChipsHtml(
+  items: { name: string; kind: string; points: number }[],
+  emptyLabel: string,
+): string {
+  if (items.length === 0) {
+    return `<span class="reg-chip">${escapeHtml(emptyLabel)}</span>`;
+  }
+  return items
+    .map(
+      (h) =>
+        `<span class="reg-chip strategic">${escapeHtml(h.name)}<span class="reg-pts">+${escapeHtml(String(h.points))}</span></span>`,
+    )
+    .join("");
+}
+
 /** 読取材料のチップ。掛かりスタミナ2欄は出さない */
 export function registerMaterialsHtml(
   input: HorseScoreInput,
   effectiveIds?: ReadonlySet<number> | null,
+  strategicSkills: readonly StrategicSkillRow[] = [],
+  dismissedIds: ReadonlySet<number> = new Set(),
+  canEditStrategic = false,
 ): string {
   const st = input.stats;
   const ap = input.aptitudes;
@@ -54,18 +78,16 @@ export function registerMaterialsHtml(
     const c = classifySkill(name, id);
     accepted.push({ name: c.name || name, kind: c.kind, id: c.id ?? id });
   }
-  const isGreen = (name: string) => greenSkillByName(name) != null;
-  const greens = accepted.filter((h) => isGreen(h.name));
-  const effective = accepted.filter((h) =>
-    skillCountsInBase(h.name, h.id, effectiveIds),
-  );
-  const goldLike = effective.filter((h) =>
+  const strategicById = strategicMapFromRows(strategicSkills);
+  const parts = partitionSkills(accepted, { effectiveIds, strategicById });
+  const goldLike = parts.effective.filter((h) =>
     skillCountsAsGoldLike(h.name, h.id),
   ).length;
-  const rejected = accepted.filter(
-    (h) =>
-      !isGreen(h.name) && !skillCountsInBase(h.name, h.id, effectiveIds),
-  );
+  const cand = strategicCandidates(parts.rejected, strategicById, dismissedIds);
+  const rejectedLink =
+    canEditStrategic && cand.length
+      ? ` <button type="button" class="linkish" id="strategic-from-rejected">例外に追加…</button>`
+      : "";
   const skipped = (input.skippedSkillNames ?? []).map((n) => ({
     name: n,
     kind: "unknown",
@@ -86,12 +108,14 @@ export function registerMaterialsHtml(
       <span class="reg-slash" aria-hidden="true">/</span>
       ${aptChip("逃げ", ap.nige)}${aptChip("先行", ap.senkou)}${aptChip("差し", ap.sashi)}${aptChip("追込", ap.oikomi)}
     </div>
-    <p class="set-k" style="margin-top:.85rem">有効スキル（総有効スキル数 ${effective.length} / 金相当スキル数 ${goldLike}）</p>
-    <div class="reg-chips">${skillChipsHtml(effective, "なし")}</div>
+    <p class="set-k" style="margin-top:.85rem">有効スキル（総有効スキル数 ${parts.effective.length} / 金相当スキル数 ${goldLike}）</p>
+    <div class="reg-chips">${skillChipsHtml(parts.effective, "なし")}</div>
+    <p class="set-k" style="margin-top:.85rem">戦略例外スキル（合計 ${parts.strategicPoints} 点）</p>
+    <div class="reg-chips">${strategicChipsHtml(parts.strategic, "なし")}</div>
     <p class="set-k" style="margin-top:.85rem">緑スキル</p>
-    <div class="reg-chips">${skillChipsHtml(greens, "なし")}</div>
-    <p class="set-k" style="margin-top:.85rem">不採用スキル</p>
-    <div class="reg-chips">${skillChipsHtml(rejected, "なし")}</div>
+    <div class="reg-chips">${skillChipsHtml(parts.greens, "なし")}</div>
+    <p class="set-k" style="margin-top:.85rem">不採用スキル${rejectedLink}</p>
+    <div class="reg-chips">${skillChipsHtml(parts.rejected, "なし")}</div>
     <p class="set-k" style="margin-top:.85rem">OCR落ちスキル</p>
     <div class="reg-chips">${skillChipsHtml(skipped, "なし")}</div>`;
 }
@@ -187,6 +211,9 @@ export function ocrAdminScript(
   canAutoScore: boolean,
   effectiveByStyle: EffectiveSkillIdsByStyle | null = null,
   greenNames: readonly string[] = [],
+  strategicSkills: readonly StrategicSkillRow[] = [],
+  dismissedIds: readonly number[] = [],
+  canEditStrategic = true,
 ): string {
   const catalog = catalogJsonForPage();
   return `<script>
@@ -194,8 +221,11 @@ export function ocrAdminScript(
   const KEY_LS = ${JSON.stringify(KEY_LS)};
   const CATALOG = ${catalog};
   const CAN_AUTO = ${canAutoScore ? "true" : "false"};
+  const CAN_EDIT_STRATEGIC = ${canEditStrategic ? "true" : "false"};
   const EFFECTIVE_BY_STYLE = ${JSON.stringify(effectiveByStyle)};
   const GREEN_NAMES = new Set(${JSON.stringify([...greenNames])});
+  let STRATEGIC = ${JSON.stringify(strategicSkills)};
+  let DISMISSED = new Set(${JSON.stringify([...dismissedIds])});
   const TAMERAI_IDS = new Set(${JSON.stringify([...TAMERAI_IDS])});
   const TAMERAI_NAMES = new Set(["逃げためらい","先行ためらい","差しためらい","追込ためらい"]);
   const FUZZY_TH = 0.45;
@@ -320,7 +350,49 @@ export function ocrAdminScript(
     return hits.length === 1 ? hits[0][0] : "";
   }
 
+  function pickGeminiKey(raw) {
+    const s = String(raw || "").trim();
+    const m = s.match(/AIza[0-9A-Za-z_-]+/);
+    return m ? m[0] : s;
+  }
   const keyInput = document.getElementById("gemini-key");
+  const keySaved = document.getElementById("hero-key-saved");
+  const keyEdit = document.getElementById("hero-key-edit");
+  const keyMask = document.getElementById("hero-key-mask");
+  function maskKey(k) {
+    if (!k) return "";
+    const head = k.startsWith("AIza") ? "AIza" : k.slice(0, 4);
+    const rest = Math.max(4, Math.min(28, k.length - head.length));
+    return head + "•".repeat(rest);
+  }
+  function showKeyState(saved) {
+    if (keySaved) keySaved.hidden = !saved;
+    if (keyEdit) keyEdit.hidden = saved;
+    if (saved && keyMask) {
+      keyMask.textContent = maskKey(localStorage.getItem(KEY_LS) || "");
+    }
+    if (!saved && keyInput) keyInput.value = "";
+  }
+  const storedKey = pickGeminiKey(localStorage.getItem(KEY_LS) || "");
+  if (storedKey) localStorage.setItem(KEY_LS, storedKey);
+  showKeyState(!!storedKey);
+  document.getElementById("gemini-save")?.addEventListener("click", () => {
+    const v = pickGeminiKey(keyInput?.value);
+    if (!v) { say("キーを入力してください"); return; }
+    localStorage.setItem(KEY_LS, v);
+    showKeyState(true);
+    say("キーをこのブラウザに保存しました。");
+  });
+  document.getElementById("gemini-clear")?.addEventListener("click", () => {
+    localStorage.removeItem(KEY_LS);
+    showKeyState(false);
+    say("キーを消しました。");
+  });
+  document.addEventListener("strategic-skills-changed", (ev) => {
+    STRATEGIC = (ev.detail && ev.detail.skills) || [];
+    DISMISSED = new Set(((ev.detail && ev.detail.dismissed) || []).map((d) => d.skillId));
+    paintMaterials();
+  });
   const statusEl = document.getElementById("ocr-status");
   const scoreInputEl = document.getElementById("score-input");
   const styleEl = document.getElementById("style-key");
@@ -348,23 +420,6 @@ export function ocrAdminScript(
     const s = r.toUpperCase() === "S" ? " s" : "";
     return '<span class="reg-chip' + s + '">' + esc(lab) + " " + esc(r) + "</span>";
   }
-  function pickGeminiKey(raw) {
-    const s = String(raw || "").trim();
-    const m = s.match(/AIza[0-9A-Za-z_-]+/);
-    return m ? m[0] : s;
-  }
-  if (keyInput) keyInput.value = pickGeminiKey(localStorage.getItem(KEY_LS) || "");
-  document.getElementById("gemini-save")?.addEventListener("click", () => {
-    const v = pickGeminiKey(keyInput?.value);
-    localStorage.setItem(KEY_LS, v);
-    if (keyInput) keyInput.value = v;
-    say("キーをこのブラウザに保存しました。");
-  });
-  document.getElementById("gemini-clear")?.addEventListener("click", () => {
-    localStorage.removeItem(KEY_LS);
-    if (keyInput) keyInput.value = "";
-    say("キーを消しました。");
-  });
   document.getElementById("to-manual")?.addEventListener("click", () => {
     if (manualEl) manualEl.checked = true;
     setMode("manual");
@@ -392,6 +447,44 @@ export function ocrAdminScript(
       '<span class="reg-chip ' + (skipClass || chipKind(h.kind)) + '">' + esc(h.name) + "</span>"
     ).join("");
   }
+  function strategicMap() {
+    return new Map(STRATEGIC.map((s) => [s.skillId, s]));
+  }
+  function partitionOkHits(okHits) {
+    const sm = strategicMap();
+    const effective = [];
+    const strategic = [];
+    const greens = [];
+    const rejected = [];
+    let strategicPoints = 0;
+    for (const h of okHits) {
+      const id = h.id;
+      if (id != null && sm.has(id)) {
+        const row = sm.get(id);
+        strategic.push(Object.assign({}, h, { points: row.points }));
+        strategicPoints += row.points;
+        continue;
+      }
+      const n = String(h.name || "").trim();
+      if (GREEN_NAMES.has(n)) { greens.push(h); continue; }
+      if (countsInBase(h.name, h.id, h.kind)) { effective.push(h); continue; }
+      rejected.push(h);
+    }
+    return { effective, strategic, greens, rejected, strategicPoints };
+  }
+  function strategicChipsHtml(items) {
+    if (!items.length) return '<span class="reg-chip">なし</span>';
+    return items.map((h) =>
+      '<span class="reg-chip strategic">' + esc(h.name) + '<span class="reg-pts">+' + esc(String(h.points)) + "</span></span>"
+    ).join("");
+  }
+  function rejectedLinkHtml(rejected) {
+    window.__lastRejected = rejected;
+    const sm = strategicMap();
+    const cand = rejected.filter((h) => h.id != null && !sm.has(h.id) && !DISMISSED.has(h.id));
+    if (!CAN_EDIT_STRATEGIC || !cand.length) return "";
+    return ' <button type="button" class="linkish" id="strategic-from-rejected">例外に追加…</button>';
+  }
 
   let ac = null;
   let ocrShot = null;
@@ -411,9 +504,8 @@ export function ocrAdminScript(
     const ap = draft.aptitudes;
     const okHits = lastHits.filter((h) => h.ok);
     const missHits = lastHits.filter((h) => !h.ok);
-    const greens = okHits.filter((h) => GREEN_NAMES.has(String(h.name || "").trim()));
-    const effective = okHits.filter((h) => countsInBase(h.name, h.id, h.kind));
-    const goldLike = effective.filter((h) => {
+    const parts = partitionOkHits(okHits);
+    const goldLike = parts.effective.filter((h) => {
       const n = String(h.name || "").trim();
       if (h.kind === "gold") return true;
       if (h.kind === "unique" || h.kind === "evo" || h.kind === "scenario") {
@@ -421,10 +513,8 @@ export function ocrAdminScript(
       }
       return false;
     }).length;
-    const rejected = okHits.filter(
-      (h) => !GREEN_NAMES.has(String(h.name || "").trim()) && !countsInBase(h.name, h.id, h.kind),
-    );
     const ocrMiss = missHits.map((h) => ({ name: h.input, kind: "unknown" }));
+    const rejLink = rejectedLinkHtml(parts.rejected);
     el.innerHTML =
       '<div class="reg-stats">' +
         '<div class="reg-stat"><span class="k">速</span><span class="v">' + esc(st.speed) + "</span></div>" +
@@ -441,15 +531,18 @@ export function ocrAdminScript(
         '<span class="reg-slash" aria-hidden="true">/</span>' +
         aptChip("逃げ", ap.nige) + aptChip("先行", ap.senkou) + aptChip("差し", ap.sashi) + aptChip("追込", ap.oikomi) +
       "</div>" +
-      '<p class="set-k" style="margin-top:.85rem">有効スキル（総有効スキル数 ' + effective.length + " / 金相当スキル数 " + goldLike + "）</p>" +
-      '<div class="reg-chips">' + chipsHtml(effective, "なし") + "</div>" +
+      '<p class="set-k" style="margin-top:.85rem">有効スキル（総有効スキル数 ' + parts.effective.length + " / 金相当スキル数 " + goldLike + "）</p>" +
+      '<div class="reg-chips">' + chipsHtml(parts.effective, "なし") + "</div>" +
+      '<p class="set-k" style="margin-top:.85rem">戦略例外スキル（合計 ' + parts.strategicPoints + " 点）</p>" +
+      '<div class="reg-chips">' + strategicChipsHtml(parts.strategic) + "</div>" +
       '<p class="set-k" style="margin-top:.85rem">緑スキル</p>' +
-      '<div class="reg-chips">' + chipsHtml(greens, "なし") + "</div>" +
-      '<p class="set-k" style="margin-top:.85rem">不採用スキル</p>' +
-      '<div class="reg-chips">' + chipsHtml(rejected, "なし") + "</div>" +
+      '<div class="reg-chips">' + chipsHtml(parts.greens, "なし") + "</div>" +
+      '<p class="set-k" style="margin-top:.85rem">不採用スキル' + rejLink + "</p>" +
+      '<div class="reg-chips">' + chipsHtml(parts.rejected, "なし") + "</div>" +
       '<p class="set-k" style="margin-top:.85rem">OCR落ちスキル</p>' +
       '<div class="reg-chips">' + chipsHtml(ocrMiss, "なし", "skip") + "</div>";
   }
+  window.__paintMaterials = paintMaterials;
   function showHeldPreview(file) {
     const dropImg = document.getElementById("ocr-drop-img");
     const readImg = document.getElementById("reg-shot-img");

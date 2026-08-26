@@ -12,6 +12,7 @@ import {
   betRowHtml,
   recentBetsHtml,
 } from "./adminUi";
+import { loadStrategicSkillsBundle } from "./adminStrategicApi";
 import {
   getUser,
   listAllBets,
@@ -137,7 +138,14 @@ export async function tryAdminGet(
   }
 
   if (path === "/admin/register") {
-    const page = adminRegisterPage(board, url.searchParams.get("edit"), m, adminReauthField());
+    const strategic = await loadStrategicSkillsBundle(env.DB);
+    const page = adminRegisterPage(
+      board,
+      url.searchParams.get("edit"),
+      m,
+      adminReauthField(),
+      strategic,
+    );
     return html(
       layoutAdmin({
         title: "出走登録",
@@ -151,6 +159,7 @@ export async function tryAdminGet(
   }
 
   if (path === "/admin/horses") {
+    const strategic = await loadStrategicSkillsBundle(env.DB);
     return html(
       layoutAdmin({
         title: "出走",
@@ -158,7 +167,12 @@ export async function tryAdminGet(
         user: gate.user,
         eventStatus: board.event.status,
         flash: m,
-        body: adminHorsesPage(board, url.searchParams.get("sel"), adminReauthField()),
+        body: adminHorsesPage(
+          board,
+          url.searchParams.get("sel"),
+          adminReauthField(),
+          strategic.skills,
+        ),
       }),
     );
   }

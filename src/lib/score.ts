@@ -65,6 +65,10 @@ export type ScoreInput = {
    * 未指定なら緑以外を全部有効とみなす。
    */
   effectiveNames?: ReadonlySet<string>;
+  /**
+   * 戦略例外 id → 点数。U-tools 有効とは別レーン。
+   */
+  strategicById?: StrategicPointsById;
 };
 
 export type SkillBaseBreakdown = {
@@ -73,7 +77,12 @@ export type SkillBaseBreakdown = {
   goldCount: number;
   tameraiCount: number;
   countedNames: string[];
+  /** 戦略例外の合計点（U-tools 有効とは別レーン） */
+  strategicPoints: number;
+  strategicItems: { name: string; id: number; points: number }[];
 };
+
+export type StrategicPointsById = ReadonlyMap<number, { points: number }>;
 
 export type ScoreBreakdown = {
   score: number;
@@ -157,6 +166,8 @@ export type SkillBaseOptions = {
   effectiveIds?: ReadonlySet<number>;
   skillIds?: ReadonlyArray<number | null | undefined>;
   effectiveNames?: ReadonlySet<string>;
+  /** 戦略例外 id → 点数。載っていれば U-tools 側には数えない */
+  strategicById?: StrategicPointsById;
 };
 
 /** スキル土台 S0。緑は除外。金・（緑以外の）固有・進化・シナリオは有効に含めたうえで +2。ためらいは常に白1。 */
@@ -172,6 +183,8 @@ export function skillBase(
   const countedNames: string[] = [];
   let goldCount = 0;
   let tameraiCount = 0;
+  let strategicPoints = 0;
+  const strategicItems: { name: string; id: number; points: number }[] = [];
 
   for (let i = 0; i < skillNames.length; i++) {
     const name = skillNames[i]!.trim();
@@ -179,6 +192,8 @@ export function skillBase(
     if (isGreenMaster(name)) continue;
 
     const id = opts.skillIds?.[i] ?? null;
+    if (id != null && opts.strategicById?.has(id)) continue;
+
     const tamerai = isTamerai(name) || isTameraiId(id);
     const forceAdopt = tamerai || isProvisionalGoldLike(name, id);
     if (!forceAdopt) {
@@ -197,9 +212,27 @@ export function skillBase(
     if (isGoldLike(name, id)) goldCount += 1;
   }
 
+  for (let i = 0; i < skillNames.length; i++) {
+    const name = skillNames[i]!.trim();
+    if (!name) continue;
+    const id = opts.skillIds?.[i] ?? null;
+    if (id == null || !opts.strategicById?.has(id)) continue;
+    const pts = opts.strategicById.get(id)!.points;
+    strategicPoints += pts;
+    strategicItems.push({ name, id, points: pts });
+  }
+
   const effectiveCount = countedNames.length;
-  const base = effectiveCount + 2 * goldCount;
-  return { base, effectiveCount, goldCount, tameraiCount, countedNames };
+  const base = effectiveCount + 2 * goldCount + strategicPoints;
+  return {
+    base,
+    effectiveCount,
+    goldCount,
+    tameraiCount,
+    countedNames,
+    strategicPoints,
+    strategicItems,
+  };
 }
 
 export function achieveMult(r: number, n: number): number {
@@ -253,6 +286,7 @@ export function computeScore(input: ScoreInput): ScoreBreakdown {
     effectiveIds: input.effectiveIds,
     skillIds: input.skillIds,
     effectiveNames: input.effectiveNames,
+    strategicById: input.strategicById,
   });
   const green = sumGreenBonusesByNames(input.skillNames, input.greenCtx);
   const appliedGreens = listAppliedGreensByNames(input.skillNames, input.greenCtx);

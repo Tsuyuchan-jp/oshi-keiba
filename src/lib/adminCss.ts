@@ -435,6 +435,87 @@ body.ledger-page .filters select {
   border: 1px dashed #b4bcc6;
   text-decoration: line-through;
 }
+.reg-chip.strategic {
+  background: #e8eef8;
+  border-color: #5a7fb8;
+  color: #1a3a66;
+}
+.reg-chip .reg-pts {
+  margin-left: .25rem;
+  font-size: .78em;
+  font-weight: 800;
+  opacity: .85;
+}
+.linkish {
+  font: inherit;
+  border: 0;
+  background: none;
+  color: #2b6cb0;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: .12em;
+}
+.hero-util {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .35rem .55rem;
+  font-size: .78rem;
+  color: #6b7380;
+}
+.hero-util-btn {
+  font: inherit;
+  border: 1px solid #c5ccd6;
+  border-radius: 6px;
+  background: #fff;
+  color: #2b6cb0;
+  padding: .22rem .55rem;
+  cursor: pointer;
+}
+.hero-util-btn:disabled { opacity: .55; cursor: default; }
+.hero-util-sep { color: #b4bcc6; user-select: none; }
+.hero-key-wrap { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .35rem .45rem; }
+.hero-key-label { font-weight: 700; color: #3d4550; }
+.hero-key-mask { font-family: ui-monospace, monospace; letter-spacing: .02em; }
+.hero-key-wrap input {
+  font: inherit;
+  min-width: 10rem;
+  padding: .2rem .4rem;
+  border: 1px solid #c5ccd6;
+  border-radius: 6px;
+  background: #fff;
+}
+.hero-key-wrap button {
+  font: inherit;
+  border: 0;
+  background: none;
+  color: #2b6cb0;
+  cursor: pointer;
+}
+.strategic-dlg { max-width: 36rem; }
+.strategic-table-wrap { max-height: 14rem; overflow: auto; margin-top: .35rem; }
+.strategic-add-form {
+  display: grid;
+  grid-template-columns: 1fr 5rem 4rem;
+  gap: .45rem .55rem;
+  align-items: end;
+  margin-top: .35rem;
+}
+.strategic-add-form label { font-size: .78rem; display: flex; flex-direction: column; gap: .15rem; }
+.strategic-add-form label:nth-child(4) { grid-column: 1 / -1; }
+.strategic-add-form label input { font: inherit; padding: .25rem .4rem; border: 1px solid #c5ccd6; border-radius: 6px; }
+.strategic-cand-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: .35rem .65rem;
+  padding: .35rem 0;
+  border-bottom: 1px solid #eef0f3;
+  font-size: .85rem;
+}
+.strategic-cand-row:last-child { border-bottom: 0; }
 .reg-key { font-size: .78rem; color: #6b7380; display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .5rem; }
 .reg-key input {
   font: inherit; min-width: 12rem; padding: .2rem .4rem; border: 1px solid #c5ccd6; border-radius: 6px; background: #fff;

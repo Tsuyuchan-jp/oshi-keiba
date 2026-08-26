@@ -4,7 +4,7 @@
 
 ## 現在進行中
 
-- （なし。OCR 継承／一文字誤読修正まで完了）
+- （なし）
 
 ## そのあと
 
@@ -26,6 +26,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
+- OCR: 戦略例外スキル（D1 正本・グローバル見送り・読取確認5段・ヒーローユーティリティ帯・モーダル管理・JSON export・S0 加算・U-tools 二重除外）— [score.md](score.md)
 - OCR: カタログ同名 multiple・ファジー遺産寄せ（継承／継承進化 id）・千錬＋編集距離≤1。skillBase はリスト外 inherit を数えない — [ocr.md](ocr.md)
 - store 分割: Types / Read / Board / Members / Horses / Event / Race + `store.ts` barrel。公開 API 不変。`storeFlow` 79 パス — パス2クローズ
 - store 結合テスト: メモリ SQLite（D1 互換）で投票→締切→着順→公開・やりなおし・残高不変。`npm test` に `storeFlow` — 分割前の安全網

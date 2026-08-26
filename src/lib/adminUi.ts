@@ -21,6 +21,15 @@ import {
 } from "./ui";
 import { horsesAdminBody, ocrAdminScript, registerMaterialsHtml } from "./ocrAdmin";
 import {
+  heroUtilBarHtml,
+  strategicSkillsAdminScript,
+  strategicSkillsModalHtml,
+} from "./strategicSkillsAdmin";
+import type {
+  StrategicSkillDismissedRow,
+  StrategicSkillRow,
+} from "./strategicSkills";
+import {
   BET_KIND_LABEL,
   formatSelectionLabel,
   kindIsEnabled,
@@ -404,11 +413,17 @@ function styleSeg(selected: string | null | undefined): string {
       <select name="style_key" id="style-key" class="admin-offscreen" tabindex="-1">${opts}</select>`;
 }
 
+export type StrategicSkillsBundle = {
+  skills: StrategicSkillRow[];
+  dismissed: StrategicSkillDismissedRow[];
+};
+
 export function adminRegisterPage(
   board: Board,
   editId: string | null,
   flash?: { text: string | null; error: boolean },
   reauth = "",
+  strategic: StrategicSkillsBundle = { skills: [], dismissed: [] },
 ): { body: string; scripts: string } {
   const setup = eventScoreSetup(board.event);
   const canSetup = board.event.status === "setup";
@@ -435,13 +450,8 @@ export function adminRegisterPage(
   const flashEl = flash?.text
     ? `<p class="settings-flash${flash.error ? " err" : ""}">${escapeHtml(flash.text)}</p>`
     : "";
-  const keyBar = canSetup
-    ? `<p class="reg-key" style="margin:0 0 0 auto">キー
-        <input id="gemini-key" type="text" autocomplete="off" spellcheck="false" aria-label="Gemini API キー">
-        <button type="button" id="gemini-save">保存</button>
-        ·
-        <button type="button" id="gemini-clear">消す</button></p>`
-    : "";
+  const dismissedIds = new Set(strategic.dismissed.map((d) => d.skillId));
+  const utilBar = heroUtilBarHtml(strategic.skills.length, canSetup);
   let benchTitle = "次の1頭";
   let benchMeta = "選ぶ → 読む → 登録";
   let benchInner = horsesAdminBody(board, canSetup, setup, { embedded: true });
@@ -457,7 +467,7 @@ export function adminRegisterPage(
       ? `<button type="button" class="reg-shot-btn" id="shot-open" aria-label="スクショを大きく見る">
           <img class="reg-shot" src="/admin/shot/${escapeHtml(edit.horse.id)}" alt=""></button>`
       : `<div class="reg-shot empty">スクショなし</div>`;
-    const auto = scoreFromHorse(setup, scoreIn);
+    const auto = scoreFromHorse(setup, scoreIn, strategic.skills);
     const manualBox =
       edit.horse.seed_source === "manual" &&
       !(auto && auto.strength === edit.horse.strength);
@@ -482,6 +492,9 @@ export function adminRegisterPage(
                       scoreIn.styleKey && setup
                         ? effectiveIdsFromScoreSetup(setup, scoreIn.styleKey)
                         : null,
+                      strategic.skills,
+                      dismissedIds,
+                      canSetup,
                     )
                   : ""
               }
@@ -508,7 +521,7 @@ export function adminRegisterPage(
       <div class="hero-top">
         <h1>出走登録</h1>${phasePill(board.event.status)}
         <span id="count">${board.horses.length} / 18</span>
-        ${keyBar}
+        ${utilBar}
       </div>
       ${flashEl}
     </section>
@@ -529,6 +542,7 @@ export function adminRegisterPage(
       </section>
     </div>
     <dialog class="shot-dlg shot-dlg-left" id="shot-dlg"><div class="shot-scroller fit" id="shot-scroller"><img id="shot-full" alt=""></div></dialog>
+    ${strategicSkillsModalHtml()}
     <dialog class="modal" id="drop-horse-modal">
       <h2>名簿から外す</h2>
       <p id="drop-horse-p"></p>
@@ -601,11 +615,21 @@ export function adminRegisterPage(
   const greenNames = (greenJson as { skills: { name: string }[] }).skills.map(
     (s) => s.name,
   );
+  const dismissedIdList = [...dismissedIds];
+  const ocrScript = canSetup
+    ? ocrAdminScript(
+        !!setup,
+        setup?.effectiveSkillIds ?? null,
+        greenNames,
+        strategic.skills,
+        dismissedIdList,
+        canSetup,
+      )
+    : "";
+  const strategicScript = strategicSkillsAdminScript(canSetup, strategic);
   return {
     body,
-    scripts: canSetup
-      ? ocrAdminScript(!!setup, setup?.effectiveSkillIds ?? null, greenNames)
-      : "",
+    scripts: ocrScript + strategicScript,
   };
 }
 
@@ -670,11 +694,15 @@ function staminaExplain(
   return "掛かりありだけ未達";
 }
 
-function pipeHtml(h: HorseBoard, board: Board): string {
+function pipeHtml(
+  h: HorseBoard,
+  board: Board,
+  strategicSkills: readonly StrategicSkillRow[] = [],
+): string {
   const p = horseSheetParts(h.horse);
   const input = parseHorseScoreInput(h.horse.score_input);
   const setup = eventScoreSetup(board.event);
-  const auto = scoreFromHorse(setup, input);
+  const auto = scoreFromHorse(setup, input, strategicSkills);
   const shot = h.horse.shot_key
     ? `<button type="button" class="shot-thumb" data-shot="/admin/shot/${escapeHtml(h.horse.id)}"><img src="/admin/shot/${escapeHtml(h.horse.id)}" alt=""></button>`
     : `<div class="shot-none">スクショなし</div>`;
@@ -726,10 +754,12 @@ function pipeHtml(h: HorseBoard, board: Board): string {
     ratioSHow(b.rawRatios.wisdom, 1, 6, rDefText(st.wisdom, gr.wisdom, styleMul, req.wisdom)),
   );
   const staLine = sMultLine(b.ratios.staminaMult, staminaExplain(b.adjusted.stamina, req));
+  const stratPart =
+    s.strategicPoints > 0 ? ` ＋ 戦略例外 ${s.strategicPoints}` : "";
   const formula = `スキル点${s.base} × スピ${fmt3(b.ratios.speed)} × スタ${fmt3(b.ratios.staminaMult)} × パワ${fmt3(b.ratios.power)} × 根性${fmt3(b.ratios.guts)} × 賢さ${fmt3(b.ratios.wisdom)} ＝ ${h.horse.strength}`;
   return `${head}
     <div class="pipe-step"><div class="pipe-k">土台（スキル）</div>
-      <div>有効 ${s.effectiveCount} ＋ 金×2（${s.goldCount}枚）＋ ためらい ${s.tameraiCount}＝ <b>${s.base}</b></div></div>
+      <div>有効 ${s.effectiveCount} ＋ 金×2（${s.goldCount}枚）${stratPart} ＋ ためらい ${s.tameraiCount}＝ <b>${s.base}</b></div></div>
     <div class="pipe-step"><div class="pipe-k">緑 → ステへ</div><div class="pipe-green">${greenLines}</div></div>
     <div class="pipe-step"><div class="pipe-k">スピード</div><div class="pipe-v">${speedLine}</div></div>
     <div class="pipe-step"><div class="pipe-k">スタミナ</div><div class="pipe-v">${staLine}</div></div>
@@ -742,7 +772,12 @@ function pipeHtml(h: HorseBoard, board: Board): string {
       <p class="pipe-eq">Seed ${Math.round(h.seed).toLocaleString("ja-JP")}</p></div>`;
 }
 
-export function adminHorsesPage(board: Board, selId: string | null, reauth: string): string {
+export function adminHorsesPage(
+  board: Board,
+  selId: string | null,
+  reauth: string,
+  strategicSkills: readonly StrategicSkillRow[] = [],
+): string {
   const first = board.horses[0]?.horse.id ?? "";
   const sel = selId && board.horses.some((h) => h.horse.id === selId) ? selId : first;
   const rows = board.horses
@@ -765,7 +800,9 @@ export function adminHorsesPage(board: Board, selId: string | null, reauth: stri
     })
     .join("");
   const current = board.horses.find((h) => h.horse.id === sel) ?? board.horses[0];
-  const pipe = current ? pipeHtml(current, board) : `<p class="note">まだいません</p>`;
+  const pipe = current
+    ? pipeHtml(current, board, strategicSkills)
+    : `<p class="note">まだいません</p>`;
   return `<section class="hero"><div class="hero-top"><h1>出走</h1>${phasePill(board.event.status)}</div></section>
     <div class="horses-desk">
       <section class="work"><h2>名簿</h2>

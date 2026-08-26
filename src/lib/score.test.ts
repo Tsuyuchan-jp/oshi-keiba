@@ -113,6 +113,18 @@ test("effectiveIds + skillIds で絞る", () => {
   assert.deepEqual(s.countedNames, ["地固め"]);
 });
 
+test("skillBase: 戦略例外は U-tools から除外し点数を加算", () => {
+  const strategicById = new Map([[200431, { points: 1 }]]);
+  const s = skillBase(["地固め", "コンセントレーション"], {
+    effectiveIds: new Set([201601, 200431]),
+    skillIds: [201601, 200431],
+    strategicById,
+  });
+  assert.deepEqual(s.countedNames, ["地固め"]);
+  assert.equal(s.strategicPoints, 1);
+  assert.equal(s.base, 2);
+});
+
 test("ためらい id は effectiveIds 外でも白1", () => {
   const s = skillBase(["逃げためらい", "地固め"], {
     effectiveIds: new Set([201601]),

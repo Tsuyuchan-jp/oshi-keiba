@@ -44,6 +44,7 @@ import {
   serializeHorseScoreInput,
 } from "./lib/horseScoreInput";
 import { resolveStrength } from "./lib/scoreFromHorse";
+import { loadStrategicSkillsBundle, tryAdminStrategicApi } from "./lib/adminStrategicApi";
 import { enrichScoreSetupWithEffects, scoreSetupFromForm } from "./lib/scoreSetup";
 import { normalizeShotMime } from "./lib/shotMime";
 import type { UserRow } from "./lib/store";
@@ -101,6 +102,21 @@ export default {
 
       const adminGet = await tryAdminGet(request, env, url, path);
       if (adminGet) return adminGet;
+
+      if (path.startsWith("/admin/api/strategic-skills")) {
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) return gate;
+        try {
+          const res = await tryAdminStrategicApi(request, env, path, gate);
+          if (res) return res;
+        } catch (err) {
+          return Response.json(
+            { error: err instanceof Error ? err.message : "操作に失敗しました" },
+            { status: 400 },
+          );
+        }
+        return new Response("Not found", { status: 404 });
+      }
 
       const memberGet = await tryMemberGet(request, env, url, path);
       if (memberGet) return memberGet;
@@ -176,6 +192,7 @@ export default {
             throw new Error("OCRした画像がありません。もう一度読み取ってください");
           }
           const setup = eventScoreSetup(board.event);
+          const strategic = await loadStrategicSkillsBundle(env.DB);
           let scoreInput = parseHorseScoreInput(String(fd.get("score_input") ?? ""));
           const styleRaw = String(fd.get("style_key") ?? "").trim();
           if (!styleRaw) throw new Error("脚質を選んでください");
@@ -192,6 +209,7 @@ export default {
             input: scoreInput,
             manualStrength: Number(fd.get("strength")),
             forceManual,
+            strategicSkills: strategic.skills,
           });
           const id = await addHorse(
             env.DB,
@@ -233,6 +251,7 @@ export default {
           const existing = board.horses.find((h) => h.horse.id === horseId);
           if (!existing) throw new Error("出走が見つかりません");
           const setup = eventScoreSetup(board.event);
+          const strategic = await loadStrategicSkillsBundle(env.DB);
           let scoreInput = parseHorseScoreInput(existing.horse.score_input);
           const styleRaw = String(form.get("style_key") ?? "").trim();
           if (!styleRaw) throw new Error("脚質を選んでください");
@@ -248,6 +267,7 @@ export default {
             input: scoreInput,
             manualStrength: Number(form.get("strength")),
             forceManual,
+            strategicSkills: strategic.skills,
           });
           await updateHorse(
             env.DB,
