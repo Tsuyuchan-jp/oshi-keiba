@@ -1,30 +1,20 @@
 import { escapeHtml } from "./http";
 import {
-  BET_KIND_BLURB,
   BET_KIND_LABEL,
   formatSelectionLabel,
-  OPTIONAL_BET_KINDS,
   parseEnabledKinds,
   type BetKind,
 } from "./bets";
 import type {
   BetRow,
   Board,
-  EventRow,
   EventStatus,
   HorseBoard,
   UserRow,
 } from "./store";
-import { eventScoreSetup, numberByHorseId } from "./store";
+import { numberByHorseId } from "./store";
 import { horseSheetParts } from "./horseName";
 import { IMPUTED_LAMBDA } from "./odds";
-import {
-  DEFAULT_SCORE_REQ,
-  GROUND_CONDITION_OPTIONS,
-  listScoreCourses,
-  SEASON_OPTIONS,
-  WEATHER_OPTIONS,
-} from "./scoreSetup";
 
 export function formatOdds(n: number | null): string {
   if (n == null || !Number.isFinite(n)) return "—";
@@ -632,35 +622,6 @@ export function winSheetTable(board: Board): string {
   </table>`;
 }
 
-/** 連勝の実票一覧（空は —） */
-export function comboOddsTable(board: Board, kind: BetKind): string {
-  if (kind === "win") return winSheetTable(board);
-  const pool = board.pools.find((p) => p.kind === kind);
-  const nums = numberByHorseId(board);
-  if (!pool || pool.combos.length === 0) {
-    return `<p class="note">—</p>`;
-  }
-  const rows = pool.combos
-    .map((c) => {
-      const label = formatSelectionLabel(
-        kind,
-        c.horse_1,
-        c.horse_2,
-        c.horse_3,
-        nums,
-      );
-      return `<tr data-sel="${escapeHtml(c.selection_key)}">
-        <td>${escapeHtml(label)}</td>
-        <td class="num odds-cell"><span class="odds-now">${formatOdds(c.odds)}</span><span class="odds-delta" hidden></span></td>
-      </tr>`;
-    })
-    .join("");
-  return `<table class="combo-list">
-    <thead><tr><th>組み合わせ</th><th>オッズ</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table>`;
-}
-
 export function kindVoidNotes(board: Board): string {
   if (board.event.status !== "closed" && board.event.status !== "published") {
     return "";
@@ -685,17 +646,6 @@ export function kindVoidNotes(board: Board): string {
     .filter(Boolean)
     .join("");
   return lines;
-}
-
-export function horseOptions(board: Board, name: string, excludeIds: string[] = []): string {
-  const excl = new Set(excludeIds);
-  return board.horses
-    .filter((h) => !h.horse.scratched && !excl.has(h.horse.id))
-    .map((h) => {
-      const p = horseSheetParts(h.horse);
-      return `<option value="${escapeHtml(h.horse.id)}">${h.number}. ${escapeHtml(p.umaName)}（${escapeHtml(p.runnerName)}）</option>`;
-    })
-    .join("");
 }
 
 export function groupMyBets(
@@ -728,16 +678,6 @@ export function groupMyBets(
       });
   }
   return [...map.values()];
-}
-
-/** 画面に出している単勝倍率 */
-export function shownOdds(board: Board, horseId: string): number | null {
-  const h = board.horses.find((x) => x.horse.id === horseId);
-  if (!h || h.horse.scratched) return null;
-  if (board.event.status === "voting" || board.event.status === "setup") {
-    return h.referenceOdds;
-  }
-  return h.confirmedOdds;
 }
 
 export const BOARD_FLASH_SCRIPT = `<script>
@@ -973,166 +913,5 @@ export function formulaPanel(board: Board): string {
   </div>
   </div>`;
 }
-
-export function strengthCalcModal(): string {
-  return `<dialog class="modal" id="strength-modal">
-    <h2>評価点</h2>
-    <p class="note">Seed の比に使う数字です。開催条件・ステ目標と出走材料（OCR＋脚質）が揃えば <code>computeScore</code> で自動算出し、評価点に載せます。</p>
-    <p class="note">自動算出が使えないとき（開催条件なし・脚質未選択・材料なし）や、「評価点を直置き」チェック時だけ手入力が正になります。</p>
-    <form method="dialog"><button type="submit">閉じる</button></form>
-  </dialog>
-  <script>
-    const dlg = document.getElementById("strength-modal");
-    const openBtn = document.getElementById("strength-detail");
-    if (dlg && openBtn) openBtn.addEventListener("click", () => dlg.showModal());
-    if (dlg) {
-      dlg.addEventListener("click", (ev) => {
-        const r = dlg.getBoundingClientRect();
-        const inside =
-          ev.clientX >= r.left && ev.clientX <= r.right &&
-          ev.clientY >= r.top && ev.clientY <= r.bottom;
-        if (!inside) dlg.close();
-      });
-    }
-  </script>`;
-}
-
-export function betTabsHtml(active: BetKind, enabledRaw: string): string {
-  const enabled = parseEnabledKinds(enabledRaw);
-  const kind = enabled.includes(active) ? active : "win";
-  return `<nav class="bet-tabs">${enabled.map(
-    (k) =>
-      `<a href="/bet?kind=${k}" class="${k === kind ? "on" : ""}">${BET_KIND_LABEL[k]}</a>`,
-  ).join("")}</nav>
-  <p class="bet-blurb">${escapeHtml(BET_KIND_BLURB[kind])}</p>`;
-}
-
-/** 投票開始前だけ編集。単勝は外せない */
-export function enabledKindsAdminFields(event: EventRow): string {
-  const enabled = new Set(parseEnabledKinds(event.enabled_kinds));
-  const setup = event.status === "setup";
-  const note = setup
-    ? `<p class="note">単勝は必ず使います。ほかは投票開始前だけ変えられます。初期は全部オンです。</p>`
-    : `<p class="note">投票開始後は賭式を変えません。いま有効なのは ${escapeHtml(
-        parseEnabledKinds(event.enabled_kinds)
-          .map((k) => BET_KIND_LABEL[k])
-          .join("、"),
-      )} です。</p>`;
-  const rest = OPTIONAL_BET_KINDS.map((k) => {
-    const on = enabled.has(k);
-    const dis = setup ? "" : " disabled";
-    return `<label class="kind-opt"><input type="checkbox" name="kind_${k}" value="1"${on ? " checked" : ""}${dis}> ${BET_KIND_LABEL[k]}</label>`;
-  }).join("");
-  return `<fieldset class="kind-set">
-    <legend>賭式</legend>
-    ${note}
-    <div class="kind-opts">
-      <label class="kind-opt"><input type="checkbox" checked disabled> 単勝（必須）</label>
-      <input type="hidden" name="kind_win" value="1">
-      ${rest}
-    </div>
-  </fieldset>`;
-}
-
-function selectOpts(
-  options: ReadonlyArray<{ value: number | string; label: string }>,
-  selected: string | number | null | undefined,
-  emptyLabel = "—",
-): string {
-  const cur = selected == null || selected === "" ? "" : String(selected);
-  const head = `<option value="">${escapeHtml(emptyLabel)}</option>`;
-  const body = options
-    .map((o) => {
-      const v = String(o.value);
-      const sel = v === cur ? " selected" : "";
-      return `<option value="${escapeHtml(v)}"${sel}>${escapeHtml(o.label)}</option>`;
-    })
-    .join("");
-  return head + body;
-}
-
-/** レースイベント設定内: 開催条件とステ目標値 */
-export function scoreSetupAdminFields(event: EventRow): string {
-  const setup = eventScoreSetup(event);
-  const c = setup?.conditions;
-  const r = setup?.requirements;
-  const courses = listScoreCourses().map((x) => ({
-    value: x.courseKey,
-    label: x.label,
-  }));
-  const num = (n: number | undefined) => (n == null ? "" : String(n));
-  const reqVal = (saved: number | undefined, fallback: number) =>
-    escapeHtml(saved == null ? String(fallback) : String(saved));
-  const ids = setup?.effectiveSkillIds;
-  const effectsNote = ids
-    ? `有効スキル id（保存時取得）: 逃 ${ids.runner.length} / 先 ${ids.leader.length} / 差 ${ids.betweener.length} / 追 ${ids.chaser.length}${
-        setup?.effectsFetchedAt
-          ? ` · ${escapeHtml(setup.effectsFetchedAt)}`
-          : ""
-      }`
-    : "有効スキル id: 未取得（コースを選んで保存すると U-tools から取り直します）";
-  return `<fieldset class="kind-set">
-    <legend>開催条件とステ目標値</legend>
-    <p class="note">評価点の自動算出用。未設定なら Strength 直置きのみ。コースは U-tools 金ドット36。天候・バ場・季節と目標値は開催ごと手打ち（速・パ・根・賢は初期 ${DEFAULT_SCORE_REQ.speedCap}/${DEFAULT_SCORE_REQ.power}/${DEFAULT_SCORE_REQ.guts}/${DEFAULT_SCORE_REQ.wisdom}。スタミナはコース依存のため空）。保存時に選んだコースの有効スキル id（4脚質）を U-tools から取得して開催に固定します。</p>
-    <div class="row">
-      <label>コース <select name="score_course">${selectOpts(courses, c?.courseKey, "（未設定）")}</select></label>
-      <label>天候 <select name="score_weather">${selectOpts(WEATHER_OPTIONS, c?.weather)}</select></label>
-      <label>バ場 <select name="score_ground_condition">${selectOpts(GROUND_CONDITION_OPTIONS, c?.groundCondition)}</select></label>
-      <label>季節 <select name="score_season">${selectOpts(SEASON_OPTIONS, c?.season)}</select></label>
-    </div>
-    <div class="row">
-      <label>要求スピード <input name="score_speed_cap" type="number" min="1" step="1" value="${reqVal(r?.speedCap, DEFAULT_SCORE_REQ.speedCap)}" placeholder="継承突破なしカンスト"></label>
-      <label>要求パ <input name="score_power" type="number" min="1" step="1" value="${reqVal(r?.power, DEFAULT_SCORE_REQ.power)}"></label>
-      <label>要求根 <input name="score_guts" type="number" min="1" step="1" value="${reqVal(r?.guts, DEFAULT_SCORE_REQ.guts)}"></label>
-      <label>要求賢 <input name="score_wisdom" type="number" min="1" step="1" value="${reqVal(r?.wisdom, DEFAULT_SCORE_REQ.wisdom)}"></label>
-    </div>
-    <div class="row">
-      <label>要求スタ（掛かりなし） <input name="score_stamina_no" type="number" min="1" step="1" value="${escapeHtml(num(r?.staminaNoTempt))}"></label>
-      <label>要求スタ（掛かりあり） <input name="score_stamina_with" type="number" min="1" step="1" value="${escapeHtml(num(r?.staminaWithTempt))}"></label>
-      <label class="kind-opt"><input type="checkbox" name="score_stamina_race" value="1"${r?.staminaRace ? " checked" : ""}> スタミナ勝負コース</label>
-    </div>
-    <p class="note">${effectsNote}</p>
-  </fieldset>`;
-}
-
-export function pickSelects(kind: BetKind, board: Board): string {
-  const opts = horseOptions(board, "horse");
-  if (kind === "win") {
-    return `<label>1着（番号） <select name="h1" required><option value="">—</option>${opts}</select></label>`;
-  }
-  if (kind === "umaren" || kind === "umatan") {
-    const l1 = kind === "umaren" ? "馬A" : "1着";
-    const l2 = kind === "umaren" ? "馬B" : "2着";
-    return `<label>${l1} <select name="h1" id="sel-h1" required><option value="">—</option>${opts}</select></label>
-      <label>${l2} <select name="h2" id="sel-h2" required><option value="">—</option>${opts}</select></label>`;
-  }
-  return `<label>1着 <select name="h1" id="sel-h1" required><option value="">—</option>${opts}</select></label>
-    <label>2着 <select name="h2" id="sel-h2" required><option value="">—</option>${opts}</select></label>
-    <label>3着 <select name="h3" id="sel-h3" required><option value="">—</option>${opts}</select></label>`;
-}
-
-/** 同じ頭を二度選べない */
-export const DEDUPE_SELECT_SCRIPT = `<script>
-(() => {
-  const sels = ["sel-h1", "sel-h2", "sel-h3"]
-    .map((id) => document.getElementById(id))
-    .filter(Boolean);
-  if (sels.length < 2) return;
-  const sync = () => {
-    const chosen = new Set(sels.map((s) => s.value).filter(Boolean));
-    for (const s of sels) {
-      const mine = s.value;
-      for (const opt of s.options) {
-        if (!opt.value) continue;
-        const hide = chosen.has(opt.value) && opt.value !== mine;
-        opt.hidden = hide;
-        opt.disabled = hide;
-      }
-    }
-  };
-  sels.forEach((s) => s.addEventListener("change", sync));
-  sync();
-})();
-</script>`;
 
 export type { HorseBoard, BetKind };
