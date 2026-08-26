@@ -435,6 +435,7 @@ export function adminRegisterPage(
     benchTitle = "登録済み";
     benchMeta = "飛び入り禁止";
   }
+  let nextAdd = "";
   if (canSetup && edit && !edit.horse.scratched) {
     const p = horseSheetParts(edit.horse);
     const scoreIn = parseHorseScoreInput(edit.horse.score_input);
@@ -444,6 +445,7 @@ export function adminRegisterPage(
       : `<div class="reg-shot empty">スクショなし</div>`;
     benchTitle = "直し";
     benchMeta = escapeHtml(p.umaName);
+    nextAdd = `<a class="reg-next" href="/admin/register">＋ 次の1頭を登録</a>`;
     benchInner = `<form method="post" action="/admin/horse-edit" id="horse-edit">
         <input type="hidden" name="horse_id" value="${escapeHtml(edit.horse.id)}">
         <div class="table-scroll" id="bench">
@@ -465,7 +467,6 @@ export function adminRegisterPage(
               </label>
               <div class="ctas">
                 <button type="submit" class="primary">更新</button>
-                <a href="/admin/register">次の1頭を登録する</a>
               </div>
             </div>
           </div>
@@ -486,8 +487,13 @@ export function adminRegisterPage(
         <div class="table-scroll"><div class="reg-list" id="list">${list || `<p class="reg-locked">まだいません</p>`}</div></div>
       </section>
       <section class="work">
-        <div class="work-head"><h2 id="bench-title">${escapeHtml(benchTitle)}</h2>
-          <span class="odds-meta" id="bench-meta">${benchMeta}</span></div>
+        <div class="work-head">
+          <div class="work-head-main">
+            <h2 id="bench-title">${escapeHtml(benchTitle)}</h2>
+            <span class="odds-meta" id="bench-meta">${benchMeta}</span>
+          </div>
+          ${nextAdd}
+        </div>
         ${benchInner}
       </section>
     </div>
@@ -502,7 +508,12 @@ export function adminRegisterPage(
         dlg?.showModal();
       });
       sc?.addEventListener("dblclick", () => { sc.classList.toggle("fit"); sc.classList.toggle("read"); });
-      dlg?.addEventListener("click", (ev) => { if (ev.target === dlg) dlg.close(); });
+      const closeShot = (ev) => {
+        if (ev.target instanceof HTMLImageElement) return;
+        dlg?.close();
+      };
+      sc?.addEventListener("click", closeShot);
+      dlg?.addEventListener("click", closeShot);
       const styles = document.getElementById("styles");
       const styleEl = document.getElementById("style-key");
       styles?.querySelectorAll("[data-s]").forEach((b) => {
@@ -621,7 +632,12 @@ export function adminHorsesPage(board: Board, selId: string | null, reauth: stri
         });
       });
       sc?.addEventListener("dblclick", () => { sc.classList.toggle("fit"); sc.classList.toggle("read"); });
-      dlg?.addEventListener("click", (ev) => { if (ev.target === dlg) dlg.close(); });
+      const closeShot = (ev) => {
+        if (ev.target instanceof HTMLImageElement) return;
+        dlg?.close();
+      };
+      sc?.addEventListener("click", closeShot);
+      dlg?.addEventListener("click", closeShot);
       const sdlg = document.getElementById("scratch-modal");
       document.querySelectorAll("[data-scratch-id]").forEach((btn) => {
         btn.addEventListener("click", (ev) => {

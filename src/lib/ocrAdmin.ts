@@ -76,13 +76,13 @@ export function horsesAdminBody(
         <input type="hidden" name="ocr_ok" id="ocr-ok" value="">
         <input type="hidden" name="score_input" id="score-input" value="">
         <input type="file" name="shot" id="shot-from-ocr" class="admin-offscreen" accept="${SHOT_ACCEPT}" tabindex="-1">
+        <input id="ocr-file" class="admin-offscreen" type="file" accept="${SHOT_ACCEPT}" tabindex="-1">
         <select name="style_key" id="style-key" class="admin-offscreen" tabindex="-1">${styleOpts}</select>
         <p class="odds-meta" id="ocr-status"></p>
         <div id="mode-idle">
-          <div class="reg-drop" id="ocr-drop">
+          <div class="reg-drop" id="ocr-drop" role="button" tabindex="0">
             <strong>完成スクショを置く</strong>
-            <p>PNG / JPEG / WebP。枠にドロップするか、下のファイル選択。</p>
-            <input id="ocr-file" type="file" accept="${SHOT_ACCEPT}">
+            <p>クリックで選ぶか、ここにドロップ。PNG / JPEG / WebP。</p>
           </div>
           <p class="reg-alt"><button type="button" id="to-manual">スクショなしで直置きする</button></p>
           <div class="ctas" style="margin-top:.7rem">
@@ -521,9 +521,25 @@ export function ocrAdminScript(canAutoScore: boolean): string {
     takeFile(f);
   });
   const drop = document.getElementById("ocr-drop");
-  drop?.addEventListener("dragover", (e) => { e.preventDefault(); });
+  drop?.addEventListener("click", () => {
+    fileEl?.click();
+  });
+  drop?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      fileEl?.click();
+    }
+  });
+  drop?.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    drop.classList.add("is-over");
+  });
+  drop?.addEventListener("dragleave", (e) => {
+    if (!drop.contains(e.relatedTarget)) drop.classList.remove("is-over");
+  });
   drop?.addEventListener("drop", (e) => {
     e.preventDefault();
+    drop.classList.remove("is-over");
     const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
     if (f) takeFile(f);
   });
