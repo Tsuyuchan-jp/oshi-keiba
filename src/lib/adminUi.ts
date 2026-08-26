@@ -17,7 +17,7 @@ import {
   statusLabel,
   toJstInput,
 } from "./ui";
-import { horsesAdminBody, ocrAdminScript } from "./ocrAdmin";
+import { horsesAdminBody, ocrAdminScript, registerMaterialsHtml } from "./ocrAdmin";
 import {
   BET_KIND_LABEL,
   formatSelectionLabel,
@@ -455,6 +455,7 @@ export function adminRegisterPage(
                 <label>出走者<input name="runner_name" id="runner-name" value="${escapeHtml(p.runnerName)}" required maxlength="40"></label>
               </div>
               ${styleSeg(scoreIn?.styleKey)}
+              ${scoreIn ? registerMaterialsHtml(scoreIn) : ""}
               <div class="reg-score-in" style="margin-top:.85rem;max-width:10rem">
                 <label>評価点<input name="strength" id="strength" type="number" min="0" step="0.1" value="${edit.horse.strength}" required></label>
               </div>

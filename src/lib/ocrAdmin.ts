@@ -1,12 +1,52 @@
 import { escapeHtml } from "./http";
-import { STYLE_OPTIONS } from "./horseScoreInput";
-import { catalogJsonForPage } from "./skillCatalog";
+import { STYLE_OPTIONS, type HorseScoreInput } from "./horseScoreInput";
+import { catalogJsonForPage, classifySkillName } from "./skillCatalog";
 import type { EventScoreSetup } from "./scoreSetup";
 import { ALLOWED_SHOT_MIME } from "./shotMime";
 import type { Board } from "./store";
 
 const KEY_LS = "oshi-keiba-gemini-key";
 const SHOT_ACCEPT = ALLOWED_SHOT_MIME.join(",");
+
+function aptChip(label: string, rank: string): string {
+  const r = rank || "—";
+  const s = r.toUpperCase() === "S" ? " s" : "";
+  return `<span class="reg-chip${s}">${escapeHtml(label)} ${escapeHtml(r)}</span>`;
+}
+
+function skillChipClass(kind: string): string {
+  if (kind === "green") return "green";
+  if (kind === "gold" || kind === "unique" || kind === "evo") return "gold";
+  if (kind === "minus") return "minus";
+  return "white";
+}
+
+/** 読取材料のチップ。掛かりスタミナ2欄は出さない */
+export function registerMaterialsHtml(input: HorseScoreInput): string {
+  const st = input.stats;
+  const ap = input.aptitudes;
+  const skills = input.skillNames
+    .map((n) => {
+      const c = classifySkillName(n);
+      return `<span class="reg-chip ${skillChipClass(c.kind)}">${escapeHtml(c.name)}</span>`;
+    })
+    .join("");
+  return `<div class="reg-stats">
+      <div class="reg-stat"><span class="k">速</span><span class="v">${st.speed}</span></div>
+      <div class="reg-stat"><span class="k">スタ</span><span class="v">${st.stamina}</span></div>
+      <div class="reg-stat"><span class="k">パ</span><span class="v">${st.power}</span></div>
+      <div class="reg-stat"><span class="k">根</span><span class="v">${st.guts}</span></div>
+      <div class="reg-stat"><span class="k">賢</span><span class="v">${st.wisdom}</span></div>
+    </div>
+    <div class="reg-chips">
+      ${aptChip("芝", ap.turf)}${aptChip("ダ", ap.dirt)}
+      <span class="reg-slash" aria-hidden="true">/</span>
+      ${aptChip("短", ap.short)}${aptChip("マイル", ap.mile)}${aptChip("中", ap.medium)}${aptChip("長", ap.long)}
+      <span class="reg-slash" aria-hidden="true">/</span>
+      ${aptChip("逃げ", ap.nige)}${aptChip("先行", ap.senkou)}${aptChip("差し", ap.sashi)}${aptChip("追込", ap.oikomi)}
+    </div>
+    <div class="reg-chips">${skills || `<span class="reg-chip">スキルなし</span>`}</div>`;
+}
 
 export function horsesAdminBody(
   _board: Board,
@@ -31,39 +71,58 @@ export function horsesAdminBody(
       (o) => `<option value="${o.key}">${escapeHtml(o.label)}</option>`,
     ),
   ].join("");
-  // ドロップと見える file は table-scroll の外。透明オーバーレイは使わない（下のボタンまで覆ってピッカーだけ開く）
-  return `<form id="horse-add" method="post" action="/admin/horse" enctype="multipart/form-data">
+  // ドロップと見える file は table-scroll の外。透明オーバーレイは使わない
+  return `<form id="horse-add" method="post" action="/admin/horse" enctype="multipart/form-data" data-mode="idle">
         <input type="hidden" name="ocr_ok" id="ocr-ok" value="">
         <input type="hidden" name="score_input" id="score-input" value="">
         <input type="file" name="shot" id="shot-from-ocr" class="admin-offscreen" accept="${SHOT_ACCEPT}" tabindex="-1">
         <select name="style_key" id="style-key" class="admin-offscreen" tabindex="-1">${styleOpts}</select>
-        <div class="reg-drop" id="ocr-drop">
-          <strong>完成スクショを置く</strong>
-          <p id="ocr-status">PNG / JPEG / WebP。枠にドロップするか、下のファイル選択。</p>
-          <input id="ocr-file" type="file" accept="${SHOT_ACCEPT}">
+        <p class="odds-meta" id="ocr-status"></p>
+        <div id="mode-idle">
+          <div class="reg-drop" id="ocr-drop">
+            <strong>完成スクショを置く</strong>
+            <p>PNG / JPEG / WebP。枠にドロップするか、下のファイル選択。</p>
+            <input id="ocr-file" type="file" accept="${SHOT_ACCEPT}">
+          </div>
+          <p class="reg-alt"><button type="button" id="to-manual">スクショなしで直置きする</button></p>
+          <div class="ctas" style="margin-top:.7rem">
+            <button type="button" id="ocr-run">読み取る</button>
+            <button type="button" id="ocr-stop">停止</button>
+          </div>
         </div>
-        <p class="reg-alt"><button type="button" id="to-manual">スクショなしで直置きする</button></p>
-        <div class="ctas" style="margin-top:.7rem">
-          <button type="button" id="ocr-run">読み取る</button>
-          <button type="button" id="ocr-stop">停止</button>
-        </div>
-        <div class="table-scroll" id="bench">
-          <div class="reg-names">
-            <label>ウマ娘名<input name="uma_name" id="uma-name" required maxlength="40"></label>
-            <label>出走者<input name="runner_name" id="runner-name" required maxlength="40"></label>
+        <div class="table-scroll" id="mode-work">
+          <div class="reg-bench">
+            <div>
+              <button type="button" class="reg-shot-btn" id="shot-open" aria-label="スクショを大きく見る">
+                <img class="reg-shot" id="reg-shot-img" alt=""></button>
+              <div class="reg-shot empty" id="reg-shot-empty">スクショなし</div>
+            </div>
+            <div>
+              <div class="reg-names">
+                <label>ウマ娘名<input name="uma_name" id="uma-name" required maxlength="40"></label>
+                <label>出走者<input name="runner_name" id="runner-name" required maxlength="40"></label>
+              </div>
+              <p class="set-k" style="margin-top:.85rem">出走脚質</p>
+              <div class="set-seg" id="styles">${styleBtns}</div>
+              <div id="ocr-materials"></div>
+              <div class="reg-preview" id="score-preview-wrap">
+                <span class="lab">登録時に算出する評価点（OCR は材料だけ）</span>
+                <span class="num" id="score-preview">—</span>
+              </div>
+              <div id="manual-block">
+                <div class="reg-score-in" style="margin-top:.85rem;max-width:10rem">
+                  <label>評価点（直置き）<input name="strength" id="strength" type="number" min="0" step="0.1" value="10"></label>
+                </div>
+                <label class="kind-opt" style="margin-top:.55rem">
+                  <input type="checkbox" name="strength_manual" id="strength-manual" value="1"> 評価点を直置き
+                </label>
+              </div>
+              <div class="ctas">
+                <button type="submit" class="primary" id="do-add">登録</button>
+                <button type="button" id="do-idle">画像をやり直す</button>
+              </div>
+            </div>
           </div>
-          <p class="set-k" style="margin-top:.85rem">出走脚質</p>
-          <div class="set-seg" id="styles">${styleBtns}</div>
-          <div class="reg-score-in" style="margin-top:.85rem;max-width:10rem">
-            <label>評価点<input name="strength" id="strength" type="number" min="0" step="0.1" value="10" required></label>
-          </div>
-          <label class="kind-opt" style="margin-top:.55rem">
-            <input type="checkbox" name="strength_manual" id="strength-manual" value="1"> 評価点を直置き
-          </label>
-          <div class="ctas">
-            <button type="submit" class="primary">登録</button>
-          </div>
-          <pre class="ocr-out" id="ocr-out"></pre>
         </div>
       </form>`;
 }
@@ -152,17 +211,29 @@ export function ocrAdminScript(canAutoScore: boolean): string {
   }
 
   const keyInput = document.getElementById("gemini-key");
-  const out = document.getElementById("ocr-out");
   const statusEl = document.getElementById("ocr-status");
   const scoreInputEl = document.getElementById("score-input");
   const styleEl = document.getElementById("style-key");
   const strengthEl = document.getElementById("strength");
   const manualEl = document.getElementById("strength-manual");
-  const hint = document.getElementById("score-hint");
+  const formEl = document.getElementById("horse-add");
   const fileEl = document.getElementById("ocr-file");
   function say(msg) {
     if (statusEl) statusEl.textContent = msg;
-    if (out && out !== statusEl) out.textContent = msg;
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function chipKind(kind) {
+    if (kind === "green") return "green";
+    if (kind === "gold" || kind === "unique" || kind === "evo" || kind === "rare") return "gold";
+    if (kind === "minus") return "minus";
+    return "white";
+  }
+  function aptChip(lab, rank) {
+    const r = String(rank || "—");
+    const s = r.toUpperCase() === "S" ? " s" : "";
+    return '<span class="reg-chip' + s + '">' + esc(lab) + " " + esc(r) + "</span>";
   }
   function pickGeminiKey(raw) {
     const s = String(raw || "").trim();
@@ -183,6 +254,7 @@ export function ocrAdminScript(canAutoScore: boolean): string {
   });
   document.getElementById("to-manual")?.addEventListener("click", () => {
     if (manualEl) manualEl.checked = true;
+    setMode("manual");
     strengthEl?.focus();
   });
   function paintStyleBtns() {
@@ -197,6 +269,85 @@ export function ocrAdminScript(canAutoScore: boolean): string {
   let heldFile = null;
   /** @type {any} */
   let draft = null;
+  let shotUrl = null;
+  /** @type {any[]} */
+  let lastHits = [];
+
+  function paintMaterials() {
+    const el = document.getElementById("ocr-materials");
+    if (!el) return;
+    if (!draft) { el.innerHTML = ""; return; }
+    const st = draft.stats;
+    const ap = draft.aptitudes;
+    const skills = lastHits.filter((h) => h.ok).map((h) =>
+      '<span class="reg-chip ' + chipKind(h.kind) + '">' + esc(h.name) + "</span>"
+    ).join("");
+    const miss = lastHits.filter((h) => !h.ok).map((h) =>
+      '<span class="reg-chip minus" title="未採用">' + esc(h.input) + "</span>"
+    ).join("");
+    el.innerHTML =
+      '<div class="reg-stats">' +
+        '<div class="reg-stat"><span class="k">速</span><span class="v">' + esc(st.speed) + "</span></div>" +
+        '<div class="reg-stat"><span class="k">スタ</span><span class="v">' + esc(st.stamina) + "</span></div>" +
+        '<div class="reg-stat"><span class="k">パ</span><span class="v">' + esc(st.power) + "</span></div>" +
+        '<div class="reg-stat"><span class="k">根</span><span class="v">' + esc(st.guts) + "</span></div>" +
+        '<div class="reg-stat"><span class="k">賢</span><span class="v">' + esc(st.wisdom) + "</span></div>" +
+      "</div>" +
+      '<div class="reg-chips">' +
+        aptChip("芝", ap.turf) + aptChip("ダ", ap.dirt) +
+        '<span class="reg-slash" aria-hidden="true">/</span>' +
+        aptChip("短", ap.short) + aptChip("マイル", ap.mile) + aptChip("中", ap.medium) + aptChip("長", ap.long) +
+        '<span class="reg-slash" aria-hidden="true">/</span>' +
+        aptChip("逃げ", ap.nige) + aptChip("先行", ap.senkou) + aptChip("差し", ap.sashi) + aptChip("追込", ap.oikomi) +
+      "</div>" +
+      '<div class="reg-chips">' + (skills || '<span class="reg-chip">スキルなし</span>') + miss + "</div>";
+  }
+  function showShotPreview(file) {
+    const img = document.getElementById("reg-shot-img");
+    if (shotUrl) URL.revokeObjectURL(shotUrl);
+    shotUrl = file ? URL.createObjectURL(file) : null;
+    if (img) img.src = shotUrl || "";
+  }
+  function setMode(mode) {
+    if (!formEl) return;
+    formEl.dataset.mode = mode;
+    const title = document.getElementById("bench-title");
+    const meta = document.getElementById("bench-meta");
+    const addBtn = document.getElementById("do-add");
+    const retry = document.getElementById("do-idle");
+    if (mode === "idle") {
+      if (title) title.textContent = "次の1頭";
+      if (meta) meta.textContent = "選ぶ → 読む → 登録";
+    } else if (mode === "read") {
+      if (title) title.textContent = "読取の確認";
+      if (meta) meta.textContent = "ウマ娘は OCR。出走者は手入力";
+      if (addBtn) addBtn.textContent = "登録";
+      if (retry) retry.textContent = "画像をやり直す";
+    } else {
+      if (title) title.textContent = "直置き";
+      if (meta) meta.textContent = "スクショは残らない";
+      if (addBtn) addBtn.textContent = "直置きで登録";
+      if (retry) retry.textContent = "スクショから読む";
+    }
+    paintStyleBtns();
+    updateHint();
+  }
+  function resetToIdle() {
+    draft = null;
+    lastHits = [];
+    ocrShot = null;
+    heldFile = null;
+    showShotPreview(null);
+    const flag = document.getElementById("ocr-ok");
+    const slot = document.getElementById("shot-from-ocr");
+    if (flag) flag.value = "";
+    if (slot) slot.value = "";
+    if (manualEl) manualEl.checked = false;
+    setMode("idle");
+    syncScoreInput();
+    paintMaterials();
+    clearOcrFileInput();
+  }
 
   function syncScoreInput() {
     if (!scoreInputEl) return;
@@ -213,24 +364,18 @@ export function ocrAdminScript(canAutoScore: boolean): string {
     updateHint();
   }
   function updateHint() {
-    if (!hint) return;
+    const prev = document.getElementById("score-preview");
+    const wrap = document.getElementById("score-preview-wrap");
     const manual = !!(manualEl && manualEl.checked);
     const hasDraft = !!draft;
     const style = styleEl?.value;
-    if (manual) {
-      hint.textContent = "直置きモード。評価点の手入力が Seed に使われます。";
-      return;
-    }
-    if (!CAN_AUTO) {
-      hint.textContent = "開催条件未設定のため評価点は直置きです。";
-      return;
-    }
-    if (hasDraft && style) {
-      hint.textContent = "登録時に評価点を自動算出します（手入力欄はバックアップ）。";
-    } else if (hasDraft) {
-      hint.textContent = "出走脚質を選ぶと自動算出できます。";
-    } else {
-      hint.textContent = "OCR なしの直置き、または読み取り後に脚質を選んで登録。";
+    const autoReady = CAN_AUTO && hasDraft && !!style && !manual;
+    if (wrap) wrap.hidden = !hasDraft || manual;
+    if (prev) prev.textContent = autoReady ? "自動" : "—";
+    formEl?.classList.toggle("need-score", !!(formEl && (formEl.dataset.mode === "manual" || (formEl.dataset.mode === "read" && (!CAN_AUTO || manual)))));
+    if (strengthEl) {
+      const need = formEl && (formEl.dataset.mode === "manual" || (formEl.dataset.mode === "read" && (!CAN_AUTO || manual)));
+      strengthEl.required = !!need;
     }
   }
   styleEl?.addEventListener("change", syncScoreInput);
@@ -344,26 +489,14 @@ export function ocrAdminScript(canAutoScore: boolean): string {
       const sole = soleStyle(aptitudes);
       if (styleEl) styleEl.value = sole;
       paintStyleBtns();
-      const lines = [];
-      lines.push("ウマ娘名\\t" + uma);
-      lines.push("スピード\\t" + draft.stats.speed);
-      lines.push("スタミナ\\t" + draft.stats.stamina);
-      lines.push("パワー\\t" + draft.stats.power);
-      lines.push("根性\\t" + draft.stats.guts);
-      lines.push("賢さ\\t" + draft.stats.wisdom);
-      lines.push("適正\\t芝" + aptitudes.turf + " ダ" + aptitudes.dirt + " 短" + aptitudes.short + " マ" + aptitudes.mile + " 中" + aptitudes.medium + " 長" + aptitudes.long);
-      lines.push("脚質適性\\t逃" + aptitudes.nige + " 先" + aptitudes.senkou + " 差" + aptitudes.sashi + " 追" + aptitudes.oikomi);
-      lines.push("脚質初期\\t" + (sole ? (STYLE_LABEL[sole] || sole) : "未選択（人手）"));
-      lines.push("スキル照合 " + skillNames.length + "/" + rawSkills.length + "（デバフ含む・ファジー）");
-      for (const h of hits) {
-        const ja = KIND_JA[h.kind] || "未分類";
-        if (h.ok) lines.push(ja + "\\t" + h.name + "\\tid " + h.id + "\\t" + h.rating.toFixed(2));
-        else lines.push("未採用\\t" + h.input + (h.name ? " → " + h.name : "") + "\\t" + h.rating.toFixed(2));
-      }
+      lastHits = hits;
       attachOcrShot(file);
+      showShotPreview(file);
+      if (manualEl) manualEl.checked = false;
       syncScoreInput();
-      if (out) out.textContent = lines.join("\\n");
-      if (statusEl) statusEl.textContent = (uma || file.name || "画像") + " を読みました。下の欄を確認して登録。";
+      paintMaterials();
+      setMode("read");
+      say((uma || file.name || "画像") + " を読みました。欄を確認して登録。");
       clearOcrFileInput();
     } catch (err) {
       const msg = (err && err.name === "AbortError") ? "停止しました。" : (err instanceof Error ? err.message : String(err));
@@ -403,6 +536,10 @@ export function ocrAdminScript(canAutoScore: boolean): string {
     runOcr(f);
   });
   document.getElementById("horse-add")?.addEventListener("submit", (ev) => {
+    if (formEl && formEl.dataset.mode === "idle") {
+      ev.preventDefault();
+      return;
+    }
     syncScoreInput();
     const flag = document.getElementById("ocr-ok");
     const slot = document.getElementById("shot-from-ocr");
@@ -419,6 +556,9 @@ export function ocrAdminScript(canAutoScore: boolean): string {
         slot.files = dt.files;
       }
     }
+  });
+  document.getElementById("do-idle")?.addEventListener("click", () => {
+    resetToIdle();
   });
   updateHint();
 })();
