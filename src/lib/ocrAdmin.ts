@@ -31,16 +31,16 @@ export function horsesAdminBody(
       (o) => `<option value="${o.key}">${escapeHtml(o.label)}</option>`,
     ),
   ].join("");
-  // ドロップは table-scroll の外。file はドロップ全面に重ねる（1px 隠しだと選んでも change が空）
+  // ドロップと見える file は table-scroll の外。透明オーバーレイは使わない（下のボタンまで覆ってピッカーだけ開く）
   return `<form id="horse-add" method="post" action="/admin/horse" enctype="multipart/form-data">
         <input type="hidden" name="ocr_ok" id="ocr-ok" value="">
         <input type="hidden" name="score_input" id="score-input" value="">
         <input type="file" name="shot" id="shot-from-ocr" class="admin-offscreen" accept="${SHOT_ACCEPT}" tabindex="-1">
         <select name="style_key" id="style-key" class="admin-offscreen" tabindex="-1">${styleOpts}</select>
         <div class="reg-drop" id="ocr-drop">
-          <input id="ocr-file" class="reg-drop-file" type="file" accept="${SHOT_ACCEPT}">
           <strong>完成スクショを置く</strong>
-          <p id="ocr-status">アプリ外で結合した1枚。PNG / JPEG / WebP。選ぶとこの場で読む（サーバへはまだ送らない）。</p>
+          <p id="ocr-status">PNG / JPEG / WebP。枠にドロップするか、下のファイル選択。</p>
+          <input id="ocr-file" type="file" accept="${SHOT_ACCEPT}">
         </div>
         <p class="reg-alt"><button type="button" id="to-manual">スクショなしで直置きする</button></p>
         <div class="ctas" style="margin-top:.7rem">
@@ -277,10 +277,10 @@ export function ocrAdminScript(canAutoScore: boolean): string {
   async function runOcr(file) {
     const apiKey = pickGeminiKey(keyInput?.value || localStorage.getItem(KEY_LS) || "");
     if (!apiKey) { say("キーを入れてください。ヒーロー右に貼って保存。"); return; }
-    if (!file) { openPicker(); return; }
+    if (!file) { say("先に画像を選んでください。読み取るは読取だけです。"); return; }
     const mime = resolveShotMime(file);
     if (!mime) { say("対応形式は PNG / JPEG / WebP です。"); return; }
-    say((file.name || "画像") + " を読み取り中…（このブラウザから Gemini。登録ボタンではない）");
+    say((file.name || "画像") + " を読み取り中…");
     ac = new AbortController();
     try {
       const dataUrl = await new Promise((resolve, reject) => {
@@ -369,17 +369,10 @@ export function ocrAdminScript(canAutoScore: boolean): string {
       say(msg);
     }
   }
-  function openPicker() {
-    if (!fileEl) { say("画像欄がありません。"); return; }
-    if (typeof fileEl.showPicker === "function") {
-      try { fileEl.showPicker(); return; } catch {}
-    }
-    fileEl.click();
-  }
   function takeFile(file) {
     if (!file) { say("画像を受け取れませんでした。もう一度選んでください。"); return; }
     heldFile = file;
-    runOcr(file);
+    say((file.name || "画像") + " を選びました。読み取るを押してください。");
     if (fileEl) fileEl.value = "";
   }
   fileEl?.addEventListener("change", () => {
@@ -395,7 +388,10 @@ export function ocrAdminScript(canAutoScore: boolean): string {
     if (f) takeFile(f);
   });
   document.getElementById("ocr-run")?.addEventListener("click", () => {
-    if (!heldFile) { openPicker(); return; }
+    if (!heldFile) {
+      say("先に画像を選んでください。読み取るは読取だけです。");
+      return;
+    }
     runOcr(heldFile);
   });
   document.getElementById("horse-add")?.addEventListener("submit", (ev) => {

@@ -303,31 +303,22 @@ body.ledger-page .filters select {
   position: fixed; left: 0; top: 0; width: 1px; height: 1px; opacity: 0; overflow: hidden; margin: 0; padding: 0; border: 0;
 }
 .reg-drop {
-  position: relative;
   border: 2px dashed #c5ccd6;
   border-radius: 12px;
-  min-height: 10rem;
+  min-height: 8rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
   background: #f7f8fa;
-  cursor: pointer;
   padding: 1.2rem;
   flex: 0 0 auto;
+  overflow: hidden;
 }
-.reg-drop-file {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-  font-size: 0;
-}
-.reg-drop strong { font-size: 1.05rem; position: relative; z-index: 0; pointer-events: none; }
-.reg-drop p { margin: .35rem 0 0; color: #6b7380; font-size: .85rem; position: relative; z-index: 0; pointer-events: none; }
+.reg-drop strong { font-size: 1.05rem; }
+.reg-drop p { margin: .35rem 0 .75rem; color: #6b7380; font-size: .85rem; }
+.reg-drop #ocr-file { max-width: 100%; }
 .reg-alt { margin-top: .85rem; text-align: center; }
 .reg-alt button {
   font: inherit; border: 0; background: none; color: #2b6cb0; cursor: pointer; text-decoration: underline;
