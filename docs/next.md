@@ -4,11 +4,12 @@
 
 ## 現在進行中
 
-- 票が入ったら台帳の絞り込み実機（管理6タブの見た目差し替えは閉じた。メンバー画面は未着手。デプロイは明示依頼があるまでしない）— [ledger.html](mocks/admin-dash/ledger.html)
+（なし。次はメンバー画面のモック移植。新チャットで人間確認から）
 
 ## そのあと
 
-- 採用済みモックの本番移植（**管理6タブは箱差し替え・実機まで閉じた。残りはメンバー画面**）— [venue-board](mocks/venue-board/layout-venue.html)・[quiet.html](mocks/bet-window/quiet.html)・[gate](mocks/gate/index.html)
+- 票が入ったら台帳の絞り込み実機 — [ledger.html](mocks/admin-dash/ledger.html)
+- 採用済みモックの本番移植（**管理6タブは箱差し替え・実機まで閉じた。残りはメンバー画面。いきなり実装せず人間確認から**）— [venue-board](mocks/venue-board/layout-venue.html)・[quiet.html](mocks/bet-window/quiet.html)・[gate](mocks/gate/index.html)
 - OCR: 読み取ったスキルのうち有効スキルにあるものも不採用になっている問題を改善。あわせて OCR のテキスト誤認識がそのまま通って不採用になる点も改善 — [ocr.md](ocr.md)
 - Neko長明さんへの評価点の式確認（手土産＝動く実装は揃った）— [score.md](score.md)
 - OCR / 評価点の細かい調整（読取・表示 UI など）— [ocr.md](ocr.md)・[score.md](score.md)
