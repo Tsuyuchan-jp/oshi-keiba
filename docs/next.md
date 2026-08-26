@@ -4,11 +4,10 @@
 
 ## 現在進行中
 
-- 窓口（マークカード）の実機確認。通るまで入場は増やさない — [quiet.html](mocks/bet-window/quiet.html)
+- 入場デザイン差し替え（実装前確認中）— [gate](mocks/gate/index.html)
 
 ## そのあと
 
-- 入場デザイン差し替え — [gate](mocks/gate/index.html)
 - 票が入ったら台帳の絞り込み実機 — [ledger.html](mocks/admin-dash/ledger.html)
 - OCR: 読み取ったスキルのうち有効スキルにあるものも不採用になっている問題を改善。あわせて OCR のテキスト誤認識がそのまま通って不採用になる点も改善 — [ocr.md](ocr.md)
 - Neko長明さんへの評価点の式確認（手土産＝動く実装は揃った）— [score.md](score.md)
@@ -27,6 +26,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
+- 窓口をマークカードで差し替え（quiet トーン・入れ子 form 修正含む。ユーザー実機 OK）— [quiet.html](mocks/bet-window/quiet.html)
 - 場内 published を電光モックで差し替え（払戻盤＋確定盤→全頭。着差なし。ユーザー実機 OK）— [layout-venue.html](mocks/venue-board/layout-venue.html)
 - 場内 closed を電光モックで差し替え（確定配当・買うなし・着なし・成立／特払い予定。ユーザー実機 OK）— [layout-venue.html](mocks/venue-board/layout-venue.html)
 - 場内 voting を電光モックで差し替え（LED・背景3種・⋯・ライブ5秒。ユーザー実機 OK。締切・公開は別）— [layout-venue.html](mocks/venue-board/layout-venue.html)
