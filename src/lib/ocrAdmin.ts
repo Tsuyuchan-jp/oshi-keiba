@@ -54,14 +54,19 @@ export function registerMaterialsHtml(
     const c = classifySkillName(name);
     accepted.push({ name: c.name || name, kind: c.kind, id });
   }
-  const isGreen = (name: string) => greenSkillByName(name) != null;
-  const greens = accepted.filter((h) => isGreen(h.name));
+  const isGreenOnly = (name: string) => {
+    if (greenSkillByName(name) == null) return false;
+    const k = classifySkillName(name).kind;
+    return k !== "unique" && k !== "evo";
+  };
+  const greens = accepted.filter((h) => isGreenOnly(h.name));
   const effective = accepted.filter((h) =>
     skillCountsInBase(h.name, h.id, effectiveIds),
   );
   const rejected = accepted.filter(
     (h) =>
-      !isGreen(h.name) && !skillCountsInBase(h.name, h.id, effectiveIds),
+      !isGreenOnly(h.name) &&
+      !skillCountsInBase(h.name, h.id, effectiveIds),
   );
   const skipped = (input.skippedSkillNames ?? []).map((n) => ({
     name: n,
@@ -371,9 +376,10 @@ export function ocrAdminScript(
       b.classList.toggle("on", b.dataset.s === (styleEl && styleEl.value));
     });
   }
-  function countsInBase(name, id) {
+  function countsInBase(name, id, kind) {
     const n = String(name || "").trim();
     if (!n) return false;
+    if (kind === "unique" || kind === "evo") return true;
     if (GREEN_NAMES.has(n)) return false;
     if (TAMERAI_NAMES.has(n) || (id != null && TAMERAI_IDS.has(id))) return true;
     const style = styleEl && styleEl.value;
@@ -406,11 +412,16 @@ export function ocrAdminScript(
     const ap = draft.aptitudes;
     const okHits = lastHits.filter((h) => h.ok);
     const missHits = lastHits.filter((h) => !h.ok);
-    const greens = okHits.filter((h) => GREEN_NAMES.has(String(h.name || "").trim()));
-    const effective = okHits.filter((h) => countsInBase(h.name, h.id));
-    const rejected = okHits.filter(
-      (h) => !GREEN_NAMES.has(String(h.name || "").trim()) && !countsInBase(h.name, h.id),
-    );
+    const greens = okHits.filter((h) => {
+      const n = String(h.name || "").trim();
+      return GREEN_NAMES.has(n) && h.kind !== "unique" && h.kind !== "evo";
+    });
+    const effective = okHits.filter((h) => countsInBase(h.name, h.id, h.kind));
+    const rejected = okHits.filter((h) => {
+      const n = String(h.name || "").trim();
+      const greenOnly = GREEN_NAMES.has(n) && h.kind !== "unique" && h.kind !== "evo";
+      return !greenOnly && !countsInBase(h.name, h.id, h.kind);
+    });
     const ocrMiss = missHits.map((h) => ({ name: h.input, kind: "unknown" }));
     el.innerHTML =
       '<div class="reg-stats">' +

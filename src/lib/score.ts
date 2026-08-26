@@ -134,13 +134,23 @@ function isGold(name: string): boolean {
   return kind === "gold";
 }
 
+/** 固有・進化は仮に金同等（リスト外でも採用＋+2）。本番リスト整備後に外す想定 */
+function isUniqueOrEvo(name: string): boolean {
+  const kind = classifySkillName(name).kind;
+  return kind === "unique" || kind === "evo";
+}
+
+function isGoldLike(name: string): boolean {
+  return isGold(name) || isUniqueOrEvo(name);
+}
+
 export type SkillBaseOptions = {
   effectiveIds?: ReadonlySet<number>;
   skillIds?: ReadonlyArray<number | null | undefined>;
   effectiveNames?: ReadonlySet<string>;
 };
 
-/** スキル土台 S0。緑は除外。金は有効に含めたうえで +2。ためらいは常に白1。 */
+/** スキル土台 S0。緑は除外。金・固有・進化は有効に含めたうえで +2。ためらいは常に白1。 */
 export function skillBase(
   skillNames: string[],
   effectiveNamesOrOpts?: ReadonlySet<string> | SkillBaseOptions,
@@ -157,11 +167,13 @@ export function skillBase(
   for (let i = 0; i < skillNames.length; i++) {
     const name = skillNames[i]!.trim();
     if (!name) continue;
-    if (isGreenMaster(name)) continue;
+    // 固有・進化は緑マスタ重複でも枚数に入れる（仮対策）
+    if (isGreenMaster(name) && !isUniqueOrEvo(name)) continue;
 
     const id = opts.skillIds?.[i] ?? null;
     const tamerai = isTamerai(name) || isTameraiId(id);
-    if (!tamerai) {
+    const forceAdopt = tamerai || isUniqueOrEvo(name);
+    if (!forceAdopt) {
       if (opts.effectiveIds) {
         if (id == null || !opts.effectiveIds.has(id)) continue;
       } else if (opts.effectiveNames && !opts.effectiveNames.has(name)) {
@@ -174,7 +186,7 @@ export function skillBase(
       tameraiCount += 1;
       continue;
     }
-    if (isGold(name)) goldCount += 1;
+    if (isGoldLike(name)) goldCount += 1;
   }
 
   const effectiveCount = countedNames.length;
@@ -286,7 +298,7 @@ export function isTameraiName(name: string): boolean {
   return isTamerai(name);
 }
 
-/** 土台 S0 に枚数として入るか（緑は除外。有効リスト外はためらい以外 false） */
+/** 土台 S0 に枚数として入るか（緑は除外。固有・進化・ためらいはリスト外でも true） */
 export function skillCountsInBase(
   name: string,
   id: number | null | undefined,
@@ -294,6 +306,7 @@ export function skillCountsInBase(
 ): boolean {
   const n = name.trim();
   if (!n) return false;
+  if (isUniqueOrEvo(n)) return true;
   if (isGreenMaster(n)) return false;
   if (isTamerai(n) || isTameraiId(id)) return true;
   if (effectiveIds) return id != null && effectiveIds.has(id);

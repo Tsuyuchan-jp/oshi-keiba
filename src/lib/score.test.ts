@@ -17,11 +17,39 @@ test("skillCountsInBase: リスト外は false、ためらいは true", () => {
   assert.equal(skillCountsInBase("逃げためらい", 200851, ids), true);
 });
 
+test("skillCountsInBase: 固有・進化はリスト外でも true", () => {
+  const ids = new Set([201601]);
+  assert.equal(skillCountsInBase("波乱注意砲！", 10071, ids), true);
+  assert.equal(skillCountsInBase("鎧袖一触", 101701211, ids), true);
+  // 緑マスタにもある進化も採用側
+  assert.equal(skillCountsInBase("右回りの輪舞曲", 106701211, ids), true);
+});
+
 test("金は有効1＋追加2で計3", () => {
   const s = skillBase(["円弧のマエストロ", "地固め"]);
   assert.equal(s.effectiveCount, 2);
   assert.equal(s.goldCount, 1);
   assert.equal(s.base, 2 + 2);
+});
+
+test("固有・進化はリスト外でも金同等（枚数1＋+2）", () => {
+  const s = skillBase(["波乱注意砲！", "鎧袖一触", "地固め"], {
+    effectiveIds: new Set([201601]),
+    skillIds: [10071, 101701211, 201601],
+  });
+  assert.deepEqual(s.countedNames, ["波乱注意砲！", "鎧袖一触", "地固め"]);
+  assert.equal(s.goldCount, 2);
+  assert.equal(s.base, 3 + 4);
+});
+
+test("緑マスタ重複の進化も金同等で数える", () => {
+  const s = skillBase(["右回りの輪舞曲"], {
+    effectiveIds: new Set([201601]),
+    skillIds: [106701211],
+  });
+  assert.deepEqual(s.countedNames, ["右回りの輪舞曲"]);
+  assert.equal(s.goldCount, 1);
+  assert.equal(s.base, 3);
 });
 
 test("緑マスタは土台に入れない", () => {

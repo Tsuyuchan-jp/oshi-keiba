@@ -8,6 +8,7 @@
 
 ## そのあと
 
+- 通常・固有スキルの有効リスト用意（U-tools コース別の固有／進化有効度を取り込み、仮の unique/evo＝金扱いを外す）— [score.md](score.md)
 - 票入り台帳の絞り込み実機 — [ledger.html](mocks/admin-dash/ledger.html)
 - Neko長明さんへの評価点の式確認（手土産＝動く実装は揃った）— [score.md](score.md)
 - OCR / 評価点の細かい調整（読取・表示 UI など）— [ocr.md](ocr.md)・[score.md](score.md)
