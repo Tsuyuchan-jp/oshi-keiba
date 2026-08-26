@@ -48,17 +48,20 @@ button, select { font: inherit; }
 /* 台帳：ページはスクロールせず、左右の枠だけ縦に動く */
 body.ledger-page,
 body.odds-page,
-body.settings-page { overflow: hidden; }
+body.settings-page,
+body.register-page { overflow: hidden; }
 body.ledger-page .dash,
 body.odds-page .dash,
-body.settings-page .dash {
+body.settings-page .dash,
+body.register-page .dash {
   height: 100dvh;
   min-height: 0;
   overflow: hidden;
 }
 body.ledger-page .main,
 body.odds-page .main,
-body.settings-page .main {
+body.settings-page .main,
+body.register-page .main {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -68,10 +71,12 @@ body.settings-page .main {
 }
 body.ledger-page .hero,
 body.odds-page .hero,
-body.settings-page .hero { flex: 0 0 auto; }
+body.settings-page .hero,
+body.register-page .hero { flex: 0 0 auto; }
 body.ledger-page .ledger-desk,
 body.odds-page .odds-desk,
-body.settings-page .settings-desk {
+body.settings-page .settings-desk,
+body.register-page .register-desk {
   flex: 1 1 auto;
   min-height: 0;
 }
@@ -400,6 +405,168 @@ body.settings-page .settings-hero .note {
 body.settings-page .settings-bot.work {
   background: #eef1f5;
   border-color: #d5d9e0;
+}
+/* 出走登録：左・名簿、右・1頭の作業台 */
+.register-desk {
+  display: grid;
+  grid-template-columns: minmax(15.5rem, 0.68fr) minmax(0, 1.5fr);
+  gap: .7rem;
+  min-height: 0;
+  height: 100%;
+}
+body.register-page .register-desk .work {
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: .8rem .9rem .9rem;
+}
+.reg-list { display: flex; flex-direction: column; gap: .2rem; }
+.reg-row {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr) auto;
+  gap: .35rem .5rem;
+  align-items: center;
+  padding: .4rem .45rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.reg-row:hover { background: #f4f7fb; }
+.reg-row .n { font-weight: 700; font-variant-numeric: tabular-nums; color: #6b7380; }
+.reg-row .who { min-width: 0; }
+.reg-row .uma { display: block; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.reg-row .run { display: block; font-size: .72rem; color: #6b7380; }
+.reg-drop {
+  border: 2px dashed #c5ccd6;
+  border-radius: 12px;
+  min-height: 16rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: #f7f8fa;
+  cursor: pointer;
+  padding: 1.2rem;
+}
+.reg-drop strong { font-size: 1.05rem; }
+.reg-drop p { margin: .35rem 0 0; color: #6b7380; font-size: .85rem; }
+.reg-alt {
+  margin-top: .85rem;
+  text-align: center;
+}
+.reg-alt button {
+  font: inherit;
+  border: 0;
+  background: none;
+  color: #2b6cb0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.reg-bench {
+  display: grid;
+  grid-template-columns: 8.2rem minmax(0, 1fr);
+  gap: .9rem 1rem;
+  align-items: start;
+}
+.reg-shot {
+  width: 8.2rem;
+  height: 12.5rem;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 8px;
+  border: 1px solid #d5d9e0;
+  background: #1a1c1f;
+  display: block;
+}
+.reg-shot.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8a929c;
+  font-size: .75rem;
+  background: #f4f6f9;
+}
+.reg-names {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .65rem;
+}
+.reg-names label,
+.reg-score-in label {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+  font-size: .7rem;
+  color: #6b7380;
+}
+.reg-names input,
+.reg-score-in input {
+  font: inherit;
+  font-size: 1.12rem;
+  font-weight: 700;
+  padding: .35rem .45rem;
+  border: 0;
+  border-bottom: 2px solid #c5ccd6;
+  border-radius: 0;
+  background: transparent;
+}
+.reg-names input:focus,
+.reg-score-in input:focus {
+  outline: none;
+  border-bottom-color: #2b6cb0;
+}
+.reg-stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: .35rem;
+  margin-top: .75rem;
+}
+.reg-stat {
+  background: #f4f6f9;
+  border-radius: 6px;
+  padding: .3rem .4rem;
+}
+.reg-stat .k { display: block; font-size: .65rem; color: #6b7380; }
+.reg-stat .v { font-weight: 700; font-variant-numeric: tabular-nums; }
+.reg-chips { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .55rem; }
+.reg-chip {
+  font-size: .72rem;
+  padding: .12rem .4rem;
+  border-radius: 999px;
+  background: #eef0f3;
+}
+.reg-chip.gold { background: #f4ead0; }
+.reg-chip.green { background: #dceee0; }
+.reg-chip.white { background: #eef0f3; }
+.reg-preview {
+  margin-top: .85rem;
+  padding: .65rem .75rem;
+  background: #e8f0fa;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: .6rem;
+}
+.reg-preview .lab { font-size: .75rem; color: #3d5a80; }
+.reg-preview .num { font-size: 1.45rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.reg-key {
+  font-size: .78rem;
+  color: #6b7380;
+}
+.reg-key button {
+  font: inherit;
+  border: 0;
+  background: none;
+  color: #2b6cb0;
+  cursor: pointer;
+}
+.reg-locked {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
 }
 .table-scroll {
   flex: 1 1 auto;
@@ -743,13 +910,16 @@ table.plain td.num, table.plain th.num {
   .ledger-desk { grid-template-columns: 1fr; }
   body.ledger-page,
   body.odds-page,
-  body.settings-page { overflow: auto; }
+  body.settings-page,
+  body.register-page { overflow: auto; }
   body.ledger-page .dash,
   body.odds-page .dash,
-  body.settings-page .dash { height: auto; min-height: 100dvh; }
+  body.settings-page .dash,
+  body.register-page .dash { height: auto; min-height: 100dvh; }
   body.ledger-page .main,
   body.odds-page .main,
-  body.settings-page .main { height: auto; overflow: visible; }
+  body.settings-page .main,
+  body.register-page .main { height: auto; overflow: visible; }
   body.ledger-page .ledger-desk { flex: none; }
   body.ledger-page .ledger-desk .work { height: min(70vh, 28rem); }
   body.odds-page .odds-desk {
@@ -770,6 +940,14 @@ table.plain td.num, table.plain th.num {
   body.settings-page .settings-scroll { overflow: visible; }
   .set-row { grid-template-columns: 1fr; }
   .set-targets, .set-metrics { grid-template-columns: 1fr 1fr; }
+  body.register-page .register-desk {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    flex: none;
+  }
+  body.register-page .register-desk .work { height: min(70vh, 28rem); }
+  .reg-bench { grid-template-columns: 1fr; }
 }
 .tag {
   font-size: .68rem;

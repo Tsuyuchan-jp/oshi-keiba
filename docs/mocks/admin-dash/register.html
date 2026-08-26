@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>管理 · 出走登録</title>
+  <link rel="stylesheet" href="./shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="register-page">
+  <div class="dash">
+    <nav class="side" aria-label="管理">
+      <div class="mark">OSHI KEIBA · 管理</div>
+      <a href="./progress-places.html">進行</a>
+      <a class="on" href="./register.html">出走登録</a>
+      <a href="./horses.html">出走</a>
+      <a href="./ledger.html">台帳</a>
+      <a href="./odds.html">オッズ</a>
+      <a href="./settings.html">開催設定</a>
+    </nav>
+    <div class="main">
+      <section class="hero settings-hero">
+        <div class="hero-top">
+          <h1>出走登録</h1>
+          <span class="phase" id="phase-pill">出走登録中</span>
+          <span id="count">8 / 18</span>
+          <p class="sort-links">
+            <a href="#" id="view-setup" class="on">出走登録中</a>
+            ·
+            <a href="#" id="view-voting">投票中</a>
+          </p>
+          <p class="reg-key" style="margin:0 0 0 auto">キー このブラウザに保存済み · <button type="button" id="key-btn">消す</button></p>
+        </div>
+        <p class="note">1頭ずつ。完成スクショを読んで登録するか、スクショなしの直置き。一括は置かない。内訳の確認は出走タブ。</p>
+        <p class="settings-flash" id="flash" hidden></p>
+      </section>
+      <div class="register-desk">
+        <section class="work">
+          <div class="work-head">
+            <h2>名簿</h2>
+            <span class="odds-meta">登録済み</span>
+          </div>
+          <div class="table-scroll">
+            <div class="reg-list" id="list"></div>
+          </div>
+        </section>
+        <section class="work">
+          <div class="work-head">
+            <h2 id="bench-title">次の1頭</h2>
+            <span class="odds-meta" id="bench-meta">選ぶ → 読む → 登録</span>
+          </div>
+          <div class="table-scroll" id="bench"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+  <div class="mock-label">管理モック · 出走登録 · 本番未適用</div>
+  <script>
+    const LIST = [
+      [1, "サイレンススズカ", "neko", "自動"],
+      [2, "スペシャルウィーク", "aki", "自動"],
+      [3, "グラスワンダー", "yuu", "直置き"],
+      [4, "セイウンスカイ", "ken", "自動"],
+      [5, "エルコンドルパサー", "mai", "自動"],
+      [6, "テイエムオペラオー", "rio", "直置き"],
+      [7, "ファインモーション", "sora", "自動"],
+      [8, "ナリタブライアン", "haru", "自動"],
+    ];
+    let setup = true;
+    let mode = "idle"; // idle | read | manual
+    let style = "逃げ";
+
+    function paintList() {
+      document.getElementById("list").innerHTML = LIST.map(([n, uma, run, src]) =>
+        `<div class="reg-row"><span class="n">${n}</span><span class="who"><span class="uma">${uma}</span><span class="run">${run}</span></span><span class="tag${src === "直置き" ? " warn" : ""}">${src}</span></div>`
+      ).join("");
+    }
+
+    function dropHtml() {
+      return `<div class="reg-drop" id="drop" role="button" tabindex="0">
+          <strong>完成スクショを置く</strong>
+          <p>アプリ外で結合した1枚。PNG / JPEG / WebP。読めた画像が、登録と同時に残る。</p>
+        </div>
+        <p class="reg-alt"><button type="button" id="to-manual">スクショなしで直置きする</button></p>`;
+    }
+
+    function namesHtml(uma, run) {
+      return `<div class="reg-names">
+        <label>ウマ娘名<input id="uma" value="${uma}"></label>
+        <label>出走者<input id="run" value="${run}" placeholder="手入力"></label>
+      </div>
+      <p class="set-k" style="margin-top:.85rem">出走脚質</p>
+      <div class="set-seg" id="styles">
+        ${["逃げ","先行","差し","追込"].map((s) =>
+          `<button type="button" class="${s === style ? "on" : ""}" data-s="${s}">${s}</button>`
+        ).join("")}
+      </div>`;
+    }
+
+    function readHtml() {
+      return `<div class="reg-bench">
+        <img class="reg-shot" src="./sample-shot.png" alt="読取に使ったスクショ">
+        <div>
+          ${namesHtml("サイレンススズカ", "")}
+          <div class="reg-stats">
+            <div class="reg-stat"><span class="k">速</span><span class="v">1204</span></div>
+            <div class="reg-stat"><span class="k">スタ</span><span class="v">612</span></div>
+            <div class="reg-stat"><span class="k">パ</span><span class="v">1548</span></div>
+            <div class="reg-stat"><span class="k">根</span><span class="v">1188</span></div>
+            <div class="reg-stat"><span class="k">賢</span><span class="v">1720</span></div>
+          </div>
+          <div class="reg-chips">
+            <span class="reg-chip">芝 S</span><span class="reg-chip">ダ A</span>
+            <span class="reg-chip">マイル S</span><span class="reg-chip">中 S</span>
+            <span class="reg-chip">逃げ A</span><span class="reg-chip">先行 S</span>
+          </div>
+          <div class="reg-chips">
+            <span class="reg-chip gold">円弧のマエストロ</span>
+            <span class="reg-chip green">左回り○</span>
+            <span class="reg-chip white">先駆け</span>
+            <span class="reg-chip white">集中力</span>
+          </div>
+          <div class="reg-preview">
+            <span class="lab">登録時に算出する評価点（OCR は材料だけ）</span>
+            <span class="num">18.4</span>
+          </div>
+          <div class="ctas">
+            <button type="button" class="primary" id="do-add">登録</button>
+            <button type="button" id="do-idle">画像をやり直す</button>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    function manualHtml() {
+      return `<div class="reg-bench">
+        <div class="reg-shot empty">スクショなし</div>
+        <div>
+          ${namesHtml("", "")}
+          <div class="reg-score-in" style="margin-top:.85rem;max-width:10rem">
+            <label>評価点（直置き）<input id="score" type="number" min="0" step="0.1" value="10"></label>
+          </div>
+          <p class="set-foot">開催条件が無い、または材料が足りないときの逃げ。Strength とは書かない。</p>
+          <div class="ctas">
+            <button type="button" class="primary" id="do-add">直置きで登録</button>
+            <button type="button" id="do-idle">スクショから読む</button>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    function bindBench() {
+      const drop = document.getElementById("drop");
+      if (drop) {
+        const go = () => { mode = "read"; style = "逃げ"; paint(); };
+        drop.addEventListener("click", go);
+        drop.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+      }
+      const toMan = document.getElementById("to-manual");
+      if (toMan) toMan.addEventListener("click", () => { mode = "manual"; style = "逃げ"; paint(); });
+      document.getElementById("styles")?.querySelectorAll("[data-s]").forEach((b) => {
+        b.addEventListener("click", () => { style = b.dataset.s; paint(); });
+      });
+      document.getElementById("do-idle")?.addEventListener("click", () => { mode = "idle"; paint(); });
+      document.getElementById("do-add")?.addEventListener("click", () => {
+        const flash = document.getElementById("flash");
+        flash.hidden = false;
+        flash.textContent = "モックです。登録しません。";
+      });
+    }
+
+    function paintBench() {
+      const title = document.getElementById("bench-title");
+      const meta = document.getElementById("bench-meta");
+      const bench = document.getElementById("bench");
+      if (!setup) {
+        title.textContent = "登録済み";
+        meta.textContent = "飛び入り禁止";
+        bench.innerHTML = `<p class="reg-locked">投票開始後は出走を足せません。直しと内訳は出走タブ。</p>`;
+        return;
+      }
+      if (mode === "read") {
+        title.textContent = "読取の確認";
+        meta.textContent = "ウマ娘は OCR。出走者は手入力。脚質は人が選ぶ";
+        bench.innerHTML = readHtml();
+      } else if (mode === "manual") {
+        title.textContent = "直置き";
+        meta.textContent = "スクショは残らない";
+        bench.innerHTML = manualHtml();
+      } else {
+        title.textContent = "次の1頭";
+        meta.textContent = "選ぶ → 読む → 登録";
+        bench.innerHTML = dropHtml();
+      }
+      bindBench();
+    }
+
+    function paint() {
+      document.getElementById("count").textContent = LIST.length + " / 18";
+      const pill = document.getElementById("phase-pill");
+      pill.textContent = setup ? "出走登録中" : "投票中";
+      pill.classList.toggle("live", !setup);
+      document.getElementById("view-setup").classList.toggle("on", setup);
+      document.getElementById("view-voting").classList.toggle("on", !setup);
+      paintList();
+      paintBench();
+    }
+
+    document.getElementById("view-setup").addEventListener("click", (e) => {
+      e.preventDefault(); setup = true; paint();
+    });
+    document.getElementById("view-voting").addEventListener("click", (e) => {
+      e.preventDefault(); setup = false; paint();
+    });
+    document.getElementById("key-btn").addEventListener("click", () => {
+      const flash = document.getElementById("flash");
+      flash.hidden = false;
+      flash.textContent = "モックです。キーは消しません。";
+    });
+    paint();
+  </script>
+</body>
+</html>

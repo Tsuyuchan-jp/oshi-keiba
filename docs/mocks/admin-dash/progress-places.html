@@ -74,7 +74,7 @@
     <nav class="side" aria-label="管理">
       <div class="mark">OSHI KEIBA · 管理</div>
       <a href="./progress-places.html">進行</a>
-      <a class="ghost" href="#">出走登録</a>
+      <a href="./register.html">出走登録</a>
       <a href="./horses.html">出走</a>
       <a href="./ledger.html">台帳</a>
       <a href="./odds.html">オッズ</a>
@@ -291,8 +291,7 @@
             ).join("")}</tbody>
           </table>
           <p class="note">直置きが 2 頭。材料が揃えば自動に戻せます。</p>
-          <button type="button" class="more-link" id="go-horses" style="border:0;background:none;cursor:pointer;padding:0">出走登録へ（モック未稿）</button>`;
-        document.getElementById("go-horses").addEventListener("click", () => alert("モックです。出走登録タブは未稿。"));
+          <a class="more-link" href="./register.html">出走登録へ</a>`;
         return;
       }
       if (phase === "voting") {
