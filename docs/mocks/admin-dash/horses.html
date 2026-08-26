@@ -46,8 +46,7 @@
   </div>
   <dialog class="shot-dlg" id="shot-dlg">
     <div class="shot-bar">
-      <button type="button" id="shot-zoom">拡大</button>
-      <span class="shot-hint" id="shot-zoom-lab" style="color:#9aa3ad;margin:0">幅に合わせて縦スクロール。ダブルクリックでも拡大</span>
+      <span class="shot-hint" style="color:#9aa3ad;margin:0">スマホ幅で縦スクロール（note の画像と同じ）</span>
       <form method="dialog" style="margin-left:auto"><button type="submit">閉じる</button></form>
     </div>
     <div class="shot-scroller" id="shot-scroller">
@@ -218,17 +217,17 @@
     ];
 
     const SHOT = "./sample-shot.png";
+    const SHOT_THUMB = "./sample-shot-thumb.png";
     let sel = 1;
-    let shotZoom = false;
 
     function shotBlock(hasShot) {
       if (!hasShot) {
         return `<div class="shot-none">スクショなし（直置き）</div>`;
       }
-      return `<button type="button" class="shot-thumb" id="shot-open" aria-label="スクショを全画面で見る">
-          <img src="${SHOT}" alt="上端（ステ・適性）。クリックで全体">
+      return `<button type="button" class="shot-thumb" id="shot-open" aria-label="スクショを大きく見る">
+          <img src="${SHOT_THUMB}" alt="育成カードの見出し（切り取り）">
         </button>
-        <p class="shot-hint">上端の切り取り。クリックで全体を縦スクロール</p>`;
+        <p class="shot-hint">見出しの切り取り。クリックで完成スクショ全体</p>`;
     }
 
     function paintList() {
@@ -297,18 +296,9 @@
         </div>`;
     }
 
-    function applyShotZoom() {
-      const img = document.getElementById("shot-full");
-      const btn = document.getElementById("shot-zoom");
-      img.classList.toggle("zoom", shotZoom);
-      btn.textContent = shotZoom ? "縮小" : "拡大";
-    }
     function openShot() {
       const dlg = document.getElementById("shot-dlg");
-      const img = document.getElementById("shot-full");
-      img.src = SHOT;
-      shotZoom = false;
-      applyShotZoom();
+      document.getElementById("shot-full").src = SHOT;
       dlg.showModal();
     }
     function paint() {
@@ -317,14 +307,13 @@
       const open = document.getElementById("shot-open");
       if (open) open.addEventListener("click", openShot);
     }
-    document.getElementById("shot-zoom").addEventListener("click", () => {
-      shotZoom = !shotZoom;
-      applyShotZoom();
-    });
-    document.getElementById("shot-full").addEventListener("dblclick", (e) => {
-      e.preventDefault();
-      shotZoom = !shotZoom;
-      applyShotZoom();
+    const shotDlg = document.getElementById("shot-dlg");
+    shotDlg.addEventListener("click", (ev) => {
+      const r = shotDlg.getBoundingClientRect();
+      const inside =
+        ev.clientX >= r.left && ev.clientX <= r.right &&
+        ev.clientY >= r.top && ev.clientY <= r.bottom;
+      if (!inside) shotDlg.close();
     });
     paint();
   </script>
