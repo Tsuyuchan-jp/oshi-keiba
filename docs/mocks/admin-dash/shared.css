@@ -46,13 +46,16 @@ button, select { font: inherit; }
   padding: 1rem 1.25rem 4.5rem;
 }
 /* 台帳：ページはスクロールせず、左右の枠だけ縦に動く */
-body.ledger-page { overflow: hidden; }
-body.ledger-page .dash {
+body.ledger-page,
+body.odds-page { overflow: hidden; }
+body.ledger-page .dash,
+body.odds-page .dash {
   height: 100dvh;
   min-height: 0;
   overflow: hidden;
 }
-body.ledger-page .main {
+body.ledger-page .main,
+body.odds-page .main {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -60,18 +63,41 @@ body.ledger-page .main {
   overflow: hidden;
   padding: 1rem 1.25rem 2.4rem;
 }
-body.ledger-page .hero { flex: 0 0 auto; }
-body.ledger-page .ledger-desk {
+body.ledger-page .hero,
+body.odds-page .hero { flex: 0 0 auto; }
+body.ledger-page .ledger-desk,
+body.odds-page .odds-desk {
   flex: 1 1 auto;
   min-height: 0;
 }
-body.ledger-page .ledger-desk .work {
+body.ledger-page .ledger-desk .work,
+body.odds-page .odds-desk .work {
   min-height: 0;
   height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
+.kind-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+  margin: 0 0 .55rem;
+  flex: 0 0 auto;
+}
+.kind-tabs button {
+  border: 1px solid #c5ccd6;
+  background: #fff;
+  padding: .32rem .7rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.kind-tabs button.on {
+  background: #1e242c;
+  color: #fff;
+  border-color: #1e242c;
+}
+.odds-desk { min-height: 0; }
 .table-scroll {
   flex: 1 1 auto;
   min-height: 0;
@@ -110,6 +136,7 @@ body.ledger-page .ledger-desk .work {
   font-size: .78rem;
   color: #6b7380;
   margin: 0 0 .35rem;
+  flex: 0 0 auto;
 }
 .hero {
   background: #fff;
@@ -387,6 +414,7 @@ table.plain td.num, table.plain th.num {
   justify-content: space-between;
   gap: .4rem .75rem;
   margin-bottom: .35rem;
+  flex: 0 0 auto;
 }
 .work-head h2 { margin: 0; }
 .sort-links { font-size: .82rem; color: #5c6570; }
@@ -394,11 +422,16 @@ table.plain td.num, table.plain th.num {
 .sort-links a.on { color: #1c2128; font-weight: 700; }
 @media (max-width: 899px) {
   .ledger-desk { grid-template-columns: 1fr; }
-  body.ledger-page { overflow: auto; }
-  body.ledger-page .dash { height: auto; min-height: 100dvh; }
-  body.ledger-page .main { height: auto; overflow: visible; }
-  body.ledger-page .ledger-desk { flex: none; }
-  body.ledger-page .ledger-desk .work { height: min(70vh, 28rem); }
+  body.ledger-page,
+  body.odds-page { overflow: auto; }
+  body.ledger-page .dash,
+  body.odds-page .dash { height: auto; min-height: 100dvh; }
+  body.ledger-page .main,
+  body.odds-page .main { height: auto; overflow: visible; }
+  body.ledger-page .ledger-desk,
+  body.odds-page .odds-desk { flex: none; }
+  body.ledger-page .ledger-desk .work,
+  body.odds-page .odds-desk .work { height: min(70vh, 28rem); }
 }
 .tag {
   font-size: .68rem;

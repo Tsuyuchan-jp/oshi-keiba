@@ -77,7 +77,7 @@
       <a class="ghost" href="#">出走登録</a>
       <a href="./horses.html">出走</a>
       <a href="./ledger.html">台帳</a>
-      <a class="ghost" href="#">オッズ</a>
+      <a href="./odds.html">オッズ</a>
       <a class="ghost" href="#">開催設定</a>
     </nav>
     <div class="main">
@@ -302,14 +302,14 @@
             <div>
               <p class="col-h">単勝 · 参考</p>
               ${miniWin()}
-              <a class="more-link" href="#">オッズタブへ（未稿）</a>
+              <a class="more-link" href="./odds.html">オッズタブへ</a>
             </div>
             <div>
               <p class="col-h">直近の票</p>
               <div class="bet-mini">${RECENT.map(([w, lab, amt]) =>
                 `<div class="t-row"><span class="who">${w}</span><span class="lab">${lab}</span><span>${amt}</span></div>`
               ).join("")}</div>
-              <a class="more-link" href="#">台帳へ（未稿）</a>
+              <a class="more-link" href="./ledger.html">台帳へ</a>
             </div>
           </div>`;
         return;

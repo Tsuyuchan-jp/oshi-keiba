@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>管理 · オッズ</title>
+  <link rel="stylesheet" href="./shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="odds-page">
+  <div class="dash">
+    <nav class="side" aria-label="管理">
+      <div class="mark">OSHI KEIBA · 管理</div>
+      <a href="./progress-places.html">進行</a>
+      <a class="ghost" href="#">出走登録</a>
+      <a href="./horses.html">出走</a>
+      <a href="./ledger.html">台帳</a>
+      <a class="on" href="./odds.html">オッズ</a>
+      <a class="ghost" href="#">開催設定</a>
+    </nav>
+    <div class="main">
+      <section class="hero">
+        <div class="hero-top">
+          <h1>オッズ</h1>
+          <span class="phase" id="phase-pill">投票中</span>
+        </div>
+        <p class="note" style="margin:.45rem 0 0;color:#5c6570;font-size:.85rem">単勝は全頭。連勝は実票がある組み合わせだけ。複勝・枠連・ワイドは出さない。評価点・Seed は出さない。枠内スクロール。</p>
+      </section>
+      <div class="odds-desk">
+        <section class="work">
+          <div class="work-head">
+            <h2 id="board-title">単勝 · 参考</h2>
+            <p class="sort-links">
+              <a href="#" id="view-live" class="on">投票中</a>
+              ·
+              <a href="#" id="view-closed">締切後</a>
+            </p>
+          </div>
+          <div class="kind-tabs" id="kinds" role="tablist"></div>
+          <p class="filter-count" id="board-note"></p>
+          <div class="table-scroll" id="board"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+  <div class="mock-label">管理モック · オッズ · 本番未適用</div>
+  <script>
+    const WIN = [
+      [1, "サイレンススズカ", "neko", "3.2", "3.2"],
+      [2, "スペシャルウィーク", "aki", "5.8", "6.1"],
+      [3, "グラスワンダー", "yuu", "8.1", "8.4"],
+      [4, "セイウンスカイ", "ken", "12.4", "13.0"],
+      [5, "エルコンドルパサー", "mai", "6.0", "6.2"],
+      [6, "テイエムオペラオー", "rio", "15.2", "16.8"],
+      [7, "ファインモーション", "sora", "9.7", "10.1"],
+      [8, "ナリタブライアン", "haru", "18.0", "19.4"],
+      [9, "メジロマックイーン", "nao", "7.4", "7.6"],
+      [10, "トウカイテイオー", "kei", "11.1", "11.8"],
+      [11, "ビワハヤヒデ", "jun", "22.6", "24.0"],
+      [12, "ミホノブルボン", "ren", "14.3", "15.0"],
+      [13, "サクラバクシンオー", "aya", "16.8", "17.5"],
+      [14, "タイキシャトル", "mika", "10.5", "10.9"],
+      [15, "エアグルーヴ", "shin", "13.9", "14.6"],
+      [16, "シンボリルドルフ", "taka", "4.6", "4.8"],
+    ];
+    const BOARDS = {
+      win: { label: "単勝", rows: WIN.map(([n, uma, run, ref, conf]) => ({ lab: n + " " + uma + "（" + run + "）", ref, conf, n })) },
+      quinella: { label: "馬連", rows: [
+        { lab: "1 - 16", ref: "18.0", conf: "18.0" },
+        { lab: "1 - 5", ref: "42.0", conf: "44.0" },
+        { lab: "1 - 2", ref: "28.5", conf: "29.0" },
+        { lab: "2 - 16", ref: "51.0", conf: "55.0" },
+        { lab: "2 - 5", ref: "88.0", conf: "92.0" },
+      ] },
+      exacta: { label: "馬単", rows: [
+        { lab: "1 → 16", ref: "32.4", conf: "32.4" },
+        { lab: "16 → 1", ref: "48.0", conf: "51.0" },
+        { lab: "1 → 2", ref: "41.0", conf: "43.0" },
+      ] },
+      trio: { label: "3連複", rows: [
+        { lab: "1 - 2 - 16", ref: "54.0", conf: "54.0" },
+        { lab: "1 - 5 - 9", ref: "120", conf: "128" },
+      ] },
+      trifecta: { label: "3連単", rows: [
+        { lab: "1 → 16 → 2", ref: "180", conf: "void" },
+        { lab: "1 → 2 → 5", ref: "240", conf: "void" },
+        { lab: "1 → 2 → 16", ref: "210", conf: "void" },
+      ] },
+    };
+    const KIND_ORDER = ["win", "quinella", "exacta", "trio", "trifecta"];
+    let kind = "win";
+    let live = true;
+
+    function paintKinds() {
+      document.getElementById("kinds").innerHTML = KIND_ORDER.map((id) =>
+        `<button type="button" class="${id === kind ? "on" : ""}" data-kind="${id}">${BOARDS[id].label}</button>`
+      ).join("");
+      document.getElementById("kinds").querySelectorAll("[data-kind]").forEach((b) => {
+        b.addEventListener("click", () => { kind = b.dataset.kind; paint(); });
+      });
+    }
+
+    function paintBoard() {
+      const b = BOARDS[kind];
+      const col = live ? "参考" : "確定";
+      document.getElementById("board-title").textContent = b.label + " · " + col;
+      document.getElementById("board-note").textContent = kind === "win"
+        ? "全頭（通し番号）。取消なしの見本。"
+        : (kind === "trifecta" && !live
+          ? "実票がある組み合わせだけ。この見本では3連単が特払い（当たりに実票ゼロ）。"
+          : "実票がある組み合わせだけ。票が無い行は出さない。");
+      const pill = document.getElementById("phase-pill");
+      pill.textContent = live ? "投票中" : "投票締切";
+      pill.classList.toggle("live", live);
+      pill.classList.toggle("done", false);
+      document.getElementById("view-live").classList.toggle("on", live);
+      document.getElementById("view-closed").classList.toggle("on", !live);
+
+      const head = `<thead><tr><th>${kind === "win" ? "#" : "買い目"}</th>${kind === "win" ? "<th>ウマ娘</th><th>出走者</th>" : ""}<th class="num">${col}</th></tr></thead>`;
+      const body = b.rows.map((r) => {
+        const v = live ? r.ref : r.conf;
+        const cell = v === "void" ? "特払い 8割戻し" : (v === "—" ? "—" : v + "倍");
+        if (kind === "win") {
+          const n = r.n;
+          const uma = WIN.find((h) => h[0] === n);
+          return `<tr><td>${n}</td><td>${uma[1]}</td><td>${uma[2]}</td><td class="num">${cell}</td></tr>`;
+        }
+        return `<tr><td>${r.lab}</td><td class="num">${cell}</td></tr>`;
+      }).join("");
+      document.getElementById("board").innerHTML = `<table class="plain">${head}<tbody>${body}</tbody></table>`;
+    }
+
+    function paint() {
+      paintKinds();
+      paintBoard();
+    }
+    document.getElementById("view-live").addEventListener("click", (e) => {
+      e.preventDefault(); live = true; paint();
+    });
+    document.getElementById("view-closed").addEventListener("click", (e) => {
+      e.preventDefault(); live = false; paint();
+    });
+    paint();
+  </script>
+</body>
+</html>
