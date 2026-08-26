@@ -34,6 +34,9 @@ export function registerMaterialsHtml(input: HorseScoreInput): string {
   const skipped = (input.skippedSkillNames ?? [])
     .map((n) => `<span class="reg-chip skip">${escapeHtml(n)}</span>`)
     .join("");
+  const okCount = input.skillNames.length;
+  const skipCount = (input.skippedSkillNames ?? []).length;
+  const skillHeading = `スキル（${okCount} / 落ち ${skipCount}）`;
   return `    <div class="reg-stats">
       <div class="reg-stat"><span class="k">速</span><span class="v">${st.speed}</span></div>
       <div class="reg-stat"><span class="k">スタ</span><span class="v">${st.stamina}</span></div>
@@ -49,7 +52,7 @@ export function registerMaterialsHtml(input: HorseScoreInput): string {
       <span class="reg-slash" aria-hidden="true">/</span>
       ${aptChip("逃げ", ap.nige)}${aptChip("先行", ap.senkou)}${aptChip("差し", ap.sashi)}${aptChip("追込", ap.oikomi)}
     </div>
-    <p class="set-k" style="margin-top:.85rem">スキル</p>
+    <p class="set-k" style="margin-top:.85rem">${escapeHtml(skillHeading)}</p>
     <div class="reg-chips">${skills || `<span class="reg-chip">スキルなし</span>`}</div>
     ${
       skipped
@@ -345,13 +348,15 @@ export function ocrAdminScript(canAutoScore: boolean): string {
     if (!draft) { el.innerHTML = ""; return; }
     const st = draft.stats;
     const ap = draft.aptitudes;
-    const skills = lastHits.filter((h) => h.ok).map((h) =>
+    const okHits = lastHits.filter((h) => h.ok);
+    const missHits = lastHits.filter((h) => !h.ok);
+    const skills = okHits.map((h) =>
       '<span class="reg-chip ' + chipKind(h.kind) + '">' + esc(h.name) + "</span>"
     ).join("");
-    const missHits = lastHits.filter((h) => !h.ok);
     const miss = missHits.map((h) =>
       '<span class="reg-chip skip">' + esc(h.input) + "</span>"
     ).join("");
+    const skillHeading = "スキル（" + okHits.length + " / 落ち " + missHits.length + "）";
     el.innerHTML =
       '<div class="reg-stats">' +
         '<div class="reg-stat"><span class="k">速</span><span class="v">' + esc(st.speed) + "</span></div>" +
@@ -368,7 +373,7 @@ export function ocrAdminScript(canAutoScore: boolean): string {
         '<span class="reg-slash" aria-hidden="true">/</span>' +
         aptChip("逃げ", ap.nige) + aptChip("先行", ap.senkou) + aptChip("差し", ap.sashi) + aptChip("追込", ap.oikomi) +
       "</div>" +
-      '<p class="set-k" style="margin-top:.85rem">スキル</p>' +
+      '<p class="set-k" style="margin-top:.85rem">' + esc(skillHeading) + "</p>" +
       '<div class="reg-chips">' + (skills || '<span class="reg-chip">スキルなし</span>') + "</div>" +
       (miss
         ? '<p class="set-k" style="margin-top:.85rem">不採用</p><div class="reg-chips">' + miss + "</div>"
