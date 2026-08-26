@@ -82,8 +82,9 @@ button, select { font: inherit; }
 }
 .ops-pair {
   display: grid;
-  grid-template-columns: minmax(8rem, 1fr) 2fr;
-  gap: .65rem 1.25rem;
+  /* 左はバッジ幅、右は残り。本番管理にはこのクラスは無い */
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: .65rem 1.75rem;
   margin-top: .75rem;
   padding: .75rem .9rem;
   background: #f4f6f9;
