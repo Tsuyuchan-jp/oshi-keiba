@@ -4,12 +4,11 @@
 
 ## 現在進行中
 
-- （なし。整理パス2クローズ。store 分割まで完了）
+- （なし。OCR 継承／一文字誤読修正まで完了）
 
 ## そのあと
 
 - 票入り台帳の絞り込み実機 — [ledger.html](mocks/admin-dash/ledger.html)
-- OCR: 読み取ったスキルのうち有効スキルにあるものも不採用になっている問題を改善。あわせて OCR のテキスト誤認識がそのまま通って不採用になる点も改善 — [ocr.md](ocr.md)
 - Neko長明さんへの評価点の式確認（手土産＝動く実装は揃った）— [score.md](score.md)
 - OCR / 評価点の細かい調整（読取・表示 UI など）— [ocr.md](ocr.md)・[score.md](score.md)
 - 特払いのキャリーオーバーをコミュニティ向けに出すか — [trial-odds-report](../reports/2026-08-23/trial-odds-report.md) 末尾
@@ -26,6 +25,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
+- OCR: カタログ同名 multiple・ファジー遺産寄せ（継承／継承進化 id）・千錬＋編集距離≤1。skillBase はリスト外 inherit を数えない — [ocr.md](ocr.md)
 - store 分割: Types / Read / Board / Members / Horses / Event / Race + `store.ts` barrel。公開 API 不変。`storeFlow` 79 パス — パス2クローズ
 - store 結合テスト: メモリ SQLite（D1 互換）で投票→締切→着順→公開・やりなおし・残高不変。`npm test` に `storeFlow` — 分割前の安全網
 - 整理パス2: setup 電光化・メンバーCSS共通化・旧 layout 退役・`memberRoutes` で index 分割（ユーザー実機 OK〜分割実装）

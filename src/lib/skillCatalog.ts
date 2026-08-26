@@ -27,7 +27,12 @@ type CatalogEntry = { name: string; kind: string; id?: number };
 
 const skills = catalogJson.skills as CatalogEntry[];
 
-const byName = new Map(skills.map((s) => [s.name, s]));
+/** 同名複数時は unique を優先（表示・金判定。評価点の正は skillIds） */
+const byName = new Map<string, CatalogEntry>();
+for (const s of skills) {
+  const cur = byName.get(s.name);
+  if (!cur || s.kind === "unique") byName.set(s.name, s);
+}
 
 export function skillKindJa(kind: SkillKind): string {
   return KIND_JA[kind] ?? KIND_JA.unknown;

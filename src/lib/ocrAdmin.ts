@@ -154,16 +154,17 @@ export function ocrAdminScript(canAutoScore: boolean): string {
   const CAN_AUTO = ${canAutoScore ? "true" : "false"};
   const FUZZY_TH = 0.45;
   const KIND_JA = { green: "緑", gold: "金", white: "白", unique: "固有", evo: "進化", minus: "デバフ", inherit: "継承", special: "特殊", rare: "金", normal: "白", unknown: "未分類" };
-  const ALIAS = { "千銀万錬": "千鍛万錬", "千段万錬": "千鍛万錬" };
+  // skillFuzzy.ts と同期: エイリアス・編集距離≤1・同名の unique/inherit/継承進化
+  const ALIAS = { "千銀万錬": "千鍛万錬", "千段万錬": "千鍛万錬", "千錬万錬": "千鍛万錬" };
   const STYLE_LABEL = { runner: "逃", leader: "先", betweener: "差", chaser: "追" };
   const skills = (CATALOG.skills || []).filter((s) => typeof s.id === "number");
-  const names = skills.map((s) => s.name);
   const byName = new Map();
   for (const s of skills) {
     const list = byName.get(s.name) || [];
     list.push(s);
     byName.set(s.name, list);
   }
+  const names = [...byName.keys()];
   function toHalf(str) {
     let s = str.replace(/[！-～]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
     return s.replace(/〇/g, "○");
@@ -185,32 +186,78 @@ export function ocrAdminScript(canAutoScore: boolean): string {
     }
     return (2 * hits) / (a.length - 1 + (b.length - 1));
   }
+  function editDist(a, b) {
+    if (a === b) return 0;
+    const n = a.length, m = b.length;
+    if (!n) return m;
+    if (!m) return n;
+    const prev = Array(m + 1);
+    const cur = Array(m + 1);
+    for (let j = 0; j <= m; j++) prev[j] = j;
+    for (let i = 1; i <= n; i++) {
+      cur[0] = i;
+      for (let j = 1; j <= m; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+      }
+      for (let j = 0; j <= m; j++) prev[j] = cur[j];
+    }
+    return prev[m];
+  }
+  function isInheritEvo(skill, siblings) {
+    return skill.kind === "special" && siblings.some((s) => s.kind === "inherit");
+  }
+  function pickSkill(matched, isFirst) {
+    if (!matched.length) return null;
+    if (matched.length === 1) {
+      const only = matched[0];
+      if (!isFirst && only.kind === "unique") return null;
+      return only;
+    }
+    if (isFirst) return matched.find((s) => s.kind === "unique") || matched[0];
+    const evo = matched.find((s) => isInheritEvo(s, matched));
+    if (evo) return evo;
+    return matched.find((s) => s.kind !== "unique") || null;
+  }
   function fuzzyOne(raw, isFirst) {
     let clean = norm(raw);
     if (!clean) return null;
     clean = ALIAS[clean] || clean;
-    let best = null;
-    let bestR = -1;
-    const ratings = [];
+    let editBest = null;
+    let editD = Infinity;
+    let editR = -1;
     for (const name of names) {
-      const r = dice(clean, norm(name));
-      ratings.push({ name, r });
-      if (r > bestR) { bestR = r; best = name; }
+      const n = norm(name);
+      const d = editDist(clean, n);
+      if (d > 1) continue;
+      const r = dice(clean, n);
+      if (d < editD || (d === editD && r > editR)) {
+        editD = d;
+        editR = r;
+        editBest = name;
+      }
     }
-    const suf = clean.slice(-1);
-    if (["○","◎","×"].includes(suf)) {
-      const hit = ratings.filter((x) => x.name.endsWith(suf) && x.r > 0.4).sort((a,b) => b.r - a.r)[0];
-      if (hit) { best = hit.name; bestR = hit.r; }
+    let best = editBest;
+    let bestR = editBest != null
+      ? (editD === 0 ? 1 : Math.max(editR, FUZZY_TH))
+      : -1;
+    const ratings = [];
+    if (!editBest) {
+      for (const name of names) {
+        const r = dice(clean, norm(name));
+        ratings.push({ name, r });
+        if (r > bestR) { bestR = r; best = name; }
+      }
+      const suf = clean.slice(-1);
+      if (["○","◎","×"].includes(suf)) {
+        const hit = ratings.filter((x) => x.name.endsWith(suf) && x.r > 0.4).sort((a,b) => b.r - a.r)[0];
+        if (hit) { best = hit.name; bestR = hit.r; }
+      }
     }
     if (!best || bestR < FUZZY_TH) return { input: raw, name: best || "", id: null, kind: "unknown", rating: bestR < 0 ? 0 : bestR, ok: false };
     const matched = byName.get(best) || [];
-    let pick = matched[0];
+    const pick = pickSkill(matched, isFirst);
     if (!pick) return { input: raw, name: best, id: null, kind: "unknown", rating: bestR, ok: false };
-    if (matched.length > 1) {
-      pick = isFirst ? (matched.find((s) => s.kind === "unique") || matched[0]) : (matched.find((s) => s.kind !== "unique") || matched[0]);
-    } else if (!isFirst && pick.kind === "unique") {
-      return { input: raw, name: best, id: null, kind: "unknown", rating: bestR, ok: false };
-    }
     return { input: raw, name: pick.name, id: pick.id, kind: pick.kind, rating: bestR, ok: true };
   }
   function aptRank(v) {

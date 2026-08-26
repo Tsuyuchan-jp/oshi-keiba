@@ -2,6 +2,7 @@
  * OCR スキル名 → カタログ名／id。
  * skill-emulator の fuzzyMatcher を移植（string-similarity 相当の Dice 係数）。
  * 緑×落とし・シミュ用 sanitize は持ち込まない。
+ * 同名は先頭=unique、以降=継承進化→inherit（遺産と同じ）。
  */
 import catalogJson from "../data/skill-catalog.json" with { type: "json" };
 
@@ -15,13 +16,15 @@ const SKILLS = (catalogJson.skills as CatalogSkill[]).filter(
   (s) => typeof s.id === "number" && Number.isFinite(s.id),
 );
 
-const NAMES = SKILLS.map((s) => s.name);
 const BY_NAME = new Map<string, CatalogSkill[]>();
 for (const s of SKILLS) {
   const list = BY_NAME.get(s.name) ?? [];
   list.push(s);
   BY_NAME.set(s.name, list);
 }
+
+/** 照合用のユニークな正式名 */
+const NAMES = [...BY_NAME.keys()];
 
 /** ファジー閾値（遺産と同じ） */
 export const FUZZY_MATCH_THRESHOLD = 0.45;
@@ -30,6 +33,7 @@ export const FUZZY_MATCH_THRESHOLD = 0.45;
 const OCR_SKILL_ALIASES: Record<string, string> = {
   千銀万錬: "千鍛万錬",
   千段万錬: "千鍛万錬",
+  千錬万錬: "千鍛万錬",
 };
 
 function toHalfWidth(str: string): string {
@@ -65,12 +69,87 @@ export function diceCoefficient(a: string, b: string): number {
   return (2 * hits) / (a.length - 1 + (b.length - 1));
 }
 
+/** Levenshtein。短いラベル向け（OCR 一文字ずれ） */
+export function editDistance(a: string, b: string): number {
+  if (a === b) return 0;
+  const n = a.length;
+  const m = b.length;
+  if (n === 0) return m;
+  if (m === 0) return n;
+  const prev = new Array<number>(m + 1);
+  const cur = new Array<number>(m + 1);
+  for (let j = 0; j <= m; j++) prev[j] = j;
+  for (let i = 1; i <= n; i++) {
+    cur[0] = i;
+    for (let j = 1; j <= m; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      cur[j] = Math.min(
+        prev[j]! + 1,
+        cur[j - 1]! + 1,
+        prev[j - 1]! + cost,
+      );
+    }
+    for (let j = 0; j <= m; j++) prev[j] = cur[j]!;
+  }
+  return prev[m]!;
+}
+
+/** 遺産: special かつ同名に inherit がある＝継承進化 */
+function isInheritEvolution(skill: CatalogSkill, siblings: CatalogSkill[]): boolean {
+  if (skill.kind !== "special") return false;
+  return siblings.some((s) => s.kind === "inherit");
+}
+
+function pickCatalogSkill(
+  matched: CatalogSkill[],
+  isFirstSkill: boolean,
+): CatalogSkill | null {
+  if (matched.length === 0) return null;
+  if (matched.length === 1) {
+    const only = matched[0]!;
+    if (!isFirstSkill && only.kind === "unique") return null;
+    return only;
+  }
+  if (isFirstSkill) {
+    return matched.find((s) => s.kind === "unique") ?? matched[0]!;
+  }
+  const inheritEvo = matched.find((s) => isInheritEvolution(s, matched));
+  if (inheritEvo) return inheritEvo;
+  return matched.find((s) => s.kind !== "unique") ?? null;
+}
+
 function findBestSkillMatch(
   rawInput: string,
 ): { cleanInput: string; target: string; rating: number } | null {
   let cleanInput = normalizeSkillLabel(rawInput);
   if (!cleanInput) return null;
   cleanInput = OCR_SKILL_ALIASES[cleanInput] ?? cleanInput;
+
+  // 編集距離≤1を先に見る（Dice が短い語で低く出るため）
+  let editBest = "";
+  let editDist = Infinity;
+  let editDice = -1;
+  for (const name of NAMES) {
+    const norm = normalizeSkillLabel(name);
+    const d = editDistance(cleanInput, norm);
+    if (d > 1) continue;
+    const rating = diceCoefficient(cleanInput, norm);
+    if (
+      d < editDist ||
+      (d === editDist && rating > editDice)
+    ) {
+      editDist = d;
+      editDice = rating;
+      editBest = name;
+    }
+  }
+  if (editBest && editDist <= 1) {
+    return {
+      cleanInput,
+      target: editBest,
+      rating: editDist === 0 ? 1 : Math.max(editDice, FUZZY_MATCH_THRESHOLD),
+    };
+  }
 
   let bestTarget = "";
   let bestRating = -1;
@@ -115,8 +194,8 @@ export type FuzzySkillHit = {
 };
 
 /**
- * 1件マッチ。同名が複数あるときは先頭スキルなら unique 優先、それ以外は non-unique 優先。
- * （継承進化の細分はカタログに無いので遺産より単純）
+ * 1件マッチ。同名が複数あるとき:
+ * 先頭 → unique 優先 / 先頭以外 → 継承進化 → inherit 等（遺産と同じ）
  */
 export function fuzzyMatchSkill(
   rawInput: string | null | undefined,
@@ -143,20 +222,8 @@ export function fuzzyMatchSkill(
   }
 
   const matched = BY_NAME.get(best.target) ?? [];
-  if (matched.length === 0) {
-    return { ...empty, rating: best.rating, name: best.target };
-  }
-
-  let pick = matched[0]!;
-  if (matched.length > 1) {
-    if (isFirstSkill) {
-      pick = matched.find((s) => s.kind === "unique") ?? matched[0]!;
-    } else {
-      pick =
-        matched.find((s) => s.kind !== "unique") ?? matched[0]!;
-    }
-  } else if (!isFirstSkill && pick.kind === "unique") {
-    // 遺産: 先頭以外の単独 unique は捨てる（誤読で固有が並ぶのを防ぐ）
+  const pick = pickCatalogSkill(matched, isFirstSkill);
+  if (!pick) {
     return {
       ...empty,
       rating: best.rating,
