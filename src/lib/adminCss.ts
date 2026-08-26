@@ -169,6 +169,46 @@ details.terms-box summary { cursor: pointer; font-size: .9rem; padding: .35rem 0
 .odds-panel-t { grid-area: t; }
 .odds-panel-f { grid-area: f; }
 .odds-hero { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: .5rem; }
+/* オッズ：モック odds.html の箱 */
+body.odds-page { overflow: hidden; }
+body.odds-page .dash { height: 100dvh; min-height: 0; overflow: hidden; }
+body.odds-page .main {
+  display: flex; flex-direction: column; min-height: 0; height: 100%; overflow: hidden;
+  padding: 1rem 1.25rem 2.4rem;
+}
+body.odds-page .hero { flex: 0 0 auto; }
+body.odds-page .odds-desk {
+  flex: 1 1 auto; min-height: 0; height: 100%; align-items: stretch;
+  display: grid;
+  grid-template-columns: minmax(22rem, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas: "win q e" "win t f";
+  gap: .7rem;
+}
+body.odds-page .odds-desk .work {
+  min-height: 0; height: 100%; display: flex; flex-direction: column;
+  overflow: hidden; padding: .75rem .85rem .8rem; margin-bottom: 0;
+}
+body.odds-page .odds-hero { padding: .75rem 1rem .8rem; margin-bottom: .65rem; }
+body.odds-page .odds-hero .hero-top { align-items: center; }
+body.odds-page .odds-hero .ctas { margin: 0 0 0 auto; }
+body.odds-page .odds-hero .ctas button {
+  border: 1px solid #c5ccd6; padding: .45rem .8rem; border-radius: 6px;
+}
+.odds-void {
+  flex: 0 0 auto; margin: 0 0 .35rem; padding: .22rem .45rem; border-radius: 4px;
+  background: #f8eee4; color: #8a4b12; font-size: .72rem; font-weight: 700;
+}
+.odds-panel .work-head h2 { font-size: .95rem; }
+.table-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; }
+.table-scroll thead th { position: sticky; top: 0; background: #fff; z-index: 1; }
+table.plain { width: 100%; border-collapse: collapse; font-size: .82rem; }
+table.plain th {
+  text-align: left; font-size: .68rem; letter-spacing: .06em; color: #6b7380;
+  border-bottom: 1px solid #dfe3e8; padding: .3rem .35rem;
+}
+table.plain td { padding: .32rem .35rem; border-bottom: 1px solid #eef0f3; }
+table.plain td.num, table.plain th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .ledger-desk {
   display: grid;
   grid-template-columns: minmax(13rem, .72fr) minmax(0, 1.4fr);
@@ -397,6 +437,11 @@ body.settings-page .settings-bot.work { background: #eef1f5; border-color: #d5d9
   .set-conds { grid-template-columns: 1fr; }
   .set-targets { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .set-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  body.odds-page .odds-desk {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: minmax(14rem, 1.15fr) minmax(11rem, 1fr) minmax(11rem, 1fr);
+    grid-template-areas: "win win" "q e" "t f";
+  }
 }
 @media (max-width: 900px) {
   .dash { grid-template-columns: 1fr; }
@@ -414,5 +459,12 @@ body.settings-page .settings-bot.work { background: #eef1f5; border-color: #d5d9
   body.settings-page .settings-scroll { overflow: visible; }
   .set-row { grid-template-columns: 1fr; }
   .set-targets, .set-metrics { grid-template-columns: 1fr 1fr; }
+  body.odds-page { overflow: auto; }
+  body.odds-page .dash { height: auto; min-height: 100dvh; }
+  body.odds-page .main { height: auto; overflow: visible; }
+  body.odds-page .odds-desk {
+    display: flex; flex-direction: column; height: auto; flex: none;
+  }
+  body.odds-page .odds-desk .work { height: min(52vh, 20rem); }
 }
 `;

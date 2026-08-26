@@ -2,12 +2,11 @@ import { escapeHtml } from "./http";
 import { horseSheetParts } from "./horseName";
 import { parseHorseScoreInput, STYLE_OPTIONS } from "./horseScoreInput";
 import { scoreFromHorse } from "./scoreFromHorse";
-import { eventScoreSetup } from "./store";
+import { eventScoreSetup, numberByHorseId } from "./store";
 import type { Board, EventRow, HorseBoard, UserRow, BetRow } from "./store";
 import type { UndoMeta } from "./undo";
 import {
   adminOpsGuide,
-  comboOddsTable,
   flashHtml,
   formatMove,
   formatOdds,
@@ -23,6 +22,7 @@ import { horsesAdminBody, ocrAdminScript } from "./ocrAdmin";
 import {
   BET_KIND_LABEL,
   formatSelectionLabel,
+  kindIsEnabled,
   OPTIONAL_BET_KINDS,
   parseEnabledKinds,
   settleBet,
@@ -639,23 +639,26 @@ export function adminLedgerPage(opts: {
 }
 
 export function adminOddsPage(board: Board): string {
-  const kinds: { kind: BetKind; area: string; label: string }[] = [
-    { kind: "win", area: "win", label: "単勝" },
-    { kind: "umaren", area: "q", label: "馬連" },
-    { kind: "umatan", area: "e", label: "馬単" },
-    { kind: "sanrenpuku", area: "t", label: "3連複" },
-    { kind: "sanrentan", area: "f", label: "3連単" },
+  const ref =
+    board.event.status === "voting" || board.event.status === "setup";
+  const col = ref ? "参考" : "確定";
+  const kinds: { kind: BetKind; area: string }[] = [
+    { kind: "win", area: "win" },
+    { kind: "umaren", area: "q" },
+    { kind: "umatan", area: "e" },
+    { kind: "sanrenpuku", area: "t" },
+    { kind: "sanrentan", area: "f" },
   ];
+  const nums = numberByHorseId(board);
   const panels = kinds
-    .map((k) => `<section class="work odds-panel odds-panel-${k.area}"><div class="work-head"><h2>${k.label}</h2>
-          <span class="note">${board.event.status === "voting" || board.event.status === "setup" ? "参考" : "確定"}</span></div>
-          ${comboOddsTable(board, k.kind)}</section>`)
+    .map((k) => oddsKindPanel(board, k.kind, k.area, col, ref, nums))
     .join("");
   return `<section class="hero odds-hero">
-      <div class="hero-top"><h1>オッズ</h1>${phasePill(board.event.status)}</div>
-      <button type="button" class="secondary" id="formula-open">内部計算</button>
+      <div class="hero-top">
+        <h1>オッズ</h1>${phasePill(board.event.status)}
+        <div class="ctas"><button type="button" class="secondary" id="formula-open">内部計算</button></div>
+      </div>
     </section>
-    <p class="note">5賭式を同時に出す。単勝は全頭、連勝は実票がある買い目だけ。評価点・Seed は出さない。</p>
     <div class="odds-desk">${panels}</div>
     <dialog class="modal" id="formula-modal">
       <h2>内部計算</h2>
@@ -665,6 +668,62 @@ export function adminOddsPage(board: Board): string {
     <script>
       document.getElementById("formula-open")?.addEventListener("click", () => document.getElementById("formula-modal")?.showModal());
     </script>`;
+}
+
+function oddsKindPanel(
+  board: Board,
+  kind: BetKind,
+  area: string,
+  col: string,
+  ref: boolean,
+  nums: Map<string, number>,
+): string {
+  const label = BET_KIND_LABEL[kind];
+  const on = kindIsEnabled(board.event.enabled_kinds, kind);
+  const pool = board.pools.find((p) => p.kind === kind);
+  const voided = !ref && !!pool?.voidSpecial;
+  const banner = voided
+    ? `<p class="odds-void">特払い · 当たりに実票ゼロ · 8割戻し</p>`
+    : "";
+  if (!on) {
+    return `<section class="work odds-panel odds-panel-${area}">
+      <div class="work-head"><h2>${label} · ${col}</h2><span class="odds-meta">使わない</span></div>
+      <div class="table-scroll"></div></section>`;
+  }
+  let meta = "";
+  let table = "";
+  if (kind === "win") {
+    const live = board.horses.filter((h) => !h.horse.scratched);
+    meta = `${live.length}頭 · 全頭`;
+    const rows = live
+      .map((h) => {
+        const p = horseSheetParts(h.horse);
+        const odds = ref ? h.referenceOdds : h.confirmedOdds;
+        const cell = voided ? "特払い" : formatOddsWithUnit(odds);
+        return `<tr><td>${h.number}</td><td>${escapeHtml(p.umaName)}</td><td>${escapeHtml(p.runnerName)}</td><td class="num">${cell}</td></tr>`;
+      })
+      .join("");
+    table = `<table class="plain"><thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th class="num">${col}</th></tr></thead><tbody>${rows}</tbody></table>`;
+  } else {
+    const combos = pool?.combos ?? [];
+    meta = `${combos.length}組 · 実票のみ`;
+    if (combos.length === 0) {
+      table = `<p class="note">—</p>`;
+    } else {
+      const rows = combos
+        .map((c) => {
+          const lab = formatSelectionLabel(kind, c.horse_1, c.horse_2, c.horse_3, nums);
+          const cell = voided ? "特払い" : formatOddsWithUnit(c.odds);
+          return `<tr><td>${escapeHtml(lab)}</td><td class="num">${cell}</td></tr>`;
+        })
+        .join("");
+      table = `<table class="plain"><thead><tr><th>買い目</th><th class="num">${col}</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+  }
+  return `<section class="work odds-panel odds-panel-${area}">
+      <div class="work-head"><h2>${label} · ${col}</h2><span class="odds-meta">${meta}</span></div>
+      ${banner}
+      <div class="table-scroll">${table}</div></section>`;
 }
 
 function setSegHtml(
