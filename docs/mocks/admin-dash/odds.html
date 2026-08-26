@@ -19,28 +19,19 @@
       <a class="ghost" href="#">開催設定</a>
     </nav>
     <div class="main">
-      <section class="hero">
+      <section class="hero odds-hero">
         <div class="hero-top">
           <h1>オッズ</h1>
           <span class="phase" id="phase-pill">投票中</span>
+          <p class="sort-links">
+            <a href="#" id="view-live" class="on">投票中</a>
+            ·
+            <a href="#" id="view-closed">締切後</a>
+          </p>
         </div>
-        <p class="note" style="margin:.45rem 0 0;color:#5c6570;font-size:.85rem">単勝は全頭。連勝は実票がある組み合わせだけ。複勝・枠連・ワイドは出さない。評価点・Seed は出さない。枠内スクロール。</p>
+        <p class="note">5賭式を同時に出す。単勝は全頭、連勝は実票がある買い目だけ。複勝・枠連・ワイド、評価点・Seed は出さない。各枠内スクロール。</p>
       </section>
-      <div class="odds-desk">
-        <section class="work">
-          <div class="work-head">
-            <h2 id="board-title">単勝 · 参考</h2>
-            <p class="sort-links">
-              <a href="#" id="view-live" class="on">投票中</a>
-              ·
-              <a href="#" id="view-closed">締切後</a>
-            </p>
-          </div>
-          <div class="kind-tabs" id="kinds" role="tablist"></div>
-          <p class="filter-count" id="board-note"></p>
-          <div class="table-scroll" id="board"></div>
-        </section>
-      </div>
+      <div class="odds-desk" id="desk"></div>
     </div>
   </div>
   <div class="mock-label">管理モック · オッズ · 本番未適用</div>
@@ -63,77 +54,88 @@
       [15, "エアグルーヴ", "shin", "13.9", "14.6"],
       [16, "シンボリルドルフ", "taka", "4.6", "4.8"],
     ];
-    const BOARDS = {
-      win: { label: "単勝", rows: WIN.map(([n, uma, run, ref, conf]) => ({ lab: n + " " + uma + "（" + run + "）", ref, conf, n })) },
-      quinella: { label: "馬連", rows: [
+    const BOARDS = [
+      { id: "win", area: "win", label: "単勝", all: true, rows: WIN.map(([n, uma, run, ref, conf]) => ({ n, uma, run, ref, conf })) },
+      { id: "quinella", area: "q", label: "馬連", rows: [
         { lab: "1 - 16", ref: "18.0", conf: "18.0" },
-        { lab: "1 - 5", ref: "42.0", conf: "44.0" },
         { lab: "1 - 2", ref: "28.5", conf: "29.0" },
+        { lab: "1 - 5", ref: "42.0", conf: "44.0" },
         { lab: "2 - 16", ref: "51.0", conf: "55.0" },
+        { lab: "5 - 16", ref: "66.0", conf: "70.0" },
+        { lab: "1 - 9", ref: "74.0", conf: "78.0" },
         { lab: "2 - 5", ref: "88.0", conf: "92.0" },
+        { lab: "9 - 16", ref: "95.0", conf: "101" },
       ] },
-      exacta: { label: "馬単", rows: [
+      { id: "exacta", area: "e", label: "馬単", rows: [
         { lab: "1 → 16", ref: "32.4", conf: "32.4" },
         { lab: "16 → 1", ref: "48.0", conf: "51.0" },
         { lab: "1 → 2", ref: "41.0", conf: "43.0" },
+        { lab: "1 → 5", ref: "58.0", conf: "61.0" },
+        { lab: "2 → 1", ref: "72.0", conf: "76.0" },
+        { lab: "16 → 2", ref: "84.0", conf: "90.0" },
       ] },
-      trio: { label: "3連複", rows: [
+      { id: "trio", area: "t", label: "3連複", rows: [
         { lab: "1 - 2 - 16", ref: "54.0", conf: "54.0" },
+        { lab: "1 - 5 - 16", ref: "88.0", conf: "94.0" },
+        { lab: "1 - 2 - 5", ref: "102", conf: "110" },
         { lab: "1 - 5 - 9", ref: "120", conf: "128" },
       ] },
-      trifecta: { label: "3連単", rows: [
+      { id: "trifecta", area: "f", label: "3連単", voidWhenClosed: true, rows: [
         { lab: "1 → 16 → 2", ref: "180", conf: "void" },
-        { lab: "1 → 2 → 5", ref: "240", conf: "void" },
         { lab: "1 → 2 → 16", ref: "210", conf: "void" },
+        { lab: "1 → 16 → 5", ref: "226", conf: "void" },
+        { lab: "1 → 2 → 5", ref: "240", conf: "void" },
+        { lab: "16 → 1 → 2", ref: "268", conf: "void" },
       ] },
-    };
-    const KIND_ORDER = ["win", "quinella", "exacta", "trio", "trifecta"];
-    let kind = "win";
+    ];
     let live = true;
 
-    function paintKinds() {
-      document.getElementById("kinds").innerHTML = KIND_ORDER.map((id) =>
-        `<button type="button" class="${id === kind ? "on" : ""}" data-kind="${id}">${BOARDS[id].label}</button>`
-      ).join("");
-      document.getElementById("kinds").querySelectorAll("[data-kind]").forEach((b) => {
-        b.addEventListener("click", () => { kind = b.dataset.kind; paint(); });
-      });
+    function cell(v) {
+      if (v === "void") return "特払い";
+      if (v === "—") return "—";
+      return v + "倍";
     }
 
-    function paintBoard() {
-      const b = BOARDS[kind];
-      const col = live ? "参考" : "確定";
-      document.getElementById("board-title").textContent = b.label + " · " + col;
-      document.getElementById("board-note").textContent = kind === "win"
-        ? "全頭（通し番号）。取消なしの見本。"
-        : (kind === "trifecta" && !live
-          ? "実票がある組み合わせだけ。この見本では3連単が特払い（当たりに実票ゼロ）。"
-          : "実票がある組み合わせだけ。票が無い行は出さない。");
-      const pill = document.getElementById("phase-pill");
-      pill.textContent = live ? "投票中" : "投票締切";
-      pill.classList.toggle("live", live);
-      pill.classList.toggle("done", false);
-      document.getElementById("view-live").classList.toggle("on", live);
-      document.getElementById("view-closed").classList.toggle("on", !live);
-
-      const head = `<thead><tr><th>${kind === "win" ? "#" : "買い目"}</th>${kind === "win" ? "<th>ウマ娘</th><th>出走者</th>" : ""}<th class="num">${col}</th></tr></thead>`;
-      const body = b.rows.map((r) => {
+    function tableWin(rows, col) {
+      const body = rows.map((r) => {
         const v = live ? r.ref : r.conf;
-        const cell = v === "void" ? "特払い 8割戻し" : (v === "—" ? "—" : v + "倍");
-        if (kind === "win") {
-          const n = r.n;
-          const uma = WIN.find((h) => h[0] === n);
-          return `<tr><td>${n}</td><td>${uma[1]}</td><td>${uma[2]}</td><td class="num">${cell}</td></tr>`;
-        }
-        return `<tr><td>${r.lab}</td><td class="num">${cell}</td></tr>`;
+        return `<tr><td>${r.n}</td><td>${r.uma}</td><td>${r.run}</td><td class="num">${cell(v)}</td></tr>`;
       }).join("");
-      document.getElementById("board").innerHTML = `<table class="plain">${head}<tbody>${body}</tbody></table>`;
+      return `<table class="plain"><thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th class="num">${col}</th></tr></thead><tbody>${body}</tbody></table>`;
+    }
+
+    function tableCombo(rows, col) {
+      const body = rows.map((r) => {
+        const v = live ? r.ref : r.conf;
+        return `<tr><td>${r.lab}</td><td class="num">${cell(v)}</td></tr>`;
+      }).join("");
+      return `<table class="plain"><thead><tr><th>買い目</th><th class="num">${col}</th></tr></thead><tbody>${body}</tbody></table>`;
     }
 
     function paint() {
-      paintKinds();
-      paintBoard();
+      const col = live ? "参考" : "確定";
+      const pill = document.getElementById("phase-pill");
+      pill.textContent = live ? "投票中" : "投票締切";
+      pill.classList.toggle("live", live);
+      document.getElementById("view-live").classList.toggle("on", live);
+      document.getElementById("view-closed").classList.toggle("on", !live);
+
+      document.getElementById("desk").innerHTML = BOARDS.map((b) => {
+        const meta = b.all ? `${b.rows.length}頭 · 全頭` : `${b.rows.length}組 · 実票のみ`;
+        const showVoid = b.voidWhenClosed && !live;
+        const banner = showVoid ? `<p class="odds-void">特払い · 当たりに実票ゼロ · 8割戻し</p>` : "";
+        const table = b.all ? tableWin(b.rows, col) : tableCombo(b.rows, col);
+        return `<section class="work odds-panel odds-panel-${b.area}">
+          <div class="work-head">
+            <h2>${b.label} · ${col}</h2>
+            <span class="odds-meta">${meta}</span>
+          </div>
+          ${banner}
+          <div class="table-scroll">${table}</div>
+        </section>`;
+      }).join("");
     }
+
     document.getElementById("view-live").addEventListener("click", (e) => {
       e.preventDefault(); live = true; paint();
     });
