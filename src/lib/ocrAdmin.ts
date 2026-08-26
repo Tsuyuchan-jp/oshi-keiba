@@ -20,7 +20,7 @@ function aptChip(label: string, rank: string): string {
 function skillChipClass(kind: string): string {
   if (kind === "green") return "green";
   if (kind === "evo" || kind === "scenario") return "evo";
-  if (kind === "gold" || kind === "unique" || kind === "special") return "gold";
+  if (kind === "gold" || kind === "unique") return "gold";
   if (kind === "minus") return "minus";
   return "white";
 }
@@ -339,7 +339,7 @@ export function ocrAdminScript(
   function chipKind(kind) {
     if (kind === "green") return "green";
     if (kind === "evo" || kind === "scenario") return "evo";
-    if (kind === "gold" || kind === "unique" || kind === "rare" || kind === "special") return "gold";
+    if (kind === "gold" || kind === "unique" || kind === "rare") return "gold";
     if (kind === "minus") return "minus";
     return "white";
   }
