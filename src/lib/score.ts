@@ -82,6 +82,14 @@ export type ScoreBreakdown = {
   /** 条件成立した緑スキル（表示用） */
   appliedGreens: AppliedGreen[];
   adjusted: HorseStats;
+  /** 倍率に掛ける前の r（スタミナは離散のため無し） */
+  rawRatios: {
+    speed: number;
+    power: number;
+    guts: number;
+    wisdom: number;
+  };
+  /** 掛け算に使う倍率 */
   ratios: {
     speed: number;
     staminaMult: number;
@@ -258,6 +266,12 @@ export function computeScore(input: ScoreInput): ScoreBreakdown {
     green,
     appliedGreens,
     adjusted,
+    rawRatios: {
+      speed: rSpeed,
+      power: rPower,
+      guts: rGuts,
+      wisdom: rWis,
+    },
     ratios: {
       speed: mSpeed,
       staminaMult: mSta,

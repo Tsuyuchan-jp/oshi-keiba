@@ -455,6 +455,7 @@ body.ledger-page .filters select {
 .pipe-v { font-variant-numeric: tabular-nums; }
 .pipe-final { font-size: 1.35rem; font-weight: 800; font-variant-numeric: tabular-nums; margin: .35rem 0 0; }
 .pipe-eq { font-size: .78rem; color: #3d4550; margin: .15rem 0 0; font-variant-numeric: tabular-nums; word-break: break-word; }
+.pipe-r-calc { color: #8b939e; font-size: .82em; margin-left: .35rem; font-weight: 400; }
 .pipe-green { font-size: .85rem; line-height: 1.45; }
 .shot-thumb {
   display: block; width: 10.6rem; height: 4.15rem; overflow: hidden; margin: 0; padding: 0;

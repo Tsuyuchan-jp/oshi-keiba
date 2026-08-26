@@ -62,6 +62,7 @@ export type ScoreFromHorseResult = {
   breakdown: ScoreBreakdown;
   /** Seed / Strength に載せる値（小数1桁） */
   strength: number;
+  aptitudes: HorseAptitudes;
 };
 
 /** 算出不能なら null */
@@ -106,6 +107,7 @@ export function scoreFromHorse(
   return {
     breakdown,
     strength: Math.round(breakdown.score * 10) / 10,
+    aptitudes,
   };
 }
 

@@ -576,6 +576,42 @@ function styleLabel(key: string | null | undefined): string {
   return STYLE_OPTIONS.find((x) => x.key === key)?.label ?? "—";
 }
 
+/** 倍率・r は小数第3位まで */
+function fmt3(n: number): string {
+  return n.toFixed(3);
+}
+
+function isAptS(rank: string | undefined): boolean {
+  return String(rank ?? "").trim().toUpperCase() === "S";
+}
+
+/** r の内訳式（数値）。目立たせない用 */
+function rCalcHtml(
+  base: number,
+  green: number,
+  aptMul: number,
+  req: number,
+): string {
+  const core = green ? `${base}${green > 0 ? "+" : ""}${green}` : String(base);
+  const left = aptMul !== 1 ? `(${core})×${aptMul}` : green ? `(${core})` : core;
+  return `<span class="pipe-r-calc">${escapeHtml(`${left} / ${req}`)}</span>`;
+}
+
+function staminaExplain(
+  stamina: number,
+  req: { staminaNoTempt: number; staminaWithTempt: number; staminaRace: boolean },
+): string {
+  const no = stamina >= req.staminaNoTempt;
+  const withT = stamina >= req.staminaWithTempt;
+  if (no && withT) return "掛かりなし・あり達成";
+  if (req.staminaRace) {
+    if (!no) return "勝負コース・掛かりなし未達";
+    return "勝負コース・掛かりありだけ未達";
+  }
+  if (!no) return "掛かりなし未達";
+  return "掛かりありだけ未達";
+}
+
 function pipeHtml(h: HorseBoard, board: Board): string {
   const p = horseSheetParts(h.horse);
   const input = parseHorseScoreInput(h.horse.score_input);
@@ -594,6 +630,10 @@ function pipeHtml(h: HorseBoard, board: Board): string {
   }
   const b = auto.breakdown;
   const s = b.skill;
+  const req = setup!.requirements;
+  const st = input!.stats;
+  const gr = b.green;
+  const apt = auto.aptitudes;
   const greenLines = b.appliedGreens.length
     ? b.appliedGreens
         .map((g) => {
@@ -608,16 +648,24 @@ function pipeHtml(h: HorseBoard, board: Board): string {
         })
         .join("<br>")
     : "なし";
-  const formula = `${s.base} × ${b.ratios.speed.toFixed(3)} × ${b.ratios.staminaMult.toFixed(2)} × ${b.ratios.power.toFixed(3)} × ${b.ratios.guts.toFixed(3)} × ${b.ratios.wisdom.toFixed(3)} ＝ ${h.horse.strength}`;
+  const distMul = isAptS(apt.distance) ? 1.1 : 1;
+  const surfMul = isAptS(apt.surface) ? 1.05 : 1;
+  const styleMul = isAptS(apt.style) ? 1.1 : 1;
+  const speedLine = `r=${fmt3(b.rawRatios.speed)} ${rCalcHtml(st.speed, gr.speed, distMul, req.speedCap)} → ×${fmt3(b.ratios.speed)}`;
+  const powerLine = `r=${fmt3(b.rawRatios.power)} ${rCalcHtml(st.power, gr.power, surfMul, req.power)} → ×${fmt3(b.ratios.power)}`;
+  const gutsLine = `r=${fmt3(b.rawRatios.guts)} ${rCalcHtml(st.guts, gr.guts, 1, req.guts)} → ×${fmt3(b.ratios.guts)}`;
+  const wisLine = `r=${fmt3(b.rawRatios.wisdom)} ${rCalcHtml(st.wisdom, gr.wisdom, styleMul, req.wisdom)} → ×${fmt3(b.ratios.wisdom)}`;
+  const staLine = `${escapeHtml(staminaExplain(b.adjusted.stamina, req))} → ×${fmt3(b.ratios.staminaMult)}`;
+  const formula = `スキル点${s.base} × スピ${fmt3(b.ratios.speed)} × スタ${fmt3(b.ratios.staminaMult)} × パワ${fmt3(b.ratios.power)} × 根性${fmt3(b.ratios.guts)} × 賢さ${fmt3(b.ratios.wisdom)} ＝ ${h.horse.strength}`;
   return `${head}
     <div class="pipe-step"><div class="pipe-k">土台（スキル）</div>
       <div>有効 ${s.effectiveCount} ＋ 金×2（${s.goldCount}枚）＋ ためらい ${s.tameraiCount}＝ <b>${s.base}</b></div></div>
     <div class="pipe-step"><div class="pipe-k">緑 → ステへ</div><div class="pipe-green">${greenLines}</div></div>
-    <div class="pipe-step"><div class="pipe-k">スピード</div><div>r=${b.ratios.speed.toFixed(2)}</div></div>
-    <div class="pipe-step"><div class="pipe-k">スタミナ</div><div>×${b.ratios.staminaMult.toFixed(2)}</div></div>
-    <div class="pipe-step"><div class="pipe-k">パワー</div><div>r=${b.ratios.power.toFixed(2)}</div></div>
-    <div class="pipe-step"><div class="pipe-k">根性</div><div>r=${b.ratios.guts.toFixed(2)}</div></div>
-    <div class="pipe-step"><div class="pipe-k">賢さ</div><div>r=${b.ratios.wisdom.toFixed(2)}</div></div>
+    <div class="pipe-step"><div class="pipe-k">スピード</div><div class="pipe-v">${speedLine}</div></div>
+    <div class="pipe-step"><div class="pipe-k">スタミナ</div><div class="pipe-v">${staLine}</div></div>
+    <div class="pipe-step"><div class="pipe-k">パワー</div><div class="pipe-v">${powerLine}</div></div>
+    <div class="pipe-step"><div class="pipe-k">根性</div><div class="pipe-v">${gutsLine}</div></div>
+    <div class="pipe-step"><div class="pipe-k">賢さ</div><div class="pipe-v">${wisLine}</div></div>
     <div class="pipe-step"><div class="pipe-k">評価点 → Seed</div>
       <p class="pipe-eq">${escapeHtml(formula)}</p>
       <div class="pipe-final">${h.horse.strength}</div>
