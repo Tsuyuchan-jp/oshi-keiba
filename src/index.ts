@@ -15,7 +15,6 @@ import {
   OPTIONAL_BET_KINDS,
   parseEnabledKinds,
   serializeEnabledKinds,
-  settleBet,
   type BetKind,
 } from "./lib/bets";
 import { escapeHtml, html, json, readForm, redirect } from "./lib/http";
@@ -29,9 +28,6 @@ import {
   hasJoinedEvent,
   joinButtonLabel,
   joinEvent,
-  listAllBets,
-  listEventPayouts,
-  listMembers,
   listUserBets,
   listUserPayouts,
   loadBoard,
@@ -53,40 +49,29 @@ import {
   updateParams,
   upsertUser,
 } from "./lib/store";
-import { applyAdminUndo, getAdminUndoMeta } from "./lib/undo";
+import { applyAdminUndo } from "./lib/undo";
 import {
   BOARD_FLASH_SCRIPT,
   betTabsHtml,
   comboOddsTable,
-  enabledKindsAdminFields,
   DEDUPE_SELECT_SCRIPT,
   flashHtml,
-  formatMove,
-  formatOddsWithUnit,
   formatPt,
-  formulaPanel,
   groupMyBets,
-  headerPhaseKind,
-  kindVoidNotes,
   layout,
   livePollScript,
   parseJstInput,
   pickSelects,
-  scoreSetupAdminFields,
   statusLabel,
-  strengthCalcModal,
-  toJstInput,
-  wCaption,
   winSheetTable,
-  adminOpsGuide,
+  kindVoidNotes,
 } from "./lib/ui";
+import { tryAdminGet } from "./lib/adminRoutes";
 import { horseSheetParts } from "./lib/horseName";
 import {
   parseHorseScoreInput,
   serializeHorseScoreInput,
-  STYLE_OPTIONS,
 } from "./lib/horseScoreInput";
-import { horsesAdminBody, ocrAdminScript } from "./lib/ocrAdmin";
 import { resolveStrength } from "./lib/scoreFromHorse";
 import { enrichScoreSetupWithEffects, scoreSetupFromForm } from "./lib/scoreSetup";
 import { normalizeShotMime } from "./lib/shotMime";
@@ -112,18 +97,6 @@ function demoResetAllowed(env: Env): boolean {
 }
 
 /** 確認用パス。name=password にするとブラウザがログイン情報を流し込む */
-function adminReauthField(): string {
-  return `<div class="autofill-trap" aria-hidden="true">
-      <input type="text" tabindex="-1" autocomplete="username">
-      <input type="password" tabindex="-1" autocomplete="current-password">
-    </div>
-    <label>管理者パス
-      <input class="no-autofill" name="admin_reauth" type="password" required
-        autocomplete="new-password" autocapitalize="off" spellcheck="false"
-        data-lpignore="true" data-1p-ignore="true" data-bwignore="true" readonly>
-    </label>`;
-}
-
 function readAdminReauth(form: { get(name: string): string | File | null }): string {
   const a = form.get("admin_reauth");
   const b = form.get("password");
@@ -193,6 +166,9 @@ export default {
         return redirect("/", { "Set-Cookie": clearSessionCookie() });
       }
 
+      const adminGet = await tryAdminGet(request, env, url, path);
+      if (adminGet) return adminGet;
+
       // —— メンバー入室 ——
       if (method === "GET" && path === "/login") {
         const session = await sessionFromRequest(request, env.SESSION_SECRET);
@@ -250,28 +226,6 @@ export default {
             true,
           );
         }
-      }
-
-      if (method === "GET" && path === "/admin/login") {
-        const m = msg(url);
-        const board = await loadBoard(env.DB);
-        return html(
-          layout({
-            title: "管理者ログイン",
-            admin: true,
-            eventStatus: board.event.status,
-            body: `${flashHtml(m.text, m.error)}
-              <div class="card">
-                <h1>管理者ログイン</h1>
-                <form method="post" action="/admin/login">
-                  <div class="row">
-                    <label>仮パスワード <input name="password" type="password" required></label>
-                    <button type="submit">管理画面へ</button>
-                  </div>
-                </form>
-              </div>`,
-          }),
-        );
       }
 
       if (method === "POST" && path === "/admin/login") {
@@ -617,507 +571,7 @@ export default {
         }
       }
 
-      // —— 管理 ——
-      if (method === "GET" && path === "/admin/horses") {
-        const gate = await requireAdmin(request, env);
-        if (gate instanceof Response) return gate;
-        const board = await loadBoard(env.DB);
-        const m = msg(url);
-        const setup = eventScoreSetup(board.event);
-        return html(
-          layout({
-            title: "出走登録",
-            user: gate.user,
-            admin: true,
-            eventStatus: board.event.status,
-            body: `${flashHtml(m.text, m.error)}
-              <div class="card">
-                <h2>出走登録</h2>
-                ${horsesAdminBody(board, board.event.status === "setup", setup)}
-              </div>`,
-            scripts:
-              board.event.status === "setup" ? ocrAdminScript(!!setup) : "",
-          }),
-        );
-      }
-
-      if (method === "GET" && path === "/admin") {
-        const gate = await requireAdmin(request, env);
-        if (gate instanceof Response) return gate;
-        const board = await loadBoard(env.DB);
-        const m = msg(url);
-        const e = board.event;
-        const liveCount = board.horses.filter((h) => !h.horse.scratched).length;
-        const members = await listMembers(env.DB);
-        const betOrder = url.searchParams.get("bets") === "name" ? "name" : "new";
-        const allBets = await listAllBets(env.DB, e.id, betOrder);
-        const payouts = await listEventPayouts(env.DB, e.id);
-        const payByBet = new Map(payouts.map((p) => [p.bet_id, p]));
-        const nums = numberByHorseId(board);
-        let undoMeta = null;
-        try {
-          undoMeta = await getAdminUndoMeta(env.DB);
-        } catch {
-          undoMeta = null;
-        }
-        const ops = adminOpsGuide(board);
-        const allowDemo = demoResetAllowed(env);
-
-        const horseRows = board.horses
-          .map((h) => {
-            const placeCell =
-              e.status === "closed" && !h.horse.scratched
-                ? `<select form="places-form" class="place-select" name="place_${h.horse.id}" required>
-                    <option value="">—</option>
-                    ${Array.from({ length: liveCount }, (_, i) => {
-                      const n = i + 1;
-                      const sel = h.horse.finish_place === n ? " selected" : "";
-                      return `<option value="${n}"${sel}>${n}着</option>`;
-                    }).join("")}
-                  </select>`
-                : h.horse.finish_place != null
-                  ? `${h.horse.finish_place}着`
-                  : "—";
-            const parts = horseSheetParts(h.horse);
-            const scratchAsk = JSON.stringify(
-              `「${parts.umaName}（${parts.runnerName}）」を出走取消し、このウマ娘を含む馬券を全額返還します。よろしいですか？`,
-            );
-            const scratchBtn =
-              e.status !== "published" && !h.horse.scratched
-                ? `<form method="post" action="/admin/scratch" onsubmit="return confirm(${escapeHtml(scratchAsk)});">
-                    <input type="hidden" name="horse_id" value="${h.horse.id}">
-                    <button class="danger" type="submit">取消・返還</button>
-                  </form>`
-                : "";
-            const scoreIn = parseHorseScoreInput(h.horse.score_input);
-            const styleSelect =
-              e.status === "setup" && !h.horse.scratched
-                ? `<select name="style_key" style="width:4rem">
-                    <option value="">脚質</option>
-                    ${STYLE_OPTIONS.map((o) => {
-                      const sel =
-                        scoreIn?.styleKey === o.key ? " selected" : "";
-                      return `<option value="${o.key}"${sel}>${o.label}</option>`;
-                    }).join("")}
-                  </select>`
-                : "";
-            const edit =
-              e.status === "setup" && !h.horse.scratched
-                ? `<form method="post" action="/admin/horse-edit" class="row">
-                    <input type="hidden" name="horse_id" value="${h.horse.id}">
-                    <input name="uma_name" value="${escapeHtml(parts.umaName)}" required maxlength="40">
-                    <input name="runner_name" value="${escapeHtml(parts.runnerName)}" required maxlength="40">
-                    ${styleSelect}
-                    <input name="strength" type="number" min="0" step="0.1" value="${h.horse.strength}" required style="width:5rem" title="評価点">
-                    <label class="muted" style="font-size:0.85em"><input type="checkbox" name="strength_manual" value="1"> 直置き</label>
-                    <button type="submit" class="secondary">更新</button>
-                  </form>`
-                : `<div>${escapeHtml(parts.umaName)}（${escapeHtml(parts.runnerName)}）<div class="muted">#${h.number || "—"} Strength ${h.horse.strength}　Seed ${h.seed.toFixed(0)}</div></div>`;
-            return `<tr class="${h.horse.scratched ? "scr" : ""}">
-              <td>${edit}</td>
-              <td class="num">${formatOddsWithUnit(h.referenceOdds)}</td>
-              <td class="num">${formatOddsWithUnit(h.confirmedOdds)}</td>
-              <td class="num">${formatPt(h.real)}</td>
-              <td class="num">${formatPt(h.imputed)}</td>
-              <td>${placeCell}</td>
-              <td>${scratchBtn}</td>
-            </tr>`;
-          })
-          .join("");
-
-        const memberRows = members
-          .map(
-            (u) =>
-              `<tr><td>${escapeHtml(u.display_name)}</td><td class="num">${formatPt(u.balance)}</td></tr>`,
-          )
-          .join("");
-
-        const betRows = allBets
-          .map((b) => {
-            const label = formatSelectionLabel(
-              b.kind,
-              b.horse_1,
-              b.horse_2,
-              b.horse_3,
-              nums,
-            );
-            const pool = board.pools.find((p) => p.kind === b.kind);
-            const combo = pool?.combos.find((c) => c.selection_key === b.selection_key);
-            const settled = settleBet({
-              amount: b.amount,
-              refunded: !!b.refunded,
-              status: e.status,
-              payout: payByBet.get(b.id) ?? null,
-              comboOdds: combo?.odds ?? null,
-              kindVoid: pool?.voidSpecial ?? null,
-            });
-            const moveClass =
-              settled.move != null && settled.move > 0
-                ? "move-plus"
-                : settled.move != null && settled.move < 0
-                  ? "move-minus"
-                  : "";
-            return `<tr class="${b.refunded ? "scr" : ""}">
-              <td>${escapeHtml(b.display_name)}</td>
-              <td>${escapeHtml(BET_KIND_LABEL[b.kind])}</td>
-              <td>${escapeHtml(label)}</td>
-              <td class="num">${formatPt(b.amount)}</td>
-              <td>${escapeHtml(settled.result)}</td>
-              <td class="num">${formatOddsWithUnit(settled.odds)}</td>
-              <td class="num ${moveClass}">${formatMove(settled.move)}</td>
-            </tr>`;
-          })
-          .join("");
-
-        return html(
-          layout({
-            title: "管理",
-            user: gate.user,
-            admin: true,
-            eventStatus: e.status,
-            body: `${flashHtml(m.text, m.error)}
-              <div class="card">
-                <h1>管理者</h1>
-                <p>頭数（取消前） ${liveCount}　${escapeHtml(wCaption(board))}</p>
-              </div>
-              <div class="card">
-                <details class="fold-card"${e.status === "setup" ? " open" : ""}>
-                <summary>レースイベント設定</summary>
-                <p class="note">投票開始後は通常いじりません。必要なときだけ開いてください。</p>
-                <form method="post" action="/admin/params">
-                  <div class="row">
-                    <label>タイトル <input name="title" value="${escapeHtml(e.title)}"></label>
-                    <label>G（スペ） <input name="grant_g" type="number" min="0" step="1" value="${e.grant_g}"></label>
-                    <label>単位 <input name="bet_unit" type="number" min="1" step="1" value="${e.bet_unit}"></label>
-                    <label>S（単勝 Seed 合計） <input name="seed_pool_s" type="number" min="0" step="1" value="${e.seed_pool_s}"></label>
-                    <label>E <input name="pull_e" type="number" min="0" step="1" value="${e.pull_e}"></label>
-                    <label>D <input name="takeout_d" type="number" min="0" max="0.99" step="0.01" value="${e.takeout_d}"></label>
-                    <label>w時 下限 <input name="w_time_floor" type="number" min="0" max="0.99" step="0.05" value="${e.w_time_floor}"></label>
-                    <label>w時 指数 <input name="w_time_exp" type="number" min="0.2" max="4" step="0.1" value="${e.w_time_exp}"></label>
-                    <label>日時締切（JST） <input name="closes_at" type="datetime-local" value="${toJstInput(e.voting_closes_at)}"></label>
-                  </div>
-                  ${enabledKindsAdminFields(e)}
-                  ${scoreSetupAdminFields(e)}
-                  <button type="submit">保存</button>
-                </form>
-                </details>
-              </div>
-              <div class="card">
-                <h2>週次操作</h2>
-                <div class="ops-monitor">
-                  <div>
-                    <div class="ops-k">いまのフェーズ</div>
-                    <div class="phase ${headerPhaseKind(e.status)}">${escapeHtml(ops.now)}</div>
-                  </div>
-                  <div>
-                    <div class="ops-k">次に必要な操作</div>
-                    <p class="ops-next">${escapeHtml(ops.next)}</p>
-                  </div>
-                </div>
-                <h3 class="ops-k" style="margin-bottom:.45rem">フェーズを進める</h3>
-                <div class="row ops-phase-btns">
-                  <form method="post" action="/admin/open" onsubmit="return confirm(${escapeHtml(JSON.stringify("投票を開始します。このあと出走の追加はできません。よろしいですか？"))});">
-                    <button type="submit"${e.status !== "setup" ? " disabled" : ""}>投票開始</button>
-                  </form>
-                  <form method="post" action="/admin/close" onsubmit="return confirm(${escapeHtml(JSON.stringify("強制締切します。投票を止め、確定配当に切り替えます。よろしいですか？"))});">
-                    <button class="danger" type="submit"${e.status !== "voting" ? " disabled" : ""}>強制締切</button>
-                  </form>
-                  <form method="post" action="/admin/next-event" onsubmit="return confirm(${escapeHtml(JSON.stringify("次の開催を開きます。いまの結果は残し、新しい出走登録に入ります。よろしいですか？"))});">
-                    <button type="submit"${e.status !== "published" ? " disabled" : ""}>次の開催を開く</button>
-                  </form>
-                </div>
-                <p class="note">着順の保存と結果公開は、下の出走枠にあります。</p>
-                <div class="ops-aside">
-                  <h3>逃げ（設定・出走のやり直し）</h3>
-                  <div class="row">
-                    <button type="button" class="secondary" id="clear-horses-open"${e.status !== "setup" ? " disabled" : ""}>出走を空にする</button>
-                    <button type="button" class="danger" id="discard-event-open"${e.status !== "setup" ? " disabled" : ""}>この開催を破棄</button>
-                    <button type="button" class="danger" id="revert-voting-open"${e.status !== "voting" ? " disabled" : ""}>投票を取り消して登録に戻す</button>
-                  </div>
-                  <h3>復旧（Undo${allowDemo ? "・デモ初期化" : ""}）</h3>
-                  <div class="row">
-                    ${
-                      allowDemo
-                        ? `<button type="button" class="secondary" id="reset-open">デモ初期化</button>`
-                        : ""
-                    }
-                    ${
-                      undoMeta
-                        ? `<button type="button" class="danger" id="undo-open">操作を戻す</button>`
-                        : `<button type="button" class="secondary" disabled>操作を戻す</button>`
-                    }
-                  </div>
-                  ${
-                    undoMeta
-                      ? `<p class="note">戻せる操作: ${escapeHtml(undoMeta.action_label)}（${escapeHtml(toJstInput(undoMeta.created_at).replace("T", " "))} JST）</p>`
-                      : `<p class="note">戻せる管理者操作はまだありません。</p>`
-                  }
-                </div>
-                <dialog class="modal" id="clear-horses-modal">
-                  <h2>出走を空にする</h2>
-                  <p><strong>この開催の出走をすべて消します。開催自体は残ります。</strong></p>
-                  <form method="post" action="/admin/clear-horses" id="clear-horses-form" class="reauth" autocomplete="off">
-                    <div class="row">
-                      ${adminReauthField()}
-                      <button class="danger" type="submit">空にする</button>
-                      <button type="button" class="secondary" id="clear-horses-cancel">やめる</button>
-                    </div>
-                  </form>
-                </dialog>
-                <dialog class="modal" id="discard-event-modal">
-                  <h2>この開催を破棄</h2>
-                  <p><strong>この開催を破棄し、直前の公開済み開催へ戻します。残高は消しません。</strong></p>
-                  <form method="post" action="/admin/discard-event" id="discard-event-form" class="reauth" autocomplete="off">
-                    <div class="row">
-                      ${adminReauthField()}
-                      <button class="danger" type="submit">破棄する</button>
-                      <button type="button" class="secondary" id="discard-event-cancel">やめる</button>
-                    </div>
-                  </form>
-                </dialog>
-                <dialog class="modal" id="revert-voting-modal">
-                  <h2>投票を取り消して登録に戻す</h2>
-                  <p><strong>投票を止め、出走登録に戻します。この開催の票は全額戻り、配ったスペも戻します。</strong></p>
-                  <form method="post" action="/admin/revert-voting" id="revert-voting-form" class="reauth" autocomplete="off">
-                    <div class="row">
-                      ${adminReauthField()}
-                      <button class="danger" type="submit">登録に戻す</button>
-                      <button type="button" class="secondary" id="revert-voting-cancel">やめる</button>
-                    </div>
-                  </form>
-                </dialog>
-                <dialog class="modal" id="undo-modal">
-                  <h2>直前の操作を戻す</h2>
-                  <p><strong>戻す操作: ${undoMeta ? escapeHtml(undoMeta.action_label) : "—"}</strong></p>
-                  <p>出走・票・残高・払戻が、その操作の直前の状態に戻ります。そのあとメンバーが入室・投票した分は消えます。Undo をさらに戻すことはできません。</p>
-                  <p class="note">日時締切を過ぎていると、戻したあとにまた自動締切されることがあります。</p>
-                  <form method="post" action="/admin/undo" id="undo-form" class="reauth" autocomplete="off">
-                    <div class="row">
-                      ${adminReauthField()}
-                      <button class="danger" type="submit">巻き戻す</button>
-                      <button type="button" class="secondary" id="undo-cancel">やめる</button>
-                    </div>
-                  </form>
-                </dialog>
-                ${
-                  allowDemo
-                    ? `<dialog class="modal" id="reset-modal">
-                  <h2>デモ初期化（ローカルのみ）</h2>
-                  <p><strong>開催・出走・投票・付与を消し、残高を 0 にします。</strong></p>
-                  <p>メンバーの表示名は残ります。スペは配り直しません。本番ではこの操作は出ません。</p>
-                  <form method="post" action="/admin/reset" id="reset-form" class="reauth" autocomplete="off">
-                    <div class="row">
-                      ${adminReauthField()}
-                      <button class="danger" type="submit">初期化する</button>
-                      <button type="button" class="secondary" id="reset-cancel">やめる</button>
-                    </div>
-                  </form>
-                </dialog>`
-                    : ""
-                }
-                <script>
-                  (() => {
-                    const bindDlg = (dlg, openBtn, cancel) => {
-                      if (dlg && openBtn) openBtn.addEventListener("click", () => dlg.showModal());
-                      if (dlg && cancel) cancel.addEventListener("click", () => dlg.close());
-                      if (dlg) {
-                        dlg.addEventListener("click", (ev) => {
-                          const r = dlg.getBoundingClientRect();
-                          const inside =
-                            ev.clientX >= r.left && ev.clientX <= r.right &&
-                            ev.clientY >= r.top && ev.clientY <= r.bottom;
-                          if (!inside) dlg.close();
-                        });
-                      }
-                    };
-                    bindDlg(
-                      document.getElementById("reset-modal"),
-                      document.getElementById("reset-open"),
-                      document.getElementById("reset-cancel"),
-                    );
-                    bindDlg(
-                      document.getElementById("undo-modal"),
-                      document.getElementById("undo-open"),
-                      document.getElementById("undo-cancel"),
-                    );
-                    bindDlg(
-                      document.getElementById("clear-horses-modal"),
-                      document.getElementById("clear-horses-open"),
-                      document.getElementById("clear-horses-cancel"),
-                    );
-                    bindDlg(
-                      document.getElementById("discard-event-modal"),
-                      document.getElementById("discard-event-open"),
-                      document.getElementById("discard-event-cancel"),
-                    );
-                    bindDlg(
-                      document.getElementById("revert-voting-modal"),
-                      document.getElementById("revert-voting-open"),
-                      document.getElementById("revert-voting-cancel"),
-                    );
-                    const confirmOnSubmit = (form, msg) => {
-                      if (!form) return;
-                      form.addEventListener("submit", (ev) => {
-                        ev.preventDefault();
-                        const dlg = form.closest("dialog");
-                        if (dlg) dlg.close();
-                        if (window.confirm(msg)) form.submit();
-                        else if (dlg) dlg.showModal();
-                      });
-                    };
-                    const undoLabel = ${JSON.stringify(undoMeta?.action_label ?? "")};
-                    confirmOnSubmit(
-                      document.getElementById("undo-form"),
-                      "直前の管理者操作を巻き戻します。\\n\\n戻す操作: " + undoLabel +
-                        "\\n\\n出走・票・残高・払戻がその直前に戻ります。あとから入った票は消えます。\\nこの Undo 自体は戻せません。\\n\\n本当に巻き戻しますか？",
-                    );
-                    confirmOnSubmit(
-                      document.getElementById("clear-horses-form"),
-                      "この開催の出走をすべて消します。開催自体は残ります。\\n\\n本当に空にしますか？",
-                    );
-                    confirmOnSubmit(
-                      document.getElementById("discard-event-form"),
-                      "この開催を破棄し、直前の公開済み開催へ戻します。残高は消しません。\\n\\n本当に破棄しますか？",
-                    );
-                    confirmOnSubmit(
-                      document.getElementById("revert-voting-form"),
-                      "投票を取り消して出走登録に戻します。この開催の票は全額戻り、配ったスペも戻します。\\n\\n本当に戻しますか？",
-                    );
-                    confirmOnSubmit(
-                      document.getElementById("reset-form"),
-                      "デモを初期化します。\\n\\n開催・票は消えます。名前は残し、残高は 0 になります。スペは配りません。\\n\\n本当に初期化しますか？",
-                    );
-                    document.querySelectorAll("input.no-autofill").forEach((el) => {
-                      el.addEventListener("focus", () => el.removeAttribute("readonly"));
-                    });
-                  })();
-                </script>
-              </div>
-              <div class="card">
-                <h2>出走（評価点 / Seed）</h2>
-                <p class="note">算出できるときは自動評価点 → Seed。直置きは逃げ用 → <button type="button" class="text-btn" id="strength-detail">詳細</button></p>
-                ${strengthCalcModal()}
-                ${
-                  e.status === "setup"
-                    ? `<p class="note"><a href="/admin/horses">出走の登録・OCRへ</a></p>`
-                    : `<p class="note">出走登録完了。飛び入り禁止。</p>`
-                }
-                <form id="places-form" method="post" action="/admin/places"></form>
-                <table>
-                  <thead><tr><th>ウマ娘</th><th>参考</th><th>確定</th><th>単勝実票</th><th>Imputed</th><th>着順</th><th></th></tr></thead>
-                  <tbody>${horseRows}</tbody>
-                </table>
-                ${
-                  e.status === "closed"
-                    ? `<p class="note">一般画面には着順を出しません。公開まで。</p>
-                       <button form="places-form" type="submit">着順を保存</button>
-                       <script>
-                         const syncPlaceOptions = () => {
-                           const selects = [...document.querySelectorAll("select.place-select")];
-                           const taken = new Set(selects.map((s) => s.value).filter((v) => v !== ""));
-                           for (const s of selects) {
-                             const mine = s.value;
-                             for (const opt of s.options) {
-                               if (opt.value === "") continue;
-                               const hide = taken.has(opt.value) && opt.value !== mine;
-                               opt.hidden = hide;
-                               opt.disabled = hide;
-                             }
-                           }
-                         };
-                         document.querySelectorAll("select.place-select").forEach((s) => {
-                           s.addEventListener("change", syncPlaceOptions);
-                         });
-                         syncPlaceOptions();
-                       </script>
-                       <form method="post" action="/admin/publish" style="margin-top:1rem"
-                         onsubmit="return confirm(${escapeHtml(JSON.stringify("結果を公開して払戻します。着順が一般に出ます。よろしいですか？"))});">
-                         <button type="submit">結果を公開して払戻する</button>
-                       </form>`
-                    : ""
-                }
-              </div>
-              <div class="card">
-                <div class="card-head">
-                  <h2>参加者残高</h2>
-                  <button type="button" class="secondary" id="member-del-open">メンバー削除</button>
-                </div>
-                <table>
-                  <thead><tr><th>名前</th><th>残高</th></tr></thead>
-                  <tbody>${memberRows || `<tr><td colspan="2" class="muted">まだいません</td></tr>`}</tbody>
-                </table>
-                <dialog class="modal" id="member-del-modal">
-                  <h2>メンバー削除</h2>
-                  <p class="note">口座と、その人の票・付与を消します。投票中ならオッズが変わります。公開後の払戻記録も消えます。</p>
-                  <form method="post" action="/admin/member-delete" id="member-del-form">
-                    <div class="row">
-                      <label>削除する人
-                        <select name="user_id" id="member-del-select" required>
-                          <option value="">—</option>
-                          ${members
-                            .map(
-                              (u) =>
-                                `<option value="${escapeHtml(u.id)}" data-name="${escapeHtml(u.display_name)}">${escapeHtml(u.display_name)}（${formatPt(u.balance)}）</option>`,
-                            )
-                            .join("")}
-                        </select>
-                      </label>
-                      <button class="danger" type="submit">削除する</button>
-                      <button type="button" class="secondary" id="member-del-cancel">やめる</button>
-                    </div>
-                  </form>
-                </dialog>
-                <script>
-                  (() => {
-                    const dlg = document.getElementById("member-del-modal");
-                    const openBtn = document.getElementById("member-del-open");
-                    const cancel = document.getElementById("member-del-cancel");
-                    const form = document.getElementById("member-del-form");
-                    const sel = document.getElementById("member-del-select");
-                    if (dlg && openBtn) openBtn.addEventListener("click", () => dlg.showModal());
-                    if (dlg && cancel) cancel.addEventListener("click", () => dlg.close());
-                    if (dlg) {
-                      dlg.addEventListener("click", (ev) => {
-                        const r = dlg.getBoundingClientRect();
-                        const inside =
-                          ev.clientX >= r.left && ev.clientX <= r.right &&
-                          ev.clientY >= r.top && ev.clientY <= r.bottom;
-                        if (!inside) dlg.close();
-                      });
-                    }
-                    if (form && sel) {
-                      form.addEventListener("submit", (ev) => {
-                        const opt = sel.options[sel.selectedIndex];
-                        const name = opt && opt.value ? (opt.getAttribute("data-name") || opt.textContent) : "";
-                        if (!name) { ev.preventDefault(); return; }
-                        if (!confirm("「" + name + "」を削除します。この人の馬券も消えます。よろしいですか？")) {
-                          ev.preventDefault();
-                        }
-                      });
-                    }
-                  })();
-                </script>
-              </div>
-              <div class="card">
-                <h2>全投票一覧</h2>
-                <p class="note">
-                  <a href="/admin?bets=new">新しい順</a>　
-                  <a href="/admin?bets=name">名前順</a>
-                  　結果公開後に確定配当と収支（メンバー目線）が出ます。公開前の収支は空です。
-                </p>
-                <table>
-                  <thead><tr><th>誰</th><th>賭式</th><th>組み合わせ</th><th>額</th><th>結果</th><th>確定配当</th><th>収支</th></tr></thead>
-                  <tbody>${betRows || `<tr><td colspan="7" class="muted">なし</td></tr>`}</tbody>
-                </table>
-              </div>
-              <div class="card">
-                <h2>内部計算</h2>
-                ${formulaPanel(board)}
-              </div>`,
-          }),
-        );
-      }
-
+      // —— 管理 POST ——
       if (method === "POST" && path === "/admin/params") {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
@@ -1153,9 +607,9 @@ export default {
               return enrichScoreSetupWithEffects(base);
             })(),
           });
-          return bounce("/admin", "レースイベント設定を保存しました");
+          return bounce("/admin/settings", "レースイベント設定を保存しました");
         } catch (err) {
-          return bounce("/admin", err instanceof Error ? err.message : "保存失敗", true);
+          return bounce("/admin/settings", err instanceof Error ? err.message : "保存失敗", true);
         }
       }
 
@@ -1212,9 +666,9 @@ export default {
           }
           const src =
             resolved.source === "auto" ? "（自動算出）" : "（直置き）";
-          return bounce("/admin/horses", `登録しました ${src}`);
+          return bounce("/admin/register", `登録しました ${src}`);
         } catch (err) {
-          return bounce("/admin/horses", err instanceof Error ? err.message : "失敗", true);
+          return bounce("/admin/register", err instanceof Error ? err.message : "失敗", true);
         }
       }
 
@@ -1255,9 +709,9 @@ export default {
               keepScoreInput: false,
             },
           );
-          return bounce("/admin", "更新しました");
+          return bounce("/admin/register", "更新しました");
         } catch (err) {
-          return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
+          return bounce("/admin/register", err instanceof Error ? err.message : "失敗", true);
         }
       }
 
@@ -1352,6 +806,10 @@ export default {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
         const form = await readForm(request);
+        const password = readAdminReauth(form);
+        if (!timingSafeEqualStr(password, env.ADMIN_PASSWORD)) {
+          return bounce("/admin/horses", "管理者パスが違います（取消していません）", true);
+        }
         try {
           const board = await loadBoard(env.DB);
           const refunded = await scratchHorse(
@@ -1359,9 +817,9 @@ export default {
             board.event,
             form.get("horse_id") ?? "",
           );
-          return bounce("/admin", `取消しました。返還 ${formatPt(refunded)}`);
+          return bounce("/admin/horses", `取消しました。返還 ${formatPt(refunded)}`);
         } catch (err) {
-          return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
+          return bounce("/admin/horses", err instanceof Error ? err.message : "失敗", true);
         }
       }
 
@@ -1402,9 +860,9 @@ export default {
         const form = await readForm(request);
         try {
           const name = await deleteMember(env.DB, form.get("user_id") ?? "");
-          return bounce("/admin", `「${name}」を削除しました`);
+          return bounce("/admin/ledger", `「${name}」を削除しました`);
         } catch (err) {
-          return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
+          return bounce("/admin/ledger", err instanceof Error ? err.message : "失敗", true);
         }
       }
 

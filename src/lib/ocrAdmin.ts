@@ -13,6 +13,7 @@ export function horsesAdminBody(
   board: Board,
   canSetup: boolean,
   scoreSetup: EventScoreSetup | null,
+  opts?: { embedded?: boolean },
 ): string {
   const rows = board.horses
     .map((h) => {
@@ -30,8 +31,8 @@ export function horsesAdminBody(
     })
     .join("");
   const setupNote = scoreSetup
-    ? `<p class="note">開催条件あり。脚質と OCR 材料が揃えば評価点を自動算出して Strength に載せます。直置きチェック時だけ手入力が正になります。</p>`
-    : `<p class="note">開催条件（ステ目標）が未設定です。いまは Strength 直置きのみ。レースイベント設定で「開催条件とステ目標値」を入れてください。</p>`;
+    ? `<p class="note">開催条件あり。脚質と OCR 材料が揃えば評価点を自動算出します。直置きチェック時だけ手入力が正になります。</p>`
+    : `<p class="note">開催条件（ステ目標）が未設定です。いまは評価点直置きのみ。開催設定で「開催条件とステ目標値」を入れてください。</p>`;
   const styleOpts = [
     `<option value="">未選択</option>`,
     ...STYLE_OPTIONS.map(
@@ -64,18 +65,19 @@ export function horsesAdminBody(
         <label>ウマ娘名 <input name="uma_name" id="uma-name" required maxlength="40"></label>
         <label>出走者 <input name="runner_name" id="runner-name" required maxlength="40"></label>
         <label>出走脚質 <select name="style_key" id="style-key">${styleOpts}</select></label>
-        <label>Strength <input name="strength" id="strength" type="number" min="0" step="0.1" value="10" required></label>
+        <label>評価点 <input name="strength" id="strength" type="number" min="0" step="0.1" value="10" required></label>
         <label><input type="checkbox" name="strength_manual" id="strength-manual" value="1"> 評価点を直置き</label>
         <button type="submit">登録</button>
       </form>
-      <p class="note" id="score-hint">脚質適性に S が1つだけなら脚質を初期選択します。開催条件があり脚質と材料が揃うと、登録時に算出値を Strength に載せます。</p>`
+      <p class="note" id="score-hint">脚質適性に S が1つだけなら脚質を初期選択します。開催条件があり脚質と材料が揃うと、登録時に算出値を評価点に載せます。</p>`
     : `<p class="note">出走登録完了。飛び入り禁止。</p>`;
-  return `<p class="note"><a href="/admin">管理トップへ戻る</a></p>
+  const back = opts?.embedded ? "" : `<p class="note"><a href="/admin">進行へ戻る</a></p>`;
+  return `${back}
     ${setup}
-    <table style="margin-top:1rem">
-      <thead><tr><th>#</th><th>ウマ娘名</th><th>出走者</th><th>Strength</th><th>材料</th><th>スクショ</th></tr></thead>
+    ${opts?.embedded ? "" : `<table style="margin-top:1rem">
+      <thead><tr><th>#</th><th>ウマ娘名</th><th>出走者</th><th>評価点</th><th>材料</th><th>スクショ</th></tr></thead>
       <tbody>${rows || `<tr><td colspan="6">まだいません</td></tr>`}</tbody>
-    </table>`;
+    </table>`}`;
 }
 
 /** ブラウザ用。カタログ＋Dice ファジーでスキルを ID 化する */
@@ -204,15 +206,15 @@ export function ocrAdminScript(canAutoScore: boolean): string {
     const hasDraft = !!draft;
     const style = styleEl?.value;
     if (manual) {
-      hint.textContent = "直置きモード。Strength 手入力が Seed に使われます。";
+      hint.textContent = "直置きモード。評価点の手入力が Seed に使われます。";
       return;
     }
     if (!CAN_AUTO) {
-      hint.textContent = "開催条件未設定のため Strength は直置きです。";
+      hint.textContent = "開催条件未設定のため評価点は直置きです。";
       return;
     }
     if (hasDraft && style) {
-      hint.textContent = "登録時に評価点を自動算出して Strength に載せます（手入力欄はバックアップ）。";
+      hint.textContent = "登録時に評価点を自動算出します（手入力欄はバックアップ）。";
     } else if (hasDraft) {
       hint.textContent = "出走脚質を選ぶと自動算出できます。";
     } else {

@@ -551,7 +551,6 @@ export function layout(opts: {
   const phase = opts.eventStatus
     ? `<div class="phase ${headerPhaseKind(opts.eventStatus)}">${escapeHtml(statusLabel(opts.eventStatus))}${liveMark}</div>`
     : "";
-  const adminExtra = opts.admin ? `<a href="/admin/horses">出走</a>` : "";
   const memberNav = opts.admin
     ? ""
     : opts.user
@@ -577,7 +576,6 @@ export function layout(opts: {
       ${howto}
       ${logoutLink}
       <a href="/admin">${opts.admin ? "管理" : "管理者"}</a>
-      ${adminExtra}
     </nav>
   </header>
   <main>${opts.body}</main>
@@ -869,7 +867,7 @@ export function adminOpsGuide(board: Board): { now: string; next: string } {
   const live = board.horses.filter((h) => !h.horse.scratched);
   if (board.event.status === "setup") {
     if (live.length < 2) {
-      return { now, next: "出走を 2 頭以上登録してください（ヘッダーの「出走」）" };
+      return { now, next: "出走を 2 頭以上登録してください（出走登録タブ）" };
     }
     return { now, next: "締切日時を確認してから「投票開始」" };
   }
@@ -880,9 +878,9 @@ export function adminOpsGuide(board: Board): { now: string; next: string } {
   }
   if (board.event.status === "closed") {
     if (live.some((h) => h.horse.finish_place == null)) {
-      return { now, next: "下の出走枠で着順をすべて入れ、「着順を保存」" };
+      return { now, next: "進行の着順をすべて入れ、「着順を保存」" };
     }
-    return { now, next: "着順を確認し、出走枠の「結果を公開して払戻する」" };
+    return { now, next: "着順を確認し、進行の「結果を公開して払戻する」" };
   }
   if (board.event.status === "published") {
     return { now, next: "「次の開催を開く」。誤って開いたら出走登録中に破棄できる" };
@@ -904,7 +902,7 @@ export function formulaPanel(board: Board): string {
         <tr><td>残高</td><td>仮想のユーザー所持額</td><td>今持っているスペ</td></tr>
         <tr><td>G</td><td>毎週配る仮想ポイント</td><td>その開催に参加した人へ1回。口座に足す。オッズの式には入らない。G を変えても S と E は動かない</td></tr>
         <tr><td>単位</td><td>投票の刻み</td><td>一度に賭けられる最小のスペ</td></tr>
-        <tr><td>Strength</td><td>相対評価点</td><td>単勝 Seed の比。連勝には載せない。メンバーには出さない</td></tr>
+        <tr><td>評価点</td><td>相対評価点</td><td>単勝 Seed の比。連勝には載せない。メンバーには出さない</td></tr>
         <tr><td>Seed</td><td>単勝の仮想初期投票額</td><td>投票中の参考だけ。確定には入れない</td></tr>
         <tr><td>S</td><td>仮想の初期投票額の合計</td><td>単勝参考用。連勝には配らない</td></tr>
         <tr><td>Real</td><td>単勝の実際の投票額</td><td>確定の単勝はこの額だけ</td></tr>
@@ -953,8 +951,8 @@ export function formulaPanel(board: Board): string {
 
 export function strengthCalcModal(): string {
   return `<dialog class="modal" id="strength-modal">
-    <h2>相対評価点（Strength）</h2>
-    <p class="note">Seed の比に使う数字です。開催条件・ステ目標と出走材料（OCR＋脚質）が揃えば <code>computeScore</code> で自動算出し、Strength に載せます。</p>
+    <h2>評価点</h2>
+    <p class="note">Seed の比に使う数字です。開催条件・ステ目標と出走材料（OCR＋脚質）が揃えば <code>computeScore</code> で自動算出し、評価点に載せます。</p>
     <p class="note">自動算出が使えないとき（開催条件なし・脚質未選択・材料なし）や、「評価点を直置き」チェック時だけ手入力が正になります。</p>
     <form method="dialog"><button type="submit">閉じる</button></form>
   </dialog>

@@ -4,12 +4,11 @@
 
 ## 現在進行中
 
-- 採用済みモックの本番移植（場内・窓口・入場・管理。メンバー画面の無断本番載せ替えは禁止。デプロイは明示依頼があるまでしない）— [venue-board](mocks/venue-board/layout-venue.html)・[quiet.html](mocks/bet-window/quiet.html)・[gate](mocks/gate/index.html)・[admin-dash](mocks/admin-dash/index.html)
+- 採用済みモックの本番移植（**管理 6 タブまで実装。実機確認待ち。メンバー画面は未着手**。デプロイは明示依頼があるまでしない）— [venue-board](mocks/venue-board/layout-venue.html)・[quiet.html](mocks/bet-window/quiet.html)・[gate](mocks/gate/index.html)・[admin-dash](mocks/admin-dash/index.html)
 
 ## そのあと
 
 - Neko長明さんへの評価点の式確認（手土産＝動く実装は揃った）— [score.md](score.md)
-- 管理画面の Strength 表記を評価点に揃える
 - OCR / 評価点の細かい調整（読取・表示 UI など）— [ocr.md](ocr.md)・[score.md](score.md)
 - 特払いのキャリーオーバーをコミュニティ向けに出すか — [trial-odds-report](../reports/2026-08-23/trial-odds-report.md) 末尾
 - 投票中ボードの監査ログ（スナップショット）を足すか — 同レポートの実装メモ
@@ -25,7 +24,8 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
-- 進行の逃げは開閉レール採用（右端の「逃げ・復旧」で出す。下段帯・常時レール・折りたたみは不採用。本番未適用）— [progress-places.html](mocks/admin-dash/progress-places.html)
+- 管理6タブを本番に載せた（進行・出走登録・出走・台帳・オッズ・開催設定。着順案3・開閉レール・スクショGET・評価点表記。掛かりスタミナ2欄は未実装。メンバー画面は未着手。実機確認待ち）— [admin-dash](mocks/admin-dash/index.html)
+- 管理画面の Strength 表記を出走・出走登録で評価点に揃えた（式の記号は内部計算モーダル）
 - 管理刷新モック6タブ採用（進行・出走登録・出走・台帳・オッズ・開催設定。本番未適用）— [admin-dash](mocks/admin-dash/index.html)
 - 管理の出走登録タブ採用（左・名簿、右・1頭の作業台。OCRまたは直置き。掛かりスタミナ2欄。スクショは左寄せ全画面。適性はバ場／距離／脚質。一括なし。本番未適用）— [register.html](mocks/admin-dash/register.html)
 - 管理の開催設定タブ採用（上から今日のレース→評価点の条件→参考数字。賭式はボタン。本番の入力グリッドは不採用。本番未適用）— [settings.html](mocks/admin-dash/settings.html)
