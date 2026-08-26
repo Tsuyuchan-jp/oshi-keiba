@@ -387,6 +387,7 @@ body.ledger-page .filters select {
 .reg-slash { color: #8a929c; font-weight: 700; padding: 0 .2rem; user-select: none; }
 .reg-chip.gold { background: #f4ead0; }
 .reg-chip.green { background: #dceee0; }
+.reg-chip.evo { background: #f0dfe2; color: #6e343c; }
 .reg-chip.white { background: #eef0f3; }
 .reg-chip.minus { background: #f3e4e4; color: #7a3030; }
 .reg-preview {
