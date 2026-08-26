@@ -369,12 +369,25 @@ export function ocrAdminScript(canAutoScore: boolean): string {
       say(msg);
     }
   }
+  function currentFile() {
+    return heldFile || (fileEl && fileEl.files && fileEl.files[0]) || null;
+  }
   function takeFile(file) {
     if (!file) { say("画像を受け取れませんでした。もう一度選んでください。"); return; }
     heldFile = file;
+    // 選んだ表示を残す。空にすると OS の「選択されていません」に戻る
+    if (fileEl && typeof DataTransfer !== "undefined") {
+      try {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileEl.files = dt.files;
+      } catch {}
+    }
     say((file.name || "画像") + " を選びました。読み取るを押してください。");
-    if (fileEl) fileEl.value = "";
   }
+  fileEl?.addEventListener("click", () => {
+    fileEl.value = "";
+  });
   fileEl?.addEventListener("change", () => {
     const f = fileEl.files && fileEl.files[0];
     if (!f) { say("ファイルが空です。もう一度選んでください。"); return; }
@@ -388,11 +401,12 @@ export function ocrAdminScript(canAutoScore: boolean): string {
     if (f) takeFile(f);
   });
   document.getElementById("ocr-run")?.addEventListener("click", () => {
-    if (!heldFile) {
+    const f = currentFile();
+    if (!f) {
       say("先に画像を選んでください。読み取るは読取だけです。");
       return;
     }
-    runOcr(heldFile);
+    runOcr(f);
   });
   document.getElementById("horse-add")?.addEventListener("submit", (ev) => {
     syncScoreInput();
