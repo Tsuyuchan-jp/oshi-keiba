@@ -86,12 +86,21 @@
           <h1>第2回 本番</h1>
           <span class="phase" id="phase-pill">投票中</span>
         </div>
-        <p class="next" id="next-line"></p>
         <div class="kpis">
           <div class="kpi"><span class="k">頭数</span><span class="v" id="kpi-n">16</span></div>
           <div class="kpi"><span class="k">締切</span><span class="v" id="kpi-close">18:40 JST</span></div>
           <div class="kpi"><span class="k">参加者</span><span class="v" id="kpi-mem">12</span></div>
           <div class="kpi"><span class="k">票</span><span class="v" id="kpi-bets">47</span></div>
+        </div>
+        <div class="ops-pair">
+          <div>
+            <div class="ops-k">いまのフェーズ</div>
+            <span class="phase" id="ops-pill">投票中</span>
+          </div>
+          <div>
+            <div class="ops-k">次に必要な操作</div>
+            <p class="ops-next" id="ops-next"></p>
+          </div>
         </div>
         <div class="ctas">
           <button type="button" id="btn-open">投票開始</button>
@@ -225,38 +234,45 @@
 
     function miniWin() {
       const mid = Math.ceil(N / 2);
-      const rows = HORSES.map(([n, uma, , od]) =>
-        `<div class="mini-row"><span class="n">${n}</span><span class="uma">${uma}</span><span class="od">${od}</span></div>`
+      const rows = HORSES.map(([n, uma, run, od]) =>
+        `<div class="mini-row"><span class="n">${n}</span><span class="uma">${uma}</span><span class="run">${run}</span><span class="od">${od}</span></div>`
       ).join("");
       return `<div class="mini-grid" style="grid-template-rows: repeat(${mid}, auto)">${rows}</div>`;
     }
 
     function paintHero() {
-      const pill = document.getElementById("phase-pill");
-      const next = document.getElementById("next-line");
-      pill.classList.remove("live", "done");
+      const pills = [
+        document.getElementById("phase-pill"),
+        document.getElementById("ops-pill"),
+      ];
+      const next = document.getElementById("ops-next");
+      for (const pill of pills) pill.classList.remove("live", "done");
       document.getElementById("kpi-n").textContent = String(N);
       document.getElementById("kpi-close").textContent = "18:40 JST";
       document.getElementById("kpi-mem").textContent = phase === "setup" ? "—" : "12";
-      document.getElementById("kpi-bets").textContent = phase === "setup" ? "0" : (phase === "voting" ? "47" : "47");
+      document.getElementById("kpi-bets").textContent = phase === "setup" ? "0" : "47";
       document.getElementById("btn-open").disabled = phase !== "setup";
       document.getElementById("btn-close").disabled = phase !== "voting";
       document.getElementById("btn-next").disabled = phase !== "published";
+      let label = "";
+      let nextHtml = "";
       if (phase === "setup") {
-        pill.textContent = "出走登録中";
-        next.innerHTML = "次に必要な操作: <strong>出走を揃えてから投票開始</strong>。OCRと評価点は出走登録へ。";
+        label = "出走登録中";
+        nextHtml = "出走を揃えてから「投票開始」。OCRと評価点は出走登録へ。";
       } else if (phase === "voting") {
-        pill.textContent = "投票中";
-        pill.classList.add("live");
-        next.innerHTML = "次に必要な操作: ゲーム内で着順が見える前に<strong>強制締切</strong>。";
+        label = "投票中";
+        nextHtml = "ゲーム内で着順が見える前に「強制締切」。";
+        for (const pill of pills) pill.classList.add("live");
       } else if (phase === "closed") {
-        pill.textContent = "投票締切";
-        next.innerHTML = "次に必要な操作: <strong>着順をすべて入れて保存</strong>し、問題なければ結果を公開して払戻する。";
+        label = "投票締切";
+        nextHtml = "着順をすべて入れて保存し、問題なければ結果を公開して払戻する。";
       } else {
-        pill.textContent = "結果公開";
-        pill.classList.add("done");
-        next.innerHTML = "次に必要な操作: <strong>次の開催を開く</strong>。払戻は済んでいます。";
+        label = "結果公開";
+        nextHtml = "払戻は済んでいます。次のレースは「次の開催を開く」。";
+        for (const pill of pills) pill.classList.add("done");
       }
+      for (const pill of pills) pill.textContent = label;
+      next.innerHTML = nextHtml;
       for (const b of document.querySelectorAll(".phase-bar [data-phase]")) {
         b.setAttribute("aria-pressed", b.dataset.phase === phase ? "true" : "false");
       }
@@ -281,7 +297,7 @@
       }
       if (phase === "voting") {
         work.innerHTML = `<h2>投票のいま</h2>
-          <p class="note">単勝の参考と直近の票。連勝の板はオッズ、誰が何を買ったかの全文は台帳。</p>
+          <p class="note">単勝の参考（番号・ウマ娘・出走者・オッズ）と直近の票。連勝の板はオッズ、全文は台帳。</p>
           <div class="work-split">
             <div>
               <p class="col-h">単勝 · 参考</p>
