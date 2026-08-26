@@ -28,6 +28,25 @@ test("skillCountsAsGoldLike: gold / unique / 非緑 evo / scenario", () => {
   assert.equal(skillCountsAsGoldLike("地固め"), false);
 });
 
+test("skillCountsAsGoldLike: 同名は id で inherit と unique を分ける", () => {
+  const name = "先頭の景色は譲らない…！";
+  assert.equal(skillCountsAsGoldLike(name, 100021), true);
+  assert.equal(skillCountsAsGoldLike(name, 900021), false);
+  // id 無しは名前フォールバックで unique
+  assert.equal(skillCountsAsGoldLike(name), true);
+});
+
+test("skillBase: 同名 inherit は金に入れない", () => {
+  const name = "先頭の景色は譲らない…！";
+  const s = skillBase([name, "地固め"], {
+    effectiveIds: new Set([900021, 201601]),
+    skillIds: [900021, 201601],
+  });
+  assert.deepEqual(s.countedNames, [name, "地固め"]);
+  assert.equal(s.goldCount, 0);
+  assert.equal(s.base, 2);
+});
+
 test("skillCountsInBase: 固有・進化・シナリオはリスト外でも true（緑マスタ重複は除く）", () => {
   const ids = new Set([201601]);
   assert.equal(skillCountsInBase("波乱注意砲！", 10071, ids), true);

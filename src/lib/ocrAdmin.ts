@@ -1,6 +1,6 @@
 import { escapeHtml } from "./http";
 import { STYLE_OPTIONS, type HorseScoreInput } from "./horseScoreInput";
-import { catalogJsonForPage, classifySkillName } from "./skillCatalog";
+import { catalogJsonForPage, classifySkill } from "./skillCatalog";
 import type { EventScoreSetup } from "./scoreSetup";
 import { ALLOWED_SHOT_MIME } from "./shotMime";
 import { greenSkillByName } from "./greenSkills";
@@ -51,15 +51,17 @@ export function registerMaterialsHtml(
   for (let i = 0; i < input.skillNames.length; i++) {
     const name = input.skillNames[i]!;
     const id = input.skillIds[i] ?? null;
-    const c = classifySkillName(name);
-    accepted.push({ name: c.name || name, kind: c.kind, id });
+    const c = classifySkill(name, id);
+    accepted.push({ name: c.name || name, kind: c.kind, id: c.id ?? id });
   }
   const isGreen = (name: string) => greenSkillByName(name) != null;
   const greens = accepted.filter((h) => isGreen(h.name));
   const effective = accepted.filter((h) =>
     skillCountsInBase(h.name, h.id, effectiveIds),
   );
-  const goldLike = effective.filter((h) => skillCountsAsGoldLike(h.name)).length;
+  const goldLike = effective.filter((h) =>
+    skillCountsAsGoldLike(h.name, h.id),
+  ).length;
   const rejected = accepted.filter(
     (h) =>
       !isGreen(h.name) && !skillCountsInBase(h.name, h.id, effectiveIds),

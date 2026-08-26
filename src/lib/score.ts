@@ -9,7 +9,7 @@ import {
   type AppliedGreen,
   type GreenBonus,
 } from "./greenSkills.ts";
-import { classifySkillName } from "./skillCatalog.ts";
+import { classifySkill } from "./skillCatalog.ts";
 import type { GreenEvalContext } from "./greenCondition.ts";
 
 export type HorseStats = {
@@ -129,26 +129,28 @@ function isTameraiId(id: number | null | undefined): boolean {
   return id != null && TAMERAI_IDS.has(id);
 }
 
-function isGold(name: string): boolean {
-  const kind = classifySkillName(name).kind;
-  return kind === "gold";
+function isGold(name: string, id?: number | null): boolean {
+  return classifySkill(name, id).kind === "gold";
 }
 
 /** 固有・進化・シナリオは仮に金同等（リスト外でも採用＋+2）。緑マスタ名は除外 */
-function isProvisionalGoldLike(name: string): boolean {
-  const kind = classifySkillName(name).kind;
+function isProvisionalGoldLike(name: string, id?: number | null): boolean {
+  const kind = classifySkill(name, id).kind;
   if (kind === "scenario") return !isGreenMaster(name);
   if (kind === "unique" || kind === "evo") return !isGreenMaster(name);
   return false;
 }
 
-function isGoldLike(name: string): boolean {
-  return isGold(name) || isProvisionalGoldLike(name);
+function isGoldLike(name: string, id?: number | null): boolean {
+  return isGold(name, id) || isProvisionalGoldLike(name, id);
 }
 
 /** 土台の金枚数（+2）に入るか。表示の「金相当」と一致 */
-export function skillCountsAsGoldLike(name: string): boolean {
-  return isGoldLike(name.trim());
+export function skillCountsAsGoldLike(
+  name: string,
+  id?: number | null,
+): boolean {
+  return isGoldLike(name.trim(), id);
 }
 
 export type SkillBaseOptions = {
@@ -178,7 +180,7 @@ export function skillBase(
 
     const id = opts.skillIds?.[i] ?? null;
     const tamerai = isTamerai(name) || isTameraiId(id);
-    const forceAdopt = tamerai || isProvisionalGoldLike(name);
+    const forceAdopt = tamerai || isProvisionalGoldLike(name, id);
     if (!forceAdopt) {
       if (opts.effectiveIds) {
         if (id == null || !opts.effectiveIds.has(id)) continue;
@@ -192,7 +194,7 @@ export function skillBase(
       tameraiCount += 1;
       continue;
     }
-    if (isGoldLike(name)) goldCount += 1;
+    if (isGoldLike(name, id)) goldCount += 1;
   }
 
   const effectiveCount = countedNames.length;
@@ -314,7 +316,7 @@ export function skillCountsInBase(
   if (!n) return false;
   if (isGreenMaster(n)) return false;
   if (isTamerai(n) || isTameraiId(id)) return true;
-  if (isProvisionalGoldLike(n)) return true;
+  if (isProvisionalGoldLike(n, id)) return true;
   if (effectiveIds) return id != null && effectiveIds.has(id);
   return true;
 }
