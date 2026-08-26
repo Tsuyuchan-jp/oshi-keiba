@@ -69,6 +69,7 @@ import {
   betClosedPage,
   betJoinPage,
 } from "./lib/betLayout";
+import { gateLoginPage } from "./lib/gateLayout";
 import {
   parseHorseScoreInput,
   serializeHorseScoreInput,
@@ -176,30 +177,7 @@ export default {
         if (session?.role === "member") return redirect("/");
         if (session?.role === "admin") return redirect("/admin");
         const m = msg(url);
-        const board = await loadBoard(env.DB);
-        return html(
-          layout({
-            title: "入室",
-            eventStatus: board.event.status,
-            body: `${flashHtml(m.text, m.error)}
-              <div class="card">
-                <h1>入室</h1>
-                <p class="note">表示名だけで入ります。個人パスワードはありません。スペはその開催に参加したときに入ります。</p>
-                <form method="post" action="/login" class="row" style="margin-bottom:1.25rem">
-                  <input type="hidden" name="mode" value="register">
-                  <label>表示名 <input name="display_name" required maxlength="40" autocomplete="nickname"></label>
-                  <label>共有パス <input name="password" type="password" required></label>
-                  <button type="submit">初めて入室（登録）</button>
-                </form>
-                <form method="post" action="/login" class="row">
-                  <input type="hidden" name="mode" value="login">
-                  <label>表示名 <input name="display_name" required maxlength="40" autocomplete="nickname"></label>
-                  <label>共有パス <input name="password" type="password" required></label>
-                  <button type="submit" class="secondary">登録済み再入室</button>
-                </form>
-              </div>`,
-          }),
-        );
+        return html(gateLoginPage({ flash: m }));
       }
 
       if (method === "POST" && path === "/login") {
