@@ -54,6 +54,11 @@
       </div>
     </div>
   </div>
+  <dialog class="shot-dlg shot-dlg-left" id="shot-dlg">
+    <div class="shot-scroller fit" id="shot-scroller">
+      <img id="shot-full" alt="育成スクショ">
+    </div>
+  </dialog>
   <div class="mock-label">管理モック · 出走登録 · 本番未適用</div>
   <script>
     const LIST = [
@@ -67,8 +72,26 @@
       [8, "ナリタブライアン", "haru", "自動"],
     ];
     let setup = true;
-    let mode = "idle"; // idle | read | manual
+    let mode = "idle";
     let style = "逃げ";
+    let stamNo = "612";
+    let stamWith = "580";
+
+    function grabStam() {
+      const a = document.getElementById("stam-no");
+      const b = document.getElementById("stam-with");
+      if (a) stamNo = a.value;
+      if (b) stamWith = b.value;
+    }
+
+    function stamHtml() {
+      return `<p class="set-k" style="margin-top:.85rem">脚質に合わせたスタミナ</p>
+      <div class="reg-stams">
+        <label>掛かりなし<input id="stam-no" type="number" min="1" value="${stamNo}"></label>
+        <label>掛かりあり<input id="stam-with" type="number" min="1" value="${stamWith}"></label>
+      </div>
+      <p class="set-foot">本番の登録欄にはまだ無い。モックで先に置く。OCR のスタとは別。</p>`;
+    }
 
     function paintList() {
       document.getElementById("list").innerHTML = LIST.map(([n, uma, run, src]) =>
@@ -94,12 +117,15 @@
         ${["逃げ","先行","差し","追込"].map((s) =>
           `<button type="button" class="${s === style ? "on" : ""}" data-s="${s}">${s}</button>`
         ).join("")}
-      </div>`;
+      </div>
+      ${stamHtml()}`;
     }
 
     function readHtml() {
       return `<div class="reg-bench">
-        <img class="reg-shot" src="./sample-shot.png" alt="読取に使ったスクショ">
+        <button type="button" class="reg-shot-btn" id="shot-open" aria-label="スクショを大きく見る">
+          <img class="reg-shot" src="./sample-shot.png" alt="読取に使ったスクショ">
+        </button>
         <div>
           ${namesHtml("サイレンススズカ", "")}
           <div class="reg-stats">
@@ -149,6 +175,20 @@
       </div>`;
     }
 
+    function setShotRead(on) {
+      const sc = document.getElementById("shot-scroller");
+      sc.classList.toggle("fit", !on);
+      sc.classList.toggle("read", on);
+      sc.scrollTop = 0;
+      sc.scrollLeft = 0;
+    }
+    function openShot() {
+      const dlg = document.getElementById("shot-dlg");
+      document.getElementById("shot-full").src = "./sample-shot.png";
+      setShotRead(false);
+      dlg.showModal();
+    }
+
     function bindBench() {
       const drop = document.getElementById("drop");
       if (drop) {
@@ -159,9 +199,15 @@
       const toMan = document.getElementById("to-manual");
       if (toMan) toMan.addEventListener("click", () => { mode = "manual"; style = "逃げ"; paint(); });
       document.getElementById("styles")?.querySelectorAll("[data-s]").forEach((b) => {
-        b.addEventListener("click", () => { style = b.dataset.s; paint(); });
+        b.addEventListener("click", () => {
+          style = b.dataset.s;
+          document.getElementById("styles").querySelectorAll("[data-s]").forEach((x) => {
+            x.classList.toggle("on", x.dataset.s === style);
+          });
+        });
       });
-      document.getElementById("do-idle")?.addEventListener("click", () => { mode = "idle"; paint(); });
+      document.getElementById("shot-open")?.addEventListener("click", openShot);
+      document.getElementById("do-idle")?.addEventListener("click", () => { grabStam(); mode = "idle"; paint(); });
       document.getElementById("do-add")?.addEventListener("click", () => {
         const flash = document.getElementById("flash");
         flash.hidden = false;
@@ -170,6 +216,7 @@
     }
 
     function paintBench() {
+      grabStam();
       const title = document.getElementById("bench-title");
       const meta = document.getElementById("bench-meta");
       const bench = document.getElementById("bench");
@@ -181,7 +228,7 @@
       }
       if (mode === "read") {
         title.textContent = "読取の確認";
-        meta.textContent = "ウマ娘は OCR。出走者は手入力。脚質は人が選ぶ";
+        meta.textContent = "ウマ娘は OCR。出走者は手入力。脚質と掛かりスタミナは人が入れる";
         bench.innerHTML = readHtml();
       } else if (mode === "manual") {
         title.textContent = "直置き";
@@ -216,6 +263,17 @@
       const flash = document.getElementById("flash");
       flash.hidden = false;
       flash.textContent = "モックです。キーは消しません。";
+    });
+    const shotDlg = document.getElementById("shot-dlg");
+    const shotSc = document.getElementById("shot-scroller");
+    const shotImg = document.getElementById("shot-full");
+    shotImg.addEventListener("dblclick", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setShotRead(!shotSc.classList.contains("read"));
+    });
+    shotSc.addEventListener("click", (e) => {
+      if (e.target === shotSc) shotDlg.close();
     });
     paint();
   </script>

@@ -480,6 +480,17 @@ body.register-page .register-desk .work {
   background: #1a1c1f;
   display: block;
 }
+.reg-shot-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.reg-shot-btn:focus-visible {
+  outline: 2px solid #2b6cb0;
+  outline-offset: 2px;
+}
 .reg-shot.empty {
   display: flex;
   align-items: center;
@@ -552,6 +563,30 @@ body.register-page .register-desk .work {
 }
 .reg-preview .lab { font-size: .75rem; color: #3d5a80; }
 .reg-preview .num { font-size: 1.45rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.reg-stams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .55rem .75rem;
+  margin-top: .75rem;
+  max-width: 22rem;
+}
+.reg-stams label {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+  font-size: .7rem;
+  color: #6b7380;
+}
+.reg-stams input {
+  font: inherit;
+  font-size: 1.08rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  padding: .3rem .4rem;
+  border: 1px solid #c5ccd6;
+  border-radius: 6px;
+  background: #fff;
+}
 .reg-key {
   font-size: .78rem;
   color: #6b7380;
@@ -1050,6 +1085,18 @@ dialog.shot-dlg[open] {
   display: block;
 }
 dialog.shot-dlg::backdrop { background: rgba(18, 22, 28, .42); }
+/* 出走登録：画像は左。右は薄暗い越しに読取欄が見える */
+dialog.shot-dlg-left .shot-scroller {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+dialog.shot-dlg-left .shot-scroller.fit img {
+  max-width: none;
+  cursor: zoom-in;
+}
+dialog.shot-dlg-left .shot-scroller.read img {
+  margin: 0;
+}
 .shot-scroller {
   width: 100%;
   height: 100%;
