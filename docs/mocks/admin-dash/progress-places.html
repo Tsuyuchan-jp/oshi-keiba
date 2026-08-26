@@ -127,10 +127,10 @@
     <button type="button" data-layout="slots">案2 不採用</button>
   </div>
   <div class="escape-bar" role="group" aria-label="逃げの見せ方">
-    <button type="button" data-escape="band">下段の帯</button>
-    <button type="button" data-escape="rail">右レール</button>
-    <button type="button" data-escape="fold">折りたたみ</button>
-    <button type="button" data-escape="drawer">開閉レール</button>
+    <button type="button" data-escape="drawer">開閉レール 採用</button>
+    <button type="button" data-escape="band">下段帯 不採用</button>
+    <button type="button" data-escape="rail">常時レール 不採用</button>
+    <button type="button" data-escape="fold">折りたたみ 不採用</button>
   </div>
   <dialog class="esc-dlg" id="esc-dlg">
     <h2 id="esc-dlg-t"></h2>
@@ -173,7 +173,7 @@
     const N = HORSES.length;
     let phase = "voting";
     let layout = "split";
-    let escapeMode = "band";
+    let escapeMode = "drawer";
     let escOpen = false;
     let places = Array(N).fill(null);
     let pick = null;
