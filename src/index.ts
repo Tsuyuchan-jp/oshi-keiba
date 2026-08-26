@@ -1,5 +1,4 @@
 import {
-  clearSessionCookie,
   encodeSession,
   sessionCookie,
   sessionExpiry,
@@ -8,15 +7,11 @@ import {
   type Session,
 } from "./lib/auth";
 import {
-  formatSelectionLabel,
-  isBetKind,
-  kindIsEnabled,
   OPTIONAL_BET_KINDS,
   parseEnabledKinds,
   serializeEnabledKinds,
-  type BetKind,
 } from "./lib/bets";
-import { escapeHtml, html, json, readForm, redirect } from "./lib/http";
+import { bounce, html, readForm, redirect } from "./lib/http";
 import {
   addHorse,
   clearHorses,
@@ -25,21 +20,10 @@ import {
   dropHorse,
   forceClose,
   getUser,
-  hasJoinedEvent,
-  joinButtonLabel,
-  joinEvent,
-  listUserBets,
-  listUserPayouts,
-  loadBoard,
-  loginMember,
   MAX_SHOT_BYTES,
-  numberByHorseId,
   openNextEvent,
   openVoting,
-  placeBet,
   publishResults,
-  redoMyBets,
-  registerMember,
   resetDemo,
   revertVotingToSetup,
   savePlaces,
@@ -48,25 +32,13 @@ import {
   updateHorse,
   updateParams,
   upsertUser,
+  loadBoard,
+  eventScoreSetup,
 } from "./lib/store";
 import { applyAdminUndo } from "./lib/undo";
-import {
-  BOARD_FLASH_SCRIPT,
-  formatPt,
-  groupMyBets,
-  livePollScript,
-  parseJstInput,
-  plainErrorPage,
-  statusLabel,
-} from "./lib/ui";
+import { formatPt, parseJstInput, plainErrorPage } from "./lib/ui";
 import { tryAdminGet } from "./lib/adminRoutes";
-import { resolveVenueSlot, venueBoardPage, venueTicketsHtml } from "./lib/venueLayout";
-import {
-  betBuyPage,
-  betClosedPage,
-  betJoinPage,
-} from "./lib/betLayout";
-import { gateLoginPage } from "./lib/gateLayout";
+import { tryMemberGet, tryMemberPost } from "./lib/memberRoutes";
 import {
   parseHorseScoreInput,
   serializeHorseScoreInput,
@@ -74,22 +46,7 @@ import {
 import { resolveStrength } from "./lib/scoreFromHorse";
 import { enrichScoreSetupWithEffects, scoreSetupFromForm } from "./lib/scoreSetup";
 import { normalizeShotMime } from "./lib/shotMime";
-import { eventScoreSetup } from "./lib/store";
 import type { UserRow } from "./lib/store";
-
-function msg(url: URL): { text: string | null; error: boolean } {
-  return {
-    text: url.searchParams.get("msg"),
-    error: url.searchParams.get("err") === "1",
-  };
-}
-
-function bounce(path: string, text: string, error = false): Response {
-  const u = new URL(path, "https://oshi-keiba.local");
-  u.searchParams.set("msg", text);
-  if (error) u.searchParams.set("err", "1");
-  return redirect(u.pathname + u.search);
-}
 
 function demoResetAllowed(env: Env): boolean {
   return env.ALLOW_DEMO_RESET === "1";
@@ -117,25 +74,6 @@ async function requireAdmin(
   return { session, user };
 }
 
-async function requireMember(
-  request: Request,
-  env: Env,
-): Promise<{ session: Session; user: UserRow } | Response> {
-  const session = await sessionFromRequest(request, env.SESSION_SECRET);
-  if (!session || session.role !== "member") {
-    return redirect("/login");
-  }
-  const user = await getUser(env.DB, session.userId);
-  if (!user) return redirect("/login");
-  return { session, user };
-}
-
-function memberPasswordOk(env: Env, password: string): boolean {
-  const expected = env.MEMBER_PASSWORD;
-  if (!expected) return false;
-  return timingSafeEqualStr(password, expected);
-}
-
 async function putHorseShot(
   env: Env,
   eventId: string,
@@ -161,48 +99,14 @@ export default {
       const path = url.pathname;
       const method = request.method;
 
-      if (method === "GET" && path === "/logout") {
-        return redirect("/", { "Set-Cookie": clearSessionCookie() });
-      }
-
       const adminGet = await tryAdminGet(request, env, url, path);
       if (adminGet) return adminGet;
 
-      // —— メンバー入室 ——
-      if (method === "GET" && path === "/login") {
-        const session = await sessionFromRequest(request, env.SESSION_SECRET);
-        if (session?.role === "member") return redirect("/");
-        if (session?.role === "admin") return redirect("/admin");
-        const m = msg(url);
-        return html(gateLoginPage({ flash: m }));
-      }
+      const memberGet = await tryMemberGet(request, env, url, path);
+      if (memberGet) return memberGet;
 
-      if (method === "POST" && path === "/login") {
-        const form = await readForm(request);
-        const password = form.get("password") ?? "";
-        const name = form.get("display_name") ?? "";
-        const mode = form.get("mode") ?? "login";
-        if (!memberPasswordOk(env, password)) {
-          return bounce("/login", "共有パスが違います", true);
-        }
-        try {
-          const user =
-            mode === "register"
-              ? await registerMember(env.DB, name)
-              : await loginMember(env.DB, name);
-          const token = await encodeSession(
-            { userId: user.id, role: "member", exp: sessionExpiry() },
-            env.SESSION_SECRET,
-          );
-          return redirect("/", { "Set-Cookie": sessionCookie(token) });
-        } catch (e) {
-          return bounce(
-            "/login",
-            e instanceof Error ? e.message : "入室に失敗",
-            true,
-          );
-        }
-      }
+      const memberPost = await tryMemberPost(request, env, path);
+      if (memberPost) return memberPost;
 
       if (method === "POST" && path === "/admin/login") {
         const form = await readForm(request);
@@ -216,214 +120,6 @@ export default {
           env.SESSION_SECRET,
         );
         return redirect("/admin", { "Set-Cookie": sessionCookie(token) });
-      }
-
-      // —— ライブ API ——
-      if (method === "GET" && path === "/api/board") {
-        const board = await loadBoard(env.DB);
-        const nums = numberByHorseId(board);
-        const kinds: Record<
-          string,
-          { key: string; label: string; odds: number | null }[]
-        > = {};
-        const liveKinds = parseEnabledKinds(board.event.enabled_kinds);
-        for (const k of liveKinds) {
-          if (k === "win") {
-            const votingLike =
-              board.event.status === "voting" || board.event.status === "setup";
-            kinds.win = board.horses
-              .filter((h) => !h.horse.scratched)
-              .map((h) => ({
-                key: h.horse.id,
-                label: String(h.number),
-                odds: votingLike ? h.referenceOdds : h.confirmedOdds,
-              }));
-          } else {
-            const pool = board.pools.find((p) => p.kind === k)!;
-            kinds[k] = pool.combos.map((c) => ({
-              key: c.selection_key,
-              label: formatSelectionLabel(
-                k,
-                c.horse_1,
-                c.horse_2,
-                c.horse_3,
-                nums,
-              ),
-              odds: c.odds,
-            }));
-          }
-        }
-        return json({
-          status: board.event.status,
-          statusLabel: statusLabel(board.event.status),
-          kinds,
-        });
-      }
-
-      // —— 場内（未入室でも閲覧可。買うには入室） ——
-      if (method === "GET" && (path === "/" || path === "/board")) {
-        const session = await sessionFromRequest(request, env.SESSION_SECRET);
-        const user = session ? await getUser(env.DB, session.userId) : null;
-        const board = await loadBoard(env.DB);
-        const m = msg(url);
-
-        let ticketsHtml: string | undefined;
-        if (board.event.status === "published" && user && user.role === "member") {
-          const bets = await listUserBets(env.DB, board.event.id, user.id);
-          const payouts = await listUserPayouts(env.DB, board.event.id, user.id);
-          ticketsHtml = venueTicketsHtml(bets, payouts, board);
-        }
-        return html(
-          venueBoardPage({
-            board,
-            user,
-            flash: m,
-            slot: resolveVenueSlot(url.searchParams.get("slot")),
-            ticketsHtml,
-            scripts:
-              board.event.status === "voting"
-                ? livePollScript("/api/board", "win")
-                : "",
-          }),
-        );
-      }
-
-      // —— 投票ページ ——
-      if (method === "GET" && path === "/bet") {
-        const gate = await requireMember(request, env);
-        if (gate instanceof Response) return gate;
-        const board = await loadBoard(env.DB);
-        const user = (await getUser(env.DB, gate.user.id))!;
-        const m = msg(url);
-        const kindParam = url.searchParams.get("kind") ?? "win";
-        let kind: BetKind = isBetKind(kindParam) ? kindParam : "win";
-        if (!kindIsEnabled(board.event.enabled_kinds, kind)) {
-          return redirect("/bet");
-        }
-        const live = board.event.status === "voting";
-        const joined = await hasJoinedEvent(env.DB, board.event.id, user.id);
-        const myBets = await listUserBets(env.DB, board.event.id, user.id);
-        const grouped = groupMyBets(myBets, board);
-
-        if (live && !joined) {
-          return html(
-            betJoinPage({
-              board,
-              user,
-              flash: m,
-              joinLabel: joinButtonLabel(board.event.title),
-            }),
-          );
-        }
-
-        const canBuy = board.event.status === "voting" && joined;
-        const myBetsHtml =
-          grouped.length === 0
-            ? `<p class="hint">まだ馬券がありません。</p>`
-            : grouped
-                .map(
-                  (g) =>
-                    `<div class="t-row" data-sel="${escapeHtml(g.selection_key)}"><span>${escapeHtml(g.label)}</span><span class="num">${formatPt(g.amount)}</span></div>`,
-                )
-                .join("");
-        // form 属性で外の #redo-form に紐づける（買う form 内に入れ子 form を置かない）
-        const redoHtml =
-          canBuy && grouped.length > 0
-            ? `<button type="submit" class="text-btn" form="redo-form" onclick="return confirm('全ての馬券がリセットされますがよろしいですか？');">やりなおし（全部取消）</button>`
-            : "";
-
-        if (!canBuy) {
-          return html(
-            betClosedPage({
-              board,
-              user,
-              flash: m,
-              myBetsHtml: grouped.length > 0 ? myBetsHtml : undefined,
-            }),
-          );
-        }
-
-        return html(
-          betBuyPage({
-            board,
-            user,
-            kind,
-            flash: m,
-            myBetsHtml,
-            redoHtml,
-            scripts:
-              (live ? livePollScript("/api/board", kind) : "") + BOARD_FLASH_SCRIPT,
-          }),
-        );
-      }
-
-      if (method === "POST" && path === "/bet") {
-        const gate = await requireMember(request, env);
-        if (gate instanceof Response) return gate;
-        const form = await readForm(request);
-        const kindRaw = form.get("kind") ?? "win";
-        const kind: BetKind = isBetKind(kindRaw) ? kindRaw : "win";
-        try {
-          const board = await loadBoard(env.DB);
-          const ids = [
-            form.get("h1") ?? "",
-            form.get("h2") ?? "",
-            form.get("h3") ?? "",
-          ].filter(Boolean);
-          const result = await placeBet(
-            env.DB,
-            board.event,
-            gate.user,
-            kind,
-            ids,
-            Number(form.get("amount") ?? "0"),
-          );
-          const flash = encodeURIComponent(
-            JSON.stringify({ hit: result.selection_key }),
-          );
-          return bounce(
-            `/bet?kind=${kind}&b=${flash}`,
-            "買いました",
-          );
-        } catch (e) {
-          return bounce(
-            `/bet?kind=${kind}`,
-            e instanceof Error ? e.message : "投票に失敗",
-            true,
-          );
-        }
-      }
-
-      if (method === "POST" && path === "/bet/join") {
-        const gate = await requireMember(request, env);
-        if (gate instanceof Response) return gate;
-        try {
-          const board = await loadBoard(env.DB);
-          await joinEvent(env.DB, board.event, gate.user);
-          return bounce("/bet", "参加しました");
-        } catch (e) {
-          return bounce(
-            "/bet",
-            e instanceof Error ? e.message : "参加に失敗",
-            true,
-          );
-        }
-      }
-
-      if (method === "POST" && path === "/bet/redo") {
-        const gate = await requireMember(request, env);
-        if (gate instanceof Response) return gate;
-        try {
-          const board = await loadBoard(env.DB);
-          const total = await redoMyBets(env.DB, board.event, gate.user);
-          return bounce("/bet", `やりなおしました（${formatPt(total)} を戻しました）`);
-        } catch (e) {
-          return bounce(
-            "/bet",
-            e instanceof Error ? e.message : "やりなおしに失敗",
-            true,
-          );
-        }
       }
 
       // —— 管理 POST ——

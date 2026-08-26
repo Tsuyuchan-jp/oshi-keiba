@@ -22,6 +22,14 @@ export function redirect(location: string, headers?: HeadersInit): Response {
   });
 }
 
+/** flash 付きリダイレクト（?msg=&err=） */
+export function bounce(path: string, text: string, error = false): Response {
+  const u = new URL(path, "https://oshi-keiba.local");
+  u.searchParams.set("msg", text);
+  if (error) u.searchParams.set("err", "1");
+  return redirect(u.pathname + u.search);
+}
+
 export function escapeHtml(s: string): string {
   return s
     .replaceAll("&", "&amp;")
