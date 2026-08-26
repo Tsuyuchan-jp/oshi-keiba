@@ -656,7 +656,7 @@ export function adminOddsPage(board: Board): string {
   return `<section class="hero odds-hero">
       <div class="hero-top">
         <h1>オッズ</h1>${phasePill(board.event.status)}
-        <div class="ctas"><button type="button" class="secondary" id="formula-open">内部計算</button></div>
+        <button type="button" class="secondary" id="formula-open">内部計算</button>
       </div>
     </section>
     <div class="odds-desk">${panels}</div>
@@ -666,7 +666,13 @@ export function adminOddsPage(board: Board): string {
       <form method="dialog"><button type="submit">閉じる</button></form>
     </dialog>
     <script>
-      document.getElementById("formula-open")?.addEventListener("click", () => document.getElementById("formula-modal")?.showModal());
+      const formulaDlg = document.getElementById("formula-modal");
+      document.getElementById("formula-open")?.addEventListener("click", () => formulaDlg?.showModal());
+      formulaDlg?.addEventListener("click", (ev) => {
+        const r = formulaDlg.getBoundingClientRect();
+        const inside = ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom;
+        if (!inside) formulaDlg.close();
+      });
     </script>`;
 }
 

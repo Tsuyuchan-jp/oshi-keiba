@@ -190,10 +190,17 @@ body.odds-page .odds-desk .work {
   overflow: hidden; padding: .75rem .85rem .8rem; margin-bottom: 0;
 }
 body.odds-page .odds-hero { padding: .75rem 1rem .8rem; margin-bottom: .65rem; }
-body.odds-page .odds-hero .hero-top { align-items: center; }
-body.odds-page .odds-hero .ctas { margin: 0 0 0 auto; }
-body.odds-page .odds-hero .ctas button {
-  border: 1px solid #c5ccd6; padding: .45rem .8rem; border-radius: 6px;
+body.odds-page .odds-hero .hero-top {
+  width: 100%;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+body.odds-page .odds-hero #formula-open {
+  margin-left: auto;
+  border: 1px solid #c5ccd6;
+  padding: .45rem .8rem;
+  border-radius: 6px;
+  flex: 0 0 auto;
 }
 .odds-void {
   flex: 0 0 auto; margin: 0 0 .35rem; padding: .22rem .45rem; border-radius: 4px;
