@@ -4,7 +4,6 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "predev": "wrangler d1 migrations apply oshi-keiba --local",
     "dev": "wrangler dev --local",
     "dev:setup": "wrangler d1 migrations apply oshi-keiba --local",
     "predeploy": "node -e \"console.log('\\n本番デプロイ前: npx wrangler r2 bucket create oshi-keiba-shots（初回） / npx wrangler d1 migrations apply oshi-keiba --remote / 詳細 docs/ocr.md\\n')\"",
