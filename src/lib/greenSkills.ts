@@ -48,14 +48,41 @@ export function addGreenBonus(a: GreenBonus, b: GreenBonus): GreenBonus {
   };
 }
 
-/** 開催条件＋脚質などで condition が立つ緑だけ足す。 */
-export function sumGreenBonusesByNames(names: string[], ctx: GreenEvalContext): GreenBonus {
-  let acc = empty();
+export type AppliedGreen = {
+  name: string;
+  speed: number;
+  stamina: number;
+  power: number;
+  guts: number;
+  wisdom: number;
+};
+
+/** 条件成立の緑を1枚ずつ返す（どのスキルがどのステか）。 */
+export function listAppliedGreensByNames(
+  names: string[],
+  ctx: GreenEvalContext,
+): AppliedGreen[] {
+  const out: AppliedGreen[] = [];
   for (const name of names) {
     const g = greenSkillByName(name);
     if (!g) continue;
     if (!evalGreenCondition(g.condition, ctx)) continue;
-    acc = addGreenBonus(acc, g);
+    out.push({
+      name: g.name,
+      speed: g.speed,
+      stamina: g.stamina,
+      power: g.power,
+      guts: g.guts,
+      wisdom: g.wisdom,
+    });
   }
-  return acc;
+  return out;
+}
+
+/** 開催条件＋脚質などで condition が立つ緑だけ足す。 */
+export function sumGreenBonusesByNames(names: string[], ctx: GreenEvalContext): GreenBonus {
+  return listAppliedGreensByNames(names, ctx).reduce(
+    (acc, g) => addGreenBonus(acc, g),
+    empty(),
+  );
 }

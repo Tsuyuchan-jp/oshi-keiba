@@ -2,9 +2,15 @@
  * 評価点パイプライン（作者側仮置き）。
  * Neko長明さん確定ではない。直置き Strength は別経路のまま残す。
  */
-import { evalGreenCondition, type GreenEvalContext } from "./greenCondition.ts";
-import { greenSkillByName, sumGreenBonusesByNames, type GreenBonus } from "./greenSkills.ts";
+import {
+  greenSkillByName,
+  listAppliedGreensByNames,
+  sumGreenBonusesByNames,
+  type AppliedGreen,
+  type GreenBonus,
+} from "./greenSkills.ts";
 import { classifySkillName } from "./skillCatalog.ts";
+import type { GreenEvalContext } from "./greenCondition.ts";
 
 export type HorseStats = {
   speed: number;
@@ -73,6 +79,8 @@ export type ScoreBreakdown = {
   score: number;
   skill: SkillBaseBreakdown;
   green: GreenBonus;
+  /** 条件成立した緑スキル（表示用） */
+  appliedGreens: AppliedGreen[];
   adjusted: HorseStats;
   ratios: {
     speed: number;
@@ -219,6 +227,7 @@ export function computeScore(input: ScoreInput): ScoreBreakdown {
     effectiveNames: input.effectiveNames,
   });
   const green = sumGreenBonusesByNames(input.skillNames, input.greenCtx);
+  const appliedGreens = listAppliedGreensByNames(input.skillNames, input.greenCtx);
   const adjusted = adjustStats(input.stats, green, input.aptitudes);
   const req = input.req;
 
@@ -247,6 +256,7 @@ export function computeScore(input: ScoreInput): ScoreBreakdown {
     score,
     skill,
     green,
+    appliedGreens,
     adjusted,
     ratios: {
       speed: mSpeed,

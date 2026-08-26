@@ -31,6 +31,11 @@ export type HorseScoreInput = {
   /** skillNames と対。未解決は null */
   skillIds: (number | null)[];
   /**
+   * OCR でカタログに載らなかった生のスキル名。
+   * 評価点には使わない。直し画面の「不採用」表示用。
+   */
+  skippedSkillNames?: string[];
+  /**
    * 出走脚質。U-tools キー。未選択は null。
    * 緑の runningStyle は 1=逃 … 4=追。
    */
@@ -131,11 +136,19 @@ export function parseHorseScoreInput(raw: unknown): HorseScoreInput | null {
     if (!styleKey) return null;
   }
 
+  const skippedRaw = root.skippedSkillNames;
+  const skippedSkillNames = Array.isArray(skippedRaw)
+    ? skippedRaw.map((n) => String(n ?? "").trim()).filter(Boolean)
+    : undefined;
+
   return {
     stats: { speed, stamina, power, guts, wisdom },
     aptitudes,
     skillNames,
     skillIds,
+    ...(skippedSkillNames && skippedSkillNames.length > 0
+      ? { skippedSkillNames }
+      : {}),
     styleKey,
   };
 }

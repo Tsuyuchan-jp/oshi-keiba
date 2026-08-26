@@ -590,18 +590,32 @@ function pipeHtml(h: HorseBoard, board: Board): string {
   }
   const b = auto.breakdown;
   const s = b.skill;
-  const g = b.green;
-  const bits = [g.speed && `速+${g.speed}`, g.stamina && `スタ+${g.stamina}`, g.power && `パ+${g.power}`, g.guts && `根+${g.guts}`, g.wisdom && `賢+${g.wisdom}`].filter(Boolean);
+  const greenLines = b.appliedGreens.length
+    ? b.appliedGreens
+        .map((g) => {
+          const parts = [
+            g.speed && `速${g.speed > 0 ? "+" : ""}${g.speed}`,
+            g.stamina && `スタ${g.stamina > 0 ? "+" : ""}${g.stamina}`,
+            g.power && `パ${g.power > 0 ? "+" : ""}${g.power}`,
+            g.guts && `根${g.guts > 0 ? "+" : ""}${g.guts}`,
+            g.wisdom && `賢${g.wisdom > 0 ? "+" : ""}${g.wisdom}`,
+          ].filter(Boolean);
+          return `${escapeHtml(g.name)} → ${escapeHtml(parts.join(" ") || "—")}`;
+        })
+        .join("<br>")
+    : "なし";
+  const formula = `${s.base} × ${b.ratios.speed.toFixed(3)} × ${b.ratios.staminaMult.toFixed(2)} × ${b.ratios.power.toFixed(3)} × ${b.ratios.guts.toFixed(3)} × ${b.ratios.wisdom.toFixed(3)} ＝ ${h.horse.strength}`;
   return `${head}
     <div class="pipe-step"><div class="pipe-k">土台（スキル）</div>
       <div>有効 ${s.effectiveCount} ＋ 金×2（${s.goldCount}枚）＋ ためらい ${s.tameraiCount}＝ <b>${s.base}</b></div></div>
-    <div class="pipe-step"><div class="pipe-k">緑 → ステへ</div><div>${escapeHtml(bits.join(" ") || "なし")}</div></div>
+    <div class="pipe-step"><div class="pipe-k">緑 → ステへ</div><div class="pipe-green">${greenLines}</div></div>
     <div class="pipe-step"><div class="pipe-k">スピード</div><div>r=${b.ratios.speed.toFixed(2)}</div></div>
     <div class="pipe-step"><div class="pipe-k">スタミナ</div><div>×${b.ratios.staminaMult.toFixed(2)}</div></div>
     <div class="pipe-step"><div class="pipe-k">パワー</div><div>r=${b.ratios.power.toFixed(2)}</div></div>
     <div class="pipe-step"><div class="pipe-k">根性</div><div>r=${b.ratios.guts.toFixed(2)}</div></div>
     <div class="pipe-step"><div class="pipe-k">賢さ</div><div>r=${b.ratios.wisdom.toFixed(2)}</div></div>
     <div class="pipe-step"><div class="pipe-k">評価点 → Seed</div>
+      <p class="pipe-eq">${escapeHtml(formula)}</p>
       <div class="pipe-final">${h.horse.strength}</div>
       <p class="pipe-eq">Seed ${Math.round(h.seed).toLocaleString("ja-JP")}</p></div>`;
 }

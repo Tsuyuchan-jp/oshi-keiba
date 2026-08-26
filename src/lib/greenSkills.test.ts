@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { evalGreenClause, evalGreenCondition } from "./greenCondition.ts";
-import { greenSkillById, greenSkillByName, sumGreenBonusesByNames } from "./greenSkills.ts";
+import { greenSkillById, greenSkillByName, listAppliedGreensByNames, sumGreenBonusesByNames } from "./greenSkills.ts";
 
 test("右回り○はスピード+40", () => {
   const g = greenSkillByName("右回り○");
@@ -10,6 +10,16 @@ test("右回り○はスピード+40", () => {
   assert.equal(g.speed, 40);
   assert.equal(g.condition, "rotation==1");
   assert.equal(greenSkillById(200012)?.name, "右回り○");
+});
+
+test("条件成立の緑をスキル名つきで返す", () => {
+  const names = ["右回り○", "逃げのコツ○", "地固め"];
+  const right = listAppliedGreensByNames(names, { rotation: 1, runningStyle: 1 });
+  assert.equal(right.length, 2);
+  assert.equal(right[0]?.name, "右回り○");
+  assert.equal(right[0]?.speed, 40);
+  assert.equal(right[1]?.name, "逃げのコツ○");
+  assert.equal(right[1]?.wisdom, 40);
 });
 
 test("右回り×はスピード-40", () => {

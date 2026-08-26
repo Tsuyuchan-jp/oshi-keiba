@@ -454,7 +454,8 @@ body.ledger-page .filters select {
 .pipe-k { font-size: .68rem; letter-spacing: .06em; color: #6b7380; font-weight: 700; margin: 0 0 .15rem; }
 .pipe-v { font-variant-numeric: tabular-nums; }
 .pipe-final { font-size: 1.35rem; font-weight: 800; font-variant-numeric: tabular-nums; margin: .35rem 0 0; }
-.pipe-eq { font-size: .78rem; color: #3d4550; margin: .15rem 0 0; }
+.pipe-eq { font-size: .78rem; color: #3d4550; margin: .15rem 0 0; font-variant-numeric: tabular-nums; word-break: break-word; }
+.pipe-green { font-size: .85rem; line-height: 1.45; }
 .shot-thumb {
   display: block; width: 10.6rem; height: 4.15rem; overflow: hidden; margin: 0; padding: 0;
   border: 1px solid #d5d9e0; border-radius: 6px; background: #1a1c1f; cursor: pointer; flex: 0 0 auto;

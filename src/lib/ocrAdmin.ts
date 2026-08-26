@@ -31,6 +31,9 @@ export function registerMaterialsHtml(input: HorseScoreInput): string {
       return `<span class="reg-chip ${skillChipClass(c.kind)}">${escapeHtml(c.name)}</span>`;
     })
     .join("");
+  const skipped = (input.skippedSkillNames ?? [])
+    .map((n) => `<span class="reg-chip skip">${escapeHtml(n)}</span>`)
+    .join("");
   return `    <div class="reg-stats">
       <div class="reg-stat"><span class="k">速</span><span class="v">${st.speed}</span></div>
       <div class="reg-stat"><span class="k">スタ</span><span class="v">${st.stamina}</span></div>
@@ -47,7 +50,12 @@ export function registerMaterialsHtml(input: HorseScoreInput): string {
       ${aptChip("逃げ", ap.nige)}${aptChip("先行", ap.senkou)}${aptChip("差し", ap.sashi)}${aptChip("追込", ap.oikomi)}
     </div>
     <p class="set-k" style="margin-top:.85rem">スキル</p>
-    <div class="reg-chips">${skills || `<span class="reg-chip">スキルなし</span>`}</div>`;
+    <div class="reg-chips">${skills || `<span class="reg-chip">スキルなし</span>`}</div>
+    ${
+      skipped
+        ? `<p class="set-k" style="margin-top:.85rem">不採用</p><div class="reg-chips">${skipped}</div>`
+        : ""
+    }`;
 }
 
 export function horsesAdminBody(
@@ -381,6 +389,7 @@ export function ocrAdminScript(canAutoScore: boolean): string {
       aptitudes: draft.aptitudes,
       skillNames: draft.skillNames,
       skillIds: draft.skillIds,
+      skippedSkillNames: draft.skippedSkillNames || [],
       styleKey: style || null,
     };
     scoreInputEl.value = JSON.stringify(payload);
@@ -476,8 +485,12 @@ export function ocrAdminScript(canAutoScore: boolean): string {
       const hits = rawSkills.map((s, i) => fuzzyOne(s, i === 0));
       const skillNames = [];
       const skillIds = [];
+      const skippedSkillNames = [];
       for (const h of hits) {
-        if (!h.ok) continue;
+        if (!h.ok) {
+          if (h.input) skippedSkillNames.push(h.input);
+          continue;
+        }
         skillNames.push(h.name);
         skillIds.push(h.id);
       }
@@ -501,6 +514,7 @@ export function ocrAdminScript(canAutoScore: boolean): string {
         aptitudes,
         skillNames,
         skillIds,
+        skippedSkillNames,
       };
       const sole = soleStyle(aptitudes);
       if (styleEl) styleEl.value = sole;
