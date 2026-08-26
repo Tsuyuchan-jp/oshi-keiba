@@ -45,12 +45,8 @@
     </div>
   </div>
   <dialog class="shot-dlg" id="shot-dlg">
-    <div class="shot-bar">
-      <span class="shot-hint" style="color:#9aa3ad;margin:0">スマホ幅で縦スクロール（note の画像と同じ）</span>
-      <form method="dialog" style="margin-left:auto"><button type="submit">閉じる</button></form>
-    </div>
-    <div class="shot-scroller" id="shot-scroller">
-      <img id="shot-full" alt="育成スクショ（全体）">
+    <div class="shot-scroller fit" id="shot-scroller">
+      <img id="shot-full" alt="育成スクショ">
     </div>
   </dialog>
   <div class="mock-label">管理モック · 出走 · 本番未適用</div>
@@ -227,7 +223,7 @@
       return `<button type="button" class="shot-thumb" id="shot-open" aria-label="スクショを大きく見る">
           <img src="${SHOT_THUMB}" alt="育成カードの見出し（切り取り）">
         </button>
-        <p class="shot-hint">見出しの切り取り。クリックで完成スクショ全体</p>`;
+        <p class="shot-hint">見出しの切り取り。クリックで全体を高さ最大に縮小。ダブルクリックで拡大して縦スクロール。Esc か余白で閉じる</p>`;
     }
 
     function paintList() {
@@ -296,9 +292,17 @@
         </div>`;
     }
 
+    function setShotRead(on) {
+      const sc = document.getElementById("shot-scroller");
+      sc.classList.toggle("fit", !on);
+      sc.classList.toggle("read", on);
+      sc.scrollTop = 0;
+      sc.scrollLeft = 0;
+    }
     function openShot() {
       const dlg = document.getElementById("shot-dlg");
       document.getElementById("shot-full").src = SHOT;
+      setShotRead(false);
       dlg.showModal();
     }
     function paint() {
@@ -308,12 +312,15 @@
       if (open) open.addEventListener("click", openShot);
     }
     const shotDlg = document.getElementById("shot-dlg");
-    shotDlg.addEventListener("click", (ev) => {
-      const r = shotDlg.getBoundingClientRect();
-      const inside =
-        ev.clientX >= r.left && ev.clientX <= r.right &&
-        ev.clientY >= r.top && ev.clientY <= r.bottom;
-      if (!inside) shotDlg.close();
+    const shotSc = document.getElementById("shot-scroller");
+    const shotImg = document.getElementById("shot-full");
+    shotImg.addEventListener("dblclick", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setShotRead(!shotSc.classList.contains("read"));
+    });
+    shotSc.addEventListener("click", (e) => {
+      if (e.target === shotSc) shotDlg.close();
     });
     paint();
   </script>

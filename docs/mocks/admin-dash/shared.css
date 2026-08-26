@@ -446,7 +446,7 @@ table.plain tbody tr.on { background: #e8f0fa; }
 .shot-thumb {
   display: block;
   width: 100%;
-  aspect-ratio: 502 / 146;
+  aspect-ratio: 506 / 199;
   overflow: hidden;
   margin: .35rem 0 .45rem;
   padding: 0;
@@ -472,45 +472,47 @@ table.plain tbody tr.on { background: #e8f0fa; }
 }
 .shot-hint { font-size: .72rem; color: #6b7380; margin: 0 0 .55rem; }
 dialog.shot-dlg {
-  width: min(28rem, 100vw);
+  width: 100vw;
+  max-width: 100vw;
   height: 100dvh;
   max-height: 100dvh;
-  margin: 0 auto;
+  margin: 0;
   padding: 0;
   border: 0;
-  background: #121416;
-  color: #e8eaed;
+  background: #000;
 }
 dialog.shot-dlg[open] {
-  display: flex;
-  flex-direction: column;
+  display: block;
 }
-dialog.shot-dlg::backdrop { background: rgba(0, 0, 0, .72); }
-.shot-bar {
-  flex: 0 0 auto;
-  display: flex;
-  gap: .45rem;
-  align-items: center;
-  padding: .55rem .7rem;
-  background: #1c2128;
-}
-.shot-bar button {
-  border: 1px solid #3a444c;
-  background: #2a323c;
-  color: #e8eaed;
-  padding: .35rem .7rem;
-  border-radius: 6px;
-  cursor: pointer;
-}
+dialog.shot-dlg::backdrop { background: #000; }
 .shot-scroller {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
-}
-.shot-scroller img {
   width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.shot-scroller.fit img {
+  height: 100dvh;
+  width: auto;
+  max-width: 100vw;
   display: block;
   user-select: none;
+  cursor: zoom-in;
+}
+.shot-scroller.read {
+  display: block;
+  overflow: auto;
+}
+.shot-scroller.read img {
+  height: auto;
+  width: auto;
+  max-width: none;
+  display: block;
+  margin: 0 auto;
+  user-select: none;
+  cursor: zoom-out;
 }
 @media (max-width: 899px) {
   .horses-desk { grid-template-columns: 1fr; }
