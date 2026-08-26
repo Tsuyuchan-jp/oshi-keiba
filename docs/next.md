@@ -4,7 +4,7 @@
 
 ## 現在進行中
 
-- 採用済みモックの本番移植（**管理 6 タブまで実装。実機確認待ち。メンバー画面は未着手**。デプロイは明示依頼があるまでしない）— [venue-board](mocks/venue-board/layout-venue.html)・[quiet.html](mocks/bet-window/quiet.html)・[gate](mocks/gate/index.html)・[admin-dash](mocks/admin-dash/index.html)
+- 採用済みモックの本番移植（**管理は 6 タブ骨格＋開催設定をモック差し替え。他タブの面は未差し替え。実機確認待ち。メンバー画面は未着手**。デプロイは明示依頼があるまでしない）— [venue-board](mocks/venue-board/layout-venue.html)・[quiet.html](mocks/bet-window/quiet.html)・[gate](mocks/gate/index.html)・[admin-dash](mocks/admin-dash/index.html)
 
 ## そのあと
 
@@ -24,6 +24,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
+- 開催設定タブをモック HTML の箱で差し替え（既存 name/POST。フェーズ切替バーは出さない。D は 0〜0.99）— [settings.html](mocks/admin-dash/settings.html)
 - 管理6タブを本番に載せた（進行・出走登録・出走・台帳・オッズ・開催設定。着順案3・開閉レール・スクショGET・評価点表記。掛かりスタミナ2欄は未実装。メンバー画面は未着手。実機確認待ち）— [admin-dash](mocks/admin-dash/index.html)
 - 管理画面の Strength 表記を出走・出走登録で評価点に揃えた（式の記号は内部計算モーダル）
 - 管理刷新モック6タブ採用（進行・出走登録・出走・台帳・オッズ・開催設定。本番未適用）— [admin-dash](mocks/admin-dash/index.html)

@@ -197,14 +197,15 @@ export async function tryAdminGet(
     );
   }
 
+  const settings = adminSettingsPage(board, m);
   return html(
     layoutAdmin({
       title: "開催設定",
       tab: "settings",
       user: gate.user,
       eventStatus: board.event.status,
-      flash: m,
-      body: adminSettingsPage(board),
+      body: settings.body,
+      scripts: settings.scripts,
     }),
   );
 }

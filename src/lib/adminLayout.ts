@@ -39,6 +39,8 @@ export function layoutAdmin(opts: {
   const flash = opts.flash?.text
     ? flashHtml(opts.flash.text, opts.flash.error)
     : "";
+  const pageClass = opts.tab === "settings" ? "settings-page" : "";
+  const mainFlash = opts.tab === "settings" ? "" : flash;
   return `<!doctype html>
 <html lang="ja">
 <head>
@@ -50,7 +52,7 @@ export function layoutAdmin(opts: {
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>${ADMIN_CSS}</style>
 </head>
-<body data-screen="admin" data-phase="${escapeHtml(opts.eventStatus ?? "")}">
+<body class="${pageClass}" data-screen="admin" data-phase="${escapeHtml(opts.eventStatus ?? "")}">
   <div class="dash">
     <nav class="side" aria-label="管理">
       <div class="mark">OSHI KEIBA · 管理</div>
@@ -61,7 +63,7 @@ export function layoutAdmin(opts: {
       </div>
     </nav>
     <div class="main">
-      ${flash}
+      ${mainFlash}
       ${opts.body}
     </div>
   </div>

@@ -8,7 +8,6 @@ import type { UndoMeta } from "./undo";
 import {
   adminOpsGuide,
   comboOddsTable,
-  enabledKindsAdminFields,
   flashHtml,
   formatMove,
   formatOdds,
@@ -16,13 +15,26 @@ import {
   formatPt,
   formulaPanel,
   headerPhaseKind,
-  scoreSetupAdminFields,
   statusLabel,
   strengthCalcModal,
   toJstInput,
 } from "./ui";
 import { horsesAdminBody, ocrAdminScript } from "./ocrAdmin";
-import { BET_KIND_LABEL, formatSelectionLabel, settleBet, type BetKind } from "./bets";
+import {
+  BET_KIND_LABEL,
+  formatSelectionLabel,
+  OPTIONAL_BET_KINDS,
+  parseEnabledKinds,
+  settleBet,
+  type BetKind,
+} from "./bets";
+import {
+  DEFAULT_SCORE_REQ,
+  GROUND_CONDITION_OPTIONS,
+  listScoreCourses,
+  SEASON_OPTIONS,
+  WEATHER_OPTIONS,
+} from "./scoreSetup";
 
 export function adminReauthField(): string {
   return `<div class="autofill-trap" aria-hidden="true">
@@ -655,37 +667,211 @@ export function adminOddsPage(board: Board): string {
     </script>`;
 }
 
-export function adminSettingsPage(board: Board): string {
+function setSegHtml(
+  name: string,
+  options: ReadonlyArray<{ value: number; label: string }>,
+  selected: number | null | undefined,
+): string {
+  const cur = selected == null ? "" : String(selected);
+  const hidden = `<input type="hidden" name="${escapeHtml(name)}" value="${escapeHtml(cur)}">`;
+  const btns = options
+    .map((o) => {
+      const v = String(o.value);
+      return `<button type="button"${v === cur ? ` class="on"` : ""} data-v="${escapeHtml(v)}">${escapeHtml(o.label)}</button>`;
+    })
+    .join("");
+  return `<div class="set-seg" data-seg="${escapeHtml(name)}">${hidden}${btns}</div>`;
+}
+
+export function adminSettingsPage(
+  board: Board,
+  flash?: { text: string | null; error: boolean },
+): { body: string; scripts: string } {
   const e = board.event;
-  return `<section class="hero"><div class="hero-top"><h1>開催設定</h1>${phasePill(e.status)}</div>
-      <p class="note">今日のレースと賭式、評価点の条件、参考数字。次の開催・破棄・Undo は進行。</p></section>
-    <form method="post" action="/admin/params">
-      <section class="work">
-        <h2>今日のレース</h2>
-        <div class="row">
-          <label>タイトル <input name="title" value="${escapeHtml(e.title)}"></label>
-          <label>日時締切（JST） <input name="closes_at" type="datetime-local" value="${toJstInput(e.voting_closes_at)}"></label>
-          <label>G（スペ） <input name="grant_g" type="number" min="0" step="1" value="${e.grant_g}"></label>
-          <label>単位 <input name="bet_unit" type="number" min="1" step="1" value="${e.bet_unit}"></label>
+  const setup = eventScoreSetup(e);
+  const c = setup?.conditions;
+  const r = setup?.requirements;
+  const canKinds = e.status === "setup";
+  const enabled = new Set(parseEnabledKinds(e.enabled_kinds));
+  const kindsNote = canKinds
+    ? "開始前だけ変えられる。単勝は外せない。"
+    : `開始後はロック。いま有効なのは ${escapeHtml(
+        parseEnabledKinds(e.enabled_kinds)
+          .map((k) => BET_KIND_LABEL[k])
+          .join("、"),
+      )}。`;
+  const kindTogs = [
+    `<button type="button" class="set-tog on" disabled>単勝<span class="st">必須</span></button>
+     <input type="hidden" name="kind_win" value="1">`,
+    ...OPTIONAL_BET_KINDS.map((k) => {
+      const on = enabled.has(k);
+      const dis = canKinds ? "" : " disabled";
+      return `<button type="button" class="set-tog${on ? " on" : ""}" data-kind="${k}"${dis}>${escapeHtml(BET_KIND_LABEL[k])}<span class="st">${on ? "使う" : "使わない"}</span></button>
+        <input type="checkbox" name="kind_${k}" value="1"${on ? " checked" : ""}${dis} hidden>`;
+    }),
+  ].join("");
+  const courses = [
+    `<option value="">未設定（直置きのみ）</option>`,
+    ...listScoreCourses().map((x) => {
+      const sel = c?.courseKey === x.courseKey ? " selected" : "";
+      return `<option value="${escapeHtml(x.courseKey)}"${sel}>${escapeHtml(x.label)}</option>`;
+    }),
+  ].join("");
+  const num = (n: number | undefined) => (n == null ? "" : String(n));
+  const reqVal = (saved: number | undefined, fallback: number) =>
+    escapeHtml(saved == null ? String(fallback) : String(saved));
+  const ids = setup?.effectiveSkillIds;
+  const effectsNote = ids
+    ? `保存すると、このコース×脚質の有効スキルを取り直して固定する。逃 ${ids.runner.length} · 先 ${ids.leader.length} · 差 ${ids.betweener.length} · 追 ${ids.chaser.length}`
+    : "保存すると、このコース×脚質の有効スキルを取り直して固定する。未取得（コースを選んで保存）";
+  const stamOn = !!r?.staminaRace;
+  const flashEl = flash?.text
+    ? `<p class="settings-flash${flash.error ? " err" : ""}">${escapeHtml(flash.text)}</p>`
+    : "";
+  const body = `<section class="hero settings-hero">
+      <div class="hero-top">
+        <h1>開催設定</h1>${phasePill(e.status)}
+        <div class="ctas"><button type="submit" class="primary" form="settings-form">保存</button></div>
+      </div>
+      <p class="note">上から、今日のレース → 評価点の条件 → 参考の数字。次の開催・破棄は進行へ。</p>
+      ${flashEl}
+    </section>
+    <form class="settings-desk" id="settings-form" method="post" action="/admin/params">
+      <div class="settings-top">
+        <section class="work">
+          <p class="set-k">今日のレース</p>
+          <input class="set-title" name="title" value="${escapeHtml(e.title)}" aria-label="タイトル">
+          <div class="set-row">
+            <div class="set-field">
+              <span class="k">締切（JST）</span>
+              <input name="closes_at" type="datetime-local" value="${toJstInput(e.voting_closes_at)}">
+            </div>
+            <div class="set-field set-quiet">
+              <span class="k">参加 G</span>
+              <input name="grant_g" type="number" min="0" step="1" value="${e.grant_g}">
+            </div>
+            <div class="set-field set-quiet">
+              <span class="k">単位</span>
+              <input name="bet_unit" type="number" min="1" step="1" value="${e.bet_unit}">
+            </div>
+          </div>
+        </section>
+        <section class="work">
+          <p class="set-k">賭式</p>
+          <p class="set-lock">${kindsNote}</p>
+          <div class="set-togs${canKinds ? "" : " locked"}">${kindTogs}</div>
+        </section>
+      </div>
+      <section class="work settings-mid">
+        <div class="work-head">
+          <h2>評価点に使う条件</h2>
+          <span class="odds-meta">未設定なら直置き。メンバーには出さない</span>
         </div>
-        ${enabledKindsAdminFields(e)}
-      </section>
-      <section class="work">
-        <h2>評価点の条件</h2>
-        ${scoreSetupAdminFields(e)}
-      </section>
-      <section class="work">
-        <h2>参考数字</h2>
-        <div class="row">
-          <label>S（単勝 Seed 合計） <input name="seed_pool_s" type="number" min="0" step="1" value="${e.seed_pool_s}"></label>
-          <label>E <input name="pull_e" type="number" min="0" step="1" value="${e.pull_e}"></label>
-          <label>D <input name="takeout_d" type="number" min="0" max="0.99" step="0.01" value="${e.takeout_d}"></label>
-          <label>w時 下限 <input name="w_time_floor" type="number" min="0" max="0.99" step="0.05" value="${e.w_time_floor}"></label>
-          <label>w時 指数 <input name="w_time_exp" type="number" min="0.2" max="4" step="0.1" value="${e.w_time_exp}"></label>
+        <div class="settings-scroll">
+          <p class="set-k">コース</p>
+          <select class="set-course" name="score_course" aria-label="コース">${courses}</select>
+          <div class="set-conds">
+            <div>
+              <p class="set-k">天候</p>
+              ${setSegHtml("score_weather", WEATHER_OPTIONS, c?.weather)}
+            </div>
+            <div>
+              <p class="set-k">バ場</p>
+              ${setSegHtml("score_ground_condition", GROUND_CONDITION_OPTIONS, c?.groundCondition)}
+            </div>
+            <div>
+              <p class="set-k">季節</p>
+              ${setSegHtml("score_season", SEASON_OPTIONS, c?.season)}
+            </div>
+          </div>
+          <p class="set-k" style="margin-top:1rem">目標ステ</p>
+          <div class="set-targets">
+            <label class="set-target"><span class="k">速</span><input name="score_speed_cap" type="number" min="1" value="${reqVal(r?.speedCap, DEFAULT_SCORE_REQ.speedCap)}"></label>
+            <label class="set-target"><span class="k">パ</span><input name="score_power" type="number" min="1" value="${reqVal(r?.power, DEFAULT_SCORE_REQ.power)}"></label>
+            <label class="set-target"><span class="k">根</span><input name="score_guts" type="number" min="1" value="${reqVal(r?.guts, DEFAULT_SCORE_REQ.guts)}"></label>
+            <label class="set-target"><span class="k">賢</span><input name="score_wisdom" type="number" min="1" value="${reqVal(r?.wisdom, DEFAULT_SCORE_REQ.wisdom)}"></label>
+            <label class="set-target"><span class="k">スタ · 掛かりなし</span><input name="score_stamina_no" type="number" min="1" value="${escapeHtml(num(r?.staminaNoTempt))}"></label>
+            <label class="set-target"><span class="k">スタ · 掛かりあり</span><input name="score_stamina_with" type="number" min="1" value="${escapeHtml(num(r?.staminaWithTempt))}"></label>
+          </div>
+          <div class="set-flag">
+            <input type="hidden" name="score_stamina_race" id="stamina-race" value="${stamOn ? "1" : ""}">
+            <button type="button" id="stamina-btn"${stamOn ? ` class="on"` : ""}>${stamOn ? "スタミナ勝負コース" : "スタミナ勝負ではない"}</button>
+          </div>
+          <p class="set-foot">${effectsNote}</p>
         </div>
       </section>
-      <p class="ctas"><button type="submit">保存</button></p>
+      <section class="work settings-bot">
+        <div class="work-head">
+          <h2>参考オッズの数字</h2>
+          <span class="odds-meta">普段は触らない · 払いは実票だけ · λ は出さない</span>
+        </div>
+        <div class="set-metrics">
+          <label class="set-metric">
+            <span class="sym">S</span>
+            <span class="k">Seed の山</span>
+            <input name="seed_pool_s" type="number" min="0" value="${e.seed_pool_s}">
+            <span class="d">評価点の比で配る。払わない</span>
+          </label>
+          <label class="set-metric">
+            <span class="sym">E</span>
+            <span class="k">票量の目安</span>
+            <input name="pull_e" type="number" min="0" value="${e.pull_e}">
+            <span class="d">近づくと Seed が薄くなる</span>
+          </label>
+          <label class="set-metric">
+            <span class="sym">D</span>
+            <span class="k">控除（0〜0.99）</span>
+            <input name="takeout_d" type="number" min="0" max="0.99" step="0.01" value="${e.takeout_d}">
+            <span class="d">参考も確定も同じ率。モックの％表示にはしない</span>
+          </label>
+          <label class="set-metric">
+            <span class="sym">w時</span>
+            <span class="k">時間の下限</span>
+            <input name="w_time_floor" type="number" min="0" max="0.99" step="0.05" value="${e.w_time_floor}">
+            <span class="d">時計だけでは 0 にしない</span>
+          </label>
+          <label class="set-metric">
+            <span class="sym">指数</span>
+            <span class="k">時間の曲線</span>
+            <input name="w_time_exp" type="number" min="0.2" max="4" step="0.1" value="${e.w_time_exp}">
+            <span class="d">第2回の仮置きは 1</span>
+          </label>
+        </div>
+      </section>
     </form>`;
+  const scripts = `<script>
+    document.querySelectorAll(".set-seg").forEach((seg) => {
+      seg.querySelectorAll("button").forEach((b) => {
+        b.addEventListener("click", () => {
+          seg.querySelectorAll("button").forEach((x) => x.classList.remove("on"));
+          b.classList.add("on");
+          const inp = seg.querySelector("input");
+          if (inp) inp.value = b.dataset.v || "";
+        });
+      });
+    });
+    const stamBtn = document.getElementById("stamina-btn");
+    const stamIn = document.getElementById("stamina-race");
+    stamBtn?.addEventListener("click", () => {
+      const on = stamIn && stamIn.value !== "1";
+      if (stamIn) stamIn.value = on ? "1" : "";
+      stamBtn.classList.toggle("on", !!on);
+      stamBtn.textContent = on ? "スタミナ勝負コース" : "スタミナ勝負ではない";
+    });
+    document.querySelectorAll(".set-tog[data-kind]").forEach((b) => {
+      b.addEventListener("click", () => {
+        if (b.disabled) return;
+        const id = b.getAttribute("data-kind");
+        const cb = document.querySelector('input[name="kind_' + id + '"]');
+        if (!cb) return;
+        cb.checked = !cb.checked;
+        b.classList.toggle("on", cb.checked);
+        const st = b.querySelector(".st");
+        if (st) st.textContent = cb.checked ? "使う" : "使わない";
+      });
+    });
+  </script>`;
+  return { body, scripts };
 }
 
 export function adminLoginBody(flash: { text: string | null; error: boolean }): string {
