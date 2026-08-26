@@ -552,16 +552,22 @@ export function adminRegisterPage(
         sc?.classList.remove("read");
         dlg?.showModal();
       });
+      const toggleShotZoom = () => {
+        sc?.classList.toggle("fit");
+        sc?.classList.toggle("read");
+      };
       const onShotClick = (ev) => {
         if (ev.target instanceof HTMLImageElement) {
-          sc?.classList.toggle("fit");
-          sc?.classList.toggle("read");
+          toggleShotZoom();
           return;
         }
         dlg?.close();
       };
-      sc?.addEventListener("click", onShotClick);
+      // sc と dlg の二重登録だとトグルが打ち消し合うため dlg のみ
       dlg?.addEventListener("click", onShotClick);
+      dlg?.addEventListener("dblclick", (ev) => {
+        if (ev.target instanceof HTMLImageElement) toggleShotZoom();
+      });
       const ddlg = document.getElementById("drop-horse-modal");
       document.querySelectorAll("[data-drop-id]").forEach((btn) => {
         btn.addEventListener("click", (ev) => {
@@ -793,16 +799,22 @@ export function adminHorsesPage(board: Board, selId: string | null, reauth: stri
           dlg?.showModal();
         });
       });
+      const toggleShotZoom = () => {
+        sc?.classList.toggle("fit");
+        sc?.classList.toggle("read");
+      };
       const onShotClick = (ev) => {
         if (ev.target instanceof HTMLImageElement) {
-          sc?.classList.toggle("fit");
-          sc?.classList.toggle("read");
+          toggleShotZoom();
           return;
         }
         dlg?.close();
       };
-      sc?.addEventListener("click", onShotClick);
+      // sc と dlg の二重登録だとトグルが打ち消し合うため dlg のみ
       dlg?.addEventListener("click", onShotClick);
+      dlg?.addEventListener("dblclick", (ev) => {
+        if (ev.target instanceof HTMLImageElement) toggleShotZoom();
+      });
       const sdlg = document.getElementById("scratch-modal");
       document.querySelectorAll("[data-scratch-id]").forEach((btn) => {
         btn.addEventListener("click", (ev) => {
