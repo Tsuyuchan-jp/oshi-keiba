@@ -189,6 +189,78 @@
     .purse .u { font-size: .78rem; font-weight: 600; color: #8a9490; margin-left: .25rem; }
     .amt-show .rest { display: block; font-size: .68rem; color: #6aa8a4; margin-top: .1rem; }
     .amt-show .rest b { color: #c8d0cc; font-weight: 700; }
+    .chrome-end {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: .25rem;
+    }
+    .more-btn {
+      appearance: none;
+      background: transparent;
+      border: 0;
+      color: #6aa8a4;
+      font: inherit;
+      font-size: 1.2rem;
+      line-height: 1;
+      padding: .15rem .35rem;
+      cursor: pointer;
+      letter-spacing: .05em;
+    }
+    .more-btn[aria-expanded="true"] { color: #e0b34a; }
+    .more-pop {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 2.2rem;
+      z-index: 8;
+      min-width: 8.5rem;
+      background: #121516;
+      border: 1px solid #3a4440;
+      padding: .25rem 0;
+    }
+    .more-pop.open { display: block; }
+    .more-pop a, .more-pop button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: 0;
+      color: #c8d0cc;
+      font: inherit;
+      font-size: .82rem;
+      padding: .45rem .75rem;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .out-links {
+      display: none;
+      position: fixed;
+      right: 1rem;
+      bottom: calc(.85rem + env(safe-area-inset-bottom));
+      z-index: 11;
+      font-size: .75rem;
+    }
+    .out-links a {
+      color: rgba(232, 238, 234, .55);
+      text-decoration: none;
+      margin-left: .75rem;
+    }
+    .out-links a:hover { color: #e0b34a; }
+    @media (min-width: 900px) {
+      .out-links { display: block; }
+      .mock-label { right: 9.5rem; }
+    }
+    dialog.howto {
+      max-width: 22rem;
+      background: #0c0e0f;
+      color: #e8eeea;
+      border: 1px solid #3a4440;
+      padding: 1rem 1.1rem;
+    }
+    dialog.howto::backdrop { background: rgba(0,0,0,.55); }
+    dialog.howto p { font-size: .85rem; color: #9aa8a4; line-height: 1.55; }
+    dialog.howto button { margin-top: .5rem; }
   </style>
 </head>
 <body class="tone-quiet">
@@ -200,10 +272,18 @@
           <a class="brand" href="./index.html">OSHI KEIBA</a>
           <div class="who">neko</div>
         </div>
-        <div class="nav">
-          <span class="pill"><span class="dot"></span>投票中</span>
-          <a href="../venue-board/layout-venue.html">場内</a>
-          <a class="on" href="./index.html">窓口</a>
+        <div class="chrome-end">
+          <div class="nav">
+            <span class="pill"><span class="dot"></span>投票中</span>
+            <a href="../venue-board/layout-venue.html">場内</a>
+            <a class="on" href="./index.html">窓口</a>
+          </div>
+          <button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
+          <div class="more-pop" id="more-pop">
+            <button type="button" id="howto-open">使い方</button>
+            <button type="button" id="logout-mock">ログアウト</button>
+            <a href="#">管理者</a>
+          </div>
         </div>
       </header>
       <div class="purse">
@@ -239,7 +319,16 @@
       </div>
     </div>
   </div>
+  <nav class="out-links" aria-label="その他">
+    <a href="#" id="howto-out">使い方</a>
+    <a href="#">管理者</a>
+  </nav>
   <div class="mock-label">案A · マークカード（タップで試せます）</div>
+  <dialog class="howto" id="howto">
+    <p>窓口で馬券を買います。賭式を選び、番号をタップ。金額は下です。やりなおしは文字リンク。場内へ戻るリンクもあります。</p>
+    <p>3連単は当たりの組み合わせに投票がなかったため、特払いです。この賭式に使ったスペの8割が戻ります。</p>
+    <form method="dialog"><button type="submit">閉じる</button></form>
+  </dialog>
   <script>
     const UNIT = 100;
     let balance = 12800;
@@ -372,6 +461,28 @@
       paint();
     });
     paint();
+    const moreBtn = document.getElementById("more-btn");
+    const morePop = document.getElementById("more-pop");
+    const howto = document.getElementById("howto");
+    moreBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const on = morePop.classList.toggle("open");
+      moreBtn.setAttribute("aria-expanded", on ? "true" : "false");
+    });
+    document.addEventListener("click", () => {
+      morePop.classList.remove("open");
+      moreBtn.setAttribute("aria-expanded", "false");
+    });
+    morePop.addEventListener("click", (e) => e.stopPropagation());
+    document.getElementById("howto-open").addEventListener("click", () => howto.showModal());
+    document.getElementById("howto-out").addEventListener("click", (e) => {
+      e.preventDefault();
+      howto.showModal();
+    });
+    document.getElementById("logout-mock").addEventListener("click", () => {
+      morePop.classList.remove("open");
+      moreBtn.setAttribute("aria-expanded", "false");
+    });
   </script>
 </body>
 </html>

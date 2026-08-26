@@ -48,9 +48,9 @@
 - **窓口**（旧・投票）: 書く。所持スペ。場内の「馬券を買う」から入る。画面内に場内へ戻るリンクはある
 - `setup` 中も場内に入れてよい。投票開始まで待つ旨。参加ボタンは投票中だけ
 - メンバー向けはすべて「オッズ」。評価点・Seed・控除の記号は出さない。「換金しない」も出さない
-- 使い方・ログアウト・管理者は、枠内の「⋯」（ほか）。PCは枠外右下にも重ねてよい。スマホは⋯だけ
+- 使い方・ログアウト・管理者は、枠内の「⋯」（ほか）。PCは枠外右下にも重ねてよい。スマホは⋯だけ。入場は未ログインなのでログアウトは出さない。場内・窓口・入場のモックで揃える（本番未適用）
 
-紙面: 本番はまだ和紙・明朝（`src/lib/ui.ts`）。場内の正は [layout-venue.html](mocks/venue-board/layout-venue.html)（投票中・締切・結果公開まで採用）。窓口は [quiet.html](mocks/bet-window/quiet.html)、入場は [gate](mocks/gate/index.html)。枠番色・行タップで買う、はやらない。本番の買いUIはまだセレクト。
+紙面: 本番はまだ和紙・明朝（`src/lib/ui.ts`）。場内の正は [layout-venue.html](mocks/venue-board/layout-venue.html)（投票中・締切・結果公開まで採用。⋯あり）。窓口は [quiet.html](mocks/bet-window/quiet.html)、入場は [gate](mocks/gate/index.html)。枠番色・行タップで買う、はやらない。本番の買いUIはまだセレクト。
 
 場内盤の面（採用。本番は締切後も和紙の別カードのまま）:
 

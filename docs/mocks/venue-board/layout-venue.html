@@ -36,6 +36,79 @@
     }
     .chrome .brand { color: var(--led); }
     .who { color: var(--led-dim); font-size: .72rem; }
+    .chrome-end {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      flex: 0 0 auto;
+    }
+    .more-btn {
+      appearance: none;
+      background: transparent;
+      border: 0;
+      color: var(--led-dim);
+      font: inherit;
+      font-size: 1.2rem;
+      line-height: 1;
+      padding: .15rem .35rem;
+      cursor: pointer;
+      letter-spacing: .05em;
+    }
+    .more-btn[aria-expanded="true"] { color: #e0b34a; }
+    .more-pop {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 2.2rem;
+      z-index: 8;
+      min-width: 8.5rem;
+      background: #121516;
+      border: 1px solid #3a4440;
+      padding: .25rem 0;
+    }
+    .more-pop.open { display: block; }
+    .more-pop a, .more-pop button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: 0;
+      color: #c8d0cc;
+      font-family: "IBM Plex Sans JP", sans-serif;
+      font-size: .82rem;
+      letter-spacing: 0;
+      padding: .45rem .75rem;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .out-links {
+      display: none;
+      position: fixed;
+      right: 1rem;
+      bottom: calc(.85rem + env(safe-area-inset-bottom));
+      z-index: 11;
+      font-size: .75rem;
+    }
+    .out-links a {
+      color: rgba(232, 238, 234, .55);
+      text-decoration: none;
+      margin-left: .75rem;
+    }
+    .out-links a:hover { color: #e0b34a; }
+    @media (min-width: 900px) {
+      .out-links { display: block; }
+    }
+    dialog.howto {
+      max-width: 22rem;
+      background: #0c0e0f;
+      color: #e8eeea;
+      border: 1px solid #3a4440;
+      padding: 1rem 1.1rem;
+    }
+    dialog.howto::backdrop { background: rgba(0,0,0,.55); }
+    dialog.howto p { font-size: .85rem; color: #9aa8a4; line-height: 1.55; }
+    dialog.howto button { margin-top: .5rem; }
     .led-meta {
       display: flex;
       align-items: center;
@@ -587,6 +660,7 @@
       .foot { justify-content: flex-end; }
       .scene:not([data-phase="voting"]) .foot { justify-content: flex-start; }
       .cta { min-width: 11rem; text-align: center; }
+      .mock-label { right: 9.5rem; }
     }
   </style>
 </head>
@@ -599,10 +673,18 @@
           <a class="brand" href="./index.html">OSHI KEIBA</a>
           <div class="who" id="who-line">neko · 12,800 スペ</div>
         </div>
-        <div class="led-meta">
-          <span class="pill" id="phase-pill"><span class="dot"></span><span id="phase-label">投票中</span></span>
-          <span id="meta-now">現在 <strong id="now-clock">18:12</strong></span>
-          <span id="meta-close">締切 <strong>18:40</strong></span>
+        <div class="chrome-end">
+          <div class="led-meta">
+            <span class="pill" id="phase-pill"><span class="dot"></span><span id="phase-label">投票中</span></span>
+            <span id="meta-now">現在 <strong id="now-clock">18:12</strong></span>
+            <span id="meta-close">締切 <strong>18:40</strong></span>
+          </div>
+          <button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
+          <div class="more-pop" id="more-pop">
+            <button type="button" id="howto-open">使い方</button>
+            <button type="button" id="logout-mock">ログアウト</button>
+            <a href="#">管理者</a>
+          </div>
         </div>
       </header>
       <section class="board">
@@ -732,7 +814,16 @@
     <button type="button" data-slot="dusk">夕方</button>
     <button type="button" data-slot="night">ナイター</button>
   </div>
+  <nav class="out-links" aria-label="その他">
+    <a href="#" id="howto-out">使い方</a>
+    <a href="#">管理者</a>
+  </nav>
   <div class="mock-label" id="mock-label">端の芝が見えるか・時間帯と面を切替</div>
+  <dialog class="howto" id="howto">
+    <p>場内でオッズを見ます。馬券は「馬券を買う」から窓口へ。締切後は確定配当、結果公開で払戻と着順が出ます。</p>
+    <p>3連単は当たりの組み合わせに投票がなかったため、特払いです。この賭式に使ったスペの8割が戻ります。</p>
+    <form method="dialog"><button type="submit">閉じる</button></form>
+  </dialog>
   <script>
     (function slotBg() {
       const scene = document.querySelector(".scene");
@@ -927,6 +1018,28 @@
       void row.offsetWidth;
       row.classList.add("pulse");
     }, 4000);
+    const moreBtn = document.getElementById("more-btn");
+    const morePop = document.getElementById("more-pop");
+    const howto = document.getElementById("howto");
+    moreBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const on = morePop.classList.toggle("open");
+      moreBtn.setAttribute("aria-expanded", on ? "true" : "false");
+    });
+    document.addEventListener("click", () => {
+      morePop.classList.remove("open");
+      moreBtn.setAttribute("aria-expanded", "false");
+    });
+    morePop.addEventListener("click", (e) => e.stopPropagation());
+    document.getElementById("howto-open").addEventListener("click", () => howto.showModal());
+    document.getElementById("howto-out").addEventListener("click", (e) => {
+      e.preventDefault();
+      howto.showModal();
+    });
+    document.getElementById("logout-mock").addEventListener("click", () => {
+      morePop.classList.remove("open");
+      moreBtn.setAttribute("aria-expanded", "false");
+    });
   </script>
 </body>
 </html>
