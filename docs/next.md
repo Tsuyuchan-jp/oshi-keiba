@@ -4,11 +4,11 @@
 
 ## 現在進行中
 
-- 採用済みモックの本番移植（**管理は 6 タブ骨格＋開催設定〜出走登録まで差し替え済み。出走登録タブは一旦完了（実機 OK）。出走タブは名簿切替・自動の掛け算内訳（緑スキル対応・一行式）・スクショ拡大・取消モーダルまで実機済み。進行タブは投票開始〜着順〜公開まで実機済み（公開後の着順は読み専用）。票が入ったら台帳の絞り込み実機が残。メンバー画面は未着手**。デプロイは明示依頼があるまでしない）— [venue-board](mocks/venue-board/layout-venue.html)・[quiet.html](mocks/bet-window/quiet.html)・[gate](mocks/gate/index.html)・[admin-dash](mocks/admin-dash/index.html)
-- 票が入ったら台帳の絞り込み実機
+- 票が入ったら台帳の絞り込み実機（管理6タブの見た目差し替えは閉じた。メンバー画面は未着手。デプロイは明示依頼があるまでしない）— [ledger.html](mocks/admin-dash/ledger.html)
 
 ## そのあと
 
+- 採用済みモックの本番移植（**管理6タブは箱差し替え・実機まで閉じた。残りはメンバー画面**）— [venue-board](mocks/venue-board/layout-venue.html)・[quiet.html](mocks/bet-window/quiet.html)・[gate](mocks/gate/index.html)
 - OCR: 読み取ったスキルのうち有効スキルにあるものも不採用になっている問題を改善。あわせて OCR のテキスト誤認識がそのまま通って不採用になる点も改善 — [ocr.md](ocr.md)
 - Neko長明さんへの評価点の式確認（手土産＝動く実装は揃った）— [score.md](score.md)
 - OCR / 評価点の細かい調整（読取・表示 UI など）— [ocr.md](ocr.md)・[score.md](score.md)
@@ -26,6 +26,8 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
+- 管理6タブ見た目差し替えを閉じる（開催設定〜進行・登録・出走・台帳・オッズ。ユーザー実機 OK。開催設定見出し「イベント概要／レギュレーション」はモック「今日のレース／評価点に使う条件」と軽いズレのまま。票入り台帳絞り込みとメンバー画面は別）— [admin-dash](mocks/admin-dash/index.html)
+- 出走内訳は S 倍率を先に出し算出式を後ろへ（小数第3位・一行式ラベル付き）— [horses.html](mocks/admin-dash/horses.html)
 - 進行タブ全フェーズ実機（投票開始〜強制締切〜着順保存〜公開。開閉レール確認。公開後着順は読み専用に修正。票なしのため台帳絞り込みは未）— [progress-places.html](mocks/admin-dash/progress-places.html)
 - 出走登録タブ一旦完了（面寄せ・ドロップ／読取案内・チップ・不採用保存・seed_source 自動／直置き・名簿から外す。OCR 精度改善は後）— [register.html](mocks/admin-dash/register.html)
 - 出走タブ：緑→ステへのスキル対応表示と評価点直上の一行式 — [horses.html](mocks/admin-dash/horses.html)
