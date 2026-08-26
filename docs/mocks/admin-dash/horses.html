@@ -213,17 +213,27 @@
     ];
 
     const SHOT = "./sample-shot.png";
-    const SHOT_THUMB = "./sample-shot-thumb.png";
     let sel = 1;
 
     function shotBlock(hasShot) {
       if (!hasShot) {
-        return `<div class="shot-none">スクショなし（直置き）</div>`;
+        return `<div class="shot-none">スクショなし</div>`;
       }
       return `<button type="button" class="shot-thumb" id="shot-open" aria-label="スクショを大きく見る">
-          <img src="${SHOT_THUMB}" alt="育成カードの見出し（切り取り）">
-        </button>
-        <p class="shot-hint">見出しの切り取り。クリックで全体を高さ最大に縮小。ダブルクリックで拡大して縦スクロール。Esc か余白で閉じる</p>`;
+          <img src="${SHOT}" alt="">
+        </button>`;
+    }
+    function pipeHead(h, hasShot) {
+      const sub = hasShot
+        ? `${h.run} · ${h.style} · 作者仮置きの式（Neko未確定）`
+        : `${h.run} · ${h.style}`;
+      return `<div class="pipe-head">
+        <div>
+          <h2>${h.n} ${h.uma}</h2>
+          <p class="note">${sub}</p>
+        </div>
+        ${shotBlock(hasShot)}
+      </div>`;
     }
 
     function paintList() {
@@ -251,9 +261,7 @@
       const h = ROSTER.find((x) => x.n === sel);
       const el = document.getElementById("pipe");
       if (h.source === "manual") {
-        el.innerHTML = `<h2>${h.n} ${h.uma}</h2>
-          <p class="note">${h.run} · ${h.style}</p>
-          ${shotBlock(false)}
+        el.innerHTML = `${pipeHead(h, false)}
           <div class="pipe-step">
             <div class="pipe-k">経路</div>
             <div>直置き。${h.why}</div>
@@ -266,9 +274,7 @@
         return;
       }
       const s = h.skill;
-      el.innerHTML = `<h2>${h.n} ${h.uma}</h2>
-        <p class="note">${h.run} · ${h.style} · 作者仮置きの式（Neko未確定）</p>
-        ${shotBlock(true)}
+      el.innerHTML = `${pipeHead(h, true)}
         <div class="pipe-step">
           <div class="pipe-k">土台（スキル）</div>
           <div class="pipe-v">有効 ${s.eff} ＋ 金×2（${s.gold}枚）＋ ためらい ${s.tam}＝ <b>${s.base}</b></div>

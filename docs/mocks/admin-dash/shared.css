@@ -443,32 +443,48 @@ table.plain tbody tr.on { background: #e8f0fa; }
   font-variant-numeric: tabular-nums;
   margin: .35rem 0 0;
 }
+.pipe-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .65rem 0.85rem;
+  align-items: start;
+  margin-bottom: .45rem;
+}
+.pipe-head h2 { margin: 0 0 .2rem; }
+.pipe-head .note { margin: 0; }
 .shot-thumb {
   display: block;
-  width: 100%;
-  aspect-ratio: 506 / 199;
+  width: 10.6rem;
+  height: 4.15rem;
   overflow: hidden;
-  margin: .35rem 0 .45rem;
+  margin: 0;
   padding: 0;
   border: 1px solid #d5d9e0;
-  border-radius: 8px;
+  border-radius: 6px;
   background: #1a1c1f;
   cursor: pointer;
+  flex: 0 0 auto;
 }
 .shot-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: left center;
+  object-position: top center;
   display: block;
 }
 .shot-none {
-  margin: .35rem 0 .65rem;
-  padding: .7rem .75rem;
+  width: 10.6rem;
+  height: 4.15rem;
+  margin: 0;
+  padding: .35rem .45rem;
   border: 1px dashed #c5ccd6;
-  border-radius: 8px;
+  border-radius: 6px;
   color: #6b7380;
-  font-size: .82rem;
+  font-size: .72rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 .shot-hint { font-size: .72rem; color: #6b7380; margin: 0 0 .55rem; }
 dialog.shot-dlg {
@@ -479,12 +495,12 @@ dialog.shot-dlg {
   margin: 0;
   padding: 0;
   border: 0;
-  background: #000;
+  background: transparent;
 }
 dialog.shot-dlg[open] {
   display: block;
 }
-dialog.shot-dlg::backdrop { background: #000; }
+dialog.shot-dlg::backdrop { background: rgba(18, 22, 28, .42); }
 .shot-scroller {
   width: 100%;
   height: 100%;
