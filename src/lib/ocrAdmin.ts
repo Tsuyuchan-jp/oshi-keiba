@@ -3,6 +3,7 @@ import { STYLE_OPTIONS, type HorseScoreInput } from "./horseScoreInput";
 import { catalogJsonForPage, classifySkillName } from "./skillCatalog";
 import type { EventScoreSetup } from "./scoreSetup";
 import { ALLOWED_SHOT_MIME } from "./shotMime";
+import { greenSkillByName } from "./greenSkills";
 import { skillCountsInBase, TAMERAI_IDS } from "./score";
 import type { EffectiveSkillIdsByStyle } from "./utoolsEffects";
 import type { Board } from "./store";
@@ -53,11 +54,14 @@ export function registerMaterialsHtml(
     const c = classifySkillName(name);
     accepted.push({ name: c.name || name, kind: c.kind, id });
   }
+  const isGreen = (name: string) => greenSkillByName(name) != null;
+  const greens = accepted.filter((h) => isGreen(h.name));
   const effective = accepted.filter((h) =>
     skillCountsInBase(h.name, h.id, effectiveIds),
   );
   const rejected = accepted.filter(
-    (h) => !skillCountsInBase(h.name, h.id, effectiveIds),
+    (h) =>
+      !isGreen(h.name) && !skillCountsInBase(h.name, h.id, effectiveIds),
   );
   const skipped = (input.skippedSkillNames ?? []).map((n) => ({
     name: n,
@@ -81,6 +85,8 @@ export function registerMaterialsHtml(
     </div>
     <p class="set-k" style="margin-top:.85rem">有効スキル（${effective.length}）</p>
     <div class="reg-chips">${skillChipsHtml(effective, "なし")}</div>
+    <p class="set-k" style="margin-top:.85rem">緑スキル</p>
+    <div class="reg-chips">${skillChipsHtml(greens, "なし")}</div>
     <p class="set-k" style="margin-top:.85rem">不採用スキル</p>
     <div class="reg-chips">${skillChipsHtml(rejected, "なし")}</div>
     <p class="set-k" style="margin-top:.85rem">OCR落ちスキル</p>
@@ -400,8 +406,11 @@ export function ocrAdminScript(
     const ap = draft.aptitudes;
     const okHits = lastHits.filter((h) => h.ok);
     const missHits = lastHits.filter((h) => !h.ok);
+    const greens = okHits.filter((h) => GREEN_NAMES.has(String(h.name || "").trim()));
     const effective = okHits.filter((h) => countsInBase(h.name, h.id));
-    const rejected = okHits.filter((h) => !countsInBase(h.name, h.id));
+    const rejected = okHits.filter(
+      (h) => !GREEN_NAMES.has(String(h.name || "").trim()) && !countsInBase(h.name, h.id),
+    );
     const ocrMiss = missHits.map((h) => ({ name: h.input, kind: "unknown" }));
     el.innerHTML =
       '<div class="reg-stats">' +
@@ -421,6 +430,8 @@ export function ocrAdminScript(
       "</div>" +
       '<p class="set-k" style="margin-top:.85rem">有効スキル（' + effective.length + "）</p>" +
       '<div class="reg-chips">' + chipsHtml(effective, "なし") + "</div>" +
+      '<p class="set-k" style="margin-top:.85rem">緑スキル</p>' +
+      '<div class="reg-chips">' + chipsHtml(greens, "なし") + "</div>" +
       '<p class="set-k" style="margin-top:.85rem">不採用スキル</p>' +
       '<div class="reg-chips">' + chipsHtml(rejected, "なし") + "</div>" +
       '<p class="set-k" style="margin-top:.85rem">OCR落ちスキル</p>' +
