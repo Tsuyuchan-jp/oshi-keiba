@@ -2,8 +2,11 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   formatVenueClosedHint,
+  formatVenuePublishedHint,
   resolveVenueSlot,
   venueHorseRowHtml,
+  venuePayKindClass,
+  venuePlaceRoman,
   venueSlotFromClock,
   venueStyleLabel,
 } from "./venueBoard.ts";
@@ -33,6 +36,20 @@ test("行はモックの sheet-row。ライブ用の data-sel と odds-now を�
   assert.doesNotMatch(html, /Seed|評価点|控除/);
 });
 
+test("公開の着列は place-1 と c-place", () => {
+  const html = venueHorseRowHtml({
+    id: "h1",
+    number: 1,
+    umaName: "スズカ",
+    runnerName: "a",
+    styleLabel: "逃げ",
+    odds: 2.0,
+    place: 1,
+  });
+  assert.match(html, /place-1/);
+  assert.match(html, /class="c-place"[^>]*>1</);
+});
+
 test("時間帯は JST。?slot= があれば固定", () => {
   const noonJst = Date.UTC(2026, 7, 26, 3, 0); // 12:00 JST
   const duskJst = Date.UTC(2026, 7, 26, 8, 0); // 17:00 JST
@@ -51,4 +68,18 @@ test("締切注は成立／特払い予定と着は出さない", () => {
   );
   assert.equal(formatVenueClosedHint([], []), "着順はまだ出ません。");
   assert.doesNotMatch(formatVenueClosedHint(["単勝"], ["3連単"]), /Seed|評価点|控除/);
+});
+
+test("公開注は特払いだけ。ローマと払戻クラス", () => {
+  assert.equal(
+    formatVenuePublishedHint(["3連単"]),
+    "3連単は当たりの組み合わせに投票がなかったため、特払いです。この賭式に使ったスペの8割が戻ります。",
+  );
+  assert.equal(formatVenuePublishedHint([]), "");
+  assert.equal(venuePlaceRoman(1), "I");
+  assert.equal(venuePlaceRoman(5), "V");
+  assert.equal(venuePlaceRoman(6), "");
+  assert.equal(venuePayKindClass("sanrenpuku"), "trio");
+  assert.equal(venuePayKindClass("sanrentan"), "trif");
+  assert.equal(venuePayKindClass("win"), "win");
 });

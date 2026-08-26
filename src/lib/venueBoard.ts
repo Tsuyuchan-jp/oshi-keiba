@@ -53,14 +53,21 @@ export function venueHorseRowHtml(opts: {
   runnerName: string;
   styleLabel: string;
   odds: number | null;
+  /** 公開の全頭表だけ。着列用 */
+  place?: number | null;
 }): string {
   const id = escapeHtml(opts.id);
-  return `<div class="sheet-row" role="row" data-sel="${id}" data-horse-id="${id}">
+  const place = opts.place != null ? opts.place : null;
+  const placeClass =
+    place != null && place >= 1 && place <= 3 ? ` place-${place}` : "";
+  const placeText = place != null ? String(place) : "";
+  return `<div class="sheet-row${placeClass}" role="row" data-sel="${id}" data-horse-id="${id}">
     <span class="c-num" role="cell">${opts.number}</span>
     <span class="c-name" role="cell" title="${escapeHtml(opts.umaName)}">${escapeHtml(opts.umaName)}</span>
     <span class="c-runner" role="cell" title="${escapeHtml(opts.runnerName)}">${escapeHtml(opts.runnerName)}</span>
     <span class="c-style" role="cell">${escapeHtml(opts.styleLabel)}</span>
     <span class="c-odds" role="cell"><span class="odds-now">${formatOdds(opts.odds)}</span></span>
+    <span class="c-place" role="cell">${placeText}</span>
   </div>`;
 }
 
@@ -75,4 +82,29 @@ export function formatVenueClosedHint(okLabels: string[], specialLabels: string[
   }
   parts.push("着順はまだ出ません。");
   return parts.join("");
+}
+
+/** 公開後の特払い注。成立分は書かない */
+export function formatVenuePublishedHint(specialLabels: string[]): string {
+  return specialLabels
+    .map(
+      (l) =>
+        `${l}は当たりの組み合わせに投票がなかったため、特払いです。この賭式に使ったスペの8割が戻ります。`,
+    )
+    .join("");
+}
+
+const ROMAN = ["", "I", "II", "III", "IV", "V"] as const;
+
+/** 確定盤のローマ数字。1〜5着だけ */
+export function venuePlaceRoman(place: number): string {
+  if (place < 1 || place > 5) return "";
+  return ROMAN[place]!;
+}
+
+/** 払戻盤の賭式チップ用クラス（モックの trio / trif に合わせる） */
+export function venuePayKindClass(kind: string): string {
+  if (kind === "sanrenpuku") return "trio";
+  if (kind === "sanrentan") return "trif";
+  return kind;
 }

@@ -68,8 +68,7 @@ import {
   kindVoidNotes,
 } from "./lib/ui";
 import { tryAdminGet } from "./lib/adminRoutes";
-import { horseSheetParts } from "./lib/horseName";
-import { resolveVenueSlot, venueBoardPage } from "./lib/venueLayout";
+import { resolveVenueSlot, venueBoardPage, venueTicketsHtml } from "./lib/venueLayout";
 import {
   parseHorseScoreInput,
   serializeHorseScoreInput,
@@ -294,13 +293,24 @@ export default {
         const m = msg(url);
         const live = board.event.status === "voting";
 
-        if (board.event.status === "voting" || board.event.status === "closed") {
+        if (
+          board.event.status === "voting" ||
+          board.event.status === "closed" ||
+          board.event.status === "published"
+        ) {
+          let ticketsHtml: string | undefined;
+          if (board.event.status === "published" && user && user.role === "member") {
+            const bets = await listUserBets(env.DB, board.event.id, user.id);
+            const payouts = await listUserPayouts(env.DB, board.event.id, user.id);
+            ticketsHtml = venueTicketsHtml(bets, payouts, board);
+          }
           return html(
             venueBoardPage({
               board,
               user,
               flash: m,
               slot: resolveVenueSlot(url.searchParams.get("slot")),
+              ticketsHtml,
               scripts:
                 board.event.status === "voting"
                   ? livePollScript("/api/board", "win")
@@ -312,53 +322,6 @@ export default {
         let cta = "";
         if (board.event.status === "setup") {
           cta = `<p class="note">投票開始までお待ちください。</p>`;
-        }
-
-        let publishedBlock = "";
-        if (board.event.status === "published") {
-          const placeRows = board.horses
-            .filter((h) => !h.horse.scratched && h.horse.finish_place != null)
-            .sort(
-              (a, b) => (a.horse.finish_place ?? 0) - (b.horse.finish_place ?? 0),
-            )
-            .map(
-              (h) =>
-                `<tr><td>${h.horse.finish_place}着</td><td>${h.number}. ${escapeHtml(horseSheetParts(h.horse).umaName)}（${escapeHtml(horseSheetParts(h.horse).runnerName)}）</td></tr>`,
-            )
-            .join("");
-          publishedBlock = `
-            <div class="card">
-              <h2>着順</h2>
-              <table><thead><tr><th>着</th><th>ウマ娘</th></tr></thead><tbody>${placeRows}</tbody></table>
-            </div>`;
-          if (user && user.role === "member") {
-            const bets = await listUserBets(env.DB, board.event.id, user.id);
-            const payouts = await listUserPayouts(env.DB, board.event.id, user.id);
-            const payByBet = new Map(payouts.map((p) => [p.bet_id, p]));
-            const nums = numberByHorseId(board);
-            const hist = bets
-              .map((b) => {
-                const label = `${BET_KIND_LABEL[b.kind]} ${formatSelectionLabel(b.kind, b.horse_1, b.horse_2, b.horse_3, nums)}`;
-                const pay = payByBet.get(b.id);
-                let result = "外れ";
-                if (b.refunded && pay?.kind === "refund") result = "取消（全額戻し）";
-                else if (b.refunded && pay?.kind === "redo") result = "やりなおし";
-                else if (pay?.kind === "special") result = "特払い（8割戻し）";
-                else if (pay?.kind === "win") result = `的中 ${formatPt(pay.amount)}`;
-                else if (b.refunded) result = "返還";
-                return `<tr><td>${escapeHtml(label)}</td><td class="num">${formatPt(b.amount)}</td><td>${escapeHtml(result)}</td></tr>`;
-              })
-              .join("");
-            publishedBlock += `
-            <div class="card">
-              <h2>自分の馬券</h2>
-              <p class="muted">残高 ${formatPt(user.balance)}</p>
-              <table>
-                <thead><tr><th>内容</th><th>額</th><th>結果</th></tr></thead>
-                <tbody>${hist || `<tr><td colspan="3" class="muted">なし</td></tr>`}</tbody>
-              </table>
-            </div>`;
-          }
         }
 
         return html(
@@ -375,8 +338,7 @@ export default {
                 ${winSheetTable(board)}
                 ${kindVoidNotes(board)}
                 ${cta}
-              </div>
-              ${publishedBlock}`,
+              </div>`,
           }),
         );
       }
