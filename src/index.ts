@@ -8,7 +8,6 @@ import {
   type Session,
 } from "./lib/auth";
 import {
-  BET_KIND_LABEL,
   formatSelectionLabel,
   isBetKind,
   kindIsEnabled,
@@ -53,22 +52,23 @@ import {
 import { applyAdminUndo } from "./lib/undo";
 import {
   BOARD_FLASH_SCRIPT,
-  betTabsHtml,
-  comboOddsTable,
-  DEDUPE_SELECT_SCRIPT,
   flashHtml,
   formatPt,
   groupMyBets,
   layout,
   livePollScript,
   parseJstInput,
-  pickSelects,
   statusLabel,
   winSheetTable,
   kindVoidNotes,
 } from "./lib/ui";
 import { tryAdminGet } from "./lib/adminRoutes";
 import { resolveVenueSlot, venueBoardPage, venueTicketsHtml } from "./lib/venueLayout";
+import {
+  betBuyPage,
+  betClosedPage,
+  betJoinPage,
+} from "./lib/betLayout";
 import {
   parseHorseScoreInput,
   serializeHorseScoreInput,
@@ -362,117 +362,53 @@ export default {
 
         if (live && !joined) {
           return html(
-            layout({
-              title: "投票",
+            betJoinPage({
+              board,
               user,
-              eventStatus: board.event.status,
-              body: `${flashHtml(m.text, m.error)}
-              <div class="card">
-                <h1>投票</h1>
-                <p class="bal-now"><span class="bal-k">いまの所持</span><strong>${formatPt(user.balance)}</strong></p>
-                <form method="post" action="/bet/join">
-                  <p class="cta"><button type="submit">${escapeHtml(joinButtonLabel(board.event.title))}</button></p>
-                </form>
-              </div>`,
+              flash: m,
+              joinLabel: joinButtonLabel(board.event.title),
             }),
           );
         }
 
         const canBuy = board.event.status === "voting" && joined;
-        const form = canBuy
-          ? `<form method="post" action="/bet" class="bet-form" id="bet-form">
-              <input type="hidden" name="kind" value="${kind}">
-              <div class="row">${pickSelects(kind, board)}</div>
-              <div class="row">
-                <button type="button" class="amt secondary" data-add="100">+100</button>
-                <button type="button" class="amt secondary" data-add="500">+500</button>
-                <button type="button" class="amt secondary" data-amt="all">残り全部</button>
-                <label>金額（スペ）
-                  <input name="amount" id="bet-amount" type="number" min="0" step="${board.event.bet_unit}" value="0" required>
-                </label>
-                <button type="submit">買う</button>
-              </div>
-            </form>
-            <script>
-              (() => {
-                const bal = ${user.balance};
-                const unit = ${board.event.bet_unit};
-                const kindLabel = ${JSON.stringify(BET_KIND_LABEL[kind])};
-                const form = document.getElementById("bet-form");
-                const input = document.getElementById("bet-amount");
-                const cap = Math.floor(bal / unit) * unit;
-                const setAmt = (n) => {
-                  const v = Math.max(0, Math.min(cap, Math.floor(n / unit) * unit));
-                  input.value = String(v);
-                };
-                document.querySelectorAll("[data-add]").forEach((btn) => {
-                  btn.addEventListener("click", () => {
-                    setAmt(Number(input.value || 0) + Number(btn.getAttribute("data-add")));
-                  });
-                });
-                document.querySelectorAll("[data-amt]").forEach((btn) => {
-                  btn.addEventListener("click", () => {
-                    if (btn.getAttribute("data-amt") === "all") setAmt(cap);
-                  });
-                });
-                form.addEventListener("submit", (ev) => {
-                  const picks = [...form.querySelectorAll("select")].map((s) => {
-                    const opt = s.options[s.selectedIndex];
-                    return opt && opt.value ? opt.textContent.trim() : "";
-                  }).filter(Boolean);
-                  const amt = Number(input.value);
-                  if (!picks.length || !(amt >= unit)) {
-                    ev.preventDefault();
-                    alert("買い目と金額（" + unit + " スペ単位）を入れてください");
-                    return;
-                  }
-                  const msg = "この内容で買いますか？\\n\\n" + kindLabel + "\\n" + picks.join(" / ") + "\\n" + amt.toLocaleString("ja-JP") + " スペ";
-                  if (!confirm(msg)) ev.preventDefault();
-                });
-              })();
-            </script>
-            ${DEDUPE_SELECT_SCRIPT}`
-          : `<p class="note">いまは投票期間外です。場内でオッズを見てください。</p>`;
-
-        const myList =
+        const myBetsHtml =
           grouped.length === 0
-            ? `<p class="muted">まだ馬券がありません。</p>`
-            : `<table><thead><tr><th>内容</th><th>額</th></tr></thead><tbody>
-                ${grouped.map((g) => `<tr data-sel="${escapeHtml(g.selection_key)}"><td>${escapeHtml(g.label)}</td><td class="num">${formatPt(g.amount)}</td></tr>`).join("")}
-              </tbody></table>`;
-
-        const redo =
+            ? `<p class="hint">まだ馬券がありません。</p>`
+            : grouped
+                .map(
+                  (g) =>
+                    `<div class="t-row" data-sel="${escapeHtml(g.selection_key)}"><span>${escapeHtml(g.label)}</span><span class="num">${formatPt(g.amount)}</span></div>`,
+                )
+                .join("");
+        const redoHtml =
           canBuy && grouped.length > 0
-            ? `<div class="redo-wrap">
-                <form method="post" action="/bet/redo"
-                  onsubmit="return confirm('全ての馬券がリセットされますがよろしいですか？');">
-                  <button type="submit" class="text-btn">やりなおし（全部取消）</button>
-                </form>
-              </div>`
+            ? `<form method="post" action="/bet/redo" onsubmit="return confirm('全ての馬券がリセットされますがよろしいですか？');">
+                <button type="submit" class="text-btn">やりなおし（全部取消）</button>
+              </form>`
             : "";
 
+        if (!canBuy) {
+          return html(
+            betClosedPage({
+              board,
+              user,
+              flash: m,
+              myBetsHtml: grouped.length > 0 ? myBetsHtml : undefined,
+            }),
+          );
+        }
+
         return html(
-          layout({
-            title: "投票",
+          betBuyPage({
+            board,
             user,
-            eventStatus: board.event.status,
-            live,
+            kind,
+            flash: m,
+            myBetsHtml,
+            redoHtml,
             scripts:
               (live ? livePollScript("/api/board", kind) : "") + BOARD_FLASH_SCRIPT,
-            body: `${flashHtml(m.text, m.error)}
-              <div class="card">
-                <h1>馬券を買う</h1>
-                <p class="bal-now"><span class="bal-k">いまの所持</span><strong>${formatPt(user.balance)}</strong></p>
-                ${betTabsHtml(kind, board.event.enabled_kinds)}
-                ${form}
-                <h2>${escapeHtml(BET_KIND_LABEL[kind])}のオッズ</h2>
-                ${comboOddsTable(board, kind)}
-                <div class="my-bets">
-                  <h2>自分の馬券</h2>
-                  ${myList}
-                </div>
-                ${redo}
-              </div>`,
           }),
         );
       }

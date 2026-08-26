@@ -750,7 +750,7 @@ export const BOARD_FLASH_SCRIPT = `<script>
     try { data = JSON.parse(raw); } catch { return; }
   }
   const hit = data.hit;
-  for (const tr of document.querySelectorAll("tr[data-sel], tr[data-horse-id]")) {
+  for (const tr of document.querySelectorAll("tr[data-sel], tr[data-horse-id], .t-row[data-sel], .orow[data-sel]")) {
     const id = tr.getAttribute("data-sel") || tr.getAttribute("data-horse-id");
     if (id === hit) tr.classList.add("pulse-hit");
   }
@@ -758,7 +758,7 @@ export const BOARD_FLASH_SCRIPT = `<script>
   const q = p.toString();
   history.replaceState(null, "", location.pathname + (q ? "?" + q : ""));
   setTimeout(() => {
-    document.querySelectorAll("tr.pulse-hit").forEach((el) => el.classList.remove("pulse-hit"));
+    document.querySelectorAll(".pulse-hit").forEach((el) => el.classList.remove("pulse-hit"));
   }, 2800);
 })();
 </script>`;
@@ -774,7 +774,7 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
     const n = Number(s);
     return Number.isFinite(n) ? n : null;
   };
-  const rowSel = "tbody tr[data-sel], tbody tr[data-horse-id], .sheet-row[data-sel], .sheet-row[data-horse-id]";
+  const rowSel = "tbody tr[data-sel], tbody tr[data-horse-id], .sheet-row[data-sel], .sheet-row[data-horse-id], .chip[data-sel], .chip[data-horse-id], .orow[data-sel]";
   const seedFromDom = () => {
     const m = new Map();
     for (const tr of document.querySelectorAll(rowSel)) {
@@ -824,6 +824,30 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
           tr.querySelector(".odds-now").textContent =
             (it.odds == null || !Number.isFinite(it.odds)) ? "—" : Number(it.odds).toFixed(1);
           tbody.appendChild(tr);
+        }
+      }
+      const mini = document.querySelector(".odds-mini.combo-list");
+      if (mini) {
+        const existing = new Set([...mini.querySelectorAll(".orow")].map((el) => el.getAttribute("data-sel")));
+        for (const key of existing) {
+          if (key && !next.has(key)) {
+            const el = mini.querySelector('.orow[data-sel="' + CSS.escape(key) + '"]');
+            if (el) el.remove();
+          }
+        }
+        for (const it of items) {
+          if (existing.has(it.key)) continue;
+          const row = document.createElement("div");
+          row.className = "orow pulse-row";
+          row.setAttribute("data-sel", it.key);
+          const lab = document.createElement("span");
+          lab.textContent = it.label;
+          const od = document.createElement("span");
+          od.className = "odds-now";
+          od.textContent =
+            (it.odds == null || !Number.isFinite(it.odds)) ? "—" : Number(it.odds).toFixed(1);
+          row.append(lab, od);
+          mini.appendChild(row);
         }
       }
     }
