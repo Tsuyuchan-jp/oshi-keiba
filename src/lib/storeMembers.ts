@@ -1,0 +1,125 @@
+/**
+ * store 会員（登録・参加・削除）
+ */
+
+import { newId } from "./auth";
+import { captureAdminUndo } from "./undo";
+import { getUser } from "./storeRead";
+import type { EventRow, UserRow } from "./storeTypes";
+
+export async function upsertUser(
+  db: D1Database,
+  displayName: string,
+  role: "member" | "admin",
+): Promise<UserRow> {
+  const name = displayName.trim();
+  if (!name) throw new Error("表示名を入れてください");
+  if (name.length > 40) throw new Error("表示名が長すぎます");
+  const existing = await db
+    .prepare("SELECT * FROM users WHERE display_name = ?")
+    .bind(name)
+    .first<UserRow>();
+  if (existing) return existing;
+  const user: UserRow = {
+    id: newId(),
+    display_name: name,
+    role,
+    balance: 0,
+  };
+  await db
+    .prepare(
+      "INSERT INTO users (id, display_name, role, balance, created_at) VALUES (?, ?, ?, 0, ?)",
+    )
+    .bind(user.id, user.display_name, role, Date.now())
+    .run();
+  return user;
+}
+
+/** 初めて入室: 同名ありは拒否。口座作成。G は開催参加時 */
+export async function registerMember(
+  db: D1Database,
+  displayName: string,
+): Promise<UserRow> {
+  const name = displayName.trim();
+  if (!name) throw new Error("表示名を入れてください");
+  if (name.length > 40) throw new Error("表示名が長すぎます");
+  const existing = await db
+    .prepare("SELECT * FROM users WHERE display_name = ?")
+    .bind(name)
+    .first<UserRow>();
+  if (existing) throw new Error("この名前はすでに使われています");
+  return upsertUser(db, name, "member");
+}
+
+/** 登録済み再入室: 名前なしは拒否。G は開催参加時 */
+export async function loginMember(
+  db: D1Database,
+  displayName: string,
+): Promise<UserRow> {
+  const name = displayName.trim();
+  if (!name) throw new Error("表示名を入れてください");
+  const existing = await db
+    .prepare("SELECT * FROM users WHERE display_name = ? AND role = 'member'")
+    .bind(name)
+    .first<UserRow>();
+  if (!existing) throw new Error("この名前は登録されていません");
+  return existing;
+}
+
+export async function grantIfNeeded(
+  db: D1Database,
+  event: EventRow,
+  user: UserRow,
+): Promise<UserRow> {
+  const already = await db
+    .prepare("SELECT amount FROM grants WHERE event_id = ? AND user_id = ?")
+    .bind(event.id, user.id)
+    .first<{ amount: number }>();
+  if (already) return user;
+  const now = Date.now();
+  await db.batch([
+    db
+      .prepare(
+        "INSERT INTO grants (event_id, user_id, amount, created_at) VALUES (?, ?, ?, ?)",
+      )
+      .bind(event.id, user.id, event.grant_g, now),
+    db
+      .prepare("UPDATE users SET balance = balance + ? WHERE id = ?")
+      .bind(event.grant_g, user.id),
+  ]);
+  return (await getUser(db, user.id))!;
+}
+
+/** 投票中の初回参加。G を1回だけ足す */
+export async function joinEvent(
+  db: D1Database,
+  event: EventRow,
+  user: UserRow,
+): Promise<UserRow> {
+  if (user.role !== "member") throw new Error("メンバーだけ参加できます");
+  if (event.status !== "voting") {
+    throw new Error("参加できるのは投票中だけです");
+  }
+  return grantIfNeeded(db, event, user);
+}
+
+/** 試運転: メンバー口座ごと削除。票はプールから消える */
+export async function deleteMember(
+  db: D1Database,
+  userId: string,
+): Promise<string> {
+  const user = await getUser(db, userId);
+  if (!user || user.role !== "member") {
+    throw new Error("削除できるメンバーが見つかりません");
+  }
+  await captureAdminUndo(db, `メンバー削除（${user.display_name}）`);
+  await db.batch([
+    db.prepare("DELETE FROM payouts WHERE user_id = ?").bind(userId),
+    db.prepare("DELETE FROM bets WHERE user_id = ?").bind(userId),
+    db.prepare("DELETE FROM grants WHERE user_id = ?").bind(userId),
+    db
+      .prepare("DELETE FROM users WHERE id = ? AND role = 'member'")
+      .bind(userId),
+  ]);
+  return user.display_name;
+}

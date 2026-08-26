@@ -4,11 +4,10 @@
 
 ## 現在進行中
 
-- （なし。store 結合テスト追加済み。次は store 分割）
+- （なし。整理パス2クローズ。store 分割まで完了）
 
 ## そのあと
 
-- `store` 分割（`storeFlow` 結合テストあり）— パス1報告
 - 票入り台帳の絞り込み実機 — [ledger.html](mocks/admin-dash/ledger.html)
 - OCR: 読み取ったスキルのうち有効スキルにあるものも不採用になっている問題を改善。あわせて OCR のテキスト誤認識がそのまま通って不採用になる点も改善 — [ocr.md](ocr.md)
 - Neko長明さんへの評価点の式確認（手土産＝動く実装は揃った）— [score.md](score.md)
@@ -27,6 +26,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
+- store 分割: Types / Read / Board / Members / Horses / Event / Race + `store.ts` barrel。公開 API 不変。`storeFlow` 79 パス — パス2クローズ
 - store 結合テスト: メモリ SQLite（D1 互換）で投票→締切→着順→公開・やりなおし・残高不変。`npm test` に `storeFlow` — 分割前の安全網
 - 整理パス2: setup 電光化・メンバーCSS共通化・旧 layout 退役・`memberRoutes` で index 分割（ユーザー実機 OK〜分割実装）
 - 整理パス1（安全な整理）: `ui.ts` 死コード削除・メンバー⋯スクリプト共通化。`npm test` 75 パス — レビュー報告はチャット
