@@ -381,11 +381,10 @@ export default {
                     `<div class="t-row" data-sel="${escapeHtml(g.selection_key)}"><span>${escapeHtml(g.label)}</span><span class="num">${formatPt(g.amount)}</span></div>`,
                 )
                 .join("");
+        // form 属性で外の #redo-form に紐づける（買う form 内に入れ子 form を置かない）
         const redoHtml =
           canBuy && grouped.length > 0
-            ? `<form method="post" action="/bet/redo" onsubmit="return confirm('全ての馬券がリセットされますがよろしいですか？');">
-                <button type="submit" class="text-btn">やりなおし（全部取消）</button>
-              </form>`
+            ? `<button type="submit" class="text-btn" form="redo-form" onclick="return confirm('全ての馬券がリセットされますがよろしいですか？');">やりなおし（全部取消）</button>`
             : "";
 
         if (!canBuy) {

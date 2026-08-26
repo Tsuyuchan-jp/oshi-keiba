@@ -419,7 +419,8 @@ export function betBuyPage(opts: {
         </div>
         <button type="submit" class="buy" id="buy" disabled>買う</button>
       </div>
-    </form>`;
+    </form>
+    <form id="redo-form" method="post" action="/bet/redo" hidden></form>`;
   return pageWrap({
     user: opts.user,
     eventStatus: opts.board.event.status,
