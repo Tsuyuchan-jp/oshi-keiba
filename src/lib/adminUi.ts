@@ -585,16 +585,37 @@ function isAptS(rank: string | undefined): boolean {
   return String(rank ?? "").trim().toUpperCase() === "S";
 }
 
-/** r の内訳式（数値）。目立たせない用 */
-function rCalcHtml(
-  base: number,
-  green: number,
-  aptMul: number,
-  req: number,
-): string {
+/** r の定義式（数値） */
+function rDefText(base: number, green: number, aptMul: number, req: number): string {
   const core = green ? `${base}${green > 0 ? "+" : ""}${green}` : String(base);
   const left = aptMul !== 1 ? `(${core})×${aptMul}` : green ? `(${core})` : core;
-  return `<span class="pipe-r-calc">${escapeHtml(`${left} / ${req}`)}</span>`;
+  return `${left}/${req}`;
+}
+
+/** 頭は S 倍率。後ろに薄い字で S の出し方（r 定義含む） */
+function sMultLine(
+  mult: number,
+  sHow: string,
+): string {
+  return `×${fmt3(mult)} <span class="pipe-s-calc">${escapeHtml(sHow)}</span>`;
+}
+
+function ratioSHow(r: number, n: number, m: number, rDef: string): string {
+  const rr = fmt3(r);
+  const rPart = `r=${rr}（${rDef}）`;
+  if (!(r > 0) || !Number.isFinite(r)) return `r≤0のため 0　${rPart}`;
+  if (r >= 1) {
+    if (n === 1) return `S=r　${rPart}`;
+    return `1+(${rr}−1)/${n}　${rPart}`;
+  }
+  return `1+(${rr}−1)×${m}　${rPart}`;
+}
+
+function speedSHow(r: number, rDef: string): string {
+  const rr = fmt3(r);
+  const rPart = `r=${rr}（${rDef}）`;
+  if (!(r >= 1) || !Number.isFinite(r)) return `未達は見ない　${rPart}`;
+  return `1+(${rr}−1)/4　${rPart}`;
 }
 
 function staminaExplain(
@@ -651,11 +672,23 @@ function pipeHtml(h: HorseBoard, board: Board): string {
   const distMul = isAptS(apt.distance) ? 1.1 : 1;
   const surfMul = isAptS(apt.surface) ? 1.05 : 1;
   const styleMul = isAptS(apt.style) ? 1.1 : 1;
-  const speedLine = `r=${fmt3(b.rawRatios.speed)} ${rCalcHtml(st.speed, gr.speed, distMul, req.speedCap)} → ×${fmt3(b.ratios.speed)}`;
-  const powerLine = `r=${fmt3(b.rawRatios.power)} ${rCalcHtml(st.power, gr.power, surfMul, req.power)} → ×${fmt3(b.ratios.power)}`;
-  const gutsLine = `r=${fmt3(b.rawRatios.guts)} ${rCalcHtml(st.guts, gr.guts, 1, req.guts)} → ×${fmt3(b.ratios.guts)}`;
-  const wisLine = `r=${fmt3(b.rawRatios.wisdom)} ${rCalcHtml(st.wisdom, gr.wisdom, styleMul, req.wisdom)} → ×${fmt3(b.ratios.wisdom)}`;
-  const staLine = `${escapeHtml(staminaExplain(b.adjusted.stamina, req))} → ×${fmt3(b.ratios.staminaMult)}`;
+  const speedLine = sMultLine(
+    b.ratios.speed,
+    speedSHow(b.rawRatios.speed, rDefText(st.speed, gr.speed, distMul, req.speedCap)),
+  );
+  const powerLine = sMultLine(
+    b.ratios.power,
+    ratioSHow(b.rawRatios.power, 4, 4, rDefText(st.power, gr.power, surfMul, req.power)),
+  );
+  const gutsLine = sMultLine(
+    b.ratios.guts,
+    ratioSHow(b.rawRatios.guts, 10, 2, rDefText(st.guts, gr.guts, 1, req.guts)),
+  );
+  const wisLine = sMultLine(
+    b.ratios.wisdom,
+    ratioSHow(b.rawRatios.wisdom, 1, 6, rDefText(st.wisdom, gr.wisdom, styleMul, req.wisdom)),
+  );
+  const staLine = sMultLine(b.ratios.staminaMult, staminaExplain(b.adjusted.stamina, req));
   const formula = `スキル点${s.base} × スピ${fmt3(b.ratios.speed)} × スタ${fmt3(b.ratios.staminaMult)} × パワ${fmt3(b.ratios.power)} × 根性${fmt3(b.ratios.guts)} × 賢さ${fmt3(b.ratios.wisdom)} ＝ ${h.horse.strength}`;
   return `${head}
     <div class="pipe-step"><div class="pipe-k">土台（スキル）</div>
