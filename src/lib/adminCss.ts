@@ -518,6 +518,7 @@ table.plain tbody tr.on { background: #e8f0fa; }
   border: 1px solid #d5d9e0; border-radius: 6px; background: #fff; cursor: grab;
 }
 .horse.on { outline: 2px solid #2b6cb0; }
+.horse.static { cursor: default; }
 .horse .n { font-weight: 800; color: #2b6cb0; }
 .horse .run { font-size: .75rem; color: #6b7380; }
 .slot {

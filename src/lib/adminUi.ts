@@ -182,11 +182,13 @@ ${
 
 function placesScript(
   live: { id: string; n: number; uma: string; run: string; place: number | null }[],
+  readonly: boolean,
 ): string {
   return `<script>
 (() => {
   const LIVE = ${JSON.stringify(live)};
   const N = LIVE.length;
+  const READONLY = ${readonly ? "true" : "false"};
   const places = Array(N).fill(null);
   for (const h of LIVE) {
     if (h.place != null && h.place >= 1 && h.place <= N) places[h.place - 1] = h.id;
@@ -204,7 +206,9 @@ function placesScript(
   function horseEl(id) {
     const h = byId(id);
     const on = pick === id ? " on" : "";
-    return '<div class="horse' + on + '" draggable="true" data-id="' + h.id + '"><span class="n">' + h.n + '</span><span class="uma">' + h.uma + '</span><span class="run">' + h.run + '</span></div>';
+    const drag = READONLY ? "" : ' draggable="true"';
+    const st = READONLY ? " static" : "";
+    return '<div class="horse' + on + st + '"' + drag + ' data-id="' + h.id + '"><span class="n">' + h.n + '</span><span class="uma">' + h.uma + '</span><span class="run">' + h.run + '</span></div>';
   }
   function paint() {
     const idle = LIVE.filter((h) => !used().has(h.id));
@@ -216,11 +220,11 @@ function placesScript(
       ranks.style.gridTemplateRows = "repeat(" + mid + ", auto)";
       ranks.innerHTML = places.map((id, i) =>
         '<div class="rank-row"><div class="rk-n">' + (i + 1) + '着</div><div class="slot' + (id ? " fill" : "") + '" data-slot="' + i + '">' +
-        (id ? horseEl(id) : '<span class="note">ここに置く</span>') + "</div></div>"
+        (id ? horseEl(id) : (READONLY ? "" : '<span class="note">ここに置く</span>')) + "</div></div>"
       ).join("");
     }
     syncHidden();
-    bind();
+    if (!READONLY) bind();
   }
   function setPlace(i, id) {
     const prev = places.indexOf(id);
@@ -321,7 +325,7 @@ function progressWork(board: Board, recentHtml: string): string {
         <div class="ranks-cols" id="place-ranks"></div></div>
     </div>
     ${save}
-    ${placesScript(payload)}
+    ${placesScript(payload, e.status === "published")}
   </section>`;
 }
 
