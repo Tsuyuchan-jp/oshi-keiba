@@ -401,7 +401,7 @@ function styleSeg(selected: string | null | undefined): string {
   ].join("");
   return `<p class="set-k" style="margin-top:.85rem">出走脚質</p>
       <div class="set-seg" id="styles">${btns}</div>
-      <select name="style_key" id="style-key" class="admin-offscreen" required tabindex="-1">${opts}</select>`;
+      <select name="style_key" id="style-key" class="admin-offscreen" tabindex="-1">${opts}</select>`;
 }
 
 export function adminRegisterPage(
@@ -593,9 +593,8 @@ export function adminRegisterPage(
       document.getElementById("horse-edit")?.addEventListener("submit", (ev) => {
         if (styleEl && !String(styleEl.value || "").trim()) {
           ev.preventDefault();
-          styleEl.focus();
-          if (typeof styleEl.reportValidity === "function") styleEl.reportValidity();
-          else alert("脚質を選んでください");
+          document.getElementById("styles")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+          alert("脚質を選んでください");
         }
       });
     </script>`;

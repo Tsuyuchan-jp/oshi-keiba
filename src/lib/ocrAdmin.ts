@@ -125,7 +125,7 @@ export function horsesAdminBody(
         <input type="hidden" name="score_input" id="score-input" value="">
         <input type="file" name="shot" id="shot-from-ocr" class="admin-offscreen" accept="${SHOT_ACCEPT}" tabindex="-1">
         <input id="ocr-file" class="admin-offscreen" type="file" accept="${SHOT_ACCEPT}" tabindex="-1">
-        <select name="style_key" id="style-key" class="admin-offscreen" required tabindex="-1">${styleOpts}</select>
+        <select name="style_key" id="style-key" class="admin-offscreen" tabindex="-1">${styleOpts}</select>
         <div id="mode-idle">
           <div class="reg-drop" id="ocr-drop" role="button" tabindex="0">
             <div class="reg-drop-idle">
@@ -722,9 +722,8 @@ export function ocrAdminScript(
     }
     if (styleEl && !String(styleEl.value || "").trim()) {
       ev.preventDefault();
-      styleEl.focus();
-      if (typeof styleEl.reportValidity === "function") styleEl.reportValidity();
-      else alert("脚質を選んでください");
+      document.getElementById("styles")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      alert("脚質を選んでください");
       return;
     }
     syncScoreInput();
