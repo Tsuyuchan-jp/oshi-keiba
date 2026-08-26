@@ -31,24 +31,24 @@ export function horsesAdminBody(
       (o) => `<option value="${o.key}">${escapeHtml(o.label)}</option>`,
     ),
   ].join("");
-  // file / 隠し欄は table-scroll の外（overflow 内だとピッカーが2頭目から開かない）
-  return `<input id="ocr-file" class="admin-offscreen" type="file" accept="${SHOT_ACCEPT}" tabindex="-1">
-      <form id="horse-add" method="post" action="/admin/horse" enctype="multipart/form-data">
+  // ドロップは table-scroll の外。file はドロップ全面に重ねる（1px 隠しだと選んでも change が空）
+  return `<form id="horse-add" method="post" action="/admin/horse" enctype="multipart/form-data">
         <input type="hidden" name="ocr_ok" id="ocr-ok" value="">
         <input type="hidden" name="score_input" id="score-input" value="">
         <input type="file" name="shot" id="shot-from-ocr" class="admin-offscreen" accept="${SHOT_ACCEPT}" tabindex="-1">
         <select name="style_key" id="style-key" class="admin-offscreen" tabindex="-1">${styleOpts}</select>
+        <div class="reg-drop" id="ocr-drop">
+          <input id="ocr-file" class="reg-drop-file" type="file" accept="${SHOT_ACCEPT}">
+          <strong>完成スクショを置く</strong>
+          <p id="ocr-status">アプリ外で結合した1枚。PNG / JPEG / WebP。選ぶとこの場で読む（サーバへはまだ送らない）。</p>
+        </div>
+        <p class="reg-alt"><button type="button" id="to-manual">スクショなしで直置きする</button></p>
+        <div class="ctas" style="margin-top:.7rem">
+          <button type="button" id="ocr-run">読み取る</button>
+          <button type="button" id="ocr-stop">停止</button>
+        </div>
         <div class="table-scroll" id="bench">
-          <label class="reg-drop" id="ocr-drop" for="ocr-file">
-            <strong>完成スクショを置く</strong>
-            <p>アプリ外で結合した1枚。PNG / JPEG / WebP。</p>
-          </label>
-          <p class="reg-alt"><button type="button" id="to-manual">スクショなしで直置きする</button></p>
-          <div class="ctas" style="margin-top:.7rem">
-            <button type="button" id="ocr-run">読み取る</button>
-            <button type="button" id="ocr-stop">停止</button>
-          </div>
-          <div class="reg-names" style="margin-top:.85rem">
+          <div class="reg-names">
             <label>ウマ娘名<input name="uma_name" id="uma-name" required maxlength="40"></label>
             <label>出走者<input name="runner_name" id="runner-name" required maxlength="40"></label>
           </div>
@@ -153,12 +153,17 @@ export function ocrAdminScript(canAutoScore: boolean): string {
 
   const keyInput = document.getElementById("gemini-key");
   const out = document.getElementById("ocr-out");
+  const statusEl = document.getElementById("ocr-status");
   const scoreInputEl = document.getElementById("score-input");
   const styleEl = document.getElementById("style-key");
   const strengthEl = document.getElementById("strength");
   const manualEl = document.getElementById("strength-manual");
   const hint = document.getElementById("score-hint");
   const fileEl = document.getElementById("ocr-file");
+  function say(msg) {
+    if (statusEl) statusEl.textContent = msg;
+    if (out && out !== statusEl) out.textContent = msg;
+  }
   function pickGeminiKey(raw) {
     const s = String(raw || "").trim();
     const m = s.match(/AIza[0-9A-Za-z_-]+/);
@@ -169,12 +174,12 @@ export function ocrAdminScript(canAutoScore: boolean): string {
     const v = pickGeminiKey(keyInput?.value);
     localStorage.setItem(KEY_LS, v);
     if (keyInput) keyInput.value = v;
-    if (out) out.textContent = "キーをこのブラウザに保存しました。";
+    say("キーをこのブラウザに保存しました。");
   });
   document.getElementById("gemini-clear")?.addEventListener("click", () => {
     localStorage.removeItem(KEY_LS);
     if (keyInput) keyInput.value = "";
-    if (out) out.textContent = "キーを消しました。";
+    say("キーを消しました。");
   });
   document.getElementById("to-manual")?.addEventListener("click", () => {
     if (manualEl) manualEl.checked = true;
@@ -271,11 +276,11 @@ export function ocrAdminScript(canAutoScore: boolean): string {
   }
   async function runOcr(file) {
     const apiKey = pickGeminiKey(keyInput?.value || localStorage.getItem(KEY_LS) || "");
-    if (!apiKey) { if (out) out.textContent = "キーを入れてください。"; return; }
-    if (!file) { fileEl?.click(); return; }
+    if (!apiKey) { say("キーを入れてください。ヒーロー右に貼って保存。"); return; }
+    if (!file) { openPicker(); return; }
     const mime = resolveShotMime(file);
-    if (!mime) { if (out) out.textContent = "対応形式は PNG / JPEG / WebP です。"; return; }
-    if (out) out.textContent = "読み取り中…";
+    if (!mime) { say("対応形式は PNG / JPEG / WebP です。"); return; }
+    say((file.name || "画像") + " を読み取り中…（このブラウザから Gemini。登録ボタンではない）");
     ac = new AbortController();
     try {
       const dataUrl = await new Promise((resolve, reject) => {
@@ -358,22 +363,29 @@ export function ocrAdminScript(canAutoScore: boolean): string {
       attachOcrShot(file);
       syncScoreInput();
       if (out) out.textContent = lines.join("\\n");
+      if (statusEl) statusEl.textContent = (uma || file.name || "画像") + " を読みました。下の欄を確認して登録。";
     } catch (err) {
-      if (out) {
-        if (err && err.name === "AbortError") out.textContent = "停止しました。";
-        else out.textContent = err instanceof Error ? err.message : String(err);
-      }
+      const msg = (err && err.name === "AbortError") ? "停止しました。" : (err instanceof Error ? err.message : String(err));
+      say(msg);
     }
   }
+  function openPicker() {
+    if (!fileEl) { say("画像欄がありません。"); return; }
+    if (typeof fileEl.showPicker === "function") {
+      try { fileEl.showPicker(); return; } catch {}
+    }
+    fileEl.click();
+  }
   function takeFile(file) {
-    if (!file) return;
+    if (!file) { say("画像を受け取れませんでした。もう一度選んでください。"); return; }
     heldFile = file;
-    if (fileEl) fileEl.value = "";
     runOcr(file);
+    if (fileEl) fileEl.value = "";
   }
   fileEl?.addEventListener("change", () => {
     const f = fileEl.files && fileEl.files[0];
-    if (f) takeFile(f);
+    if (!f) { say("ファイルが空です。もう一度選んでください。"); return; }
+    takeFile(f);
   });
   const drop = document.getElementById("ocr-drop");
   drop?.addEventListener("dragover", (e) => { e.preventDefault(); });
@@ -383,7 +395,7 @@ export function ocrAdminScript(canAutoScore: boolean): string {
     if (f) takeFile(f);
   });
   document.getElementById("ocr-run")?.addEventListener("click", () => {
-    if (!heldFile) { fileEl?.click(); return; }
+    if (!heldFile) { openPicker(); return; }
     runOcr(heldFile);
   });
   document.getElementById("horse-add")?.addEventListener("submit", (ev) => {
@@ -394,7 +406,7 @@ export function ocrAdminScript(canAutoScore: boolean): string {
       const has = (slot && slot.files && slot.files[0]) || ocrShot;
       if (!has) {
         ev.preventDefault();
-        if (out) out.textContent = "読取した画像が登録に載っていません。もう一度読み取ってください。";
+        say("読取した画像が登録に載っていません。もう一度読み取ってください。");
         return;
       }
       if (ocrShot && slot && !(slot.files && slot.files[0]) && typeof DataTransfer !== "undefined") {
