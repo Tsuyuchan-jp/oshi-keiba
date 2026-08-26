@@ -49,7 +49,8 @@ export function adminReauthField(): string {
 }
 
 function phasePill(status: EventRow["status"]): string {
-  return `<span class="phase ${headerPhaseKind(status)}">${escapeHtml(statusLabel(status))}</span>`;
+  const extra = status === "voting" ? " live" : "";
+  return `<span class="phase ${headerPhaseKind(status)}${extra}">${escapeHtml(statusLabel(status))}</span>`;
 }
 
 function bindDlgScript(): string {
@@ -161,9 +162,8 @@ ${
 <button type="button" class="escape-handle" id="escape-handle">逃げ・復旧</button>
 <div class="escape-scrim" id="escape-scrim"></div>
 <aside class="escape-drawer" id="escape-drawer">
-  <div class="esc-top"><p class="esc-k" style="margin:0">逃げ・復旧</p>
+  <div class="esc-top">  <p class="esc-k" style="margin:0">逃げ・復旧</p>
     <button type="button" id="esc-drawer-close" aria-label="閉じる">×</button></div>
-  <p class="esc-note">本線ではない。パスと確認が要る。</p>
   <div class="esc-grid">
     <div>
       <p class="esc-k">開催を戻す</p>
@@ -278,7 +278,6 @@ function progressWork(board: Board, recentHtml: string): string {
       })
       .join("");
     return `<section class="work"><h2>出走の要約</h2>
-      <p class="note">進行には名簿だけ。読取と直置きの編集は出走登録。</p>
       <table class="plain"><thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th>評価点</th><th></th></tr></thead>
       <tbody>${rows || `<tr><td colspan="5" class="muted">まだいません</td></tr>`}</tbody></table>
       <a class="more-link" href="/admin/register">出走登録へ</a></section>`;
@@ -309,16 +308,14 @@ function progressWork(board: Board, recentHtml: string): string {
   const save =
     e.status === "closed"
       ? `<form id="places-form" method="post" action="/admin/places"></form>${hidden}
-         <p class="note">一般画面には着順を出しません。公開まで。</p>
-         <div class="ctas">
+         <div class="work-actions">
            <button form="places-form" type="submit">着順を保存</button>
            <form method="post" action="/admin/publish" onsubmit="return confirm(${escapeHtml(JSON.stringify("結果を公開して払戻します。着順が一般に出ます。よろしいですか？"))});">
-             <button type="submit">結果を公開して払戻する</button>
+             <button type="submit" class="primary">結果を公開して払戻する</button>
            </form>
          </div>`
       : hidden;
   return `<section class="work" id="place-board"><h2>${e.status === "published" ? "確定着順" : "着順"}</h2>
-    <p class="note">左が未着順、右は上から折る2列。タップかドラッグ。</p>
     <div class="split"${e.status === "published" ? ` style="grid-template-columns:1fr"` : ""}>
       ${e.status === "published" ? "" : `<div><p class="col-h">未着順</p><div class="stack" id="place-idle"></div></div>`}
       <div><p class="col-h">${e.status === "published" ? "確定着順" : "着順"}</p>
