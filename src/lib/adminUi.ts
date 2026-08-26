@@ -721,9 +721,9 @@ export function adminSettingsPage(
   const reqVal = (saved: number | undefined, fallback: number) =>
     escapeHtml(saved == null ? String(fallback) : String(saved));
   const ids = setup?.effectiveSkillIds;
-  const effectsNote = ids
-    ? `保存すると、このコース×脚質の有効スキルを取り直して固定する。逃 ${ids.runner.length} · 先 ${ids.leader.length} · 差 ${ids.betweener.length} · 追 ${ids.chaser.length}`
-    : "保存すると、このコース×脚質の有効スキルを取り直して固定する。未取得（コースを選んで保存）";
+  const skillsMeta = ids
+    ? `<span class="odds-meta">有効スキル取得済み　逃 ${ids.runner.length} · 先 ${ids.leader.length} · 差 ${ids.betweener.length} · 追 ${ids.chaser.length}</span>`
+    : "";
   const stamOn = !!r?.staminaRace;
   const flashEl = flash?.text
     ? `<p class="settings-flash${flash.error ? " err" : ""}">${escapeHtml(flash.text)}</p>`
@@ -733,13 +733,12 @@ export function adminSettingsPage(
         <h1>開催設定</h1>${phasePill(e.status)}
         <div class="ctas"><button type="submit" class="primary" form="settings-form">保存</button></div>
       </div>
-      <p class="note">上から、今日のレース → 評価点の条件 → 参考の数字。次の開催・破棄は進行へ。</p>
       ${flashEl}
     </section>
     <form class="settings-desk" id="settings-form" method="post" action="/admin/params">
       <div class="settings-top">
         <section class="work">
-          <p class="set-k">今日のレース</p>
+          <p class="set-k">イベント概要</p>
           <input class="set-title" name="title" value="${escapeHtml(e.title)}" aria-label="タイトル">
           <div class="set-row">
             <div class="set-field">
@@ -764,8 +763,8 @@ export function adminSettingsPage(
       </div>
       <section class="work settings-mid">
         <div class="work-head">
-          <h2>評価点に使う条件</h2>
-          <span class="odds-meta">未設定なら直置き。メンバーには出さない</span>
+          <h2>レギュレーション</h2>
+          ${skillsMeta}
         </div>
         <div class="settings-scroll">
           <p class="set-k">コース</p>
@@ -797,44 +796,40 @@ export function adminSettingsPage(
             <input type="hidden" name="score_stamina_race" id="stamina-race" value="${stamOn ? "1" : ""}">
             <button type="button" id="stamina-btn"${stamOn ? ` class="on"` : ""}>${stamOn ? "スタミナ勝負コース" : "スタミナ勝負ではない"}</button>
           </div>
-          <p class="set-foot">${effectsNote}</p>
         </div>
       </section>
       <section class="work settings-bot">
         <div class="work-head">
           <h2>参考オッズの数字</h2>
-          <span class="odds-meta">普段は触らない · 払いは実票だけ · λ は出さない</span>
         </div>
         <div class="set-metrics">
           <label class="set-metric">
             <span class="sym">S</span>
             <span class="k">Seed の山</span>
             <input name="seed_pool_s" type="number" min="0" value="${e.seed_pool_s}">
-            <span class="d">評価点の比で配る。払わない</span>
+            <span class="d">評価点の比で配る</span>
           </label>
           <label class="set-metric">
             <span class="sym">E</span>
             <span class="k">票量の目安</span>
             <input name="pull_e" type="number" min="0" value="${e.pull_e}">
-            <span class="d">近づくと Seed が薄くなる</span>
+            <span class="d">票量が近づくと Seed が薄くなる</span>
           </label>
           <label class="set-metric">
             <span class="sym">D</span>
             <span class="k">控除（0〜0.99）</span>
             <input name="takeout_d" type="number" min="0" max="0.99" step="0.01" value="${e.takeout_d}">
-            <span class="d">参考も確定も同じ率。モックの％表示にはしない</span>
+            <span class="d">参考も確定も同じ率</span>
           </label>
           <label class="set-metric">
             <span class="sym">w時</span>
             <span class="k">時間の下限</span>
             <input name="w_time_floor" type="number" min="0" max="0.99" step="0.05" value="${e.w_time_floor}">
-            <span class="d">時計だけでは 0 にしない</span>
           </label>
           <label class="set-metric">
             <span class="sym">指数</span>
             <span class="k">時間の曲線</span>
             <input name="w_time_exp" type="number" min="0.2" max="4" step="0.1" value="${e.w_time_exp}">
-            <span class="d">第2回の仮置きは 1</span>
           </label>
         </div>
       </section>
