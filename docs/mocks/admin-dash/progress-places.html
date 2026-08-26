@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>管理 · 進行 · 着順比較</title>
+  <link rel="stylesheet" href="./shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* 案2：着順スロットのグリッド */
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr));
+      gap: .55rem;
+    }
+    .pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      margin-bottom: .75rem;
+      min-height: 2.8rem;
+    }
+    .pool .horse { width: min(16rem, 100%); }
+    /* 案3：左・未着 / 右・着順 */
+    .split {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 1rem;
+      min-height: 22rem;
+    }
+    .col-h {
+      font-size: .72rem;
+      letter-spacing: .08em;
+      font-weight: 700;
+      color: #6b7380;
+      margin: 0 0 .4rem;
+    }
+    .stack { display: flex; flex-direction: column; gap: .4rem; }
+    .rank-row {
+      display: grid;
+      grid-template-columns: 2.6rem minmax(0, 1fr);
+      gap: .4rem;
+      align-items: stretch;
+    }
+    .rank-row .rk-n {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: #2b6cb0;
+      background: #f4f6f9;
+      border-radius: 6px;
+      font-size: .92rem;
+    }
+    .rank-row .slot { min-height: 2.7rem; }
+    @media (max-width: 899px) {
+      .split { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="dash">
+    <nav class="side" aria-label="管理">
+      <div class="mark">OSHI KEIBA · 管理</div>
+      <a class="on" href="./progress-places.html">進行</a>
+      <a class="ghost" href="#">出走登録</a>
+      <a class="ghost" href="#">出走</a>
+      <a class="ghost" href="#">台帳</a>
+      <a class="ghost" href="#">オッズ</a>
+      <a class="ghost" href="#">開催設定</a>
+    </nav>
+    <div class="main">
+      <section class="hero">
+        <div class="hero-top">
+          <h1>第2回 本番</h1>
+          <span class="phase">投票締切</span>
+        </div>
+        <p class="next">次に必要な操作: <strong>着順をすべて入れて保存</strong>し、問題なければ結果を公開して払戻する。</p>
+        <div class="kpis">
+          <div class="kpi"><span class="k">頭数</span><span class="v">16</span></div>
+          <div class="kpi"><span class="k">締切</span><span class="v">18:40 JST</span></div>
+          <div class="kpi"><span class="k">参加者</span><span class="v">12</span></div>
+          <div class="kpi"><span class="k">票</span><span class="v">47</span></div>
+        </div>
+        <div class="ctas">
+          <button type="button" disabled>投票開始</button>
+          <button type="button" class="danger" disabled>強制締切</button>
+          <button type="button" disabled>次の開催を開く</button>
+        </div>
+      </section>
+      <section class="work">
+        <h2>着順</h2>
+        <p class="note" id="layout-note"></p>
+        <div id="board"></div>
+        <div class="work-actions">
+          <button type="button" id="save">着順を保存</button>
+          <button type="button" class="primary" id="pub" disabled>結果を公開して払戻する</button>
+          <button type="button" class="secondary" id="reset">やりなおし</button>
+        </div>
+      </section>
+    </div>
+  </div>
+  <div class="compare-bar" role="group" aria-label="着順の案">
+    <button type="button" data-layout="slots">案2 スロット</button>
+    <button type="button" data-layout="split">案3 左右</button>
+  </div>
+  <div class="mock-label">管理モック · 比較中 · 本番未適用</div>
+  <script>
+    const HORSES = [
+      [1, "サイレンススズカ", "neko"], [2, "スペシャルウィーク", "aki"],
+      [3, "グラスワンダー", "yuu"], [4, "セイウンスカイ", "ken"],
+      [5, "エルコンドルパサー", "mai"], [6, "テイエムオペラオー", "rio"],
+      [7, "ファインモーション", "sora"], [8, "ナリタブライアン", "haru"],
+      [9, "メジロマックイーン", "nao"], [10, "トウカイテイオー", "kei"],
+      [11, "ビワハヤヒデ", "jun"], [12, "ミホノブルボン", "ren"],
+      [13, "サクラバクシンオー", "aya"], [14, "タイキシャトル", "mika"],
+      [15, "エアグルーヴ", "shin"], [16, "シンボリルドルフ", "taka"],
+    ];
+    const N = HORSES.length;
+    let layout = "slots";
+    let places = Array(N).fill(null);
+    let pick = null;
+
+    function horseByN(n) { return HORSES.find((h) => h[0] === n); }
+    function used() { return new Set(places.filter((x) => x != null)); }
+    function nextHole() { return places.findIndex((x) => x == null); }
+
+    function setPlace(i, n) {
+      const prev = places.indexOf(n);
+      if (prev >= 0) places[prev] = null;
+      places[i] = n;
+      pick = null;
+      paint();
+    }
+    function clearPlace(i) {
+      places[i] = null;
+      pick = null;
+      paint();
+    }
+    function assignNext(n) {
+      if (used().has(n)) {
+        clearPlace(places.indexOf(n));
+        return;
+      }
+      const hole = nextHole();
+      if (hole >= 0) setPlace(hole, n);
+    }
+
+    function horseEl(n, extra) {
+      const h = horseByN(n);
+      const on = pick === n ? " on" : "";
+      return `<div class="horse${on}" draggable="true" data-n="${n}"${extra || ""}>
+        <span class="n">${n}</span>
+        <span class="uma">${h[1]}</span>
+        <span class="run">${h[2]}</span>
+      </div>`;
+    }
+
+    function paint() {
+      const note = document.getElementById("layout-note");
+      const board = document.getElementById("board");
+      const filled = places.every((x) => x != null);
+      document.getElementById("pub").disabled = !filled;
+      const idle = HORSES.map((h) => h[0]).filter((n) => !used().has(n));
+
+      if (layout === "slots") {
+        note.textContent = "案2。上の未着順をクリックしてから枠を指定。ドラッグでも可。枠の中をクリックで外す。";
+        board.innerHTML =
+          `<div class="pool" data-pool="1">${idle.map((n) => horseEl(n)).join("") || `<span class="note">全部入りました</span>`}</div>` +
+          `<div class="slots-grid">${places.map((n, i) =>
+            `<div class="slot${n ? " fill" : ""}" data-slot="${i}">
+              <div class="rk">${i + 1}着</div>
+              ${n ? horseEl(n) : `<span class="note">ドロップまたはタップ</span>`}
+            </div>`
+          ).join("")}</div>`;
+      } else {
+        note.textContent = "案3。左が未着順、右が1着から順。左をクリックで次の空きへ。右の枠をクリックで左へ戻す。ドラッグ可。";
+        board.innerHTML = `<div class="split">
+          <div>
+            <p class="col-h">未着順</p>
+            <div class="stack pool" data-pool="1">${idle.map((n) => horseEl(n)).join("") || `<span class="note">なし</span>`}</div>
+          </div>
+          <div>
+            <p class="col-h">着順</p>
+            <div class="stack">${places.map((n, i) =>
+              `<div class="rank-row">
+                <div class="rk-n">${i + 1}着</div>
+                <div class="slot${n ? " fill" : ""}" data-slot="${i}">
+                  ${n ? horseEl(n) : `<span class="note">ここに置く</span>`}
+                </div>
+              </div>`
+            ).join("")}</div>
+          </div>
+        </div>`;
+      }
+
+      for (const b of document.querySelectorAll(".compare-bar [data-layout]")) {
+        b.setAttribute("aria-pressed", b.dataset.layout === layout ? "true" : "false");
+      }
+      bindBoard();
+    }
+
+    function bindBoard() {
+      const board = document.getElementById("board");
+      board.querySelectorAll(".horse").forEach((el) => {
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const n = Number(el.dataset.n);
+          const inSlot = el.closest("[data-slot]");
+          if (inSlot) {
+            clearPlace(Number(inSlot.dataset.slot));
+            return;
+          }
+          if (layout === "split") {
+            assignNext(n);
+            return;
+          }
+          pick = pick === n ? null : n;
+          paint();
+        });
+        el.addEventListener("dragstart", (e) => {
+          e.dataTransfer.setData("text/plain", el.dataset.n);
+          e.dataTransfer.effectAllowed = "move";
+        });
+      });
+      board.querySelectorAll("[data-slot]").forEach((slot) => {
+        slot.addEventListener("click", () => {
+          const i = Number(slot.dataset.slot);
+          if (pick != null) setPlace(i, pick);
+        });
+        slot.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          slot.classList.add("drop");
+        });
+        slot.addEventListener("dragleave", () => slot.classList.remove("drop"));
+        slot.addEventListener("drop", (e) => {
+          e.preventDefault();
+          slot.classList.remove("drop");
+          const n = Number(e.dataTransfer.getData("text/plain"));
+          if (n) setPlace(Number(slot.dataset.slot), n);
+        });
+      });
+    }
+
+    document.getElementById("save").addEventListener("click", () => {
+      if (places.some((x) => x == null)) {
+        alert("まだ空の着順があります。");
+        return;
+      }
+      alert("モックです。本番では着順を保存し、一般にはまだ出しません。");
+    });
+    document.getElementById("pub").addEventListener("click", () => {
+      if (!confirm("結果を公開して払戻します。着順が一般に出ます。よろしいですか？")) return;
+      alert("モックです。本番では公開と払戻です。");
+    });
+    document.getElementById("reset").addEventListener("click", () => {
+      places = Array(N).fill(null);
+      pick = null;
+      paint();
+    });
+    const q = new URLSearchParams(location.search).get("layout");
+    if (q === "slots" || q === "split") layout = q;
+    for (const b of document.querySelectorAll(".compare-bar [data-layout]")) {
+      b.addEventListener("click", () => {
+        layout = b.dataset.layout;
+        const u = new URL(location.href);
+        u.searchParams.set("layout", layout);
+        history.replaceState(null, "", u);
+        paint();
+      });
+    }
+    paint();
+  </script>
+</body>
+</html>

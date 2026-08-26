@@ -4,7 +4,7 @@
 
 ## 現在進行中
 
-- （空き）
+- 管理画面刷新のモック比較（進行ホームの着順：案2スロット／案3左右。未採用）— [admin-dash](mocks/admin-dash/progress-places.html)
 
 ## そのあと
 
