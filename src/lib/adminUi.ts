@@ -494,7 +494,7 @@ export function adminRegisterPage(
                         : null,
                       strategic.skills,
                       dismissedIds,
-                      canSetup,
+                      false, // 編集画面では例外に追加リンクを出さない
                     )
                   : ""
               }
