@@ -34,6 +34,8 @@ const OCR_SKILL_ALIASES: Record<string, string> = {
   千銀万錬: "千鍛万錬",
   千段万錬: "千鍛万錬",
   千錬万錬: "千鍛万錬",
+  // Gemini がひらがな自然語に直しがち（正式は ヘ／至ル）
+  勝利へ至る累積: "勝利ヘ至ル累積",
 };
 
 function toHalfWidth(str: string): string {

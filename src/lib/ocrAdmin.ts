@@ -235,7 +235,12 @@ export function ocrAdminScript(
   const FUZZY_TH = 0.45;
   const KIND_JA = { green: "緑", gold: "金", white: "白", unique: "固有", evo: "進化", scenario: "シナリオ", minus: "デバフ", inherit: "継承", special: "特殊", rare: "金", normal: "白", unknown: "未分類" };
   // skillFuzzy.ts と同期: エイリアス・編集距離≤1・同名の unique/inherit/継承進化
-  const ALIAS = { "千銀万錬": "千鍛万錬", "千段万錬": "千鍛万錬", "千錬万錬": "千鍛万錬" };
+  const ALIAS = {
+    "千銀万錬": "千鍛万錬",
+    "千段万錬": "千鍛万錬",
+    "千錬万錬": "千鍛万錬",
+    "勝利へ至る累積": "勝利ヘ至ル累積",
+  };
   const STYLE_LABEL = { runner: "逃", leader: "先", betweener: "差", chaser: "追" };
   const skills = (CATALOG.skills || []).filter((s) => typeof s.id === "number");
   const byName = new Map();
