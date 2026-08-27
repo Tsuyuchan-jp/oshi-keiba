@@ -23,6 +23,13 @@ button, select, input, textarea { font: inherit; }
   display: flex;
   flex-direction: column;
   gap: .35rem;
+  /* メインが伸びてもナビは画面高に固定（ログアウト等が画面外へ行かない） */
+  align-self: start;
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow-y: auto;
 }
 .side .mark {
   font-size: .72rem;
@@ -656,6 +663,13 @@ table.plain tbody tr.on { background: #e8f0fa; }
   gap: .4rem; padding: .28rem 0; border-bottom: 1px solid #eef0f3; font-size: .82rem;
 }
 .split { display: grid; grid-template-columns: minmax(11.5rem, .85fr) minmax(0, 1.7fr); gap: 1rem; min-height: 18rem; }
+/* 着順入力は枠内スクロール。保存／公開ボタンは外に残す */
+#place-board .split {
+  max-height: min(52dvh, 28rem);
+  overflow: auto;
+  align-content: start;
+  min-height: 12rem;
+}
 .ranks-cols { display: grid; grid-template-columns: 1fr 1fr; grid-auto-flow: column; gap: .4rem .65rem; }
 .col-h { font-size: .72rem; letter-spacing: .08em; font-weight: 700; color: #6b7380; margin: 0 0 .4rem; }
 .stack { display: flex; flex-direction: column; gap: .4rem; }
@@ -863,7 +877,15 @@ body.register-page .work .ctas a { align-self: center; font-size: .85rem; color:
 }
 @media (max-width: 900px) {
   .dash { grid-template-columns: 1fr; }
-  .side { flex-direction: row; flex-wrap: wrap; }
+  .side {
+    flex-direction: row;
+    flex-wrap: wrap;
+    position: static;
+    height: auto;
+    max-height: none;
+    align-self: stretch;
+    overflow: visible;
+  }
   .side .mark { width: 100%; }
   .kpis, .ops-pair, .odds-desk, .ledger-desk, .register-desk, .horses-desk, .work-split, .split { grid-template-columns: 1fr; }
   .odds-desk { grid-template-areas: "win" "q" "e" "t" "f"; }

@@ -30,6 +30,13 @@ test("OCR一文字誤読: 千錬万錬 → 千鍛万錬", () => {
   assert.equal(h.id, 204031);
 });
 
+test("OCRエイリアス: 千鍬万鐘 → 千鍛万錬", () => {
+  const h = fuzzyMatchSkill("千鍬万鐘", false);
+  assert.equal(h.accepted, true);
+  assert.equal(h.name, "千鍛万錬");
+  assert.ok(h.id != null);
+});
+
 test("OCRエイリアス: 勝利へ至る累積 → 勝利ヘ至ル累積（2番目以降は inherit）", () => {
   const first = fuzzyMatchSkill("勝利へ至る累積", true);
   assert.equal(first.accepted, true);
