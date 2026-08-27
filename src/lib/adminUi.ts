@@ -502,13 +502,15 @@ export function adminRegisterPage(
                 <span class="lab">評価点</span>
                 <span class="num">${escapeHtml(String(edit.horse.strength))}</span>
               </div>
-              <div class="reg-score-in" style="margin-top:.85rem;max-width:10rem">
-                <label>評価点<input name="strength" id="strength" type="number" min="0" step="0.1" value="${edit.horse.strength}" required></label>
+              <div class="reg-score-row">
+                <div class="reg-score-in">
+                  <label>評価点<input name="strength" id="strength" type="number" min="0" step="0.1" value="${edit.horse.strength}" required></label>
+                </div>
+                <label class="reg-manual-toggle" for="strength-manual">
+                  <input class="admin-offscreen" type="checkbox" name="strength_manual" id="strength-manual" value="1"${manualBox ? " checked" : ""}>
+                  <span class="reg-manual-pill">評価点を直置き</span>
+                </label>
               </div>
-              <label class="kind-opt" style="margin-top:.55rem">
-                <input type="checkbox" name="strength_manual" id="strength-manual" value="1"${manualBox ? " checked" : ""}>
-                評価点を直置き
-              </label>
               <div class="ctas">
                 <button type="submit" class="primary">更新</button>
               </div>

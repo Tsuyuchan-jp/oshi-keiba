@@ -373,17 +373,20 @@ body.ledger-page .filters select {
 }
 .reg-score-row .reg-score-in { flex: 0 1 auto; max-width: 10rem; margin-top: 0; }
 .reg-score-auto {
-  display: none; font-size: .78rem; color: #6b7380; margin: 0 0 .38rem; flex: 0 0 auto;
+  display: none; font-size: .78rem; color: #6b7380; margin: 0 0 .38rem; flex: 0 0 auto; line-height: 1;
+  align-self: center;
 }
 .reg-score-auto::before {
   content: "評価点 · "; font-size: .7rem; letter-spacing: .06em; color: #8a929c;
 }
 .reg-manual-toggle {
-  cursor: pointer; user-select: none; margin: 0 0 .38rem; flex: 0 0 auto;
+  display: inline-flex; align-items: center; cursor: pointer; user-select: none;
+  margin: 0 0 .38rem; flex: 0 0 auto;
 }
 .reg-manual-pill {
-  display: inline-block; font: inherit; font-size: .78rem; line-height: 1.25;
-  border: 1px solid #c5ccd6; background: #fff; padding: .34rem .72rem;
+  display: inline-flex; align-items: center; justify-content: center;
+  box-sizing: border-box; font: inherit; font-size: .78rem; line-height: 1;
+  min-height: 1.85rem; border: 1px solid #c5ccd6; background: #fff; padding: 0 .72rem;
   border-radius: 999px; color: #6b7380; white-space: nowrap;
 }
 .reg-manual-toggle:hover .reg-manual-pill { border-color: #9aa3b0; color: #3d4550; }
