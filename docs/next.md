@@ -6,12 +6,16 @@
 
 - （なし）
 
+## 次にやること
+
+- 脚質毎のスタミナ目標値入力機能
+- 通常・固有スキルの有効リスト用意（U-tools コース別の固有／進化有効度を取り込み、仮の unique/evo＝金扱いを外す）— [score.md](score.md)
+- 特払いのキャリーオーバーをコミュニティ向けに出すか — [trial-odds-report](../reports/2026-08-23/trial-odds-report.md) 末尾
+
 ## そのあと
 
-- 通常・固有スキルの有効リスト用意（U-tools コース別の固有／進化有効度を取り込み、仮の unique/evo＝金扱いを外す）— [score.md](score.md)
 - 票入り台帳の絞り込み実機 — [ledger.html](mocks/admin-dash/ledger.html)
 - Neko長明さんへの評価点の式確認（手土産＝動く実装は揃った）— [score.md](score.md)
-- 特払いのキャリーオーバーをコミュニティ向けに出すか — [trial-odds-report](../reports/2026-08-23/trial-odds-report.md) 末尾
 - 投票中ボードの監査ログ（スナップショット）を足すか — 同レポートの実装メモ
 - 飛び入り時のアプリ扱い
 - 投票開始と部屋立ての前後
