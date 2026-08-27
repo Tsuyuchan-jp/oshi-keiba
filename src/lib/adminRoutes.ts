@@ -143,7 +143,6 @@ export async function tryAdminGet(
       board,
       url.searchParams.get("edit"),
       m,
-      adminReauthField(),
       strategic,
     );
     return html(

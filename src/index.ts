@@ -292,10 +292,6 @@ export default {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
         const form = await readForm(request);
-        const password = readAdminReauth(form);
-        if (!timingSafeEqualStr(password, env.ADMIN_PASSWORD)) {
-          return bounce("/admin/register", "管理者パスが違います（外していません）", true);
-        }
         try {
           const board = await loadBoard(env.DB);
           await dropHorse(env.DB, board.event, form.get("horse_id") ?? "");

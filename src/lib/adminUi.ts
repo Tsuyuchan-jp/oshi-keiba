@@ -423,7 +423,6 @@ export function adminRegisterPage(
   board: Board,
   editId: string | null,
   flash?: { text: string | null; error: boolean },
-  reauth = "",
   strategic: StrategicSkillsBundle = { skills: [], dismissed: [] },
 ): { body: string; scripts: string } {
   const setup = eventScoreSetup(board.event);
@@ -550,10 +549,10 @@ export function adminRegisterPage(
       <h2>名簿から外す</h2>
       <p id="drop-horse-p"></p>
       <p class="note">出走タブの「取消」（馬券の全額返還）ではありません。投票開始前の、この頭の登録を消します。</p>
-      <form method="post" action="/admin/horse-drop" id="drop-horse-form" class="reauth" autocomplete="off"
+      <form method="post" action="/admin/horse-drop" id="drop-horse-form" autocomplete="off"
         data-confirm="この頭を名簿から消します。出走取消（返還）ではありません。よろしいですか？">
         <input type="hidden" name="horse_id" id="drop-horse-id">
-        <div class="row">${reauth}<button class="danger" type="submit">名簿から外す</button>
+        <div class="row"><button class="danger" type="submit">名簿から外す</button>
           <button type="button" class="secondary" id="drop-horse-cancel">やめる</button></div>
       </form>
     </dialog>
@@ -649,37 +648,54 @@ function isAptS(rank: string | undefined): boolean {
   return String(rank ?? "").trim().toUpperCase() === "S";
 }
 
-/** r の定義式（数値） */
-function rDefText(base: number, green: number, aptMul: number, req: number): string {
-  const core = green ? `${base}${green > 0 ? "+" : ""}${green}` : String(base);
-  const left = aptMul !== 1 ? `(${core})×${aptMul}` : green ? `(${core})` : core;
-  return `${left}/${req}`;
+/** r の定義式（ラベル付き・左から右） */
+function rDefLabeled(
+  base: number,
+  green: number,
+  aptMul: number,
+  req: number,
+  baseLab: string,
+): string {
+  let core: string;
+  if (!green) core = `${baseLab}${base}`;
+  else if (green > 0) core = `${baseLab}${base}+緑${green}`;
+  else core = `${baseLab}${base}−緑${Math.abs(green)}`;
+  const left =
+    aptMul !== 1
+      ? `(${core})×適正${aptMul}`
+      : green
+        ? `(${core})`
+        : core;
+  return `${left}/目標値${req}`;
 }
 
-/** 頭は S 倍率。後ろに薄い字で S の出し方（r 定義含む） */
-function sMultLine(
-  mult: number,
-  sHow: string,
-): string {
+/** 頭は S 倍率。後ろに薄い字で出し方（定義 → r → S式） */
+function sMultLine(mult: number, sHow: string): string {
   return `×${fmt3(mult)} <span class="pipe-s-calc">${escapeHtml(sHow)}</span>`;
 }
 
-function ratioSHow(r: number, n: number, m: number, rDef: string): string {
+function ratioSHow(
+  r: number,
+  n: number,
+  m: number,
+  rDef: string,
+  mult: number,
+): string {
   const rr = fmt3(r);
-  const rPart = `r=${rr}（${rDef}）`;
-  if (!(r > 0) || !Number.isFinite(r)) return `r≤0のため 0　${rPart}`;
+  const head = `（${rDef}）r=${rr}`;
+  if (!(r > 0) || !Number.isFinite(r)) return `${head} r≤0のため 0`;
   if (r >= 1) {
-    if (n === 1) return `S=r　${rPart}`;
-    return `1+(${rr}−1)/${n}　${rPart}`;
+    if (n === 1) return `${head} S=r=${fmt3(mult)}`;
+    return `${head} 1+(${rr}−1)/${n}=${fmt3(mult)}`;
   }
-  return `1+(${rr}−1)×${m}　${rPart}`;
+  return `${head} 1+(${rr}−1)×${m}=${fmt3(mult)}`;
 }
 
-function speedSHow(r: number, rDef: string): string {
+function speedSHow(r: number, rDef: string, mult: number): string {
   const rr = fmt3(r);
-  const rPart = `r=${rr}（${rDef}）`;
-  if (!(r >= 1) || !Number.isFinite(r)) return `未達は見ない　${rPart}`;
-  return `1+(${rr}−1)/4　${rPart}`;
+  const head = `（${rDef}）r=${rr}`;
+  if (!(r >= 1) || !Number.isFinite(r)) return `${head} 未達は見ない`;
+  return `${head} 1+(${rr}−1)/4=${fmt3(mult)}`;
 }
 
 function staminaExplain(
@@ -742,19 +758,41 @@ function pipeHtml(
   const styleMul = isAptS(apt.style) ? 1.1 : 1;
   const speedLine = sMultLine(
     b.ratios.speed,
-    speedSHow(b.rawRatios.speed, rDefText(st.speed, gr.speed, distMul, req.speedCap)),
+    speedSHow(
+      b.rawRatios.speed,
+      rDefLabeled(st.speed, gr.speed, distMul, req.speedCap, "スピ"),
+      b.ratios.speed,
+    ),
   );
   const powerLine = sMultLine(
     b.ratios.power,
-    ratioSHow(b.rawRatios.power, 4, 4, rDefText(st.power, gr.power, surfMul, req.power)),
+    ratioSHow(
+      b.rawRatios.power,
+      4,
+      4,
+      rDefLabeled(st.power, gr.power, surfMul, req.power, "パワ"),
+      b.ratios.power,
+    ),
   );
   const gutsLine = sMultLine(
     b.ratios.guts,
-    ratioSHow(b.rawRatios.guts, 10, 2, rDefText(st.guts, gr.guts, 1, req.guts)),
+    ratioSHow(
+      b.rawRatios.guts,
+      10,
+      2,
+      rDefLabeled(st.guts, gr.guts, 1, req.guts, "根"),
+      b.ratios.guts,
+    ),
   );
   const wisLine = sMultLine(
     b.ratios.wisdom,
-    ratioSHow(b.rawRatios.wisdom, 1, 6, rDefText(st.wisdom, gr.wisdom, styleMul, req.wisdom)),
+    ratioSHow(
+      b.rawRatios.wisdom,
+      1,
+      6,
+      rDefLabeled(st.wisdom, gr.wisdom, styleMul, req.wisdom, "賢"),
+      b.ratios.wisdom,
+    ),
   );
   const staLine = sMultLine(b.ratios.staminaMult, staminaExplain(b.adjusted.stamina, req));
   const stratPart =
