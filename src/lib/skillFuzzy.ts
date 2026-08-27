@@ -41,6 +41,20 @@ const OCR_SKILL_ALIASES: Record<string, string> = {
   勝利へ至る累積: "勝利ヘ至ル累積",
 };
 
+/**
+ * カタログで /^千.万.$/ に合うのは千鍛万錬だけ。
+ * Gemini が成語（千客万来・千紫万紅など）に寄せた4文字誤読を吸収する。
+ */
+const SENMAN_CANONICAL = "千鍛万錬";
+const SENMAN_SKELETON = /^千.万.$/;
+
+/** エイリアス後。骨格だけ合いカタログに無いとき千鍛万錬へ */
+export function applySenmanSkeleton(cleanInput: string): string {
+  if (!SENMAN_SKELETON.test(cleanInput)) return cleanInput;
+  if (NAMES.some((n) => normalizeSkillLabel(n) === cleanInput)) return cleanInput;
+  return SENMAN_CANONICAL;
+}
+
 function toHalfWidth(str: string): string {
   let s = str.replace(/[！-～]/g, (c) =>
     String.fromCharCode(c.charCodeAt(0) - 0xfee0),
@@ -129,6 +143,7 @@ function findBestSkillMatch(
   let cleanInput = normalizeSkillLabel(rawInput);
   if (!cleanInput) return null;
   cleanInput = OCR_SKILL_ALIASES[cleanInput] ?? cleanInput;
+  cleanInput = applySenmanSkeleton(cleanInput);
 
   // 編集距離≤1を先に見る（Dice が短い語で低く出るため）
   let editBest = "";
