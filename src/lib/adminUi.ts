@@ -38,6 +38,7 @@ import {
   settleBet,
   type BetKind,
 } from "./bets";
+import { parimutuelOdds } from "./odds";
 import {
   DEFAULT_SCORE_REQ,
   GROUND_CONDITION_OPTIONS,
@@ -792,9 +793,13 @@ export function adminHorsesPage(
         board.event.status !== "published" && !h.horse.scratched
           ? `<button type="button" class="danger" data-scratch-id="${escapeHtml(h.horse.id)}" data-scratch-name="${escapeHtml(p.umaName)}（${escapeHtml(p.runnerName)}）">取消</button>`
           : h.horse.scratched ? "取消済" : "";
+      const openOdds = h.horse.scratched
+        ? null
+        : parimutuelOdds(h.seed, board.seedTotal, board.event.takeout_d);
       return `<tr data-id="${escapeHtml(h.horse.id)}" class="${on}${h.horse.scratched ? " scr" : ""}">
         <td>${h.number}</td><td>${escapeHtml(p.umaName)}</td><td>${escapeHtml(p.runnerName)}</td>
         <td>${escapeHtml(styleLabel(input?.styleKey))}</td>
+        <td class="num">${formatOdds(openOdds)}</td>
         <td class="num">${h.horse.strength}</td>
         <td>${man ? `<span class="tag warn">直置き</span>` : `<span class="tag">自動</span>`}</td>
         <td class="num">${Math.round(h.seed).toLocaleString("ja-JP")}</td>
@@ -809,8 +814,8 @@ export function adminHorsesPage(
     <div class="horses-desk">
       <section class="work"><h2>名簿</h2>
         <table class="plain" id="roster"><thead><tr>
-          <th>#</th><th>ウマ娘</th><th>出走者</th><th>脚質</th><th class="num">評価点</th><th></th><th class="num">Seed</th><th></th>
-        </tr></thead><tbody>${rows || `<tr><td colspan="8">まだいません</td></tr>`}</tbody></table>
+          <th>#</th><th>ウマ娘</th><th>出走者</th><th>脚質</th><th class="num">初期オッズ</th><th class="num">評価点</th><th></th><th class="num">Seed</th><th></th>
+        </tr></thead><tbody>${rows || `<tr><td colspan="9">まだいません</td></tr>`}</tbody></table>
       </section>
       <aside class="pipe">${pipe}</aside>
     </div>

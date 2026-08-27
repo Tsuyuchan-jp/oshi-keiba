@@ -34,7 +34,7 @@
             <thead>
               <tr>
                 <th>#</th><th>ウマ娘</th><th>出走者</th><th>脚質</th>
-                <th>評価点</th><th></th><th>Seed</th>
+                <th class="num">初期オッズ</th><th class="num">評価点</th><th></th><th class="num">Seed</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -237,18 +237,24 @@
     }
 
     function paintList() {
+      const seedTotal = ROSTER.reduce((a, h) => a + h.seed, 0);
+      const takeout = 0.2;
       const tb = document.querySelector("#roster tbody");
-      tb.innerHTML = ROSTER.map((h) =>
-        `<tr data-n="${h.n}" class="${h.n === sel ? "on" : ""}">
+      tb.innerHTML = ROSTER.map((h) => {
+        const open = h.seed > 0 && seedTotal > 0
+          ? ((seedTotal * (1 - takeout)) / h.seed).toFixed(1)
+          : "—";
+        return `<tr data-n="${h.n}" class="${h.n === sel ? "on" : ""}">
           <td>${h.n}</td>
           <td>${h.uma}</td>
           <td>${h.run}</td>
           <td>${h.style}</td>
-          <td>${h.score.toFixed(1)}</td>
+          <td class="num">${open}</td>
+          <td class="num">${h.score.toFixed(1)}</td>
           <td>${h.source === "manual" ? `<span class="tag warn">直置き</span>` : `<span class="tag">自動</span>`}</td>
-          <td>${h.seed.toLocaleString("ja-JP")}</td>
-        </tr>`
-      ).join("");
+          <td class="num">${h.seed.toLocaleString("ja-JP")}</td>
+        </tr>`;
+      }).join("");
       tb.querySelectorAll("tr[data-n]").forEach((tr) => {
         tr.addEventListener("click", () => {
           sel = Number(tr.dataset.n);
