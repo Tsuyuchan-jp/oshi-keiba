@@ -4,7 +4,7 @@ Seed の入力。メンバー画面には出さない。管理画面の項目名
 
 ゴールは検定可能な真の勝率ではない。Neko長明さんが置いた強さの論理を、あとから直せる数字にする。作者独自のバ身混ぜは使わない（[rejected.md](rejected.md)、git 旧 `docs/04`〜`07`）。
 
-OCR で読む材料は [ocr.md](ocr.md)。`Seed_i` への掛け方は [odds.md](odds.md)。式確認と細かい直しは [next.md](next.md)。
+OCR で読む材料は [ocr.md](ocr.md)。`Seed_i` への掛け方は [odds.md](odds.md)。式の Neko 確認は [next.md](next.md)。
 
 **実装はクローズ**（自動算出 → Strength → Seed、材料不足時は直置き）。コードは `src/lib/score.ts` の `computeScore`。式は作者側の読みで、**Neko長明さんの確定ではない**。確定したらこのファイルを書き直す。
 
@@ -83,7 +83,7 @@ S *= max(0, r賢≥1 ? 1+(r賢−1) : 1+(r賢−1)×6)
 | 差しためらい | `200911` |
 | 追込ためらい | `200941` |
 
-直置きは算出不能時、または「直置き」チェック時の逃げ。
+直置きは算出不能時、または出走登録／編集で **評価点を直置き** pill を ON にしたときの逃げ。UI は pill トグル（`strength_manual`。チェックボックスは画面外）。OCR 読取確認では自動算出が既定で、pill で手入力 Strength に切り替える（[ocr.md](ocr.md)）。
 
 ## Neko案との対応
 

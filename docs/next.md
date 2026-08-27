@@ -11,7 +11,6 @@
 - 通常・固有スキルの有効リスト用意（U-tools コース別の固有／進化有効度を取り込み、仮の unique/evo＝金扱いを外す）— [score.md](score.md)
 - 票入り台帳の絞り込み実機 — [ledger.html](mocks/admin-dash/ledger.html)
 - Neko長明さんへの評価点の式確認（手土産＝動く実装は揃った）— [score.md](score.md)
-- OCR / 評価点の細かい調整（読取・表示 UI など）— [ocr.md](ocr.md)・[score.md](score.md)
 - 特払いのキャリーオーバーをコミュニティ向けに出すか — [trial-odds-report](../reports/2026-08-23/trial-odds-report.md) 末尾
 - 投票中ボードの監査ログ（スナップショット）を足すか — 同レポートの実装メモ
 - 飛び入り時のアプリ扱い
@@ -26,6 +25,7 @@
 
 完了済みの控え。普段は見ない。復帰・迷い時だけ。新しい順。
 
+- OCR / 評価点 UI 調整クローズ（読取確認5段・OCR読取時の直置き pill・自動算出ラベル・編集画面 pill 統一・出走登録タブ細部）— [ocr.md](ocr.md)・[score.md](score.md)
 - OCR: 戦略例外スキル（D1 正本・グローバル見送り・読取確認5段・ヒーローユーティリティ帯・モーダル管理・JSON export・S0 加算・U-tools 二重除外）— [score.md](score.md)
 - OCR: カタログ同名 multiple・ファジー遺産寄せ（継承／継承進化 id）・千錬＋編集距離≤1。skillBase はリスト外 inherit を数えない — [ocr.md](ocr.md)
 - store 分割: Types / Read / Board / Members / Horses / Event / Race + `store.ts` barrel。公開 API 不変。`storeFlow` 79 パス — パス2クローズ
