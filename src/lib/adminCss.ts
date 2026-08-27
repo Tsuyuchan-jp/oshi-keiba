@@ -368,6 +368,28 @@ body.ledger-page .filters select {
 .reg-names label, .reg-score-in label {
   display: flex; flex-direction: column; gap: .2rem; font-size: .7rem; color: #6b7380;
 }
+.reg-score-row {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: .5rem 1rem; margin-top: .85rem;
+}
+.reg-score-row .reg-score-in { flex: 0 1 auto; max-width: 10rem; margin-top: 0; }
+.reg-manual-toggle {
+  cursor: pointer; user-select: none; margin: 0 0 .38rem; flex: 0 0 auto;
+}
+.reg-manual-pill {
+  display: inline-block; font: inherit; font-size: .78rem; line-height: 1.25;
+  border: 1px solid #c5ccd6; background: #fff; padding: .34rem .72rem;
+  border-radius: 999px; color: #6b7380; white-space: nowrap;
+}
+.reg-manual-toggle:hover .reg-manual-pill { border-color: #9aa3b0; color: #3d4550; }
+.reg-manual-toggle input:focus-visible + .reg-manual-pill {
+  outline: 2px solid #2b6cb0; outline-offset: 2px;
+}
+.reg-manual-toggle input:checked + .reg-manual-pill {
+  background: #1e242c; border-color: #1e242c; color: #fff; font-weight: 700;
+}
+.reg-manual-toggle input:checked + .reg-manual-pill:hover {
+  background: #2a313c; border-color: #2a313c;
+}
 .reg-names input, .reg-score-in input {
   font: inherit; font-size: 1.12rem; font-weight: 700; padding: .35rem .45rem;
   border: 0; border-bottom: 2px solid #c5ccd6; border-radius: 0; background: transparent;
