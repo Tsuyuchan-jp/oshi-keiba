@@ -508,15 +508,43 @@ body.ledger-page .filters select {
 .strategic-add-form label:nth-child(4) { grid-column: 1 / -1; }
 .strategic-add-form label input { font: inherit; padding: .25rem .4rem; border: 1px solid #c5ccd6; border-radius: 6px; }
 .strategic-cand-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: .35rem .65rem;
-  padding: .35rem 0;
+  padding: .65rem 0;
   border-bottom: 1px solid #eef0f3;
   font-size: .85rem;
 }
 .strategic-cand-row:last-child { border-bottom: 0; }
+.strategic-cand-head { font-weight: 600; margin-bottom: .45rem; }
+.strategic-cand-fields {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr auto auto;
+  gap: .4rem .55rem;
+  align-items: end;
+}
+.strategic-cand-field {
+  font-size: .78rem;
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+  margin: 0;
+}
+.strategic-cand-field input {
+  font: inherit;
+  padding: .25rem .4rem;
+  border: 1px solid #c5ccd6;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.strategic-cand-memo-field { min-width: 0; }
+.strategic-cand-fields button { align-self: end; }
+@media (max-width: 520px) {
+  .strategic-cand-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+  .strategic-cand-memo-field { grid-column: 1 / -1; }
+  .strategic-cand-fields .strategic-cand-add { grid-column: 1; }
+  .strategic-cand-fields .strategic-cand-dismiss { grid-column: 2; }
+}
 .reg-key { font-size: .78rem; color: #6b7380; display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .5rem; }
 .reg-key input {
   font: inherit; min-width: 12rem; padding: .2rem .4rem; border: 1px solid #c5ccd6; border-radius: 6px; background: #fff;

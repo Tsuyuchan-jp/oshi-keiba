@@ -1,20 +1,21 @@
-import { escapeHtml } from "./http";
 import type { StrategicSkillDismissedRow, StrategicSkillRow } from "./strategicSkills.ts";
 
 export function strategicSkillsModalHtml(): string {
   return `<dialog class="modal strategic-dlg" id="strategic-dlg">
-    <h2>戦略例外リスト</h2>
+    <h2 id="strategic-dlg-title">戦略例外リスト</h2>
     <p class="note" id="strategic-dlg-note">U-tools 有効リスト外でも、ここで指定した点数を土台に加算します。</p>
     <div id="strategic-candidates-wrap" hidden>
       <p class="set-k">この頭の不採用（候補）</p>
       <div id="strategic-candidates"></div>
     </div>
-    <p class="set-k" style="margin-top:.85rem">登録済み</p>
-    <div class="strategic-table-wrap table-scroll">
-      <table class="plain strategic-table" id="strategic-table">
-        <thead><tr><th>名前</th><th>id</th><th class="num">点</th><th>メモ</th><th></th></tr></thead>
-        <tbody id="strategic-tbody"></tbody>
-      </table>
+    <div id="strategic-registered-wrap">
+      <p class="set-k" style="margin-top:.85rem">登録済み</p>
+      <div class="strategic-table-wrap table-scroll">
+        <table class="plain strategic-table" id="strategic-table">
+          <thead><tr><th>名前</th><th>id</th><th class="num">点</th><th>メモ</th><th></th></tr></thead>
+          <tbody id="strategic-tbody"></tbody>
+        </table>
+      </div>
     </div>
     <div id="strategic-add-wrap">
       <p class="set-k" style="margin-top:.85rem">手動追加</p>
@@ -67,15 +68,23 @@ export function strategicSkillsAdminScript(
   const CAN_EDIT = ${canEdit ? "true" : "false"};
   let skills = ${JSON.stringify(initial.skills)};
   let dismissed = ${JSON.stringify(initial.dismissed)};
+  let modalMode = "full";
   const dlg = document.getElementById("strategic-dlg");
   const openBtn = document.getElementById("strategic-open");
   const tbody = document.getElementById("strategic-tbody");
   const candWrap = document.getElementById("strategic-candidates-wrap");
   const candEl = document.getElementById("strategic-candidates");
   const countEl = document.getElementById("strategic-open");
+  const titleEl = document.getElementById("strategic-dlg-title");
+  const registeredWrap = document.getElementById("strategic-registered-wrap");
+  const addWrap = document.getElementById("strategic-add-wrap");
+  const exportEl = document.getElementById("strategic-export");
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function attrEsc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
   }
   function dismissedSet() {
     return new Set(dismissed.map((d) => d.skillId));
@@ -86,6 +95,34 @@ export function strategicSkillsAdminScript(
   function updateOpenLabel() {
     if (countEl) countEl.textContent = "戦略例外（" + skills.length + "）";
     document.dispatchEvent(new CustomEvent("strategic-skills-changed", { detail: { skills, dismissed } }));
+  }
+  function bindBackdropClose() {
+    if (!dlg || dlg.dataset.backdropBound === "1") return;
+    dlg.dataset.backdropBound = "1";
+    dlg.addEventListener("click", (ev) => {
+      const r = dlg.getBoundingClientRect();
+      const inside =
+        ev.clientX >= r.left && ev.clientX <= r.right &&
+        ev.clientY >= r.top && ev.clientY <= r.bottom;
+      if (!inside) dlg.close();
+    });
+  }
+  function setModalMode(mode) {
+    modalMode = mode;
+    const candidatesOnly = mode === "candidates";
+    if (titleEl) titleEl.textContent = candidatesOnly ? "例外に追加" : "戦略例外リスト";
+    if (registeredWrap) registeredWrap.hidden = candidatesOnly;
+    if (addWrap) addWrap.hidden = candidatesOnly || !CAN_EDIT;
+    if (exportEl) exportEl.hidden = candidatesOnly;
+  }
+  function afterCandidateAction(list) {
+    const remaining = filterCandidates(list);
+    if (modalMode === "candidates") {
+      if (remaining.length) openCandidatesOnly(list);
+      else dlg?.close();
+    } else {
+      showCandidates(list);
+    }
   }
   async function api(method, path, body) {
     const res = await fetch(path, {
@@ -127,61 +164,87 @@ export function strategicSkillsAdminScript(
       });
     });
   }
-  function showCandidates(list) {
-    if (!candWrap || !candEl) return;
+  function filterCandidates(list) {
     const ds = dismissedSet();
     const sm = skillMap();
-    const items = (list || []).filter((h) => h.id != null && !sm.has(h.id) && !ds.has(h.id));
+    return (list || []).filter((h) => h.id != null && !sm.has(h.id) && !ds.has(h.id));
+  }
+  function showCandidates(list) {
+    if (!candWrap || !candEl) return [];
+    const items = filterCandidates(list);
     if (!items.length) {
       candWrap.hidden = true;
       candEl.innerHTML = "";
-      return;
+      return items;
     }
     candWrap.hidden = false;
     candEl.innerHTML = items.map((h) =>
-      '<div class="strategic-cand-row">' +
-        '<span>' + esc(h.name) + ' <span class="odds-meta">id ' + h.id + '</span></span>' +
+      '<div class="strategic-cand-row" data-id="' + h.id + '" data-name="' + attrEsc(h.name) + '">' +
+        '<div class="strategic-cand-head">' + esc(h.name) + ' <span class="odds-meta">id ' + h.id + '</span></div>' +
         (CAN_EDIT
-          ? '<span><button type="button" class="strategic-cand-add" data-id="' + h.id + '" data-name="' + esc(h.name) + '">+1で追加</button> ' +
-            '<button type="button" class="secondary strategic-cand-dismiss" data-id="' + h.id + '" data-name="' + esc(h.name) + '">見送り</button></span>'
+          ? '<div class="strategic-cand-fields">' +
+              '<label class="strategic-cand-field">点<input type="number" class="strategic-cand-pts" min="0" step="1" value="1"></label>' +
+              '<label class="strategic-cand-field strategic-cand-memo-field">メモ<input type="text" class="strategic-cand-memo" autocomplete="off"></label>' +
+              '<button type="button" class="strategic-cand-add">追加</button>' +
+              '<button type="button" class="secondary strategic-cand-dismiss">見送り</button>' +
+            '</div>'
           : "") +
-      "</div>"
+      '</div>'
     ).join("");
-    candEl.querySelectorAll(".strategic-cand-add").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        await api("POST", "/admin/api/strategic-skills", {
-          skillId: Number(btn.getAttribute("data-id")),
-          name: btn.getAttribute("data-name"),
-          points: 1,
-          memo: "",
-        });
-        await reload();
-        openWithCandidates(list);
+    candEl.querySelectorAll(".strategic-cand-row").forEach((row) => {
+      row.querySelector(".strategic-cand-add")?.addEventListener("click", async () => {
+        const id = Number(row.getAttribute("data-id"));
+        const name = row.getAttribute("data-name") || "";
+        const pointsRaw = row.querySelector(".strategic-cand-pts")?.value;
+        const points = pointsRaw === "" || pointsRaw == null ? 1 : Number(pointsRaw);
+        const memo = row.querySelector(".strategic-cand-memo")?.value || "";
+        try {
+          await api("POST", "/admin/api/strategic-skills", { skillId: id, name, points, memo });
+          await reload();
+          afterCandidateAction(list);
+        } catch (e) {
+          alert(e.message || "追加できませんでした");
+        }
+      });
+      row.querySelector(".strategic-cand-dismiss")?.addEventListener("click", async () => {
+        try {
+          await api("POST", "/admin/api/strategic-skills/dismiss", {
+            skillId: Number(row.getAttribute("data-id")),
+            name: row.getAttribute("data-name") || "",
+          });
+          await reload();
+          afterCandidateAction(list);
+        } catch (e) {
+          alert(e.message || "見送りに失敗しました");
+        }
       });
     });
-    candEl.querySelectorAll(".strategic-cand-dismiss").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        await api("POST", "/admin/api/strategic-skills/dismiss", {
-          skillId: Number(btn.getAttribute("data-id")),
-          name: btn.getAttribute("data-name"),
-        });
-        await reload();
-        openWithCandidates(list);
-      });
-    });
+    return items;
   }
-  function openWithCandidates(rejected) {
+  function openFull() {
+    setModalMode("full");
     renderTable();
-    showCandidates(rejected);
+    showCandidates(window.__lastRejected || []);
+    bindBackdropClose();
     dlg?.showModal();
   }
-  openBtn?.addEventListener("click", () => openWithCandidates(window.__lastRejected || []));
+  function openCandidatesOnly(rejected) {
+    setModalMode("candidates");
+    const items = showCandidates(rejected);
+    if (!items.length) {
+      alert("追加できる候補がありません");
+      return;
+    }
+    bindBackdropClose();
+    dlg?.showModal();
+  }
+  openBtn?.addEventListener("click", () => openFull());
   document.getElementById("strategic-close")?.addEventListener("click", () => dlg?.close());
   document.addEventListener("click", (ev) => {
     const t = ev.target;
     if (!(t instanceof HTMLElement)) return;
     if (t.id === "strategic-from-rejected" || t.closest("#strategic-from-rejected")) {
-      openWithCandidates(window.__lastRejected || []);
+      openCandidatesOnly(window.__lastRejected || []);
     }
   });
   document.getElementById("strategic-add-btn")?.addEventListener("click", async () => {
@@ -198,10 +261,11 @@ export function strategicSkillsAdminScript(
     }
   });
   if (!CAN_EDIT) {
-    document.getElementById("strategic-add-wrap")?.setAttribute("hidden", "");
+    addWrap?.setAttribute("hidden", "");
     const note = document.getElementById("strategic-dlg-note");
     if (note) note.textContent = "投票開始後は閲覧のみです。";
   }
+  bindBackdropClose();
   renderTable();
 })();
 </script>`;
