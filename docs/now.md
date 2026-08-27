@@ -6,7 +6,7 @@
 
 本番: https://oshi-keiba.tsuyuchan-jp.workers.dev/  
 入場 `/login`　場内 `/`　窓口 `/bet`　管理 `/admin`  
-アプリ版は `package.json` の version（画面表示は v 付き）
+アプリ版は [version.md](version.md)（数字の正本は `package.json`）
 
 詳細は [playbook.md](playbook.md)。第2回までにやることは [next.md](next.md)。
 
