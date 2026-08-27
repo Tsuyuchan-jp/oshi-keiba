@@ -31,6 +31,14 @@ button, select, input, textarea { font: inherit; }
   color: #8b95a0;
   padding: .35rem .55rem .7rem;
 }
+.side .mark .app-ver {
+  margin-left: .35rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  color: #5c6570;
+  font-size: .65rem;
+  font-variant-numeric: tabular-nums;
+}
 .side a {
   display: block;
   text-decoration: none;

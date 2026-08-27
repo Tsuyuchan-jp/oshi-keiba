@@ -5,7 +5,8 @@
 動いている催しがプロダクトの本体。第1回（2026-08-23 メンバーシップエクストラLoH）は払い戻しまで完了。第2回は Neko長明さんが開催を決めた。作り直しはしない。
 
 本番: https://oshi-keiba.tsuyuchan-jp.workers.dev/  
-入場 `/login`　場内 `/`　窓口 `/bet`　管理 `/admin`
+入場 `/login`　場内 `/`　窓口 `/bet`　管理 `/admin`  
+アプリ版は `package.json` の version（画面表示は v 付き）
 
 詳細は [playbook.md](playbook.md)。第2回までにやることは [next.md](next.md)。
 

@@ -24,11 +24,22 @@ export const MEMBER_OVERLAY_CSS = `
 .out-links {
   display: none; position: fixed; right: 1rem;
   bottom: calc(.85rem + env(safe-area-inset-bottom)); z-index: 11; font-size: .75rem;
+  align-items: flex-end;
 }
 .out-links a {
   color: rgba(232, 238, 234, .55); text-decoration: none; margin-left: .75rem;
 }
 .out-links a:hover { color: #e0b34a; }
+.out-links .out-admin {
+  display: inline-flex; flex-direction: column; align-items: flex-end;
+  margin-left: .75rem; gap: .12rem; vertical-align: bottom;
+}
+.out-links .out-admin a { margin-left: 0; }
+.out-links .app-ver {
+  color: rgba(232, 238, 234, .38); font-size: .65rem;
+  letter-spacing: .04em; font-variant-numeric: tabular-nums; line-height: 1;
+  user-select: none;
+}
 #howto-modal {
   max-width: 22rem; background: #0c0e0f; color: #e8eeea;
   border: 1px solid #3a4440; padding: 1rem 1.1rem;
@@ -47,7 +58,7 @@ export const MEMBER_OVERLAY_CSS = `
   border: 1px solid #e0b34a; padding: .35rem .7rem; cursor: pointer;
 }
 @media (min-width: 900px) {
-  .out-links { display: block; }
+  .out-links { display: flex; }
 }
 `;
 

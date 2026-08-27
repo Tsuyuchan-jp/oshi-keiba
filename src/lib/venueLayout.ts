@@ -37,7 +37,7 @@ import {
   type VenueSlot,
 } from "./venueBoard.ts";
 import { VENUE_CSS } from "./venueCss.ts";
-import { memberMoreScript } from "./memberShell.ts";
+import { memberMoreScript, memberOutLinks } from "./memberShell.ts";
 
 export type { VenueSlot };
 export { resolveVenueSlot } from "./venueBoard.ts";
@@ -500,10 +500,7 @@ export function venueBoardPage(opts: {
       </section>
     </div>
   </div>
-  <nav class="out-links" aria-label="その他">
-    <a href="#" id="howto-out">使い方</a>
-    <a href="/admin">管理者</a>
-  </nav>
+  ${memberOutLinks()}
   ${howToModal()}
   ${memberMoreScript()}
   ${venueChromeScript(published)}

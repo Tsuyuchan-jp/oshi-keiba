@@ -23,7 +23,7 @@ import {
 } from "./ui.ts";
 import { BET_CSS } from "./betCss.ts";
 import { betKindSlots } from "./betBoard.ts";
-import { memberMoreScript } from "./memberShell.ts";
+import { memberMoreScript, memberOutLinks } from "./memberShell.ts";
 
 export { betKindSlots, type BetSlotSpec } from "./betBoard.ts";
 
@@ -66,10 +66,7 @@ function shellChrome(opts: {
 }
 
 function shellFoot(): string {
-  return `<nav class="out-links" aria-label="その他">
-    <a href="#" id="howto-out">使い方</a>
-    <a href="/admin">管理者</a>
-  </nav>
+  return `${memberOutLinks()}
   ${howToModal()}
   ${memberMoreScript()}`;
 }

@@ -1,6 +1,7 @@
 import { escapeHtml } from "./http";
 import { ADMIN_CSS } from "./adminCss";
 import { flashHtml } from "./ui";
+import { appVersionLabel } from "./version";
 import type { EventStatus } from "./store";
 import type { UserRow } from "./store";
 
@@ -64,7 +65,7 @@ export function layoutAdmin(opts: {
 <body class="${pageClass}" data-screen="admin" data-phase="${escapeHtml(opts.eventStatus ?? "")}">
   <div class="dash">
     <nav class="side" aria-label="管理">
-      <div class="mark">OSHI KEIBA · 管理</div>
+      <div class="mark">OSHI KEIBA · 管理 <span class="app-ver">${appVersionLabel()}</span></div>
       ${nav}
       <div class="side-foot">
         ${opts.user ? `<a href="/logout">ログアウト</a>` : ""}

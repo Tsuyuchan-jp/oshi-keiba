@@ -4,7 +4,7 @@
  */
 import { flashHtml, howToModal } from "./ui.ts";
 import { GATE_CSS } from "./gateCss.ts";
-import { memberMoreScript } from "./memberShell.ts";
+import { memberMoreScript, memberOutLinks } from "./memberShell.ts";
 
 export function gateLoginPage(opts: {
   flash: { text: string | null; error: boolean };
@@ -54,10 +54,7 @@ export function gateLoginPage(opts: {
       </div>
     </div>
   </div>
-  <nav class="out-links" aria-label="その他">
-    <a href="#" id="howto-out">使い方</a>
-    <a href="/admin">管理者</a>
-  </nav>
+  ${memberOutLinks()}
   ${howToModal()}
   ${memberMoreScript()}
 </body>
