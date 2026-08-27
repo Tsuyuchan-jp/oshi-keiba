@@ -23,6 +23,7 @@
 | [playbook.md](playbook.md) | 画面・当日オペ・入場パス |
 | [score.md](score.md) | 評価点の正本（式・保存）。読みの根拠は同ファイル後半 |
 | [ocr.md](ocr.md) | 本戦スクショの読み取り |
+| [ocr-aliases.md](ocr-aliases.md) | OCR スキル名の例外対応（誤読→正式名） |
 | [rejected.md](rejected.md) | 見送った案と理由 |
 | [next.md](next.md) | 次に取り組む項目名と参照 |
 
