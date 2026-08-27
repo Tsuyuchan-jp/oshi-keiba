@@ -140,7 +140,7 @@ export function strategicSkillsAdminScript(
     candWrap.hidden = false;
     candEl.innerHTML = items.map((h) =>
       '<div class="strategic-cand-row">' +
-        "<span>" + esc(h.name) + " <span class=\"odds-meta\">id " + h.id + "</span></span>" +
+        '<span>' + esc(h.name) + ' <span class="odds-meta">id ' + h.id + '</span></span>' +
         (CAN_EDIT
           ? '<span><button type="button" class="strategic-cand-add" data-id="' + h.id + '" data-name="' + esc(h.name) + '">+1で追加</button> ' +
             '<button type="button" class="secondary strategic-cand-dismiss" data-id="' + h.id + '" data-name="' + esc(h.name) + '">見送り</button></span>'

@@ -153,6 +153,7 @@ dialog.modal {
   overflow: auto; border: 1px solid #d5d9e0; border-radius: 10px;
   padding: 1.1rem 1.2rem; background: #fff; color: #1c2128;
 }
+dialog.modal[open] { display: block; }
 dialog.modal::backdrop { background: rgba(18, 22, 28, .45); }
 dialog.modal h2 { margin-top: 0; }
 .autofill-trap { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
