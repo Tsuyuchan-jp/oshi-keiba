@@ -190,6 +190,7 @@ export function horsesAdminBody(
               <div id="ocr-materials"></div>
               <div id="manual-block">
                 <div class="reg-score-row">
+                  <span class="reg-score-auto">自動算出</span>
                   <div class="reg-score-in">
                     <label>評価点（直置き）<input name="strength" id="strength" type="number" min="0" step="0.1" value="10"></label>
                   </div>

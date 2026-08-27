@@ -372,6 +372,12 @@ body.ledger-page .filters select {
   display: flex; flex-wrap: wrap; align-items: flex-end; gap: .5rem 1rem; margin-top: .85rem;
 }
 .reg-score-row .reg-score-in { flex: 0 1 auto; max-width: 10rem; margin-top: 0; }
+.reg-score-auto {
+  display: none; font-size: .78rem; color: #6b7380; margin: 0 0 .38rem; flex: 0 0 auto;
+}
+.reg-score-auto::before {
+  content: "評価点 · "; font-size: .7rem; letter-spacing: .06em; color: #8a929c;
+}
 .reg-manual-toggle {
   cursor: pointer; user-select: none; margin: 0 0 .38rem; flex: 0 0 auto;
 }
@@ -423,7 +429,8 @@ body.ledger-page .filters select {
 #horse-add:not([data-mode="idle"]) #mode-idle { display: none; }
 #horse-add[data-mode="read"] #reg-shot-empty { display: none; }
 #horse-add[data-mode="manual"] #shot-open { display: none; }
-#horse-add[data-mode="read"]:not(.need-score) #manual-block { display: none; }
+#horse-add[data-mode="read"]:not(.need-score) .reg-score-in { display: none; }
+#horse-add[data-mode="read"]:not(.need-score) .reg-score-auto { display: block; }
 #horse-add[data-mode="manual"] #ocr-materials { display: none; }
 .reg-cue {
   margin: .55rem 0 .4rem;
