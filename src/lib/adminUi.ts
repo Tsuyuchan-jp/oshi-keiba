@@ -682,7 +682,7 @@ function ratioSHow(
   mult: number,
 ): string {
   const rr = fmt3(r);
-  const head = `（${rDef}）r=${rr}`;
+  const head = `（${rDef}） r=${rr}`;
   if (!(r > 0) || !Number.isFinite(r)) return `${head}　r≤0のため 0`;
   if (r >= 1) {
     if (n === 1) return `${head}　S=r=${fmt3(mult)}`;
@@ -693,7 +693,7 @@ function ratioSHow(
 
 function speedSHow(r: number, rDef: string, mult: number): string {
   const rr = fmt3(r);
-  const head = `（${rDef}）r=${rr}`;
+  const head = `（${rDef}） r=${rr}`;
   if (!(r >= 1) || !Number.isFinite(r)) return `${head}　未達は見ない`;
   return `${head}　1+(${rr}−1)/4=${fmt3(mult)}`;
 }
