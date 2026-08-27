@@ -37,6 +37,13 @@ test("OCRエイリアス: 千鍬万鐘 → 千鍛万錬", () => {
   assert.ok(h.id != null);
 });
 
+test("OCRエイリアス: 千客万来 → 千鍛万錬", () => {
+  const h = fuzzyMatchSkill("千客万来", false);
+  assert.equal(h.accepted, true);
+  assert.equal(h.name, "千鍛万錬");
+  assert.ok(h.id != null);
+});
+
 test("OCRエイリアス: 勝利へ至る累積 → 勝利ヘ至ル累積（2番目以降は inherit）", () => {
   const first = fuzzyMatchSkill("勝利へ至る累積", true);
   assert.equal(first.accepted, true);

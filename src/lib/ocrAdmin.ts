@@ -240,6 +240,7 @@ export function ocrAdminScript(
     "千段万錬": "千鍛万錬",
     "千錬万錬": "千鍛万錬",
     "千鍬万鐘": "千鍛万錬",
+    "千客万来": "千鍛万錬",
     "勝利へ至る累積": "勝利ヘ至ル累積",
   };
   const STYLE_LABEL = { runner: "逃", leader: "先", betweener: "差", chaser: "追" };
