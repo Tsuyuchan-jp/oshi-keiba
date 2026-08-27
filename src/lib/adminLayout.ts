@@ -49,7 +49,9 @@ export function layoutAdmin(opts: {
           ? "ledger-page"
           : opts.tab === "register"
             ? "register-page"
-            : "";
+            : opts.tab === "progress"
+              ? "progress-page"
+              : "";
   const mainFlash = opts.tab === "settings" || opts.tab === "register" ? "" : flash;
   return `<!doctype html>
 <html lang="ja">

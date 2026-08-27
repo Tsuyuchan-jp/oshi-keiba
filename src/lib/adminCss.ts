@@ -663,14 +663,29 @@ table.plain tbody tr.on { background: #e8f0fa; }
   gap: .4rem; padding: .28rem 0; border-bottom: 1px solid #eef0f3; font-size: .82rem;
 }
 .split { display: grid; grid-template-columns: minmax(11.5rem, .85fr) minmax(0, 1.7fr); gap: 1rem; min-height: 18rem; }
-/* 着順入力は枠内スクロール。保存／公開ボタンは外に残す */
-#place-board .split {
-  max-height: min(52dvh, 28rem);
+.ranks-cols { display: grid; grid-template-columns: 1fr 1fr; grid-auto-flow: column; gap: .4rem .65rem; }
+/* 進行：画面高に収め、着順入力は残り高さいっぱいで枠内スクロール */
+body.progress-page { overflow: hidden; }
+body.progress-page .dash { height: 100dvh; min-height: 0; overflow: hidden; }
+body.progress-page .main {
+  display: flex; flex-direction: column; min-height: 0; height: 100%; overflow: hidden;
+  padding: 1rem 1.25rem 1.25rem;
+}
+body.progress-page .hero { flex: 0 0 auto; }
+body.progress-page .flash { flex: 0 0 auto; }
+body.progress-page .work {
+  flex: 1 1 auto; min-height: 0; margin-bottom: 0;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+body.progress-page .work > h2 { flex: 0 0 auto; }
+body.progress-page .work-actions { flex: 0 0 auto; }
+body.progress-page #place-board .split {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
   align-content: start;
-  min-height: 12rem;
 }
-.ranks-cols { display: grid; grid-template-columns: 1fr 1fr; grid-auto-flow: column; gap: .4rem .65rem; }
+body.progress-page .work:not(#place-board) { overflow: auto; }
 .col-h { font-size: .72rem; letter-spacing: .08em; font-weight: 700; color: #6b7380; margin: 0 0 .4rem; }
 .stack { display: flex; flex-direction: column; gap: .4rem; }
 .rank-row { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); gap: .4rem; align-items: stretch; }
@@ -916,6 +931,11 @@ body.register-page .work .ctas a { align-self: center; font-size: .85rem; color:
   body.register-page .main { height: auto; overflow: visible; }
   body.register-page .register-desk { display: flex; flex-direction: column; height: auto; flex: none; }
   body.register-page .register-desk .work { height: min(70vh, 28rem); }
+  body.progress-page { overflow: auto; }
+  body.progress-page .dash { height: auto; min-height: 100dvh; }
+  body.progress-page .main { height: auto; overflow: visible; padding-bottom: 4.5rem; }
+  body.progress-page .work { flex: none; height: auto; overflow: visible; }
+  body.progress-page #place-board .split { flex: none; max-height: min(70vh, 28rem); overflow: auto; }
   .reg-bench { grid-template-columns: 1fr; }
   .pipe { position: static; }
 }
