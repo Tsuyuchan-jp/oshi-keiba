@@ -211,3 +211,17 @@ test("パワー未達で大きく落ちる", () => {
   // rパ=0.9 → ×0.6
   assert.ok(Math.abs(s.score - 0.6) < 1e-9);
 });
+
+test("案B: スキル土台だけを累乗し、ステータス補正は残す", () => {
+  const input = {
+    skillNames: ["地固め"],
+    stats: { speed: 1200, stamina: 800, power: 800, guts: 400, wisdom: 800 },
+    aptitudes: { distance: "A", surface: "A", style: "A" },
+    req: { speedCap: 1200, staminaNoTempt: 700, staminaWithTempt: 800, staminaRace: false, power: 800, guts: 400, wisdom: 800 },
+    greenCtx: {},
+    skillWeightN: 2,
+  } as const;
+  const s = computeScore(input);
+  assert.equal(s.weightedSkillBase, 90 * (1 / 90) ** 2);
+  assert.equal(s.score, s.weightedSkillBase);
+});

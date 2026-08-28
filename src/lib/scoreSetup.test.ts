@@ -134,3 +134,10 @@ test("effectiveSkillIds の往復と脚質 lookup", () => {
   assert.ok(set?.has(200261));
   assert.equal(effectiveIdsFromScoreSetup(parsed!, "不明"), null);
 });
+
+test("スキル重み n の往復と範囲検証", () => {
+  const parsed = parseScoreSetup({ ...SAMPLE, skillWeightN: 4.5 });
+  assert.equal(parsed?.skillWeightN, 4.5);
+  assert.equal(parseScoreSetup({ ...SAMPLE, skillWeightN: 0 }), null);
+  assert.equal(parseScoreSetup({ ...SAMPLE, skillWeightN: 10.1 }), null);
+});

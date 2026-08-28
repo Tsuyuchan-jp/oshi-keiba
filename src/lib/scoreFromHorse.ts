@@ -11,6 +11,7 @@ import {
   effectiveIdsFromScoreSetup,
   getScoreCourse,
   greenCtxFromScoreSetup,
+  scoreSkillWeightN,
   type EventScoreSetup,
 } from "./scoreSetup.ts";
 import type { EffectStyleKey } from "./utoolsEffects.ts";
@@ -115,6 +116,7 @@ export function scoreFromHorse(
     greenCtx,
     effectiveIds,
     strategicById,
+    skillWeightN: scoreSkillWeightN(setup),
   });
 
   if (!Number.isFinite(breakdown.score) || breakdown.score < 0) return null;

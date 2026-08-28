@@ -43,6 +43,8 @@ import {
 import { parimutuelOdds } from "./odds";
 import {
   DEFAULT_SCORE_REQ,
+  DEFAULT_SCORE_SKILL_N,
+  scoreSkillWeightN,
   GROUND_CONDITION_OPTIONS,
   listScoreCourses,
   SEASON_OPTIONS,
@@ -827,7 +829,7 @@ function pipeHtml(
   const staLine = sMultLine(b.ratios.staminaMult, staminaExplain(b.adjusted.stamina, req));
   const stratPart =
     s.strategicPoints > 0 ? ` ＋ 戦略例外 ${s.strategicPoints}` : "";
-  const formula = `スキル点${s.base} × スピ${fmt3(b.ratios.speed)} × スタ${fmt3(b.ratios.staminaMult)} × パワ${fmt3(b.ratios.power)} × 根性${fmt3(b.ratios.guts)} × 賢さ${fmt3(b.ratios.wisdom)} ＝ ${h.horse.strength}`;
+  const formula = `スキル点${fmt3(b.weightedSkillBase)}（S0=${s.base}、n適用） × スピ${fmt3(b.ratios.speed)} × スタ${fmt3(b.ratios.staminaMult)} × パワ${fmt3(b.ratios.power)} × 根性${fmt3(b.ratios.guts)} × 賢さ${fmt3(b.ratios.wisdom)} ＝ ${h.horse.strength}`;
   return `${head}
     <div class="pipe-step"><div class="pipe-k">土台（スキル）</div>
       <div>有効 ${s.effectiveCount} ＋ 金×2（${s.goldCount}枚）${stratPart} ＋ ためらい ${s.tameraiCount}＝ <b>${s.base}</b></div></div>
@@ -1212,6 +1214,7 @@ export function adminSettingsPage(
     ? `<span class="odds-meta">有効スキル取得済み　逃 ${ids.runner.length} · 先 ${ids.leader.length} · 差 ${ids.betweener.length} · 追 ${ids.chaser.length}</span>`
     : "";
   const stamOn = !!r?.staminaRace;
+  const skillWeightN = setup?.skillWeightN ?? DEFAULT_SCORE_SKILL_N;
   const flashEl = flash?.text
     ? `<p class="settings-flash${flash.error ? " err" : ""}">${escapeHtml(flash.text)}</p>`
     : "";
@@ -1313,6 +1316,12 @@ export function adminSettingsPage(
             <span class="sym">指数</span>
             <span class="k">時間の曲線</span>
             <input name="w_time_exp" type="number" min="0.2" max="4" step="0.1" value="${e.w_time_exp}">
+          </label>
+          <label class="set-metric">
+            <span class="sym">n</span>
+            <span class="k">スキル重み</span>
+            <input name="score_skill_weight_n" type="number" min="1" max="10" step="0.1" value="${skillWeightN}">
+            <span class="d">S0の差を強調する累乗</span>
           </label>
         </div>
       </section>

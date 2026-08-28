@@ -32,6 +32,7 @@ export type EventScoreSetup = {
   effectiveSkillIds?: EffectiveSkillIdsByStyle;
   /** ISO。リスト取得時刻 */
   effectsFetchedAt?: string;
+  skillWeightN?: number;
 };
 
 export type ScoreCourse = {
@@ -80,6 +81,14 @@ export const DEFAULT_SCORE_REQ = {
   guts: 1200,
   wisdom: 1600,
 } as const;
+
+export const SCORE_SKILL_BASE = 90;
+export const DEFAULT_SCORE_SKILL_N = 4.5;
+
+export function scoreSkillWeightN(setup: EventScoreSetup | null | undefined): number {
+  const n = setup?.skillWeightN;
+  return typeof n === "number" && Number.isFinite(n) && n >= 1 ? n : 1;
+}
 
 export function listScoreCourses(): ScoreCourse[] {
   return COURSES;
@@ -136,6 +145,7 @@ export function parseScoreSetup(raw: unknown): EventScoreSetup | null {
   const power = Number(r.power);
   const guts = Number(r.guts);
   const wisdom = Number(r.wisdom);
+  const skillWeightN = root.skillWeightN == null ? undefined : Number(root.skillWeightN);
   const staminaRace = Boolean(r.staminaRace);
 
   if (
@@ -148,6 +158,7 @@ export function parseScoreSetup(raw: unknown): EventScoreSetup | null {
   ) {
     return null;
   }
+  if (skillWeightN !== undefined && (!Number.isFinite(skillWeightN) || skillWeightN < 1 || skillWeightN > 10)) return null;
   if (!Number.isInteger(speedCap) || !Number.isInteger(staminaNoTempt) ||
       !Number.isInteger(staminaWithTempt) || !Number.isInteger(power) ||
       !Number.isInteger(guts) || !Number.isInteger(wisdom)) {
@@ -166,6 +177,7 @@ export function parseScoreSetup(raw: unknown): EventScoreSetup | null {
       wisdom,
     },
   };
+  if (skillWeightN !== undefined) setup.skillWeightN = skillWeightN;
 
   const ids = parseEffectiveSkillIdsByStyle(root.effectiveSkillIds);
   if (ids) setup.effectiveSkillIds = ids;
@@ -231,6 +243,7 @@ export function scoreSetupFromForm(
   const powerRaw = get("score_power").trim();
   const gutsRaw = get("score_guts").trim();
   const wisdomRaw = get("score_wisdom").trim();
+  const skillWeightNRaw = get("score_skill_weight_n").trim();
   const staminaRace = get("score_stamina_race") === "1";
 
   const any =
@@ -244,6 +257,7 @@ export function scoreSetupFromForm(
     powerRaw ||
     gutsRaw ||
     wisdomRaw ||
+    skillWeightNRaw ||
     staminaRace;
 
   /** 初期表示のデフォルトだけ埋まっている状態（コースなし＝直置き） */
@@ -257,7 +271,8 @@ export function scoreSetupFromForm(
     speedCapRaw === String(DEFAULT_SCORE_REQ.speedCap) &&
     powerRaw === String(DEFAULT_SCORE_REQ.power) &&
     gutsRaw === String(DEFAULT_SCORE_REQ.guts) &&
-    wisdomRaw === String(DEFAULT_SCORE_REQ.wisdom);
+    wisdomRaw === String(DEFAULT_SCORE_REQ.wisdom) &&
+    (!skillWeightNRaw || skillWeightNRaw === String(DEFAULT_SCORE_SKILL_N));
 
   if (!courseKey) {
     if (!any || onlyReqDefaults) return null;
@@ -280,6 +295,7 @@ export function scoreSetupFromForm(
       guts: Number(gutsRaw),
       wisdom: Number(wisdomRaw),
     },
+    ...(skillWeightNRaw ? { skillWeightN: Number(skillWeightNRaw) } : {}),
   });
   if (!parsed) {
     throw new Error("開催条件とステ目標値の入力が不正です");

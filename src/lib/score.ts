@@ -69,6 +69,8 @@ export type ScoreInput = {
    * 戦略例外 id → 点数。U-tools 有効とは別レーン。
    */
   strategicById?: StrategicPointsById;
+  /** スキル土台の累乗重み。未指定は現行互換の1。 */
+  skillWeightN?: number;
 };
 
 export type SkillBaseBreakdown = {
@@ -86,6 +88,7 @@ export type StrategicPointsById = ReadonlyMap<number, { points: number }>;
 
 export type ScoreBreakdown = {
   score: number;
+  weightedSkillBase: number;
   skill: SkillBaseBreakdown;
   green: GreenBonus;
   /** 条件成立した緑スキル（表示用） */
@@ -293,7 +296,11 @@ export function computeScore(input: ScoreInput): ScoreBreakdown {
   const adjusted = adjustStats(input.stats, green, input.aptitudes);
   const req = input.req;
 
-  let score = skill.base;
+  const n = input.skillWeightN ?? 1;
+  const weightedSkillBase = Number.isFinite(n) && n > 0
+    ? 90 * (skill.base / 90) ** n
+    : skill.base;
+  let score = weightedSkillBase;
 
   const rSpeed = req.speedCap > 0 ? adjusted.speed / req.speedCap : 1;
   const mSpeed = speedMult(rSpeed);
@@ -316,6 +323,7 @@ export function computeScore(input: ScoreInput): ScoreBreakdown {
 
   return {
     score,
+    weightedSkillBase,
     skill,
     green,
     appliedGreens,
