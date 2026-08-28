@@ -1,5 +1,24 @@
 # OCR（本戦スクショ）
 
+## 育成ウマ娘・衣装ID（2026-08-29）
+
+出走登録時、OCR は `name` に加えて画面上の角括弧内の `costumeName` を読む。Worker は `src/data/uma-dress-catalog.json`（DMM版 `master.mdb` から抽出）でウマ娘名・衣装名を一意にファジー照合し、確定した場合だけ `horses.chara_id` と `horses.dress_id` へ保存する。
+
+- 照合不能・候補が一意でない・`0010` 画像未収録の場合は ID を保存せず、画像はなしとして扱う。名前から別衣装を推測しない。
+- 共通関数 `resolvePetitImageUrl(charaId, dressId)` は、収録済みのときだけ `/images/umamusume/petit/petit_{chara_id}_{dress_id}_0010.png` を返し、それ以外は `null` を返す。
+- 既存出走データのIDは `null` のままで互換性を保つ。編集・Undoでも保存済みIDを保持する。
+
+### マスタ更新
+
+`master.mdb` は本番Workerには置かない。ローカルで次を実行して、生成物をレビュー・コミットする。
+
+```powershell
+node scripts/extract-uma-dress-catalog.mjs --mdb D:\DMM\umamusumeDMM\Umamusume\umamusume_Data\Persistent\master\master.mdb
+node scripts/gen-skill-catalog.mjs --mdb D:\DMM\umamusumeDMM\Umamusume\umamusume_Data\Persistent\master\master.mdb
+```
+
+前者はOCR照合用の育成ウマ娘・衣装カタログ、後者は総合スキル辞書を更新する。緑スキルの評価値は従来どおり `npm run extract:greens` で更新する。
+
 本戦出走のステータス画面などから、評価点の材料を読む。予選はアプリに載せないので、OCR も本戦のみ。
 
 第2回向けに実装した。点の式は [score.md](score.md)（このファイルには置かない）。レース結果の動画・リプレイからの着順取得はしない（[rejected.md](rejected.md)）。
