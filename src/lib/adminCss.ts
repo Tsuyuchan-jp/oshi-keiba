@@ -182,6 +182,8 @@ dialog.modal {
 dialog.modal[open] { display: block; }
 dialog.modal::backdrop { background: rgba(18, 22, 28, .45); }
 dialog.modal h2 { margin-top: 0; }
+.modal-actions { display: flex; justify-content: flex-end; gap: .45rem; margin-top: 1rem; }
+.modal-actions form { margin: 0; }
 .autofill-trap { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 form.reauth { position: relative; }
 .eq, .plug { font-family: ui-monospace, "Cascadia Code", sans-serif; font-size: .9rem; line-height: 1.55; }

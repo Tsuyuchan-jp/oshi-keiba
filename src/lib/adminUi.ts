@@ -857,7 +857,7 @@ export function adminHorsesPage(
     ? pipeHtml(current, board, strategicSkills)
     : `<p class="note">まだいません</p>`;
   const previewHtml = preview
-    ? `<dialog class="modal" open><h2>再計算内容の確認</h2><p class="note">${preview.length ? `${preview.length}頭の自動評価点を更新します。` : "変更対象はありません。"}</p>${preview.length ? `<table class="plain"><thead><tr><th>出走馬</th><th>現在</th><th>再計算後</th></tr></thead><tbody>${preview.map((x) => `<tr><td>${escapeHtml(x.name)}</td><td class="num">${x.before}</td><td class="num">${x.after}</td></tr>`).join("")}</tbody></table>` : ""}<div class="ctas"><form method="post" action="/admin/rescore"><button class="primary" type="submit"${preview.length ? "" : " disabled"}>この内容で再計算</button></form><a class="secondary" href="/admin/horses">キャンセル</a></div></dialog>`
+    ? `<dialog class="modal" open><h2>再計算内容の確認</h2><p class="note">${preview.length ? `${preview.length}頭の自動評価点を更新します。` : "変更対象はありません。"}</p>${preview.length ? `<table class="plain"><thead><tr><th>出走馬</th><th>現在</th><th>再計算後</th></tr></thead><tbody>${preview.map((x) => `<tr><td>${escapeHtml(x.name)}</td><td class="num">${x.before}</td><td class="num">${x.after}</td></tr>`).join("")}</tbody></table>` : ""}<div class="modal-actions"><form method="post" action="/admin/rescore"><button class="primary" type="submit"${preview.length ? "" : " disabled"}>この内容で再計算</button></form><form method="get" action="/admin/horses"><button class="secondary" type="submit">キャンセル</button></form></div></dialog>`
     : "";
   return `<section class="hero"><div class="hero-top"><h1>出走</h1>${phasePill(board.event.status)}<div class="hero-util">${rescore}</div></div></section>${previewHtml}
     <div class="horses-desk">
