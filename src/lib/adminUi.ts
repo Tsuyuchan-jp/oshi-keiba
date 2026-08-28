@@ -1371,8 +1371,9 @@ export function adminSettingsPage(
       </dialog>
       <dialog class="modal" id="settings-save-modal">
         <h2>開催設定を保存</h2>
-        <p>入力した開催設定を保存します。自動評価の出走馬は新しい条件で再計算されます。</p>
-        <div class="modal-actions"><button type="button" class="admin-action admin-action--primary" id="settings-save-confirm">保存する</button><button type="button" class="admin-action admin-action--secondary" id="settings-save-cancel">キャンセル</button></div>
+        <p id="settings-save-summary">再計算内容を確認しています。</p>
+        <div id="settings-save-changes"></div>
+        <div class="modal-actions"><button type="button" class="admin-action admin-action--primary" id="settings-save-confirm" disabled>この内容で保存・再計算</button><button type="button" class="admin-action admin-action--secondary" id="settings-save-cancel">キャンセル</button></div>
       </dialog>
       <dialog class="modal" id="settings-alert-modal">
         <h2>入力内容を確認</h2>
@@ -1418,6 +1419,9 @@ export function adminSettingsPage(
     staminaDlg?.addEventListener("click", (ev) => { const box = staminaDlg.getBoundingClientRect(); if (ev.clientX < box.left || ev.clientX > box.right || ev.clientY < box.top || ev.clientY > box.bottom) staminaDlg.close(); });
     const settingsForm = document.getElementById("settings-form");
     const saveDlg = document.getElementById("settings-save-modal");
+    const saveSummary = document.getElementById("settings-save-summary");
+    const saveChanges = document.getElementById("settings-save-changes");
+    const saveConfirm = document.getElementById("settings-save-confirm");
     const alertDlg = document.getElementById("settings-alert-modal");
     const alertMessage = document.getElementById("settings-alert-message");
     let focusAfterAlert = null;
@@ -1433,7 +1437,43 @@ export function adminSettingsPage(
       }
       return true;
     };
-    document.getElementById("settings-save-open")?.addEventListener("click", () => { if (validateSettings()) saveDlg?.showModal(); });
+    const showSavePreview = async () => {
+      if (!settingsForm || !validateSettings()) return;
+      if (saveSummary) saveSummary.textContent = "再計算内容を確認しています。";
+      if (saveChanges) saveChanges.replaceChildren();
+      if (saveConfirm instanceof HTMLButtonElement) saveConfirm.disabled = true;
+      saveDlg?.showModal();
+      try {
+        const res = await fetch("/admin/params/preview", { method: "POST", body: new FormData(settingsForm) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "再計算内容を取得できません");
+        const changes = Array.isArray(data.changes) ? data.changes : [];
+        if (saveSummary) saveSummary.textContent = changes.length ? changes.length + "頭の自動評価点を更新します。" : "評価点の変更対象はありません。";
+        if (saveChanges && changes.length) {
+          const table = document.createElement("table");
+          table.className = "plain";
+          table.innerHTML = "<thead><tr><th>出走馬</th><th>現在</th><th>再計算後</th><th>キャラスペック</th></tr></thead>";
+          const body = document.createElement("tbody");
+          changes.forEach((change) => {
+            const row = document.createElement("tr");
+            [change.name, change.before, change.after, "×" + Number(change.characterSpecMultiplier).toFixed(3)].forEach((value) => {
+              const cell = document.createElement("td");
+              cell.textContent = String(value);
+              row.append(cell);
+            });
+            body.append(row);
+          });
+          table.append(body);
+          saveChanges.append(table);
+        }
+        if (saveConfirm instanceof HTMLButtonElement) saveConfirm.disabled = false;
+      } catch (err) {
+        saveDlg?.close();
+        if (alertMessage) alertMessage.textContent = err instanceof Error ? err.message : "再計算内容を取得できません";
+        alertDlg?.showModal();
+      }
+    };
+    document.getElementById("settings-save-open")?.addEventListener("click", showSavePreview);
     document.getElementById("settings-save-cancel")?.addEventListener("click", () => saveDlg?.close());
     document.getElementById("settings-save-confirm")?.addEventListener("click", () => { saveDlg?.close(); settingsForm?.submit(); });
     document.getElementById("settings-alert-close")?.addEventListener("click", () => {

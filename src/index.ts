@@ -140,6 +140,26 @@ export default {
       }
 
       // —— 管理 POST ——
+      if (method === "POST" && path === "/admin/params/preview") {
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) return gate;
+        const form = await readForm(request);
+        try {
+          const base = scoreSetupFromForm((name) => String(form.get(name) ?? ""));
+          if (!base) throw new Error("評価条件を正しく入力してください。");
+          const nextSetup = await enrichScoreSetupWithEffects(base);
+          const board = await loadBoard(env.DB);
+          const strategic = await loadStrategicSkillsBundle(env.DB);
+          const changes = await prepareAutoScoreRecompute(env.DB, board.event, nextSetup, strategic.skills);
+          return Response.json({ changes });
+        } catch (err) {
+          return Response.json(
+            { error: err instanceof Error ? err.message : "再計算内容を取得できません" },
+            { status: 400 },
+          );
+        }
+      }
+
       if (method === "POST" && path === "/admin/params") {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
