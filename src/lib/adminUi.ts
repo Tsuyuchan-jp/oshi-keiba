@@ -841,7 +841,7 @@ function pipeHtml(
     : "×1.000 <span class=\"pipe-s-calc\">該当スキルなし</span>";
   const skillWeightN = scoreSkillWeightN(setup);
   const skillFormula = `90 × (${s.base} / 90)^${skillWeightN} × ${fmt3(cs.multiplier)} = ${fmt3(b.weightedSkillBase)}`;
-  const formula = `スキル点${fmt3(b.weightedSkillBase)}（S0=${s.base}、n・キャラスペック適用） × スピ${fmt3(b.ratios.speed)} × スタ${fmt3(b.ratios.staminaMult)} × パワ${fmt3(b.ratios.power)} × 根性${fmt3(b.ratios.guts)} × 賢さ${fmt3(b.ratios.wisdom)} ＝ ${h.horse.strength}`;
+  const formula = `スキル点${fmt3(b.weightedSkillBase)} × スピ${fmt3(b.ratios.speed)} × スタ${fmt3(b.ratios.staminaMult)} × パワ${fmt3(b.ratios.power)} × 根性${fmt3(b.ratios.guts)} × 賢さ${fmt3(b.ratios.wisdom)} ＝ ${h.horse.strength}`;
   return `${head}
     <div class="pipe-step"><div class="pipe-k">土台（スキル）</div>
       <div>有効 ${s.effectiveCount} ＋ 金×2（${s.goldCount}枚）${stratPart} ＋ ためらい ${s.tameraiCount}＝ <b>${s.base}</b></div></div>
