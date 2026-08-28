@@ -15,6 +15,7 @@ import {
 import { loadStrategicSkillsBundle } from "./adminStrategicApi";
 import {
   getUser,
+  eventScoreSetup,
   listAllBets,
   listEventPayouts,
   listMembers,
