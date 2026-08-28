@@ -1,20 +1,21 @@
 /** 場内電光。オーバーレイは memberShellCss。LED・盤面はここ */
-import { MEMBER_OVERLAY_CSS } from "./memberShellCss.ts";
+import { MEMBER_OVERLAY_CSS, MEMBER_TOKENS_CSS } from "./memberShellCss.ts";
 
 export const VENUE_CSS = `
+${MEMBER_TOKENS_CSS}
 :root {
   --bg: #070808;
   --led: #00e8d8;
-  --led-dim: #6aa8a4;
-  --odds: #ff8a2a;
+  --led-dim: var(--member-muted);
+  --odds: var(--member-action);
   --pulse: rgba(255, 138, 42, .28);
-  --line: #1a3332;
+  --line: var(--member-chrome-line);
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
 body {
-  background: #050607;
-  color: #e8fffc;
+  background: var(--member-page-bg);
+  color: var(--member-ink-bright);
   font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -31,8 +32,8 @@ a { color: inherit; }
   justify-content: space-between;
   gap: .75rem;
   padding: .55rem .85rem;
-  background: #000;
-  border-bottom: 1px solid #1a3332;
+  background: var(--member-black);
+  border-bottom: 1px solid var(--member-chrome-line);
   font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif;
   letter-spacing: .04em;
 }
@@ -63,7 +64,7 @@ ${MEMBER_OVERLAY_CSS}
   line-height: 1;
 }
 .led-meta > span { display: inline-flex; align-items: center; }
-.led-meta strong { color: #fff; font-weight: 700; }
+.led-meta strong { color: var(--member-white); font-weight: 700; }
 .pill {
   display: inline-flex;
   align-items: center;
@@ -74,7 +75,7 @@ ${MEMBER_OVERLAY_CSS}
   letter-spacing: .06em;
   font-size: .68rem;
   background: rgba(224, 179, 74, .15);
-  color: #e0b34a;
+  color: var(--member-accent);
   border: 0;
 }
 .pill .dot {
@@ -110,7 +111,7 @@ ${MEMBER_OVERLAY_CSS}
   font-weight: 700;
 }
 .sheet-wrap {
-  background: #000;
+  background: var(--member-black);
   border: 0;
   border-radius: 0;
   box-shadow: none;
@@ -147,7 +148,7 @@ ${MEMBER_OVERLAY_CSS}
   position: sticky;
   top: 0;
   z-index: 1;
-  background: #000;
+  background: var(--member-black);
   color: var(--led-dim);
   font-weight: 500;
   letter-spacing: .12em;
@@ -155,7 +156,7 @@ ${MEMBER_OVERLAY_CSS}
   border-bottom: 1px solid #143230;
 }
 .c-num {
-  color: #fff;
+  color: var(--member-white);
   font-family: "Chakra Petch", sans-serif;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
@@ -171,7 +172,7 @@ ${MEMBER_OVERLAY_CSS}
   text-shadow: 0 0 8px rgba(0, 232, 216, .25);
 }
 .c-runner {
-  color: #c8d4d3;
+  color: var(--member-table-ink);
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -196,7 +197,7 @@ ${MEMBER_OVERLAY_CSS}
 .sheet-row.head .c-odds { color: var(--led-dim); font-size: .68em; text-shadow: none; }
 .c-place {
   display: none;
-  color: #fff;
+  color: var(--member-white);
   font-family: "Chakra Petch", sans-serif;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
@@ -205,8 +206,8 @@ ${MEMBER_OVERLAY_CSS}
 }
 .scene[data-phase="published"] .c-place { display: block; }
 .sheet-row.head .c-place { color: var(--led-dim); font-size: .68em; }
-.sheet-row.place-1 { box-shadow: inset 3px 0 0 #e0b34a; }
-.sheet-row.place-2 { box-shadow: inset 3px 0 0 #c8d0cc; }
+.sheet-row.place-1 { box-shadow: inset 3px 0 0 var(--member-accent); }
+.sheet-row.place-2 { box-shadow: inset 3px 0 0 var(--member-ink-soft); }
 .sheet-row.place-3 { box-shadow: inset 3px 0 0 #c47a3a; }
 @keyframes pulse-row {
   0% { background: var(--pulse); }
@@ -242,8 +243,8 @@ ${MEMBER_OVERLAY_CSS}
   cursor: pointer;
 }
 .result-tabs button[aria-pressed="true"] {
-  color: #e0b34a;
-  border-color: #e0b34a;
+  color: var(--member-accent);
+  border-color: var(--member-accent);
 }
 .jumbo {
   display: none;
@@ -283,7 +284,7 @@ ${MEMBER_OVERLAY_CSS}
   font-size: .78rem;
   flex: 0 0 auto;
 }
-.j-pay .j-head { background: #5aa0d0; color: #fff; font-size: .95rem; padding: .4rem .55rem; }
+.j-pay .j-head { background: #5aa0d0; color: var(--member-white); font-size: .95rem; padding: .4rem .55rem; }
 .j-pay .j-body {
   display: flex;
   flex-direction: column;
@@ -309,14 +310,14 @@ ${MEMBER_OVERLAY_CSS}
 }
 .fin-r {
   font-family: "Chakra Petch", sans-serif;
-  color: #fff;
+  color: var(--member-white);
   font-weight: 700;
   font-size: 1.25rem;
   letter-spacing: .04em;
 }
 .kakutei {
   background: #d0121c;
-  color: #fff;
+  color: var(--member-white);
   padding: .34rem .5rem;
   letter-spacing: .28em;
   font-size: .92rem;
@@ -345,7 +346,7 @@ ${MEMBER_OVERLAY_CSS}
   display: grid;
   place-items: center;
   background: #3d7eb8;
-  color: #fff;
+  color: var(--member-white);
   font-size: .7rem;
   font-weight: 800;
   font-family: "Chakra Petch", sans-serif;
@@ -393,7 +394,7 @@ ${MEMBER_OVERLAY_CSS}
   gap: .45rem;
   align-items: center;
   padding: .42rem 0;
-  border-bottom: 1px solid #152018;
+  border-bottom: 1px solid var(--member-table-line);
   font-size: 1.12rem;
 }
 .pay-k {
@@ -406,7 +407,7 @@ ${MEMBER_OVERLAY_CSS}
 }
 .pay-k.win { background: #4a8fd4; }
 .pay-k.umaren { background: #e070a0; }
-.pay-k.umatan { background: #e0b34a; }
+.pay-k.umatan { background: var(--member-accent); }
 .pay-k.trio { background: #5ec4d4; }
 .pay-k.trif { background: #e07a30; }
 .pay-sel {
@@ -414,7 +415,7 @@ ${MEMBER_OVERLAY_CSS}
   font-weight: 700;
   font-size: 1.22em;
   font-variant-numeric: tabular-nums;
-  color: #fff;
+  color: var(--member-white);
 }
 .pay-amt {
   font-family: "Chakra Petch", sans-serif;
@@ -460,12 +461,12 @@ ${MEMBER_OVERLAY_CSS}
   border-bottom: 1px solid #0c1818;
 }
 .t-row .lab { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.t-row .yen { font-variant-numeric: tabular-nums; color: #c8d4d3; }
+.t-row .yen { font-variant-numeric: tabular-nums; color: var(--member-table-ink); }
 .t-row .res { color: var(--led-dim); white-space: nowrap; }
 .t-row .res.hit { color: var(--odds); font-weight: 700; }
 .cta {
   background: var(--odds);
-  color: #140800;
+  color: var(--member-action-ink);
   border: 0;
   border-radius: 2px;
   padding: .65rem 1.35rem;
@@ -492,12 +493,12 @@ ${MEMBER_OVERLAY_CSS}
   flex: 0 0 auto;
   margin: 0 0 .4rem;
   padding: .45rem .6rem;
-  background: #1c1810;
-  border: 1px solid #e0b34a;
-  color: #e0b34a;
+  background: var(--member-accent-bg);
+  border: 1px solid var(--member-accent);
+  color: var(--member-accent);
   font-size: .82rem;
 }
-.flash.error { border-color: #ff5a4a; color: #ff8a80; }
+.flash.error { border-color: var(--member-danger); color: var(--member-danger-ink); }
 .scene {
   position: relative;
   min-height: 100dvh;
