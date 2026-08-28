@@ -1397,8 +1397,14 @@ export function adminSettingsPage(
     const saveDlg = document.getElementById("settings-save-modal");
     const requiredNames = ["title", "score_course", "score_weather", "score_ground_condition", "score_season", "score_speed_cap", "score_power", "score_guts", "score_wisdom", ...["runner", "leader", "betweener", "chaser"].flatMap((s) => ["score_stamina_" + s + "_no", "score_stamina_" + s + "_with"])];
     const validateSettings = () => {
-      const missing = requiredNames.find((name) => { const el = settingsForm?.elements.namedItem(name); return !el || !(el instanceof HTMLInputElement || el instanceof HTMLSelectElement) || !el.value.trim(); });
-      if (missing) { window.alert(missing === "title" ? "イベント名を入力してください。" : "必要な項目をすべて入力してください。"); return false; }
+      const missing = requiredNames.map((name) => ({ name, el: settingsForm?.elements.namedItem(name) })).find(({ el }) => !el || !(el instanceof HTMLInputElement || el instanceof HTMLSelectElement) || !el.value.trim());
+      if (missing) {
+        saveDlg?.close();
+        window.alert(missing.name === "title" ? "イベント名を入力してください。" : "必要な項目をすべて入力してください。");
+        const target = missing.el;
+        if (target instanceof HTMLInputElement || target instanceof HTMLSelectElement) window.setTimeout(() => target.focus(), 0);
+        return false;
+      }
       return true;
     };
     document.getElementById("settings-save-open")?.addEventListener("click", () => { if (validateSettings()) saveDlg?.showModal(); });
