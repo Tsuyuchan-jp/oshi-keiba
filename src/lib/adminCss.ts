@@ -98,7 +98,7 @@ button, select, input, textarea { font: inherit; }
 .hero .ctas form { margin: 0; }
 .hero .ctas button {
   background: #fff; color: inherit; border: 1px solid #c5ccd6;
-  padding: calc(.45rem + .08em) .8rem calc(.45rem - .08em); border-radius: 6px; font-weight: 400;
+  --btn-pad-block: .45rem; padding-inline: .8rem; border-radius: 6px; font-weight: 400;
 }
 .hero .ctas .danger { background: #fff; border-color: #d4a0a0; color: #a33; }
 .hero .ctas .primary { background: #2b6cb0; border-color: #2b6cb0; color: #fff; font-weight: 700; }
@@ -109,7 +109,7 @@ button, select, input, textarea { font: inherit; }
 .work-actions form { margin: 0; }
 .work-actions button {
   border: 1px solid #c5ccd6; background: #fff; color: inherit;
-  padding: calc(.5rem + .08em) .9rem calc(.5rem - .08em); border-radius: 6px; cursor: pointer;
+  --btn-pad-block: .5rem; padding-inline: .9rem; border-radius: 6px; cursor: pointer;
 }
 .work-actions .primary {
   background: #2f6f4e; border-color: #2f6f4e; color: #fff; font-weight: 700;
@@ -145,8 +145,9 @@ input, select, button, textarea {
 input, select, textarea { background: #fff; color: inherit; }
 button, .btn {
   font: inherit;
-  padding-top: calc(.4rem + .08em);
-  padding-bottom: calc(.4rem - .08em);
+  --btn-pad-block: .4rem;
+  --btn-optical-offset: .08em;
+  padding-block: calc(var(--btn-pad-block) + var(--btn-optical-offset)) calc(var(--btn-pad-block) - var(--btn-optical-offset));
   background: #2b6cb0;
   color: #fff;
   border: 0;
@@ -253,7 +254,7 @@ body.odds-page .odds-hero .hero-top {
 body.odds-page .odds-hero #formula-open {
   margin-left: auto;
   border: 1px solid #c5ccd6;
-  padding: .45rem .8rem;
+  --btn-pad-block: .45rem; padding-inline: .8rem;
   border-radius: 6px;
   flex: 0 0 auto;
 }
@@ -293,7 +294,7 @@ body.ledger-page .ledger-desk .work {
 }
 .ledger-del {
   border: 1px solid #c5ccd6; background: #fff; color: inherit;
-  padding: .28rem .55rem; border-radius: 6px; cursor: pointer; font-size: .78rem;
+  --btn-pad-block: .28rem; padding-inline: .55rem; border-radius: 6px; cursor: pointer; font-size: .78rem;
 }
 .filter-count { font-size: .78rem; color: #6b7380; margin: 0 0 .35rem; flex: 0 0 auto; }
 body.ledger-page .filters {
@@ -349,7 +350,7 @@ body.ledger-page .filters select {
   font: inherit;
   font-size: .72rem;
   font-weight: 700;
-  padding: .28rem .5rem;
+  --btn-pad-block: .28rem; padding-inline: .5rem;
   border-radius: 6px;
   border: 1px solid #d5d9e0;
   background: #fff;
@@ -540,7 +541,7 @@ body.ledger-page .filters select {
   border-radius: 6px;
   background: #fff;
   color: #2b6cb0;
-  padding: calc(.22rem + .08em) .55rem calc(.22rem - .08em);
+  --btn-pad-block: .22rem; padding-inline: .55rem;
   cursor: pointer;
 }
 .hero-util-btn:disabled { opacity: .55; cursor: default; }
@@ -750,7 +751,7 @@ body[data-esc-open] .escape-drawer { transform: none; }
 .esc-note { margin: .35rem 0 .5rem; font-size: .72rem; color: #6b5a4e; }
 .esc-grid button {
   display: block; width: 100%; text-align: left; margin: 0 0 .35rem;
-  border: 1px solid #c4b4a6; background: #fff; color: inherit; padding: .4rem .55rem; border-radius: 6px; cursor: pointer;
+  border: 1px solid #c4b4a6; background: #fff; color: inherit; --btn-pad-block: .4rem; padding-inline: .55rem; border-radius: 6px; cursor: pointer;
 }
 .esc-grid button.danger { border-color: #d4a0a0; color: #a33; background: #fff; }
 .esc-grid button:disabled { opacity: .4; cursor: not-allowed; }
@@ -781,7 +782,7 @@ body.settings-page .settings-hero .hero-top { align-items: center; }
 body.settings-page .settings-hero .ctas { margin: 0 0 0 auto; }
 body.settings-page .ctas .primary { background: #2b6cb0; border: 1px solid #2b6cb0; color: #fff; font-weight: 700; }
 body.settings-page .ctas button {
-  border: 1px solid #c5ccd6; background: #fff; color: inherit; padding: calc(.45rem + .08em) .8rem calc(.45rem - .08em); border-radius: 6px;
+  border: 1px solid #c5ccd6; background: #fff; color: inherit; --btn-pad-block: .45rem; padding-inline: .8rem; border-radius: 6px;
 }
 .settings-flash { margin: .35rem 0 0; font-size: .8rem; font-weight: 700; color: #2b6cb0; }
 .settings-flash.err { color: #a33; }
@@ -806,13 +807,13 @@ body.settings-page .ctas button {
 .set-k { margin: 0 0 .4rem; font-size: .7rem; letter-spacing: .08em; color: #6b7380; }
 .set-seg { display: flex; flex-wrap: wrap; gap: .3rem; }
 .set-seg button {
-  font: inherit; border: 1px solid #c5ccd6; background: #fff; padding: .32rem .7rem;
+  font: inherit; border: 1px solid #c5ccd6; background: #fff; --btn-pad-block: .32rem; padding-inline: .7rem;
   border-radius: 999px; cursor: pointer; color: #1c2128;
 }
 .set-seg button.on { background: #1e242c; color: #fff; border-color: #1e242c; font-weight: 700; }
 .set-togs { display: flex; flex-direction: column; gap: .4rem; }
 .set-tog {
-  font: inherit; text-align: left; border: 1px solid #c5ccd6; background: #fff; padding: .5rem .7rem;
+  font: inherit; text-align: left; border: 1px solid #c5ccd6; background: #fff; --btn-pad-block: .5rem; padding-inline: .7rem;
   border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: .6rem;
   color: inherit;
 }
@@ -832,7 +833,7 @@ body.settings-page .ctas button {
 .set-target input:focus { outline: none; }
 .set-flag { margin-top: .75rem; }
 .set-flag button {
-  font: inherit; border: 1px dashed #c5ccd6; background: #fff; padding: .4rem .75rem; border-radius: 8px; cursor: pointer; color: inherit;
+  font: inherit; border: 1px dashed #c5ccd6; background: #fff; --btn-pad-block: .4rem; padding-inline: .75rem; border-radius: 8px; cursor: pointer; color: inherit;
 }
 .set-flag button.on { border-style: solid; border-color: #8a4b12; background: #f8eee4; font-weight: 700; color: #8a4b12; }
 .set-foot { margin: .7rem 0 0; font-size: .75rem; color: #6b7380; }
@@ -872,7 +873,7 @@ body.register-page #mode-idle {
 body.register-page .settings-hero { padding: .7rem 1rem .75rem; margin-bottom: .55rem; }
 body.register-page .settings-hero .hero-top { align-items: center; }
 body.register-page .work .ctas button {
-  border: 1px solid #c5ccd6; background: #fff; color: inherit; padding: .45rem .8rem; border-radius: 6px; cursor: pointer;
+  border: 1px solid #c5ccd6; background: #fff; color: inherit; --btn-pad-block: .45rem; padding-inline: .8rem; border-radius: 6px; cursor: pointer;
 }
 body.register-page .work .ctas .primary { background: #2b6cb0; border-color: #2b6cb0; color: #fff; font-weight: 700; }
 body.register-page .work .ctas a { align-self: center; font-size: .85rem; color: #2b6cb0; }
