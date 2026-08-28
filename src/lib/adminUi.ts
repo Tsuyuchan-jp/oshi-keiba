@@ -1291,10 +1291,14 @@ export function adminSettingsPage(
             <label class="set-target"><span class="k">パ</span><input name="score_power" type="number" min="1" value="${reqVal(r?.power, DEFAULT_SCORE_REQ.power)}"></label>
             <label class="set-target"><span class="k">根</span><input name="score_guts" type="number" min="1" value="${reqVal(r?.guts, DEFAULT_SCORE_REQ.guts)}"></label>
             <label class="set-target"><span class="k">賢</span><input name="score_wisdom" type="number" min="1" value="${reqVal(r?.wisdom, DEFAULT_SCORE_REQ.wisdom)}"></label>
-            <button type="button" class="set-target set-stamina-open" id="stamina-settings-open"><span class="k">スタミナ設定</span><strong id="stamina-settings-status">${staminaStatus}</strong></button>
-            <div class="set-flag">
+            <div class="set-target set-stamina-card">
+              <button type="button" class="set-stamina-open" id="stamina-settings-open"><span class="k">スタミナ</span><strong id="stamina-settings-status">${staminaStatus}</strong><span class="set-stamina-edit">編集 →</span></button>
+              <div class="set-stamina-toggle" aria-label="スタミナ勝負">
+                <span>スタミナ勝負</span>
+                <button type="button" data-stamina-race="0"${stamOn ? "" : ` class="on"`}>なし</button>
+                <button type="button" data-stamina-race="1"${stamOn ? ` class="on"` : ""}>あり</button>
+              </div>
               <input type="hidden" name="score_stamina_race" id="stamina-race" value="${stamOn ? "1" : ""}">
-              <button type="button" id="stamina-btn"${stamOn ? ` class="on"` : ""}>${stamOn ? "スタミナ勝負あり" : "スタミナ勝負なし"}</button>
             </div>
           </div>
         </div>
@@ -1358,13 +1362,13 @@ export function adminSettingsPage(
         });
       });
     });
-    const stamBtn = document.getElementById("stamina-btn");
     const stamIn = document.getElementById("stamina-race");
-    stamBtn?.addEventListener("click", () => {
-      const on = stamIn && stamIn.value !== "1";
-      if (stamIn) stamIn.value = on ? "1" : "";
-      stamBtn.classList.toggle("on", !!on);
-      stamBtn.textContent = on ? "スタミナ勝負あり" : "スタミナ勝負なし";
+    document.querySelectorAll("[data-stamina-race]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const on = btn.getAttribute("data-stamina-race") === "1";
+        if (stamIn) stamIn.value = on ? "1" : "";
+        document.querySelectorAll("[data-stamina-race]").forEach((x) => x.classList.toggle("on", x === btn));
+      });
     });
     const staminaDlg = document.getElementById("stamina-settings-modal");
     const staminaOpen = document.getElementById("stamina-settings-open");
