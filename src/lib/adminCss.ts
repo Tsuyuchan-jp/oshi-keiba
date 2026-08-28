@@ -173,9 +173,11 @@ th { font-size: .78rem; color: #6b7380; font-weight: 600; }
   padding: .6rem .7rem; min-height: 4rem; margin: .6rem 0 0;
 }
 dialog.modal {
+  position: fixed; z-index: 100; left: 50%; top: 50%; transform: translate(-50%, -50%);
   max-width: 38rem; width: calc(100% - 2rem); max-height: calc(100vh - 2rem);
   overflow: auto; border: 1px solid #d5d9e0; border-radius: 10px;
   padding: 1.1rem 1.2rem; background: #fff; color: #1c2128;
+  box-shadow: 0 0 0 100vmax rgba(18, 22, 28, .45), 0 12px 36px rgba(18, 22, 28, .24);
 }
 dialog.modal[open] { display: block; }
 dialog.modal::backdrop { background: rgba(18, 22, 28, .45); }
@@ -523,6 +525,7 @@ body.ledger-page .filters select {
   color: #6b7380;
 }
 .hero-util-btn {
+  display: inline-flex; align-items: center; line-height: 1.4; text-decoration: none;
   font: inherit;
   border: 1px solid #c5ccd6;
   border-radius: 6px;
