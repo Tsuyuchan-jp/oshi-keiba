@@ -147,6 +147,7 @@ export function horsesAdminBody(
   return `<form id="horse-add" method="post" action="/admin/horse" enctype="multipart/form-data" data-mode="idle">
         <input type="hidden" name="ocr_ok" id="ocr-ok" value="">
         <input type="hidden" name="score_input" id="score-input" value="">
+        <input type="hidden" name="dress_name" id="dress-name" value="">
         <input type="file" name="shot" id="shot-from-ocr" class="admin-offscreen" accept="${SHOT_ACCEPT}" tabindex="-1">
         <input id="ocr-file" class="admin-offscreen" type="file" accept="${SHOT_ACCEPT}" tabindex="-1">
         <select name="style_key" id="style-key" class="admin-offscreen" tabindex="-1">${styleOpts}</select>
@@ -707,7 +708,7 @@ export function ocrAdminScript(
       });
       // MIME 追加に備えてプレフィックスは汎用で落とす
       const b64 = String(dataUrl).replace(/^data:[^;]+;base64,/, "");
-      const instruction = "あなたはウマ娘の詳細ステータス画面を読む。JSONだけ返す。nameはウマ娘名（二つ名・ランクなし）。statsはspeed stamina power guts wisdomの整数。aptitudesはturf dirt short mile medium long nige senkou sashi oikomiのS〜G。skillsは取得スキル名を最後まで。緑も金もデバフ（右回り×等）も落とさない。";
+      const instruction = "あなたはウマ娘の詳細ステータス画面を読む。JSONだけ返す。nameはウマ娘名（二つ名・ランクなし）。costumeNameは育成ウマ娘の角括弧内の衣装名（読めなければ空文字）。statsはspeed stamina power guts wisdomの整数。aptitudesはturf dirt short mile medium long nige senkou sashi oikomiのS〜G。skillsは取得スキル名を最後まで。緑も金もデバフ（右回り×等）も落とさない。";
       const payload = {
         system_instruction: { parts: { text: instruction } },
         contents: [{ parts: [
@@ -725,8 +726,11 @@ export function ocrAdminScript(
       let raw;
       try { raw = JSON.parse(text); } catch { raw = cleanJson(text); }
       const uma = (raw.name || "").trim();
+      const dressName = (raw.costumeName || raw.dressName || "").trim();
       const umaEl = document.getElementById("uma-name");
       if (umaEl && uma) umaEl.value = uma;
+      const dressEl = document.getElementById("dress-name");
+      if (dressEl) dressEl.value = dressName;
       const rawSkills = Array.isArray(raw.skills) ? raw.skills.map(String) : [];
       const hits = rawSkills.map((s, i) => fuzzyOne(s, i === 0));
       const skillNames = [];

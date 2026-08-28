@@ -43,6 +43,7 @@ import {
   parseHorseScoreInput,
   serializeHorseScoreInput,
 } from "./lib/horseScoreInput";
+import { resolveUmaDress } from "./lib/umaDress";
 import { resolveStrength } from "./lib/scoreFromHorse";
 import { applyAutoScoreRecompute, prepareAutoScoreRecompute } from "./lib/scoreRecompute";
 import { loadStrategicSkillsBundle, tryAdminStrategicApi } from "./lib/adminStrategicApi";
@@ -245,6 +246,8 @@ export default {
             scoreInput = parsed;
           }
           const forceManual = String(fd.get("strength_manual") ?? "") === "1";
+          const umaName = String(fd.get("uma_name") ?? "");
+          const umaDress = resolveUmaDress(umaName, String(fd.get("dress_name") ?? ""));
           const resolved = resolveStrength({
             setup,
             input: scoreInput,
@@ -255,12 +258,14 @@ export default {
           const id = await addHorse(
             env.DB,
             board.event,
-            String(fd.get("uma_name") ?? ""),
+            umaName,
             String(fd.get("runner_name") ?? ""),
             {
               strength: resolved.strength,
               scoreInputJson: serializeHorseScoreInput(scoreInput),
               seedSource: resolved.source,
+              charaId: umaDress?.charaId ?? null,
+              dressId: umaDress?.dressId ?? null,
             },
           );
           if (ocrOk && shot instanceof File) {
@@ -320,6 +325,8 @@ export default {
               strength: resolved.strength,
               scoreInputJson: serializeHorseScoreInput(scoreInput),
               seedSource: resolved.source,
+              charaId: existing.horse.chara_id,
+              dressId: existing.horse.dress_id,
               keepScoreInput: false,
             },
           );

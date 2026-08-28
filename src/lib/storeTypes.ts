@@ -38,6 +38,9 @@ export type HorseRow = {
   uma_name: string;
   runner_name: string;
   shot_key: string | null;
+  /** 育成ウマ娘・衣装。旧データや未確定 OCR は null。 */
+  chara_id: number | null;
+  dress_id: number | null;
   strength: number;
   /** 評価点材料 JSON。未設定は null */
   score_input: string | null;
@@ -121,6 +124,8 @@ export type AddHorseOpts = {
   strength: number;
   /** 評価点材料。無い頭は直置きのみ */
   scoreInputJson?: string | null;
+  charaId?: number | null;
+  dressId?: number | null;
   /** 未指定は manual（デモ投入など） */
   seedSource?: "auto" | "manual";
   recordUndo?: boolean;
@@ -129,6 +134,8 @@ export type AddHorseOpts = {
 export type UpdateHorseOpts = {
   strength: number;
   scoreInputJson?: string | null;
+  charaId?: number | null;
+  dressId?: number | null;
   seedSource?: "auto" | "manual";
   /** true なら score_input を触らない（Strength だけ直置き） */
   keepScoreInput?: boolean;

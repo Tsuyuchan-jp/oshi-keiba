@@ -1,85 +1,38 @@
-/**
- * skill-emulator の umasim 辞書から skill-catalog.json を生成する。
- * 照合の正は mdb id。ためらいは umasim 未収録なので末尾に足す。
- *
- * 旧: 名前1件化は id 無し時代（枠色 kind 用）の名残。
- * 今: 評価点は id 照合のため、同名の unique / inherit / special などをすべて残す。
- */
+/** master.mdb を正本に OCR 用の総合スキル辞書を生成する。 */
+import { DatabaseSync } from "node:sqlite";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const emu = path.join(
-  process.env.USERPROFILE ?? "",
-  "Documents",
-  "google antigravity",
-  "umamusume-skill-emulator",
-  "desktop-app",
-  "app",
-  "lib",
-);
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const OUT = path.join(ROOT, "src", "data", "skill-catalog.json");
+const FALLBACK = "D:/DMM/umamusumeDMM/Umamusume/umamusume_Data/Persistent/master/master.mdb";
+const cli = process.argv.find((arg, i) => process.argv[i - 1] === "--mdb");
+const mdb = cli ?? FALLBACK;
+if (!fs.existsSync(mdb)) throw new Error(`master.mdb が見つかりません: ${mdb}`);
 
-const listSrc = fs.readFileSync(path.join(emu, "umasimSkillData.ts"), "utf8");
-const raritySrc = fs.readFileSync(path.join(emu, "skillRarityData.ts"), "utf8");
+// 既存の個別分類は評価ロジックに影響するため、同じ ID では維持する。
+// 新規 ID は master の rarity / skill_category だけで安全に分類する。
+const previous = JSON.parse(fs.readFileSync(OUT, "utf8")).skills;
+const previousKind = new Map(previous.map((row) => [Number(row.id), String(row.kind)]));
+const db = new DatabaseSync(mdb, { readOnly: true });
+const rows = db.prepare(`
+  SELECT skill.id, skill.rarity, skill.skill_category, text.text AS name
+  FROM skill_data skill JOIN text_data text ON text.category = 47 AND text."index" = skill.id
+  ORDER BY skill.id
+`).all();
 
-/** @type {Record<string, string>} */
-const rarityMap = {};
-for (const m of raritySrc.matchAll(/"([^"]+)":\s*"(white|gold|green)"/g)) {
-  rarityMap[m[1]] = m[2];
+function fallbackKind(row) {
+  if (Number(row.skill_category) === 0) return "green";
+  if (Number(row.rarity) === 2) return "gold";
+  if ([3, 4, 5].includes(Number(row.rarity))) return "unique";
+  if (Number(row.rarity) === 6) return "evo";
+  return "white";
 }
 
-/** umasim の固有系 rarity はそのまま残す（枠色上書きで unique を潰さない） */
-const KEEP_RARITY = new Set([
-  "unique",
-  "inherit",
-  "special",
-  "evo",
-  "minus",
-  "scenario",
-]);
-
-/** umasim rarity → カタログ kind */
-function mapKind(rarity, name) {
-  if (KEEP_RARITY.has(rarity)) return rarity;
-  if (rarityMap[name] === "green") return "green";
-  if (rarityMap[name] === "gold") return "gold";
-  if (rarity === "rare") return "gold";
-  if (rarity === "white") return "white";
-  return rarity;
-}
-
-const skills = [];
-/** @type {Set<number>} */
-const seenIds = new Set();
-for (const m of listSrc.matchAll(
-  /"name":\s*"([^"]+)"\s*,\s*"id":\s*"(\d+)"\s*,\s*"rarity":\s*"([^"]+)"/g,
-)) {
-  const name = m[1];
-  const id = Number(m[2]);
-  if (!Number.isFinite(id) || seenIds.has(id)) continue;
-  seenIds.add(id);
-  skills.push({ name, kind: mapKind(m[3], name), id });
-}
-
-/** ためらい4種（umasim 未収録・評価点は白1） */
-const TAMERAI = [
-  { name: "逃げためらい", kind: "white", id: 200851 },
-  { name: "先行ためらい", kind: "white", id: 200881 },
-  { name: "差しためらい", kind: "white", id: 200911 },
-  { name: "追込ためらい", kind: "white", id: 200941 },
-];
-for (const t of TAMERAI) {
-  if (seenIds.has(t.id)) continue;
-  seenIds.add(t.id);
-  skills.push(t);
-}
-
-const out = path.join("src", "data", "skill-catalog.json");
-fs.mkdirSync(path.dirname(out), { recursive: true });
-fs.writeFileSync(out, `${JSON.stringify({ skills })}\n`);
-
-const inherit = skills.filter((s) => s.kind === "inherit").length;
-const special = skills.filter((s) => s.kind === "special").length;
-const unique = skills.filter((s) => s.kind === "unique").length;
-console.log(
-  `wrote ${skills.length} skills (unique ${unique}, inherit ${inherit}, special ${special}, minus ${skills.filter((s) => s.kind === "minus").length}, tamerai ${TAMERAI.length})`,
-);
+const skills = rows.map((row) => ({
+  id: Number(row.id), name: String(row.name),
+  kind: previousKind.get(Number(row.id)) ?? fallbackKind(row),
+}));
+fs.writeFileSync(OUT, `${JSON.stringify({ source: "master.mdb", skills })}\n`);
+console.log(`wrote ${skills.length} skills: ${path.relative(ROOT, OUT)}`);

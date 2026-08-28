@@ -13,6 +13,8 @@ export function hydrateHorseRow(row: HorseRow): HorseRow {
     uma_name: parts.umaName,
     runner_name: parts.runnerName,
     shot_key: row.shot_key ?? null,
+    chara_id: row.chara_id ?? null,
+    dress_id: row.dress_id ?? null,
     score_input: row.score_input ?? null,
     name: composeHorseName(parts.umaName, parts.runnerName) || row.name,
   };

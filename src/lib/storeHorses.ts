@@ -64,8 +64,8 @@ export async function addHorse(
   await db
     .prepare(
       `INSERT INTO horses (
-        id, event_id, name, uma_name, runner_name, strength, score_input, seed_source, scratched, sort_order, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
+        id, event_id, name, uma_name, runner_name, chara_id, dress_id, strength, score_input, seed_source, scratched, sort_order, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
     )
     .bind(
       id,
@@ -73,6 +73,8 @@ export async function addHorse(
       combined,
       uma,
       runner,
+      o.charaId ?? null,
+      o.dressId ?? null,
       o.strength,
       scoreInput,
       source,
@@ -112,9 +114,9 @@ export async function updateHorse(
   if (o.keepScoreInput) {
     await db
       .prepare(
-        "UPDATE horses SET name = ?, uma_name = ?, runner_name = ?, strength = ? WHERE id = ? AND event_id = ?",
+        "UPDATE horses SET name = ?, uma_name = ?, runner_name = ?, chara_id = ?, dress_id = ?, strength = ? WHERE id = ? AND event_id = ?",
       )
-      .bind(combined, uma, runner, o.strength, horseId, event.id)
+      .bind(combined, uma, runner, o.charaId ?? null, o.dressId ?? null, o.strength, horseId, event.id)
       .run();
     return;
   }
@@ -125,9 +127,9 @@ export async function updateHorse(
   const source = o.seedSource === "auto" ? "auto" : "manual";
   await db
     .prepare(
-      "UPDATE horses SET name = ?, uma_name = ?, runner_name = ?, strength = ?, score_input = ?, seed_source = ? WHERE id = ? AND event_id = ?",
+      "UPDATE horses SET name = ?, uma_name = ?, runner_name = ?, chara_id = ?, dress_id = ?, strength = ?, score_input = ?, seed_source = ? WHERE id = ? AND event_id = ?",
     )
-    .bind(combined, uma, runner, o.strength, scoreInput, source, horseId, event.id)
+    .bind(combined, uma, runner, o.charaId ?? null, o.dressId ?? null, o.strength, scoreInput, source, horseId, event.id)
     .run();
 }
 
