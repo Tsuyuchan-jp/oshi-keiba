@@ -29,6 +29,7 @@ import type {
   StrategicSkillDismissedRow,
   StrategicSkillRow,
 } from "./strategicSkills";
+import type { ScoreRecomputeChange } from "./scoreRecompute";
 import {
   BET_KIND_LABEL,
   formatSelectionLabel,
@@ -717,6 +718,7 @@ function pipeHtml(
   h: HorseBoard,
   board: Board,
   strategicSkills: readonly StrategicSkillRow[] = [],
+  preview?: readonly ScoreRecomputeChange[],
 ): string {
   const p = horseSheetParts(h.horse);
   const input = parseHorseScoreInput(h.horse.score_input);
@@ -821,7 +823,7 @@ export function adminHorsesPage(
 ): string {
   const canRescore = board.event.status === "setup";
   const rescore = canRescore
-    ? `<form method="post" action="/admin/rescore" data-confirm="現在の開催条件で、自動算出の評価点を再計算します。手入力の評価点は変えません。よろしいですか？"><button class="hero-util-btn" type="submit">自動評価点を確認・再計算</button></form>`
+    ? `<a class="hero-util-btn" href="/admin/horses?rescore=preview">自動評価点を確認・再計算</a>`
     : `<button class="hero-util-btn" type="button" disabled>自動評価点を確認・再計算</button>`;
   const first = board.horses[0]?.horse.id ?? "";
   const sel = selId && board.horses.some((h) => h.horse.id === selId) ? selId : first;
@@ -852,7 +854,10 @@ export function adminHorsesPage(
   const pipe = current
     ? pipeHtml(current, board, strategicSkills)
     : `<p class="note">まだいません</p>`;
-  return `<section class="hero"><div class="hero-top"><h1>出走</h1>${phasePill(board.event.status)}<div class="hero-util">${rescore}</div></div></section>
+  const previewHtml = preview
+    ? `<dialog class="modal" open><h2>再計算内容の確認</h2><p class="note">${preview.length ? `${preview.length}頭の自動評価点を更新します。` : "変更対象はありません。"}</p>${preview.length ? `<table class="plain"><thead><tr><th>出走馬</th><th>現在</th><th>再計算後</th></tr></thead><tbody>${preview.map((x) => `<tr><td>${escapeHtml(x.name)}</td><td class="num">${x.before}</td><td class="num">${x.after}</td></tr>`).join("")}</tbody></table>` : ""}<div class="ctas"><form method="post" action="/admin/rescore"><button class="primary" type="submit"${preview.length ? "" : " disabled"}>この内容で再計算</button></form><a class="secondary" href="/admin/horses">キャンセル</a></div></dialog>`
+    : "";
+  return `<section class="hero"><div class="hero-top"><h1>出走</h1>${phasePill(board.event.status)}<div class="hero-util">${rescore}</div></div></section>${previewHtml}
     <div class="horses-desk">
       <section class="work"><h2>名簿</h2>
         <table class="plain" id="roster"><thead><tr>

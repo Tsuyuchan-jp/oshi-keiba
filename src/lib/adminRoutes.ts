@@ -25,6 +25,7 @@ import { getAdminUndoMeta } from "./undo";
 import { sessionFromRequest } from "./auth";
 import type { Session } from "./auth";
 import type { UserRow } from "./store";
+import { prepareAutoScoreRecompute } from "./scoreRecompute";
 
 function msg(url: URL): { text: string | null; error: boolean } {
   return {
@@ -159,6 +160,14 @@ export async function tryAdminGet(
 
   if (path === "/admin/horses") {
     const strategic = await loadStrategicSkillsBundle(env.DB);
+    let preview = undefined;
+    if (url.searchParams.get("rescore") === "preview" && board.event.status === "setup") {
+      try {
+        preview = await prepareAutoScoreRecompute(env.DB, board.event, eventScoreSetup(board.event), strategic.skills);
+      } catch (err) {
+        return redirect(`/admin/horses?err=1&msg=${encodeURIComponent(err instanceof Error ? err.message : "再計算内容を取得できません")}`);
+      }
+    }
     return html(
       layoutAdmin({
         title: "出走",
@@ -171,6 +180,7 @@ export async function tryAdminGet(
           url.searchParams.get("sel"),
           adminReauthField(),
           strategic.skills,
+          preview,
         ),
       }),
     );
