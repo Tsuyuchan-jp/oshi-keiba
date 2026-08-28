@@ -8,7 +8,6 @@
 - 相対評価点: 開催・コースごとのキャラスペック倍率を手入力する方式を検討する — [score.md](score.md)
 - 相対評価点: 再計算処理の異常系テストを追加する — [score.md](score.md)
 - 相対評価点: セイウンスカイ：アドマイヤグルーヴをおおむね 6：5 に近づける — [score.md](score.md)
-- 脚質毎のスタミナ目標値入力機能
 - 通常・固有スキルの有効リスト用意（U-tools コース別の固有／進化有効度を取り込み、仮の unique/evo＝金扱いを外す）— [score.md](score.md)
 - 特払いのキャリーオーバーをコミュニティ向けに出すか — [trial-odds-report](../reports/2026-08-23/trial-odds-report.md) 末尾
 - パドックページのアイデア固めと追加
@@ -61,7 +60,7 @@
 - 台帳タブをモック HTML の箱で差し替え（枠内スクロール。額フィルタはすべて／500以上／3000以上。ヒーロー注なし）— [ledger.html](mocks/admin-dash/ledger.html)
 - オッズタブをモック HTML の箱で差し替え（5賭式同時・使わない賭式は空パネル。ヒーロー注なし。内部計算モーダルは残す）— [odds.html](mocks/admin-dash/odds.html)
 - 開催設定タブをモック HTML の箱で差し替え（既存 name/POST。フェーズ切替バーは出さない。D は 0〜0.99）— [settings.html](mocks/admin-dash/settings.html)
-- 管理6タブを本番に載せた（進行・出走登録・出走・台帳・オッズ・開催設定。着順案3・開閉レール・スクショGET・評価点表記。掛かりスタミナ2欄は未実装。メンバー画面は未着手。実機確認待ち）— [admin-dash](mocks/admin-dash/index.html)
+- 管理6タブを本番に載せた（進行・出走登録・出走・台帳・オッズ・開催設定。着順案3・開閉レール・スクショGET・評価点表記。脚質別スタミナ目標値8項目を実装。メンバー画面は未着手。実機確認済み）— [admin-dash](mocks/admin-dash/index.html)
 - 管理画面の Strength 表記を出走・出走登録で評価点に揃えた（式の記号は内部計算モーダル）
 - 管理刷新モック6タブ採用（進行・出走登録・出走・台帳・オッズ・開催設定。本番未適用）— [admin-dash](mocks/admin-dash/index.html)
 - 管理の出走登録タブ採用（左・名簿、右・1頭の作業台。OCRまたは直置き。掛かりスタミナ2欄。スクショは左寄せ全画面。適性はバ場／距離／脚質。一括なし。本番未適用）— [register.html](mocks/admin-dash/register.html)
