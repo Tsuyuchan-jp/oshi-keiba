@@ -1356,6 +1356,11 @@ export function adminSettingsPage(
         <p>入力した開催設定を保存します。自動評価の出走馬は新しい条件で再計算されます。</p>
         <div class="modal-actions"><button type="button" class="admin-action admin-action--primary" id="settings-save-confirm">保存する</button><button type="button" class="admin-action admin-action--secondary" id="settings-save-cancel">キャンセル</button></div>
       </dialog>
+      <dialog class="modal" id="settings-alert-modal">
+        <h2>入力内容を確認</h2>
+        <p id="settings-alert-message"></p>
+        <div class="modal-actions"><button type="button" class="admin-action admin-action--primary" id="settings-alert-close">確認</button></div>
+      </dialog>
     </form>`;
   const scripts = `<script>
     document.querySelectorAll(".set-seg").forEach((seg) => {
@@ -1395,14 +1400,17 @@ export function adminSettingsPage(
     staminaDlg?.addEventListener("click", (ev) => { const box = staminaDlg.getBoundingClientRect(); if (ev.clientX < box.left || ev.clientX > box.right || ev.clientY < box.top || ev.clientY > box.bottom) staminaDlg.close(); });
     const settingsForm = document.getElementById("settings-form");
     const saveDlg = document.getElementById("settings-save-modal");
+    const alertDlg = document.getElementById("settings-alert-modal");
+    const alertMessage = document.getElementById("settings-alert-message");
+    let focusAfterAlert = null;
     const requiredNames = ["title", "score_course", "score_weather", "score_ground_condition", "score_season", "score_speed_cap", "score_power", "score_guts", "score_wisdom", ...["runner", "leader", "betweener", "chaser"].flatMap((s) => ["score_stamina_" + s + "_no", "score_stamina_" + s + "_with"])];
     const validateSettings = () => {
       const missing = requiredNames.map((name) => ({ name, el: settingsForm?.elements.namedItem(name) })).find(({ el }) => !el || !(el instanceof HTMLInputElement || el instanceof HTMLSelectElement) || !el.value.trim());
       if (missing) {
         saveDlg?.close();
-        window.alert(missing.name === "title" ? "イベント名を入力してください。" : "必要な項目をすべて入力してください。");
-        const target = missing.el;
-        if (target instanceof HTMLInputElement || target instanceof HTMLSelectElement) window.setTimeout(() => target.focus(), 0);
+        focusAfterAlert = missing.el;
+        if (alertMessage) alertMessage.textContent = missing.name === "title" ? "イベント名を入力してください。" : "必要な項目をすべて入力してください。";
+        alertDlg?.showModal();
         return false;
       }
       return true;
@@ -1410,6 +1418,13 @@ export function adminSettingsPage(
     document.getElementById("settings-save-open")?.addEventListener("click", () => { if (validateSettings()) saveDlg?.showModal(); });
     document.getElementById("settings-save-cancel")?.addEventListener("click", () => saveDlg?.close());
     document.getElementById("settings-save-confirm")?.addEventListener("click", () => { saveDlg?.close(); settingsForm?.submit(); });
+    document.getElementById("settings-alert-close")?.addEventListener("click", () => {
+      alertDlg?.close();
+      const target = focusAfterAlert;
+      focusAfterAlert = null;
+      if (target instanceof HTMLInputElement || target instanceof HTMLSelectElement) window.setTimeout(() => target.focus(), 0);
+    });
+    alertDlg?.addEventListener("click", (ev) => { const box = alertDlg.getBoundingClientRect(); if (ev.clientX < box.left || ev.clientX > box.right || ev.clientY < box.top || ev.clientY > box.bottom) document.getElementById("settings-alert-close")?.click(); });
     document.querySelectorAll(".set-tog[data-kind]").forEach((b) => {
       b.addEventListener("click", () => {
         if (b.disabled) return;
