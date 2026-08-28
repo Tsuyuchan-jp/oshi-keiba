@@ -20,6 +20,7 @@ export const ADMIN_CSS = `
   --admin-control-pad-block: .22rem;
   --admin-control-pad-inline: .55rem;
   --admin-control-optical-offset: .08em;
+  --admin-focus-ring: rgba(43, 108, 176, .45);
   --admin-modal-max-width: 38rem;
   --admin-modal-inset: 1rem;
   --admin-modal-radius: 10px;
@@ -204,6 +205,10 @@ button.text-btn {
   background: none; color: var(--admin-accent); padding: 0; border: 0; border-radius: 0; text-decoration: underline;
 }
 button:disabled, button[disabled] { opacity: .45; cursor: not-allowed; }
+button:focus-visible, .admin-action:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 2px var(--admin-focus-ring);
+}
 table { width: 100%; border-collapse: collapse; font-size: .92rem; }
 th, td { text-align: left; padding: .45rem .4rem; border-bottom: 1px solid var(--admin-line-subtle); }
 th { font-size: .78rem; color: var(--admin-muted); font-weight: 600; }
@@ -230,6 +235,7 @@ dialog.modal {
 }
 dialog.modal::backdrop { background: var(--admin-modal-backdrop); }
 dialog.modal h2 { margin-top: 0; }
+.modal-title:focus { outline: 0; }
 .modal-actions { display: flex; align-items: center; justify-content: flex-end; gap: .45rem; margin-top: 1rem; }
 .modal-actions--split { justify-content: space-between; }
 .modal-actions form { margin: 0; }
