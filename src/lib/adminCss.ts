@@ -869,7 +869,7 @@ body.settings-page .settings-desk .work {
 }
 .set-flag button.on { border-style: solid; border-color: #8a4b12; background: #f8eee4; font-weight: 700; color: #8a4b12; }
 .set-foot { margin: .7rem 0 0; font-size: .75rem; color: var(--admin-muted); }
-.set-metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .5rem; }
+.set-metrics { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .5rem; }
 .set-metric { background: var(--admin-surface-muted); border: 1px solid var(--admin-line-subtle); border-radius: 8px; padding: .5rem .6rem .55rem; }
 .set-metric .sym { float: right; font-size: .68rem; font-weight: 800; color: var(--admin-muted-light); letter-spacing: .04em; }
 .set-metric .k { display: block; font-size: .7rem; color: var(--admin-muted); margin-bottom: .15rem; }
