@@ -674,6 +674,13 @@ function fmt3(n: number): string {
   return n.toFixed(3);
 }
 
+function median(values: readonly number[]): number {
+  const sorted = [...values].filter(Number.isFinite).sort((a, b) => a - b);
+  if (!sorted.length) return 0;
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
+}
+
 function isAptS(rank: string | undefined): boolean {
   return String(rank ?? "").trim().toUpperCase() === "S";
 }
@@ -766,6 +773,7 @@ function pipeHtml(
   }
   const b = auto.breakdown;
   const s = b.skill;
+  const cs = b.characterSpec;
   const req = setup!.requirements;
   const st = input!.stats;
   const gr = b.green;
@@ -828,10 +836,15 @@ function pipeHtml(
   const staLine = sMultLine(b.ratios.staminaMult, staminaExplain(b.adjusted.stamina, req));
   const stratPart =
     s.strategicPoints > 0 ? ` ＋ 戦略例外 ${s.strategicPoints}` : "";
-  const formula = `スキル点${fmt3(b.weightedSkillBase)}（S0=${s.base}、n適用） × スピ${fmt3(b.ratios.speed)} × スタ${fmt3(b.ratios.staminaMult)} × パワ${fmt3(b.ratios.power)} × 根性${fmt3(b.ratios.guts)} × 賢さ${fmt3(b.ratios.wisdom)} ＝ ${h.horse.strength}`;
+  const specNames = cs.matched.length > 1 ? `${cs.matched[0]!.name} ほか${cs.matched.length - 1}件` : cs.matched[0]?.name ?? "該当スキルなし";
+  const specLine = cs.totalBab > 0 && cs.medianBab > 0
+    ? `${specNames}　E ${fmt3(cs.totalBab)}バ / R ${fmt3(cs.medianBab)}バ → ×${fmt3(cs.multiplier)}`
+    : "該当スキルなし → ×1.000";
+  const formula = `スキル点${fmt3(b.weightedSkillBase)}（S0=${s.base}、n・キャラスペック適用） × スピ${fmt3(b.ratios.speed)} × スタ${fmt3(b.ratios.staminaMult)} × パワ${fmt3(b.ratios.power)} × 根性${fmt3(b.ratios.guts)} × 賢さ${fmt3(b.ratios.wisdom)} ＝ ${h.horse.strength}`;
   return `${head}
     <div class="pipe-step"><div class="pipe-k">土台（スキル）</div>
       <div>有効 ${s.effectiveCount} ＋ 金×2（${s.goldCount}枚）${stratPart} ＋ ためらい ${s.tameraiCount}＝ <b>${s.base}</b></div></div>
+    <div class="pipe-step"><div class="pipe-k">キャラスペック</div><div>${escapeHtml(specLine)}</div></div>
     <div class="pipe-step"><div class="pipe-k">緑 → ステへ</div><div class="pipe-green">${greenLines}</div></div>
     <div class="pipe-step"><div class="pipe-k">スピード</div><div class="pipe-v">${speedLine}</div></div>
     <div class="pipe-step"><div class="pipe-k">スタミナ</div><div class="pipe-v">${staLine}</div></div>
@@ -885,7 +898,7 @@ export function adminHorsesPage(
     ? pipeHtml(current, board, strategicSkills)
     : `<p class="note">まだいません</p>`;
   const previewHtml = preview
-    ? `<dialog class="modal" id="rescore-preview-modal"><h2 class="modal-title" id="rescore-preview-title" tabindex="-1">再計算内容の確認</h2><p class="note">${preview.length ? `${preview.length}頭の自動評価点を更新します。` : "変更対象はありません。"}</p>${preview.length ? `<table class="plain"><thead><tr><th>出走馬</th><th>現在</th><th>再計算後</th></tr></thead><tbody>${preview.map((x) => `<tr><td>${escapeHtml(x.name)}</td><td class="num">${x.before}</td><td class="num">${x.after}</td></tr>`).join("")}</tbody></table>` : ""}<div class="modal-actions"><form method="post" action="/admin/rescore"><button class="admin-action admin-action--primary" type="submit"${preview.length ? "" : " disabled"}>この内容で再計算</button></form><form method="get" action="/admin/horses"><button class="admin-action admin-action--secondary" type="submit">キャンセル</button></form></div></dialog>`
+    ? `<dialog class="modal" id="rescore-preview-modal"><h2 class="modal-title" id="rescore-preview-title" tabindex="-1">再計算内容の確認</h2><p class="note">${preview.length ? `${preview.length}頭の自動評価点を更新します。` : "変更対象はありません。"}</p>${preview.length ? `<table class="plain"><thead><tr><th>出走馬</th><th>現在</th><th>再計算後</th><th>キャラスペック</th></tr></thead><tbody>${preview.map((x) => `<tr><td>${escapeHtml(x.name)}</td><td class="num">${x.before}</td><td class="num">${x.after}</td><td class="num">×${fmt3(x.characterSpecMultiplier)}</td></tr>`).join("")}</tbody></table>` : ""}<div class="modal-actions"><form method="post" action="/admin/rescore"><button class="admin-action admin-action--primary" type="submit"${preview.length ? "" : " disabled"}>この内容で再計算</button></form><form method="get" action="/admin/horses"><button class="admin-action admin-action--secondary" type="submit">キャンセル</button></form></div></dialog>`
     : "";
   return `${adminPageHero("出走", board.event.status, { actions: rescore })}${previewHtml}
     <div class="horses-desk">
@@ -1226,9 +1239,13 @@ export function adminSettingsPage(
   const reqVal = (saved: number | undefined, fallback: number) =>
     escapeHtml(saved == null ? String(fallback) : String(saved));
   const ids = setup?.effectiveSkillIds;
+  const specs = setup?.characterSpecs;
   const skillsMeta = ids
     ? `<span class="odds-meta">有効スキル取得済み　逃 ${ids.runner.length} · 先 ${ids.leader.length} · 差 ${ids.betweener.length} · 追 ${ids.chaser.length}</span>`
     : "";
+  const specMeta = specs?.length
+    ? `<span class="odds-meta">キャラスペック: 取得済み（${specs.length}キャラ・R ${fmt3(median(specs.map((s) => s.totalBab)))}バ）</span>`
+    : `<span class="odds-meta">キャラスペック: 未取得（×1.00）</span>`;
   const stamOn = !!r?.staminaRace;
   const skillWeightN = setup?.skillWeightN ?? DEFAULT_SCORE_SKILL_N;
   const flashEl = flash?.text
@@ -1266,7 +1283,7 @@ export function adminSettingsPage(
       <section class="work settings-mid">
         <div class="work-head">
           <h2>レギュレーション</h2>
-          ${skillsMeta}
+          ${skillsMeta}${specMeta}
         </div>
         <div class="settings-scroll">
           <p class="set-k">コース</p>

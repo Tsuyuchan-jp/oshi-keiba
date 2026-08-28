@@ -11,6 +11,7 @@ export type ScoreRecomputeChange = {
   name: string;
   before: number;
   after: number;
+  characterSpecMultiplier: number;
 };
 
 export async function prepareAutoScoreRecompute(
@@ -26,7 +27,7 @@ export async function prepareAutoScoreRecompute(
     if (horse.seed_source !== "auto") continue;
     const auto = scoreFromHorse(setup, parseHorseScoreInput(horse.score_input), strategicSkills);
     if (!auto) throw new Error(`自動算出できない出走があります: ${horse.name}`);
-    if (auto.strength !== horse.strength) changes.push({ horseId: horse.id, name: horse.name, before: horse.strength, after: auto.strength });
+    if (auto.strength !== horse.strength) changes.push({ horseId: horse.id, name: horse.name, before: horse.strength, after: auto.strength, characterSpecMultiplier: auto.breakdown.characterSpec.multiplier });
   }
   return changes;
 }

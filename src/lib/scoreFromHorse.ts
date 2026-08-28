@@ -117,6 +117,7 @@ export function scoreFromHorse(
     effectiveIds,
     strategicById,
     skillWeightN: scoreSkillWeightN(setup),
+    characterSpecs: setup.characterSpecs,
   });
 
   if (!Number.isFinite(breakdown.score) || breakdown.score < 0) return null;

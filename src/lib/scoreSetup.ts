@@ -8,10 +8,12 @@ import type { GreenEvalContext } from "./greenCondition.ts";
 import type { RaceRequirements } from "./score.ts";
 import {
   fetchEffectiveSkillIdsForCourse,
+  fetchCharacterSpecsForCourse,
   parseEffectiveSkillIdsByStyle,
   resolveEffectStyleKey,
   type EffectStyleKey,
   type EffectiveSkillIdsByStyle,
+  type CharacterSpec,
 } from "./utoolsEffects.ts";
 
 export type EventRaceConditions = {
@@ -32,6 +34,8 @@ export type EventScoreSetup = {
   effectiveSkillIds?: EffectiveSkillIdsByStyle;
   /** ISO。リスト取得時刻 */
   effectsFetchedAt?: string;
+  /** コース別の固有・進化スキル有効バ身数ランキングのスナップショット */
+  characterSpecs?: CharacterSpec[];
   skillWeightN?: number;
 };
 
@@ -207,6 +211,22 @@ export function parseScoreSetup(raw: unknown): EventScoreSetup | null {
   if (typeof fetchedAt === "string" && fetchedAt.trim()) {
     setup.effectsFetchedAt = fetchedAt.trim();
   }
+  if (Array.isArray(root.characterSpecs)) {
+    const specs: CharacterSpec[] = [];
+    for (const raw of root.characterSpecs) {
+      if (!raw || typeof raw !== "object") continue;
+      const o = raw as Record<string, unknown>;
+      const cardId = String(o.cardId ?? "").trim();
+      const name = String(o.name ?? "").trim();
+      const totalBab = Number(o.totalBab);
+      const skills = Array.isArray(o.skills) ? o.skills.map((x) => {
+        const s = x as Record<string, unknown>;
+        return { id: Number(s?.id), name: String(s?.name ?? "").trim(), bab: Number(s?.bab) };
+      }).filter((s) => Number.isInteger(s.id) && s.id > 0 && s.name && Number.isFinite(s.bab) && s.bab >= 0) : [];
+      if (cardId && name && Number.isFinite(totalBab) && totalBab >= 0 && skills.length) specs.push({ cardId, name, totalBab, skills });
+    }
+    if (specs.length) setup.characterSpecs = specs;
+  }
 
   return setup;
 }
@@ -232,13 +252,14 @@ export async function enrichScoreSetupWithEffects(
   setup: EventScoreSetup,
   fetchImpl?: typeof fetch,
 ): Promise<EventScoreSetup> {
-  const effectiveSkillIds = await fetchEffectiveSkillIdsForCourse(
-    setup.conditions.courseKey,
-    { fetchImpl },
-  );
+  const [effectiveSkillIds, characterSpecs] = await Promise.all([
+    fetchEffectiveSkillIdsForCourse(setup.conditions.courseKey, { fetchImpl }),
+    fetchCharacterSpecsForCourse(setup.conditions.courseKey, fetchImpl),
+  ]);
   return {
     ...setup,
     effectiveSkillIds,
+    characterSpecs,
     effectsFetchedAt: new Date().toISOString(),
   };
 }

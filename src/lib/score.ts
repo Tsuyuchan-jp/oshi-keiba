@@ -11,6 +11,7 @@ import {
 } from "./greenSkills.ts";
 import { classifySkill } from "./skillCatalog.ts";
 import type { GreenEvalContext } from "./greenCondition.ts";
+import type { CharacterSpec } from "./utoolsEffects.ts";
 
 export type HorseStats = {
   speed: number;
@@ -76,6 +77,7 @@ export type ScoreInput = {
   strategicById?: StrategicPointsById;
   /** スキル土台の累乗重み。未指定は現行互換の1。 */
   skillWeightN?: number;
+  characterSpecs?: readonly CharacterSpec[];
 };
 
 export function staminaRequirementsForStyle(
@@ -104,6 +106,7 @@ export type StrategicPointsById = ReadonlyMap<number, { points: number }>;
 export type ScoreBreakdown = {
   score: number;
   weightedSkillBase: number;
+  characterSpec: { matched: { name: string; bab: number }[]; totalBab: number; medianBab: number; multiplier: number };
   skill: SkillBaseBreakdown;
   green: GreenBonus;
   /** 条件成立した緑スキル（表示用） */
@@ -318,9 +321,18 @@ export function computeScore(input: ScoreInput): ScoreBreakdown {
   const req = input.req;
 
   const n = input.skillWeightN ?? 1;
-  const weightedSkillBase = Number.isFinite(n) && n > 0
+  let weightedSkillBase = Number.isFinite(n) && n > 0
     ? 90 * (skill.base / 90) ** n
     : skill.base;
+  const ids = new Set(input.skillIds?.filter((id): id is number => typeof id === "number" && id > 0) ?? []);
+  const matched = input.characterSpecs
+    ? input.characterSpecs.flatMap((spec) => spec.skills.filter((s) => ids.has(s.id)).map((s) => ({ name: s.name, bab: s.bab })))
+    : [];
+  const totals = input.characterSpecs?.map((s) => s.totalBab).filter((n) => Number.isFinite(n) && n >= 0).sort((a, b) => a - b) ?? [];
+  const medianBab = totals.length ? (totals.length % 2 ? totals[(totals.length - 1) / 2]! : (totals[totals.length / 2 - 1]! + totals[totals.length / 2]!) / 2) : 0;
+  const totalBab = matched.reduce((sum, s) => sum + s.bab, 0);
+  const multiplier = totalBab > 0 && medianBab > 0 ? Math.min(1.2, Math.max(0.85, (totalBab / medianBab) ** 0.2)) : 1;
+  weightedSkillBase *= multiplier;
   let score = weightedSkillBase;
 
   const rSpeed = req.speedCap > 0 ? adjusted.speed / req.speedCap : 1;
@@ -345,6 +357,7 @@ export function computeScore(input: ScoreInput): ScoreBreakdown {
   return {
     score,
     weightedSkillBase,
+    characterSpec: { matched, totalBab, medianBab, multiplier },
     skill,
     green,
     appliedGreens,

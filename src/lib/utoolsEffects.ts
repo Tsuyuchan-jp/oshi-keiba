@@ -13,6 +13,15 @@ export type EffectStyleKey = (typeof EFFECT_STYLE_KEYS)[number];
 
 export type EffectiveSkillIdsByStyle = Record<EffectStyleKey, number[]>;
 
+/** U-tools の「有効キャラ」ランキングから取得する、衣装ごとの固有・進化スキル性能。 */
+export type CharacterSpecSkill = { id: number; name: string; bab: number };
+export type CharacterSpec = {
+  cardId: string;
+  name: string;
+  totalBab: number;
+  skills: CharacterSpecSkill[];
+};
+
 const UTOOLS_ORIGIN = "https://xn--gck1f423k.xn--1bvt37a.tools";
 
 /** 日本語／略称 → U-tools ファイル名 */
@@ -38,6 +47,10 @@ export function resolveEffectStyleKey(raw: string): EffectStyleKey | null {
 
 export function utoolsEffectsUrl(courseId: string | number, style: EffectStyleKey): string {
   return `${UTOOLS_ORIGIN}/race/courses/${courseId}/effects/${style}`;
+}
+
+export function utoolsCharactersUrl(courseId: string | number): string {
+  return `${UTOOLS_ORIGIN}/race/courses/${courseId}/effects`;
 }
 
 /** RSC チャンクを結合（inherit の decodeRscChunks と同型） */
@@ -79,6 +92,84 @@ export function parseRankedSkillIdsFromHtml(html: string): number[] {
   return ids;
 }
 
+function jsonObjectAt(text: string, start: number): string | null {
+  let depth = 0;
+  let quoted = false;
+  let escaped = false;
+  for (let i = start; i < text.length; i++) {
+    const c = text[i]!;
+    if (quoted) {
+      if (escaped) escaped = false;
+      else if (c === "\\") escaped = true;
+      else if (c === '"') quoted = false;
+      continue;
+    }
+    if (c === '"') { quoted = true; continue; }
+    if (c === "{") depth += 1;
+    if (c === "}") {
+      depth -= 1;
+      if (depth === 0) return text.slice(start, i + 1);
+    }
+  }
+  return null;
+}
+
+function skillBab(raw: unknown): number | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  const direct = Number(o.score);
+  if (Number.isFinite(direct) && direct >= 0) return direct;
+  const course = o.courseEffect as Record<string, unknown> | undefined;
+  const r = course?.r;
+  if (Array.isArray(r) && Number.isFinite(Number(r[0])) && Number(r[0]) >= 0) return Number(r[0]);
+  return null;
+}
+
+function specSkill(raw: unknown): CharacterSpecSkill | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  const id = Number(o.id);
+  const name = String(o.skillName ?? "").trim();
+  const bab = skillBab(raw);
+  return Number.isInteger(id) && id > 0 && name && bab != null ? { id, name, bab } : null;
+}
+
+/** ページ内の card JSON を読む。進化分岐は、実際に所持する進化スキル id で照合する。 */
+export function parseCharacterSpecsFromHtml(html: string): CharacterSpec[] {
+  const text = decodeRscChunks(html);
+  const out: CharacterSpec[] = [];
+  const seen = new Set<string>();
+  const marker = '"card":{';
+  for (let pos = 0; (pos = text.indexOf(marker, pos)) >= 0; pos += marker.length) {
+    const json = jsonObjectAt(text, pos + marker.length - 1);
+    if (!json) continue;
+    try {
+      const card = JSON.parse(json.replace(/\n/g, "\\n")) as Record<string, unknown>;
+      const cardId = String(card.id ?? "");
+      const totalBab = Number(card.score);
+      if (!cardId || seen.has(cardId) || !Number.isFinite(totalBab) || totalBab < 0) continue;
+      const skills: CharacterSpecSkill[] = [];
+      const unique = specSkill(card.unique);
+      if (unique) skills.push(unique);
+      const upgrade = card.upgrade;
+      if (upgrade && typeof upgrade === "object") {
+        for (const choices of Object.values(upgrade as Record<string, unknown>)) {
+          if (!Array.isArray(choices)) continue;
+          for (const choice of choices) {
+            const s = specSkill(choice);
+            if (s) skills.push(s);
+          }
+        }
+      }
+      const commonName = String((((card.unique as Record<string, unknown> | undefined)?.characterCard as Record<string, unknown> | undefined)?.commonName ?? card.title ?? "")).trim();
+      if (!skills.length || !commonName) continue;
+      seen.add(cardId);
+      out.push({ cardId, name: commonName, totalBab, skills });
+    } catch { /* 次の card を試す */ }
+  }
+  return out;
+}
+
 export type FetchEffectsOptions = {
   fetchImpl?: typeof fetch;
   /** 脚質間の待ち（ms）。既定 0（並列） */
@@ -101,6 +192,19 @@ async function fetchStyleIds(
     throw new Error(`U-tools 有効スキルが空です: ${courseKey}/${style}`);
   }
   return ids;
+}
+
+export async function fetchCharacterSpecsForCourse(
+  courseKey: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<CharacterSpec[]> {
+  const key = String(courseKey).trim();
+  if (!/^\d+$/.test(key)) throw new Error(`courseKey が不正です: ${courseKey}`);
+  const res = await fetchImpl(utoolsCharactersUrl(key));
+  if (!res.ok) throw new Error(`U-tools キャラスペック取得失敗: ${key} (HTTP ${res.status})`);
+  const specs = parseCharacterSpecsFromHtml(await res.text());
+  if (!specs.length) throw new Error(`U-tools キャラスペックが空です: ${key}`);
+  return specs;
 }
 
 /** 1コース×4脚質の有効スキル id を取得する */
