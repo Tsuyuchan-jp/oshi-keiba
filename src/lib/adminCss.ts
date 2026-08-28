@@ -558,7 +558,10 @@ body.ledger-page .filters select {
   border-radius: 6px;
   background: var(--admin-surface);
   color: var(--admin-accent);
-  --btn-pad-block: .22rem; padding-inline: .55rem;
+  --btn-pad-block: .22rem;
+  --btn-optical-offset: .08em;
+  padding-block: calc(var(--btn-pad-block) + var(--btn-optical-offset)) calc(var(--btn-pad-block) - var(--btn-optical-offset));
+  padding-inline: .55rem;
   cursor: pointer;
 }
 .hero-util-btn:disabled { opacity: .55; cursor: default; }
