@@ -40,6 +40,9 @@ export function layoutAdmin(opts: {
   const flash = opts.flash?.text
     ? flashHtml(opts.flash.text, opts.flash.error)
     : "";
+  const settingsToast = opts.tab === "settings" && opts.flash?.text
+    ? `<div class="admin-toast${opts.flash.error ? " error" : ""}" role="${opts.flash.error ? "alert" : "status"}"><span aria-hidden="true">${opts.flash.error ? "!" : "✓"}</span><span>${escapeHtml(opts.flash.text)}</span><button type="button" aria-label="通知を閉じる" onclick="this.parentElement.remove()">×</button></div>`
+    : "";
   const pageClass =
     opts.tab === "settings"
       ? "settings-page"
@@ -79,6 +82,8 @@ export function layoutAdmin(opts: {
       ${opts.body}
     </div>
   </div>
+  ${settingsToast}
+  ${settingsToast ? `<script>setTimeout(()=>document.querySelector('.admin-toast')?.remove(),5000);</script>` : ""}
   ${opts.afterDash ?? ""}
   ${opts.scripts ?? ""}
 </body>

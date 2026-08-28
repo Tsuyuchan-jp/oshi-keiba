@@ -1189,9 +1189,8 @@ export function adminSettingsPage(
         <h1>開催設定</h1>${phasePill(e.status)}
         <div class="ctas"><button type="submit" class="primary" form="settings-form">保存</button></div>
       </div>
-      ${flashEl}
     </section>
-    <form class="settings-desk" id="settings-form" method="post" action="/admin/params">
+    <form class="settings-desk" id="settings-form" method="post" action="/admin/params" data-confirm="開催設定を保存します。保存後、自動評価の出走馬は新しい条件で再計算されます。手動で入力した評価点は変更されません。\n\n保存してよろしいですか？">
       <div class="settings-top">
         <section class="work">
           <p class="set-k">イベント概要</p>

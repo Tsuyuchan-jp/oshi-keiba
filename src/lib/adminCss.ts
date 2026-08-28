@@ -123,6 +123,15 @@ button, select, input, textarea { font: inherit; }
 .phase.done { background: #e4eee8; color: #2f6f4e; }
 .flash { background: #fff3d8; border: 1px solid #e4c98a; padding: .6rem .8rem; margin-bottom: .85rem; border-radius: 8px; }
 .flash.error { background: #f8e4e0; border-color: #d9a59b; }
+.admin-toast {
+  position: fixed; z-index: 20; top: 1rem; right: 1rem; max-width: min(30rem, calc(100vw - 2rem));
+  display: flex; align-items: center; gap: .55rem; padding: .7rem .8rem;
+  background: #e7f4ec; border: 1px solid #9ac9aa; color: #245b38; border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(30,45,65,.16); font-size: .85rem; font-weight: 600;
+}
+.admin-toast.error { background: #f8e4e0; border-color: #d9a59b; color: #8d2f25; }
+.admin-toast > span:first-child { font-size: 1.05rem; font-weight: 800; }
+.admin-toast button { margin-left: .35rem; padding: 0 .2rem; border: 0; background: transparent; color: inherit; font-size: 1.1rem; cursor: pointer; }
 .card-head { display: flex; justify-content: space-between; align-items: center; gap: .75rem; margin: 0 0 .75rem; }
 .card-head h2 { margin: 0; }
 .muted, .note { color: #6b7380; font-size: .85rem; line-height: 1.5; }
