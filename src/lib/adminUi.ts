@@ -1321,7 +1321,7 @@ export function adminSettingsPage(
       });
     });
   </script>`;
-  return { body, scripts };
+  return { body, scripts: scripts + bindDlgScript() };
 }
 
 export function adminLoginBody(flash: { text: string | null; error: boolean }): string {
