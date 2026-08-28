@@ -317,6 +317,7 @@ function placesScript(
 
 function progressWork(board: Board, recentHtml: string): string {
   const e = board.event;
+  const titleValue = e.title === "推し活イベントレース" ? "" : e.title;
   const live = board.horses.filter((h) => !h.horse.scratched);
   if (e.status === "setup") {
     const rows = board.horses
@@ -1235,13 +1236,13 @@ export function adminSettingsPage(
     ? `<p class="settings-flash${flash.error ? " err" : ""}">${escapeHtml(flash.text)}</p>`
     : "";
   const body = `${adminPageHero("開催設定", e.status, {
-      actions: `<button type="submit" class="admin-action admin-action--primary" form="settings-form">保存</button>`,
+      actions: `<button type="button" class="admin-action admin-action--primary" id="settings-save-open">保存</button>`,
     })}
-    <form class="settings-desk" id="settings-form" method="post" action="/admin/params" data-confirm="開催設定を保存します。保存後、自動評価の出走馬は新しい条件で再計算されます。手動で入力した評価点は変更されません。\n\n保存してよろしいですか？">
+    <form class="settings-desk" id="settings-form" method="post" action="/admin/params">
       <div class="settings-top">
         <section class="work">
           <p class="set-k">イベント概要</p>
-          <input class="set-title" name="title" value="${escapeHtml(e.title)}" aria-label="タイトル">
+          <input class="set-title" name="title" value="${escapeHtml(titleValue)}" placeholder="イベント名" aria-label="タイトル">
           <div class="set-row">
             <div class="set-field">
               <span class="k">締切（JST）</span>
@@ -1350,6 +1351,11 @@ export function adminSettingsPage(
         <table class="plain stamina-table"><thead><tr><th>脚質</th><th>掛かりなし</th><th>掛かりあり</th></tr></thead><tbody>${staminaInputs}</tbody></table>
         <div class="modal-actions"><button type="button" class="admin-action admin-action--primary" id="stamina-settings-done">入力を確認</button><button type="button" class="admin-action admin-action--secondary" id="stamina-settings-cancel">閉じる</button></div>
       </dialog>
+      <dialog class="modal" id="settings-save-modal">
+        <h2>開催設定を保存</h2>
+        <p>入力した開催設定を保存します。自動評価の出走馬は新しい条件で再計算されます。</p>
+        <div class="modal-actions"><button type="button" class="admin-action admin-action--primary" id="settings-save-confirm">保存する</button><button type="button" class="admin-action admin-action--secondary" id="settings-save-cancel">キャンセル</button></div>
+      </dialog>
     </form>`;
   const scripts = `<script>
     document.querySelectorAll(".set-seg").forEach((seg) => {
@@ -1387,6 +1393,17 @@ export function adminSettingsPage(
     staminaDone?.addEventListener("click", () => { updateStaminaStatus(); staminaDlg?.close(); });
     staminaFields.forEach((field) => field.addEventListener("input", updateStaminaStatus));
     staminaDlg?.addEventListener("click", (ev) => { const box = staminaDlg.getBoundingClientRect(); if (ev.clientX < box.left || ev.clientX > box.right || ev.clientY < box.top || ev.clientY > box.bottom) staminaDlg.close(); });
+    const settingsForm = document.getElementById("settings-form");
+    const saveDlg = document.getElementById("settings-save-modal");
+    const requiredNames = ["title", "score_course", "score_weather", "score_ground_condition", "score_season", "score_speed_cap", "score_power", "score_guts", "score_wisdom", ...["runner", "leader", "betweener", "chaser"].flatMap((s) => ["score_stamina_" + s + "_no", "score_stamina_" + s + "_with"])];
+    const validateSettings = () => {
+      const missing = requiredNames.find((name) => { const el = settingsForm?.elements.namedItem(name); return !el || !(el instanceof HTMLInputElement || el instanceof HTMLSelectElement) || !el.value.trim(); });
+      if (missing) { window.alert(missing === "title" ? "イベント名を入力してください。" : "必要な項目をすべて入力してください。"); return false; }
+      return true;
+    };
+    document.getElementById("settings-save-open")?.addEventListener("click", () => { if (validateSettings()) saveDlg?.showModal(); });
+    document.getElementById("settings-save-cancel")?.addEventListener("click", () => saveDlg?.close());
+    document.getElementById("settings-save-confirm")?.addEventListener("click", () => { saveDlg?.close(); settingsForm?.submit(); });
     document.querySelectorAll(".set-tog[data-kind]").forEach((b) => {
       b.addEventListener("click", () => {
         if (b.disabled) return;

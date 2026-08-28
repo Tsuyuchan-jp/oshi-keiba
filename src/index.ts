@@ -146,7 +146,9 @@ export default {
         const form = await readForm(request);
         const board = await loadBoard(env.DB);
         const closesRaw = form.get("closes_at") ?? "";
+        const titleRaw = String(form.get("title") ?? "").trim();
         try {
+          if (!titleRaw) throw new Error("イベント名を入力してください。");
           const nextSetup = await (async () => {
             const base = scoreSetupFromForm((name) => String(form.get(name) ?? ""));
             if (!base) return null;
@@ -155,7 +157,7 @@ export default {
           const strategic = await loadStrategicSkillsBundle(env.DB);
           const changes = await prepareAutoScoreRecompute(env.DB, board.event, nextSetup, strategic.skills);
           await updateParams(env.DB, board.event, {
-            title: form.get("title") ?? board.event.title,
+            title: titleRaw,
             grant_g: Number(form.get("grant_g")),
             bet_unit: Number(form.get("bet_unit")),
             seed_pool_s: Number(form.get("seed_pool_s")),
