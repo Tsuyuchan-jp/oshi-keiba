@@ -11,7 +11,7 @@ type StmtMeta = {
   values: unknown[];
 };
 
-function toD1Result(changes = 0, lastRowId = 0): D1Result {
+function toD1Result<T = unknown>(changes = 0, lastRowId = 0): D1Result<T> {
   return {
     success: true,
     meta: {
@@ -38,18 +38,18 @@ function wrapPrepared(
       return wrapPrepared(db, sql, next);
     },
     first<T = unknown>() {
-      const row = db.prepare(meta.sql).get(...meta.values);
+      const row = db.prepare(meta.sql).get(...(meta.values as never[]));
       return Promise.resolve((row as T | undefined) ?? null);
     },
     all<T = unknown>() {
-      const results = db.prepare(meta.sql).all(...meta.values) as T[];
+      const results = db.prepare(meta.sql).all(...(meta.values as never[])) as T[];
       return Promise.resolve({
         ...toD1Result(0, 0),
         results,
       });
     },
     run() {
-      const info = db.prepare(meta.sql).run(...meta.values);
+      const info = db.prepare(meta.sql).run(...(meta.values as never[]));
       return Promise.resolve(
         toD1Result(Number(info.changes), Number(info.lastInsertRowid)),
       );
@@ -89,7 +89,7 @@ export function createMemoryD1(): D1Database {
       for (const stmt of statements) {
         const m = (stmt as unknown as { __meta?: StmtMeta }).__meta;
         if (!m) throw new Error("testD1: batch に未対応の statement");
-        const info = db.prepare(m.sql).run(...m.values);
+        const info = db.prepare(m.sql).run(...(m.values as never[]));
         out.push(
           toD1Result(
             Number(info.changes),
@@ -99,9 +99,12 @@ export function createMemoryD1(): D1Database {
       }
       return out;
     },
-    async exec(query: string) {
+    async exec(query: string): Promise<D1ExecResult> {
       db.exec(query);
-      return toD1Result();
+      return { count: 0, duration: 0 };
+    },
+    async dump() {
+      throw new Error("testD1: dump is not supported");
     },
     withSession() {
       throw new Error("testD1: withSession は未実装");

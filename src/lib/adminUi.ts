@@ -30,7 +30,6 @@ import type {
   StrategicSkillRow,
 } from "./strategicSkills";
 import type { ScoreRecomputeChange } from "./scoreRecompute";
-import type { ScoreRecomputeChange } from "./scoreRecompute";
 import {
   BET_KIND_LABEL,
   formatSelectionLabel,

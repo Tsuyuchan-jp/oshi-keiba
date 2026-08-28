@@ -188,13 +188,19 @@ export type SkillBaseOptions = {
   strategicById?: StrategicPointsById;
 };
 
+function isSkillNameSet(
+  value: ReadonlySet<string> | SkillBaseOptions,
+): value is ReadonlySet<string> {
+  return value instanceof Set;
+}
+
 /** スキル土台 S0。緑は除外。金・（緑以外の）固有・進化・シナリオは有効に含めたうえで +2。ためらいは常に白1。 */
 export function skillBase(
   skillNames: string[],
   effectiveNamesOrOpts?: ReadonlySet<string> | SkillBaseOptions,
 ): SkillBaseBreakdown {
   const opts: SkillBaseOptions =
-    effectiveNamesOrOpts instanceof Set || effectiveNamesOrOpts == null
+    effectiveNamesOrOpts == null || isSkillNameSet(effectiveNamesOrOpts)
       ? { effectiveNames: effectiveNamesOrOpts ?? undefined }
       : effectiveNamesOrOpts;
 
