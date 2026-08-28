@@ -145,6 +145,8 @@ input, select, button, textarea {
 input, select, textarea { background: #fff; color: inherit; }
 button, .btn {
   font: inherit;
+  padding-top: calc(.4rem + 1px);
+  padding-bottom: calc(.4rem - 1px);
   background: #2b6cb0;
   color: #fff;
   border: 0;
@@ -538,7 +540,7 @@ body.ledger-page .filters select {
   border-radius: 6px;
   background: #fff;
   color: #2b6cb0;
-  padding: .22rem .55rem;
+  padding: calc(.22rem + 1px) .55rem calc(.22rem - 1px);
   cursor: pointer;
 }
 .hero-util-btn:disabled { opacity: .55; cursor: default; }
