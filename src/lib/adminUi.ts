@@ -839,18 +839,21 @@ function pipeHtml(
   const specLine = cs.totalBab > 0 && cs.medianBab > 0
     ? `×${fmt3(cs.multiplier)} <span class="pipe-s-calc">(E ${fmt3(cs.totalBab)}バ / R ${fmt3(cs.medianBab)}バ)^0.20 = ${fmt3(cs.multiplier)}</span>`
     : "×1.000 <span class=\"pipe-s-calc\">該当スキルなし</span>";
+  const skillWeightN = scoreSkillWeightN(setup);
+  const skillFormula = `90 × (${s.base} / 90)^${skillWeightN} × ${fmt3(cs.multiplier)} = ${fmt3(b.weightedSkillBase)}`;
   const formula = `スキル点${fmt3(b.weightedSkillBase)}（S0=${s.base}、n・キャラスペック適用） × スピ${fmt3(b.ratios.speed)} × スタ${fmt3(b.ratios.staminaMult)} × パワ${fmt3(b.ratios.power)} × 根性${fmt3(b.ratios.guts)} × 賢さ${fmt3(b.ratios.wisdom)} ＝ ${h.horse.strength}`;
   return `${head}
     <div class="pipe-step"><div class="pipe-k">土台（スキル）</div>
       <div>有効 ${s.effectiveCount} ＋ 金×2（${s.goldCount}枚）${stratPart} ＋ ためらい ${s.tameraiCount}＝ <b>${s.base}</b></div></div>
     <div class="pipe-step"><div class="pipe-k">キャラスペック <span class="pipe-s-calc">E=固有・進化スキルの有効バ身　R=このコースの中央値</span></div><div class="pipe-v">${specLine}</div></div>
+    <div class="pipe-step"><div class="pipe-k">スキル点算出式</div><div class="pipe-v">${escapeHtml(skillFormula)}</div></div>
     <div class="pipe-step"><div class="pipe-k">緑 → ステへ</div><div class="pipe-green">${greenLines}</div></div>
     <div class="pipe-step"><div class="pipe-k">スピード</div><div class="pipe-v">${speedLine}</div></div>
     <div class="pipe-step"><div class="pipe-k">スタミナ</div><div class="pipe-v">${staLine}</div></div>
     <div class="pipe-step"><div class="pipe-k">パワー</div><div class="pipe-v">${powerLine}</div></div>
     <div class="pipe-step"><div class="pipe-k">根性</div><div class="pipe-v">${gutsLine}</div></div>
     <div class="pipe-step"><div class="pipe-k">賢さ</div><div class="pipe-v">${wisLine}</div></div>
-    <div class="pipe-step"><div class="pipe-k">評価点 → Seed</div>
+    <div class="pipe-step"><div class="pipe-k">評価点算出式</div>
       <p class="pipe-eq">${escapeHtml(formula)}</p>
       <div class="pipe-final">${h.horse.strength}</div>
       <p class="pipe-eq">Seed ${Math.round(h.seed).toLocaleString("ja-JP")}</p></div>`;
