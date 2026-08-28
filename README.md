@@ -24,6 +24,7 @@ GitHub Pages は使いません。閉じた経路で URL を渡します。
 copy .dev.vars.example .dev.vars
 npm install
 npm run dev:setup
+npx tsc --noEmit
 npm test
 npm run dev
 ```
