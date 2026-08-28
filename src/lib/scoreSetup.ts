@@ -254,12 +254,12 @@ export async function enrichScoreSetupWithEffects(
 ): Promise<EventScoreSetup> {
   const [effectiveSkillIds, characterSpecs] = await Promise.all([
     fetchEffectiveSkillIdsForCourse(setup.conditions.courseKey, { fetchImpl }),
-    fetchCharacterSpecsForCourse(setup.conditions.courseKey, fetchImpl),
+    fetchCharacterSpecsForCourse(setup.conditions.courseKey, fetchImpl).catch(() => []),
   ]);
   return {
     ...setup,
     effectiveSkillIds,
-    characterSpecs,
+    ...(characterSpecs.length ? { characterSpecs } : {}),
     effectsFetchedAt: new Date().toISOString(),
   };
 }
