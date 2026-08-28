@@ -98,7 +98,7 @@ button, select, input, textarea { font: inherit; }
 .hero .ctas form { margin: 0; }
 .hero .ctas button {
   background: #fff; color: inherit; border: 1px solid #c5ccd6;
-  padding: .45rem .8rem; border-radius: 6px; font-weight: 400;
+  padding: calc(.45rem + .08em) .8rem calc(.45rem - .08em); border-radius: 6px; font-weight: 400;
 }
 .hero .ctas .danger { background: #fff; border-color: #d4a0a0; color: #a33; }
 .hero .ctas .primary { background: #2b6cb0; border-color: #2b6cb0; color: #fff; font-weight: 700; }
@@ -109,7 +109,7 @@ button, select, input, textarea { font: inherit; }
 .work-actions form { margin: 0; }
 .work-actions button {
   border: 1px solid #c5ccd6; background: #fff; color: inherit;
-  padding: .5rem .9rem; border-radius: 6px; cursor: pointer;
+  padding: calc(.5rem + .08em) .9rem calc(.5rem - .08em); border-radius: 6px; cursor: pointer;
 }
 .work-actions .primary {
   background: #2f6f4e; border-color: #2f6f4e; color: #fff; font-weight: 700;
@@ -145,8 +145,8 @@ input, select, button, textarea {
 input, select, textarea { background: #fff; color: inherit; }
 button, .btn {
   font: inherit;
-  padding-top: calc(.4rem + 1px);
-  padding-bottom: calc(.4rem - 1px);
+  padding-top: calc(.4rem + .08em);
+  padding-bottom: calc(.4rem - .08em);
   background: #2b6cb0;
   color: #fff;
   border: 0;
@@ -540,7 +540,7 @@ body.ledger-page .filters select {
   border-radius: 6px;
   background: #fff;
   color: #2b6cb0;
-  padding: calc(.22rem + 1px) .55rem calc(.22rem - 1px);
+  padding: calc(.22rem + .08em) .55rem calc(.22rem - .08em);
   cursor: pointer;
 }
 .hero-util-btn:disabled { opacity: .55; cursor: default; }
@@ -781,7 +781,7 @@ body.settings-page .settings-hero .hero-top { align-items: center; }
 body.settings-page .settings-hero .ctas { margin: 0 0 0 auto; }
 body.settings-page .ctas .primary { background: #2b6cb0; border: 1px solid #2b6cb0; color: #fff; font-weight: 700; }
 body.settings-page .ctas button {
-  border: 1px solid #c5ccd6; background: #fff; color: inherit; padding: .45rem .8rem; border-radius: 6px;
+  border: 1px solid #c5ccd6; background: #fff; color: inherit; padding: calc(.45rem + .08em) .8rem calc(.45rem - .08em); border-radius: 6px;
 }
 .settings-flash { margin: .35rem 0 0; font-size: .8rem; font-weight: 700; color: #2b6cb0; }
 .settings-flash.err { color: #a33; }
