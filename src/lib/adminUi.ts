@@ -1292,12 +1292,7 @@ export function adminSettingsPage(
             <label class="set-target"><span class="k">根</span><input name="score_guts" type="number" min="1" value="${reqVal(r?.guts, DEFAULT_SCORE_REQ.guts)}"></label>
             <label class="set-target"><span class="k">賢</span><input name="score_wisdom" type="number" min="1" value="${reqVal(r?.wisdom, DEFAULT_SCORE_REQ.wisdom)}"></label>
             <div class="set-target set-stamina-card">
-              <button type="button" class="set-stamina-open" id="stamina-settings-open"><span class="k">スタミナ</span><strong id="stamina-settings-status">${staminaStatus}</strong><span class="set-stamina-edit">編集 →</span></button>
-              <div class="set-stamina-toggle" aria-label="スタミナ勝負">
-                <span>スタミナ勝負</span>
-                <button type="button" data-stamina-race="0"${stamOn ? "" : ` class="on"`}>なし</button>
-                <button type="button" data-stamina-race="1"${stamOn ? ` class="on"` : ""}>あり</button>
-              </div>
+              <button type="button" class="set-stamina-open" id="stamina-settings-open"><span class="k">スタミナ</span><strong id="stamina-settings-status">${staminaStatus}</strong><span class="set-stamina-edit">編集 →</span><span class="set-stamina-race-state">スタミナ勝負：${stamOn ? "あり" : "なし"}</span></button>
               <input type="hidden" name="score_stamina_race" id="stamina-race" value="${stamOn ? "1" : ""}">
             </div>
           </div>
@@ -1347,6 +1342,11 @@ export function adminSettingsPage(
       <dialog class="modal stamina-modal" id="stamina-settings-modal">
         <h2>脚質ごとのスタミナ目標</h2>
         <p class="note">掛かりありは、同じ脚質の掛かりなし以上の値を入力してください。</p>
+        <div class="stamina-modal-toggle" aria-label="スタミナ勝負">
+          <span>スタミナ勝負</span>
+          <button type="button" data-stamina-race="0"${stamOn ? "" : ` class="on"`}>なし</button>
+          <button type="button" data-stamina-race="1"${stamOn ? ` class="on"` : ""}>あり</button>
+        </div>
         <table class="plain stamina-table"><thead><tr><th>脚質</th><th>掛かりなし</th><th>掛かりあり</th></tr></thead><tbody>${staminaInputs}</tbody></table>
         <div class="modal-actions"><button type="button" class="admin-action admin-action--primary" id="stamina-settings-done">入力を確認</button><button type="button" class="admin-action admin-action--secondary" id="stamina-settings-cancel">閉じる</button></div>
       </dialog>
@@ -1368,6 +1368,8 @@ export function adminSettingsPage(
         const on = btn.getAttribute("data-stamina-race") === "1";
         if (stamIn) stamIn.value = on ? "1" : "";
         document.querySelectorAll("[data-stamina-race]").forEach((x) => x.classList.toggle("on", x === btn));
+        const state = document.querySelector(".set-stamina-race-state");
+        if (state) state.textContent = "スタミナ勝負：" + (on ? "あり" : "なし");
       });
     });
     const staminaDlg = document.getElementById("stamina-settings-modal");

@@ -863,16 +863,16 @@ body.settings-page .settings-desk .work {
   border: 0; background: transparent; padding: 0; color: inherit;
 }
 .set-target input:focus { outline: none; }
-.set-stamina-card { padding: 0; overflow: hidden; }
-.set-stamina-open { display: block; width: 100%; padding: .4rem .5rem .35rem; border: 0; background: transparent; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.set-stamina-card { padding: .25rem .5rem .3rem; }
+.set-stamina-open { display: block; width: 100%; padding: 0; border: 0; background: transparent; text-align: left; cursor: pointer; font: inherit; color: inherit; }
 .set-stamina-open:hover { background: var(--admin-surface-subtle); }
-.set-stamina-open strong { display: inline-block; font-size: 1rem; font-variant-numeric: tabular-nums; }
+.set-stamina-open strong { display: inline-block; font-size: 1rem; line-height: 1; font-variant-numeric: tabular-nums; }
 .set-stamina-edit { float: right; margin-top: .2rem; font-size: .68rem; color: var(--admin-accent); }
-.set-stamina-toggle { display: flex; align-items: center; gap: .2rem; border-top: 1px solid var(--admin-line-subtle); padding: .3rem .35rem; color: var(--admin-muted); font-size: .65rem; }
-.set-stamina-toggle > span { margin-right: auto; }
-.set-stamina-toggle button { border: 1px solid transparent; border-radius: 5px; background: transparent; padding: .15rem .35rem; font: inherit; color: inherit; cursor: pointer; }
-.set-stamina-toggle button:hover { background: var(--admin-surface-subtle); color: inherit; }
-.set-stamina-toggle button.on { border-color: #8a4b12; background: #f8eee4; color: #8a4b12; font-weight: 700; }
+.set-stamina-race-state { display: block; margin-top: .12rem; font-size: .62rem; line-height: 1; color: var(--admin-muted); }
+.stamina-modal-toggle { display: flex; align-items: center; gap: .2rem; margin: .75rem 0; color: var(--admin-muted); font-size: .78rem; }
+.stamina-modal-toggle > span { margin-right: auto; }
+.stamina-modal-toggle button { border: 1px solid var(--admin-line-subtle); border-radius: 5px; background: var(--admin-surface); padding: .25rem .55rem; font: inherit; color: inherit; cursor: pointer; }
+.stamina-modal-toggle button.on { border-color: #8a4b12; background: #f8eee4; color: #8a4b12; font-weight: 700; }
 .stamina-modal { width: min(34rem, calc(100vw - 2rem)); }
 .stamina-table input { width: 100%; min-width: 5.5rem; font: inherit; font-weight: 700; }
 .set-foot { margin: .7rem 0 0; font-size: .75rem; color: var(--admin-muted); }
