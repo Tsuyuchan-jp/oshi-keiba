@@ -1207,6 +1207,22 @@ export function adminSettingsPage(
     }),
   ].join("");
   const num = (n: number | undefined) => (n == null ? "" : String(n));
+  const staminaStyles = [
+    ["runner", "逃げ"],
+    ["leader", "先行"],
+    ["betweener", "差し"],
+    ["chaser", "追込"],
+  ] as const;
+  const staminaValue = (style: typeof staminaStyles[number][0], kind: "noTempt" | "withTempt") =>
+    num(r?.staminaByStyle?.[style]?.[kind] ?? (kind === "noTempt" ? r?.staminaNoTempt : r?.staminaWithTempt));
+  const staminaCount = staminaStyles.reduce((count, [style]) => count +
+    (staminaValue(style, "noTempt") ? 1 : 0) + (staminaValue(style, "withTempt") ? 1 : 0), 0);
+  const staminaStatus = staminaCount === 8 ? "設定済み" : staminaCount ? `${staminaCount} / 8` : "未設定";
+  const staminaInputs = staminaStyles.map(([style, label]) => `<tr>
+    <th scope="row">${label}</th>
+    <td><input name="score_stamina_${style}_no" type="number" min="1" value="${escapeHtml(staminaValue(style, "noTempt"))}" aria-label="${label}・掛かりなし"></td>
+    <td><input name="score_stamina_${style}_with" type="number" min="1" value="${escapeHtml(staminaValue(style, "withTempt"))}" aria-label="${label}・掛かりあり"></td>
+  </tr>`).join("");
   const reqVal = (saved: number | undefined, fallback: number) =>
     escapeHtml(saved == null ? String(fallback) : String(saved));
   const ids = setup?.effectiveSkillIds;
@@ -1275,12 +1291,11 @@ export function adminSettingsPage(
             <label class="set-target"><span class="k">パ</span><input name="score_power" type="number" min="1" value="${reqVal(r?.power, DEFAULT_SCORE_REQ.power)}"></label>
             <label class="set-target"><span class="k">根</span><input name="score_guts" type="number" min="1" value="${reqVal(r?.guts, DEFAULT_SCORE_REQ.guts)}"></label>
             <label class="set-target"><span class="k">賢</span><input name="score_wisdom" type="number" min="1" value="${reqVal(r?.wisdom, DEFAULT_SCORE_REQ.wisdom)}"></label>
-            <label class="set-target"><span class="k">スタ · 掛かりなし</span><input name="score_stamina_no" type="number" min="1" value="${escapeHtml(num(r?.staminaNoTempt))}"></label>
-            <label class="set-target"><span class="k">スタ · 掛かりあり</span><input name="score_stamina_with" type="number" min="1" value="${escapeHtml(num(r?.staminaWithTempt))}"></label>
-          </div>
-          <div class="set-flag">
-            <input type="hidden" name="score_stamina_race" id="stamina-race" value="${stamOn ? "1" : ""}">
-            <button type="button" id="stamina-btn"${stamOn ? ` class="on"` : ""}>${stamOn ? "スタミナ勝負コース" : "スタミナ勝負ではない"}</button>
+            <button type="button" class="set-target set-stamina-open" id="stamina-settings-open"><span class="k">スタミナ設定</span><strong id="stamina-settings-status">${staminaStatus}</strong></button>
+            <div class="set-flag">
+              <input type="hidden" name="score_stamina_race" id="stamina-race" value="${stamOn ? "1" : ""}">
+              <button type="button" id="stamina-btn"${stamOn ? ` class="on"` : ""}>${stamOn ? "スタミナ勝負あり" : "スタミナ勝負なし"}</button>
+            </div>
           </div>
         </div>
       </section>
@@ -1325,6 +1340,12 @@ export function adminSettingsPage(
           </label>
         </div>
       </section>
+      <dialog class="modal stamina-modal" id="stamina-settings-modal">
+        <h2>脚質ごとのスタミナ目標</h2>
+        <p class="note">掛かりありは、同じ脚質の掛かりなし以上の値を入力してください。</p>
+        <table class="plain stamina-table"><thead><tr><th>脚質</th><th>掛かりなし</th><th>掛かりあり</th></tr></thead><tbody>${staminaInputs}</tbody></table>
+        <div class="modal-actions"><button type="button" class="admin-action admin-action--primary" id="stamina-settings-done">入力を確認</button><button type="button" class="admin-action admin-action--secondary" id="stamina-settings-cancel">閉じる</button></div>
+      </dialog>
     </form>`;
   const scripts = `<script>
     document.querySelectorAll(".set-seg").forEach((seg) => {
@@ -1343,8 +1364,23 @@ export function adminSettingsPage(
       const on = stamIn && stamIn.value !== "1";
       if (stamIn) stamIn.value = on ? "1" : "";
       stamBtn.classList.toggle("on", !!on);
-      stamBtn.textContent = on ? "スタミナ勝負コース" : "スタミナ勝負ではない";
+      stamBtn.textContent = on ? "スタミナ勝負あり" : "スタミナ勝負なし";
     });
+    const staminaDlg = document.getElementById("stamina-settings-modal");
+    const staminaOpen = document.getElementById("stamina-settings-open");
+    const staminaDone = document.getElementById("stamina-settings-done");
+    const staminaCancel = document.getElementById("stamina-settings-cancel");
+    const staminaStatus = document.getElementById("stamina-settings-status");
+    const staminaFields = [...document.querySelectorAll('input[name^="score_stamina_"]')].filter((x) => x.type === "number");
+    const updateStaminaStatus = () => {
+      const count = staminaFields.filter((x) => x.value.trim()).length;
+      if (staminaStatus) staminaStatus.textContent = count === 8 ? "設定済み" : count ? count + " / 8" : "未設定";
+    };
+    staminaOpen?.addEventListener("click", () => staminaDlg?.showModal());
+    staminaCancel?.addEventListener("click", () => staminaDlg?.close());
+    staminaDone?.addEventListener("click", () => { updateStaminaStatus(); staminaDlg?.close(); });
+    staminaFields.forEach((field) => field.addEventListener("input", updateStaminaStatus));
+    staminaDlg?.addEventListener("click", (ev) => { const box = staminaDlg.getBoundingClientRect(); if (ev.clientX < box.left || ev.clientX > box.right || ev.clientY < box.top || ev.clientY > box.bottom) staminaDlg.close(); });
     document.querySelectorAll(".set-tog[data-kind]").forEach((b) => {
       b.addEventListener("click", () => {
         if (b.disabled) return;

@@ -863,11 +863,15 @@ body.settings-page .settings-desk .work {
   border: 0; background: transparent; padding: 0; color: inherit;
 }
 .set-target input:focus { outline: none; }
-.set-flag { margin-top: .75rem; }
+.set-flag { margin-top: 0; }
 .set-flag button {
   font: inherit; border: 1px dashed var(--admin-line-strong); background: var(--admin-surface); --btn-pad-block: .4rem; padding-inline: .75rem; border-radius: 8px; cursor: pointer; color: inherit;
 }
 .set-flag button.on { border-style: solid; border-color: #8a4b12; background: #f8eee4; font-weight: 700; color: #8a4b12; }
+.set-stamina-open { text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.set-stamina-open strong { display: block; font-size: 1rem; font-variant-numeric: tabular-nums; }
+.stamina-modal { width: min(34rem, calc(100vw - 2rem)); }
+.stamina-table input { width: 100%; min-width: 5.5rem; font: inherit; font-weight: 700; }
 .set-foot { margin: .7rem 0 0; font-size: .75rem; color: var(--admin-muted); }
 .set-metrics { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .5rem; }
 .set-metric { background: var(--admin-surface-muted); border: 1px solid var(--admin-line-subtle); border-radius: 8px; padding: .5rem .6rem .55rem; }

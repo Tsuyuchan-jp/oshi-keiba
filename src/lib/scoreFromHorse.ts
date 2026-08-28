@@ -6,7 +6,7 @@ import {
   type HorseScoreInput,
   runningStyleNumber,
 } from "./horseScoreInput.ts";
-import { computeScore, type HorseAptitudes, type ScoreBreakdown } from "./score.ts";
+import { computeScore, staminaRequirementsForStyle, type HorseAptitudes, type ScoreBreakdown } from "./score.ts";
 import {
   effectiveIdsFromScoreSetup,
   getScoreCourse,
@@ -112,7 +112,7 @@ export function scoreFromHorse(
     skillIds: input.skillIds,
     stats: input.stats,
     aptitudes,
-    req: setup.requirements,
+    req: { ...setup.requirements, ...staminaRequirementsForStyle(setup.requirements, style) },
     greenCtx,
     effectiveIds,
     strategicById,

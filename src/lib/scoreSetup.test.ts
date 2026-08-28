@@ -135,6 +135,21 @@ test("effectiveSkillIds の往復と脚質 lookup", () => {
   assert.equal(effectiveIdsFromScoreSetup(parsed!, "不明"), null);
 });
 
+test("フォーム: 脚質別スタミナを保存し、掛かりありが低い値は弾く", () => {
+  const map: Record<string, string> = {
+    score_course: "10606", score_weather: "1", score_ground_condition: "1", score_season: "3",
+    score_speed_cap: "1200", score_power: "700", score_guts: "400", score_wisdom: "600",
+    score_stamina_runner_no: "600", score_stamina_runner_with: "800",
+    score_stamina_leader_no: "610", score_stamina_leader_with: "810",
+    score_stamina_betweener_no: "620", score_stamina_betweener_with: "820",
+    score_stamina_chaser_no: "630", score_stamina_chaser_with: "830",
+  };
+  const setup = scoreSetupFromForm((n) => map[n] ?? "");
+  assert.equal(setup?.requirements.staminaByStyle?.chaser?.withTempt, 830);
+  map.score_stamina_chaser_with = "620";
+  assert.throws(() => scoreSetupFromForm((n) => map[n] ?? ""), /不正/);
+});
+
 test("スキル重み n の往復と範囲検証", () => {
   const parsed = parseScoreSetup({ ...SAMPLE, skillWeightN: 4.5 });
   assert.equal(parsed?.skillWeightN, 4.5);

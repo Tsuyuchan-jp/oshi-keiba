@@ -83,6 +83,22 @@ test("算出できると auto strength", () => {
   assert.ok(r.strength > 0);
 });
 
+test("脚質別スタミナを優先して評価する", () => {
+  const setup: EventScoreSetup = {
+    ...SETUP,
+    requirements: {
+      ...SETUP.requirements,
+      staminaByStyle: {
+        runner: { noTempt: 501, withTempt: 600 },
+        leader: { noTempt: 400, withTempt: 500 },
+        betweener: { noTempt: 400, withTempt: 500 },
+        chaser: { noTempt: 400, withTempt: 500 },
+      },
+    },
+  };
+  assert.equal(scoreFromHorse(setup, INPUT)?.breakdown.ratios.staminaMult, 0.4);
+});
+
 test("直置き強制", () => {
   const r = resolveStrength({
     setup: SETUP,

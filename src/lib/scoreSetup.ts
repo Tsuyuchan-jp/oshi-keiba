@@ -84,6 +84,8 @@ export const DEFAULT_SCORE_REQ = {
 
 export const SCORE_SKILL_BASE = 90;
 export const DEFAULT_SCORE_SKILL_N = 4.5;
+export const STAMINA_STYLE_KEYS = ["runner", "leader", "betweener", "chaser"] as const;
+export type StaminaStyleKey = (typeof STAMINA_STYLE_KEYS)[number];
 
 export function scoreSkillWeightN(setup: EventScoreSetup | null | undefined): number {
   const n = setup?.skillWeightN;
@@ -100,6 +102,23 @@ export function getScoreCourse(courseKey: string): ScoreCourse | undefined {
 
 function isPosInt(n: unknown): n is number {
   return typeof n === "number" && Number.isFinite(n) && n > 0;
+}
+
+function parseStaminaByStyle(raw: unknown): RaceRequirements["staminaByStyle"] | null | undefined {
+  if (raw == null) return undefined;
+  if (!raw || typeof raw !== "object") return null;
+  const root = raw as Record<string, unknown>;
+  const out: NonNullable<RaceRequirements["staminaByStyle"]> = {};
+  for (const style of STAMINA_STYLE_KEYS) {
+    const item = root[style];
+    if (!item || typeof item !== "object") return null;
+    const values = item as Record<string, unknown>;
+    const noTempt = Number(values.noTempt);
+    const withTempt = Number(values.withTempt);
+    if (!isPosInt(noTempt) || !isPosInt(withTempt) || !Number.isInteger(noTempt) || !Number.isInteger(withTempt) || withTempt < noTempt) return null;
+    out[style] = { noTempt, withTempt };
+  }
+  return out;
 }
 
 function inOptionValues(
@@ -147,6 +166,7 @@ export function parseScoreSetup(raw: unknown): EventScoreSetup | null {
   const wisdom = Number(r.wisdom);
   const skillWeightN = root.skillWeightN == null ? undefined : Number(root.skillWeightN);
   const staminaRace = Boolean(r.staminaRace);
+  const staminaByStyle = parseStaminaByStyle(r.staminaByStyle);
 
   if (
     !isPosInt(speedCap) ||
@@ -158,6 +178,7 @@ export function parseScoreSetup(raw: unknown): EventScoreSetup | null {
   ) {
     return null;
   }
+  if (staminaByStyle === null || staminaWithTempt < staminaNoTempt) return null;
   if (skillWeightN !== undefined && (!Number.isFinite(skillWeightN) || skillWeightN < 1 || skillWeightN > 10)) return null;
   if (!Number.isInteger(speedCap) || !Number.isInteger(staminaNoTempt) ||
       !Number.isInteger(staminaWithTempt) || !Number.isInteger(power) ||
@@ -171,6 +192,7 @@ export function parseScoreSetup(raw: unknown): EventScoreSetup | null {
       speedCap,
       staminaNoTempt,
       staminaWithTempt,
+      ...(staminaByStyle ? { staminaByStyle } : {}),
       staminaRace,
       power,
       guts,
@@ -238,8 +260,19 @@ export function scoreSetupFromForm(
   const groundRaw = get("score_ground_condition").trim();
   const seasonRaw = get("score_season").trim();
   const speedCapRaw = get("score_speed_cap").trim();
-  const staNoRaw = get("score_stamina_no").trim();
-  const staWithRaw = get("score_stamina_with").trim();
+  const staminaRaw = Object.fromEntries(STAMINA_STYLE_KEYS.map((style) => [style, {
+    noTempt: get(`score_stamina_${style}_no`).trim(),
+    withTempt: get(`score_stamina_${style}_with`).trim(),
+  }])) as Record<StaminaStyleKey, { noTempt: string; withTempt: string }>;
+  const legacyStamina = {
+    noTempt: get("score_stamina_no").trim(),
+    withTempt: get("score_stamina_with").trim(),
+  };
+  // 旧フォームを通すための読み替え。画面からは常に脚質別8項目を送る。
+  const usingLegacyStamina = STAMINA_STYLE_KEYS.every((style) => !staminaRaw[style].noTempt && !staminaRaw[style].withTempt);
+  const staminaByStyle = usingLegacyStamina
+    ? Object.fromEntries(STAMINA_STYLE_KEYS.map((style) => [style, legacyStamina])) as Record<StaminaStyleKey, { noTempt: string; withTempt: string }>
+    : staminaRaw;
   const powerRaw = get("score_power").trim();
   const gutsRaw = get("score_guts").trim();
   const wisdomRaw = get("score_wisdom").trim();
@@ -252,8 +285,7 @@ export function scoreSetupFromForm(
     groundRaw ||
     seasonRaw ||
     speedCapRaw ||
-    staNoRaw ||
-    staWithRaw ||
+    STAMINA_STYLE_KEYS.some((style) => staminaByStyle[style].noTempt || staminaByStyle[style].withTempt) ||
     powerRaw ||
     gutsRaw ||
     wisdomRaw ||
@@ -265,8 +297,9 @@ export function scoreSetupFromForm(
     !weatherRaw &&
     !groundRaw &&
     !seasonRaw &&
-    !staNoRaw &&
-    !staWithRaw &&
+    STAMINA_STYLE_KEYS.every((style) => !staminaRaw[style].noTempt && !staminaRaw[style].withTempt) &&
+    !legacyStamina.noTempt &&
+    !legacyStamina.withTempt &&
     !staminaRace &&
     speedCapRaw === String(DEFAULT_SCORE_REQ.speedCap) &&
     powerRaw === String(DEFAULT_SCORE_REQ.power) &&
@@ -288,8 +321,13 @@ export function scoreSetupFromForm(
     },
     requirements: {
       speedCap: Number(speedCapRaw),
-      staminaNoTempt: Number(staNoRaw),
-      staminaWithTempt: Number(staWithRaw),
+      // 旧形式との互換用にも共通値を残す。計算時は脚質別の値を優先する。
+      staminaNoTempt: Number(staminaByStyle.runner.noTempt),
+      staminaWithTempt: Number(staminaByStyle.runner.withTempt),
+      ...(!usingLegacyStamina ? { staminaByStyle: Object.fromEntries(STAMINA_STYLE_KEYS.map((style) => [style, {
+        noTempt: Number(staminaByStyle[style].noTempt),
+        withTempt: Number(staminaByStyle[style].withTempt),
+      }])) } : {}),
       staminaRace,
       power: Number(powerRaw),
       guts: Number(gutsRaw),

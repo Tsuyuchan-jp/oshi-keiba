@@ -37,6 +37,11 @@ export type RaceRequirements = {
   speedCap: number;
   staminaNoTempt: number;
   staminaWithTempt: number;
+  /** 脚質別の要求スタミナ。旧データでは未指定で、共通の2値を使う。 */
+  staminaByStyle?: Partial<Record<"runner" | "leader" | "betweener" | "chaser", {
+    noTempt: number;
+    withTempt: number;
+  }>>;
   /** スタミナ勝負コース */
   staminaRace: boolean;
   power: number;
@@ -72,6 +77,16 @@ export type ScoreInput = {
   /** スキル土台の累乗重み。未指定は現行互換の1。 */
   skillWeightN?: number;
 };
+
+export function staminaRequirementsForStyle(
+  req: RaceRequirements,
+  style: "runner" | "leader" | "betweener" | "chaser",
+): Pick<RaceRequirements, "staminaNoTempt" | "staminaWithTempt"> {
+  const byStyle = req.staminaByStyle?.[style];
+  return byStyle
+    ? { staminaNoTempt: byStyle.noTempt, staminaWithTempt: byStyle.withTempt }
+    : { staminaNoTempt: req.staminaNoTempt, staminaWithTempt: req.staminaWithTempt };
+}
 
 export type SkillBaseBreakdown = {
   base: number;
