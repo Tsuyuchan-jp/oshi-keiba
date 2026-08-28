@@ -149,7 +149,11 @@ button, .btn {
   border: 0;
   cursor: pointer;
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+  vertical-align: middle;
 }
 button.secondary { background: #5c6570; }
 button.danger { background: #a33; }
