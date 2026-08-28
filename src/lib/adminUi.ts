@@ -819,6 +819,10 @@ export function adminHorsesPage(
   reauth: string,
   strategicSkills: readonly StrategicSkillRow[] = [],
 ): string {
+  const canRescore = board.event.status === "setup";
+  const rescore = canRescore
+    ? `<form method="post" action="/admin/rescore" data-confirm="現在の開催条件で、自動算出の評価点を再計算します。手入力の評価点は変えません。よろしいですか？"><button class="secondary" type="submit">自動評価点を確認・再計算</button></form>`
+    : `<button class="secondary" type="button" disabled>自動評価点を確認・再計算</button>`;
   const first = board.horses[0]?.horse.id ?? "";
   const sel = selId && board.horses.some((h) => h.horse.id === selId) ? selId : first;
   const rows = board.horses
@@ -848,7 +852,7 @@ export function adminHorsesPage(
   const pipe = current
     ? pipeHtml(current, board, strategicSkills)
     : `<p class="note">まだいません</p>`;
-  return `<section class="hero"><div class="hero-top"><h1>出走</h1>${phasePill(board.event.status)}</div></section>
+  return `<section class="hero"><div class="hero-top"><h1>出走</h1>${phasePill(board.event.status)}<div class="ctas">${rescore}</div></div></section>
     <div class="horses-desk">
       <section class="work"><h2>名簿</h2>
         <table class="plain" id="roster"><thead><tr>

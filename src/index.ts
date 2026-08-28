@@ -35,7 +35,7 @@ import {
   loadBoard,
   eventScoreSetup,
 } from "./lib/store";
-import { applyAdminUndo } from "./lib/undo";
+import { applyAdminUndo, captureAdminUndo } from "./lib/undo";
 import { formatPt, parseJstInput, plainErrorPage } from "./lib/ui";
 import { tryAdminGet } from "./lib/adminRoutes";
 import { tryMemberGet, tryMemberPost } from "./lib/memberRoutes";
@@ -44,6 +44,7 @@ import {
   serializeHorseScoreInput,
 } from "./lib/horseScoreInput";
 import { resolveStrength } from "./lib/scoreFromHorse";
+import { applyAutoScoreRecompute, prepareAutoScoreRecompute } from "./lib/scoreRecompute";
 import { loadStrategicSkillsBundle, tryAdminStrategicApi } from "./lib/adminStrategicApi";
 import { enrichScoreSetupWithEffects, scoreSetupFromForm } from "./lib/scoreSetup";
 import { normalizeShotMime } from "./lib/shotMime";
@@ -146,6 +147,13 @@ export default {
         const board = await loadBoard(env.DB);
         const closesRaw = form.get("closes_at") ?? "";
         try {
+          const nextSetup = await (async () => {
+            const base = scoreSetupFromForm((name) => String(form.get(name) ?? ""));
+            if (!base) return null;
+            return enrichScoreSetupWithEffects(base);
+          })();
+          const strategic = await loadStrategicSkillsBundle(env.DB);
+          const changes = await prepareAutoScoreRecompute(env.DB, board.event, nextSetup, strategic.skills);
           await updateParams(env.DB, board.event, {
             title: form.get("title") ?? board.event.title,
             grant_g: Number(form.get("grant_g")),
@@ -166,17 +174,28 @@ export default {
                     ),
                   )
                 : undefined,
-            score_setup: await (async () => {
-              const base = scoreSetupFromForm((name) =>
-                String(form.get(name) ?? ""),
-              );
-              if (!base) return null;
-              return enrichScoreSetupWithEffects(base);
-            })(),
+            score_setup: nextSetup,
           });
-          return bounce("/admin/settings", "レースイベント設定を保存しました");
+          await applyAutoScoreRecompute(env.DB, changes);
+          return bounce("/admin/settings", `レースイベント設定を保存しました。自動評価点 ${changes.length}頭を再計算しました`);
         } catch (err) {
           return bounce("/admin/settings", err instanceof Error ? err.message : "保存失敗", true);
+        }
+      }
+
+      if (method === "POST" && path === "/admin/rescore") {
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) return gate;
+        try {
+          const board = await loadBoard(env.DB);
+          const setup = eventScoreSetup(board.event);
+          const strategic = await loadStrategicSkillsBundle(env.DB);
+          const changes = await prepareAutoScoreRecompute(env.DB, board.event, setup, strategic.skills);
+          await captureAdminUndo(env.DB, "自動評価点を再計算");
+          await applyAutoScoreRecompute(env.DB, changes);
+          return bounce("/admin/horses", `自動評価点 ${changes.length}頭を再計算しました`);
+        } catch (err) {
+          return bounce("/admin/horses", err instanceof Error ? err.message : "再計算に失敗しました", true);
         }
       }
 

@@ -14,12 +14,21 @@ import {
 type Gate = { session: { userId: string; role: string }; user: { id: string } };
 
 import { loadBoard } from "./store.ts";
+import { eventScoreSetup } from "./store.ts";
+import { applyAutoScoreRecompute, prepareAutoScoreRecompute } from "./scoreRecompute.ts";
 
 async function requireSetup(db: D1Database): Promise<void> {
   const board = await loadBoard(db);
   if (board.event.status !== "setup") {
     throw new Error("出走登録中だけ編集できます");
   }
+}
+
+async function recomputeCurrentAutoScores(db: D1Database): Promise<void> {
+  const board = await loadBoard(db);
+  const skills = await listStrategicSkills(db);
+  const changes = await prepareAutoScoreRecompute(db, board.event, eventScoreSetup(board.event), skills);
+  await applyAutoScoreRecompute(db, changes);
 }
 
 /** 管理 API。該当しなければ null */
@@ -64,6 +73,7 @@ export async function tryAdminStrategicApi(
       points: body.points ?? 1,
       memo: body.memo ?? "",
     });
+    await recomputeCurrentAutoScores(env.DB);
     return Response.json({ ok: true });
   }
 
@@ -72,6 +82,7 @@ export async function tryAdminStrategicApi(
     const id = Number(new URL(request.url).searchParams.get("id"));
     if (!Number.isFinite(id)) throw new Error("id が不正です");
     await removeStrategicSkill(env.DB, id);
+    await recomputeCurrentAutoScores(env.DB);
     return Response.json({ ok: true });
   }
 
@@ -82,6 +93,7 @@ export async function tryAdminStrategicApi(
       skillId: Number(body.skillId),
       name: String(body.name ?? ""),
     });
+    await recomputeCurrentAutoScores(env.DB);
     return Response.json({ ok: true });
   }
 
@@ -90,6 +102,7 @@ export async function tryAdminStrategicApi(
     const id = Number(new URL(request.url).searchParams.get("id"));
     if (!Number.isFinite(id)) throw new Error("id が不正です");
     await undismissStrategicSkill(env.DB, id);
+    await recomputeCurrentAutoScores(env.DB);
     return Response.json({ ok: true });
   }
 
