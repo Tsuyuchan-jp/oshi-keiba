@@ -30,6 +30,7 @@ import type {
   StrategicSkillRow,
 } from "./strategicSkills";
 import type { ScoreRecomputeChange } from "./scoreRecompute";
+import type { ScoreRecomputeChange } from "./scoreRecompute";
 import {
   BET_KIND_LABEL,
   formatSelectionLabel,
@@ -820,6 +821,7 @@ export function adminHorsesPage(
   selId: string | null,
   reauth: string,
   strategicSkills: readonly StrategicSkillRow[] = [],
+  preview?: readonly ScoreRecomputeChange[],
 ): string {
   const canRescore = board.event.status === "setup";
   const rescore = canRescore
