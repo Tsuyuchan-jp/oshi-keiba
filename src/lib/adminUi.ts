@@ -317,7 +317,6 @@ function placesScript(
 
 function progressWork(board: Board, recentHtml: string): string {
   const e = board.event;
-  const titleValue = e.title === "推し活イベントレース" ? "" : e.title;
   const live = board.horses.filter((h) => !h.horse.scratched);
   if (e.status === "setup") {
     const rows = board.horses
@@ -1178,6 +1177,7 @@ export function adminSettingsPage(
   flash?: { text: string | null; error: boolean },
 ): { body: string; scripts: string } {
   const e = board.event;
+  const titleValue = e.title === "推し活イベントレース" ? "" : e.title;
   const setup = eventScoreSetup(e);
   const c = setup?.conditions;
   const r = setup?.requirements;
