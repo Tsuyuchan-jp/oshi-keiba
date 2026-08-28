@@ -836,15 +836,14 @@ function pipeHtml(
   const staLine = sMultLine(b.ratios.staminaMult, staminaExplain(b.adjusted.stamina, req));
   const stratPart =
     s.strategicPoints > 0 ? ` ＋ 戦略例外 ${s.strategicPoints}` : "";
-  const specNames = cs.matched.length > 1 ? `${cs.matched[0]!.name} ほか${cs.matched.length - 1}件` : cs.matched[0]?.name ?? "該当スキルなし";
   const specLine = cs.totalBab > 0 && cs.medianBab > 0
-    ? `${specNames}　E ${fmt3(cs.totalBab)}バ / R ${fmt3(cs.medianBab)}バ → ×${fmt3(cs.multiplier)}`
-    : "該当スキルなし → ×1.000";
+    ? `×${fmt3(cs.multiplier)} <span class="pipe-s-calc">(E ${fmt3(cs.totalBab)}バ / R ${fmt3(cs.medianBab)}バ)^0.20 = ${fmt3(cs.multiplier)}</span>`
+    : "×1.000 <span class=\"pipe-s-calc\">該当スキルなし</span>";
   const formula = `スキル点${fmt3(b.weightedSkillBase)}（S0=${s.base}、n・キャラスペック適用） × スピ${fmt3(b.ratios.speed)} × スタ${fmt3(b.ratios.staminaMult)} × パワ${fmt3(b.ratios.power)} × 根性${fmt3(b.ratios.guts)} × 賢さ${fmt3(b.ratios.wisdom)} ＝ ${h.horse.strength}`;
   return `${head}
     <div class="pipe-step"><div class="pipe-k">土台（スキル）</div>
       <div>有効 ${s.effectiveCount} ＋ 金×2（${s.goldCount}枚）${stratPart} ＋ ためらい ${s.tameraiCount}＝ <b>${s.base}</b></div></div>
-    <div class="pipe-step"><div class="pipe-k">キャラスペック</div><div>${escapeHtml(specLine)}</div></div>
+    <div class="pipe-step"><div class="pipe-k">キャラスペック <span class="pipe-s-calc">E=固有・進化スキルの有効バ身　R=このコースの中央値</span></div><div class="pipe-v">${specLine}</div></div>
     <div class="pipe-step"><div class="pipe-k">緑 → ステへ</div><div class="pipe-green">${greenLines}</div></div>
     <div class="pipe-step"><div class="pipe-k">スピード</div><div class="pipe-v">${speedLine}</div></div>
     <div class="pipe-step"><div class="pipe-k">スタミナ</div><div class="pipe-v">${staLine}</div></div>
