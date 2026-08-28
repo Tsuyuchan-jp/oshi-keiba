@@ -144,6 +144,7 @@ input, select, button, textarea {
 }
 input, select, textarea { background: #fff; color: inherit; }
 button, .btn {
+  font: inherit;
   background: #2b6cb0;
   color: #fff;
   border: 0;
@@ -152,7 +153,7 @@ button, .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  line-height: 1.2;
+  line-height: 1.4;
   vertical-align: middle;
 }
 button.secondary { background: #5c6570; }
