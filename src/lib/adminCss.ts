@@ -16,6 +16,10 @@ export const ADMIN_CSS = `
   --admin-line-subtle: #e2e6ec;
   --admin-accent: #2b6cb0;
   --admin-danger: #a33;
+  --admin-control-radius: 6px;
+  --admin-control-pad-block: .22rem;
+  --admin-control-pad-inline: .55rem;
+  --admin-control-optical-offset: .08em;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
@@ -86,6 +90,18 @@ button, select, input, textarea { font: inherit; }
 .hero-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: .55rem 1rem; }
 .hero h1, .work h2, .card h1, .card h2 { margin: 0; }
 .hero h1 { font-size: 1.25rem; }
+.page-hero { display: flex; align-items: center; min-height: 4.15rem; }
+.page-hero-top {
+  display: flex; flex: 1; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: .55rem 1rem;
+}
+.page-hero-title, .page-hero-actions {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .55rem;
+}
+.page-hero-title h1 { margin: 0; }
+.page-hero-meta { color: var(--admin-muted); font-size: .85rem; }
+.page-hero-actions { margin-left: auto; }
+.page-hero-actions .hero-util { margin-left: 0; }
 .work h2, .card h2 { font-size: 1.02rem; margin-bottom: .55rem; }
 .kpis {
   display: flex;
@@ -241,7 +257,6 @@ details.terms-box summary { cursor: pointer; font-size: .9rem; padding: .35rem 0
 .odds-panel-e { grid-area: e; }
 .odds-panel-t { grid-area: t; }
 .odds-panel-f { grid-area: f; }
-.odds-hero { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: .5rem; }
 /* オッズ：モック odds.html の箱 */
 body.odds-page { overflow: hidden; }
 body.odds-page .dash { height: 100dvh; min-height: 0; overflow: hidden; }
@@ -261,19 +276,6 @@ body.odds-page .odds-desk {
 body.odds-page .odds-desk .work {
   min-height: 0; height: 100%; display: flex; flex-direction: column;
   overflow: hidden; padding: .75rem .85rem .8rem; margin-bottom: 0;
-}
-body.odds-page .odds-hero { padding: .75rem 1rem .8rem; margin-bottom: .65rem; }
-body.odds-page .odds-hero .hero-top {
-  width: 100%;
-  flex-wrap: nowrap;
-  align-items: center;
-}
-body.odds-page .odds-hero #formula-open {
-  margin-left: auto;
-  border: 1px solid var(--admin-line-strong);
-  --btn-pad-block: .45rem; padding-inline: .8rem;
-  border-radius: 6px;
-  flex: 0 0 auto;
 }
 .odds-void {
   flex: 0 0 auto; margin: 0 0 .35rem; padding: .22rem .45rem; border-radius: 4px;
@@ -551,20 +553,24 @@ body.ledger-page .filters select {
   font-size: .78rem;
   color: var(--admin-muted);
 }
-.hero-util-btn {
+.admin-action {
   display: inline-flex; align-items: center; line-height: 1.4; text-decoration: none;
   font: inherit;
   border: 1px solid var(--admin-line-strong);
-  border-radius: 6px;
+  border-radius: var(--admin-control-radius);
   background: var(--admin-surface);
   color: var(--admin-accent);
-  --btn-pad-block: .22rem;
-  --btn-optical-offset: .08em;
+  --btn-pad-block: var(--admin-control-pad-block);
+  --btn-optical-offset: var(--admin-control-optical-offset);
   padding-block: calc(var(--btn-pad-block) + var(--btn-optical-offset)) calc(var(--btn-pad-block) - var(--btn-optical-offset));
-  padding-inline: .55rem;
+  padding-inline: var(--admin-control-pad-inline);
   cursor: pointer;
 }
-.hero-util-btn:disabled { opacity: .55; cursor: default; }
+.admin-action--primary {
+  background: var(--admin-accent); border-color: var(--admin-accent);
+  color: var(--admin-surface); font-weight: 700;
+}
+.admin-action:disabled { opacity: .55; cursor: default; }
 .hero-util-sep { color: #b4bcc6; user-select: none; }
 .hero-key-wrap { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .35rem .45rem; }
 .hero-key-label { font-weight: 700; color: #3d4550; }
@@ -796,14 +802,6 @@ body.settings-page .settings-desk .work {
 }
 .settings-mid.work { height: 100%; }
 .settings-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; }
-body.settings-page .settings-hero { padding: .7rem 1rem .75rem; margin-bottom: .55rem; }
-body.settings-page .settings-hero .note { margin: .3rem 0 0; color: var(--admin-muted); font-size: .8rem; }
-body.settings-page .settings-hero .hero-top { align-items: center; }
-body.settings-page .settings-hero .ctas { margin: 0 0 0 auto; }
-body.settings-page .ctas .primary { background: var(--admin-accent); border: 1px solid var(--admin-accent); color: var(--admin-surface); font-weight: 700; }
-body.settings-page .ctas button {
-  border: 1px solid var(--admin-line-strong); background: var(--admin-surface); color: inherit; --btn-pad-block: .45rem; padding-inline: .8rem; border-radius: 6px;
-}
 .settings-flash { margin: .35rem 0 0; font-size: .8rem; font-weight: 700; color: var(--admin-accent); }
 .settings-flash.err { color: var(--admin-danger); }
 .set-title {
@@ -890,8 +888,6 @@ body.register-page #horse-edit {
 body.register-page #mode-idle {
   display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto;
 }
-body.register-page .settings-hero { padding: .7rem 1rem .75rem; margin-bottom: .55rem; }
-body.register-page .settings-hero .hero-top { align-items: center; }
 body.register-page .work .ctas button {
   border: 1px solid var(--admin-line-strong); background: var(--admin-surface); color: inherit; --btn-pad-block: .45rem; padding-inline: .8rem; border-radius: 6px; cursor: pointer;
 }

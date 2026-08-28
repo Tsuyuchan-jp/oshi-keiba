@@ -39,8 +39,8 @@ export function heroUtilBarHtml(
   canSetup: boolean,
 ): string {
   const strategicBtn = canSetup
-    ? `<button type="button" class="hero-util-btn" id="strategic-open">戦略例外（${strategicCount}）</button>`
-    : `<button type="button" class="hero-util-btn" id="strategic-open" disabled>戦略例外（${strategicCount}）</button>`;
+    ? `<button type="button" class="admin-action admin-action--secondary" id="strategic-open">戦略例外（${strategicCount}）</button>`
+    : `<button type="button" class="admin-action admin-action--secondary" id="strategic-open" disabled>戦略例外（${strategicCount}）</button>`;
   const keyBlock = canSetup
     ? `<span class="hero-util-sep" aria-hidden="true">│</span>
        <span class="hero-key-wrap" id="hero-key-wrap">

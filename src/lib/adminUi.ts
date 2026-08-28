@@ -66,6 +66,21 @@ function phasePill(status: EventRow["status"]): string {
   return `<span class="phase ${headerPhaseKind(status)}${extra}">${escapeHtml(statusLabel(status))}</span>`;
 }
 
+/** 進行以外の管理タブで共有する、画面名・状態・操作のヘッダー。 */
+function adminPageHero(
+  title: string,
+  status: EventRow["status"],
+  opts: { meta?: string; actions?: string; notice?: string } = {},
+): string {
+  return `<section class="hero page-hero">
+    <div class="page-hero-top">
+      <div class="page-hero-title"><h1>${escapeHtml(title)}</h1>${phasePill(status)}${opts.meta ?? ""}</div>
+      ${opts.actions ? `<div class="page-hero-actions">${opts.actions}</div>` : ""}
+    </div>
+    ${opts.notice ?? ""}
+  </section>`;
+}
+
 function bindDlgScript(): string {
   return `<script>
 (() => {
@@ -521,14 +536,11 @@ export function adminRegisterPage(
         </div>
       </form>`;
   }
-  const body = `<section class="hero settings-hero">
-      <div class="hero-top">
-        <h1>出走登録</h1>${phasePill(board.event.status)}
-        <span id="count">${board.horses.length} / 18</span>
-        ${utilBar}
-      </div>
-      ${flashEl}
-    </section>
+  const body = `${adminPageHero("出走登録", board.event.status, {
+      meta: `<span class="page-hero-meta" id="count">${board.horses.length} / 18</span>`,
+      actions: utilBar,
+      notice: flashEl,
+    })}
     <div class="register-desk">
       <section class="work">
         <div class="work-head"><h2>名簿</h2><span class="odds-meta">登録済み</span></div>
@@ -825,8 +837,8 @@ export function adminHorsesPage(
 ): string {
   const canRescore = board.event.status === "setup";
   const rescore = canRescore
-    ? `<a class="hero-util-btn" href="/admin/horses?rescore=preview">自動評価点を確認・再計算</a>`
-    : `<button class="hero-util-btn" type="button" disabled>自動評価点を確認・再計算</button>`;
+    ? `<a class="admin-action admin-action--secondary" href="/admin/horses?rescore=preview">自動評価点を確認・再計算</a>`
+    : `<button class="admin-action admin-action--secondary" type="button" disabled>自動評価点を確認・再計算</button>`;
   const first = board.horses[0]?.horse.id ?? "";
   const sel = selId && board.horses.some((h) => h.horse.id === selId) ? selId : first;
   const rows = board.horses
@@ -859,7 +871,7 @@ export function adminHorsesPage(
   const previewHtml = preview
     ? `<dialog class="modal" open><h2>再計算内容の確認</h2><p class="note">${preview.length ? `${preview.length}頭の自動評価点を更新します。` : "変更対象はありません。"}</p>${preview.length ? `<table class="plain"><thead><tr><th>出走馬</th><th>現在</th><th>再計算後</th></tr></thead><tbody>${preview.map((x) => `<tr><td>${escapeHtml(x.name)}</td><td class="num">${x.before}</td><td class="num">${x.after}</td></tr>`).join("")}</tbody></table>` : ""}<div class="modal-actions"><form method="post" action="/admin/rescore"><button class="primary" type="submit"${preview.length ? "" : " disabled"}>この内容で再計算</button></form><form method="get" action="/admin/horses"><button class="secondary" type="submit">キャンセル</button></form></div></dialog>`
     : "";
-  return `<section class="hero"><div class="hero-top"><h1>出走</h1>${phasePill(board.event.status)}<div class="hero-util">${rescore}</div></div></section>${previewHtml}
+  return `${adminPageHero("出走", board.event.status, { actions: rescore })}${previewHtml}
     <div class="horses-desk">
       <section class="work"><h2>名簿</h2>
         <table class="plain" id="roster"><thead><tr>
@@ -936,7 +948,7 @@ export function adminLedgerPage(opts: {
   const memberRows = opts.members
     .map((u) => `<tr><td>${escapeHtml(u.display_name)}</td><td class="num">${formatPt(u.balance)}</td></tr>`)
     .join("");
-  return `<section class="hero"><div class="hero-top"><h1>台帳</h1>${phasePill(opts.board.event.status)}</div></section>
+  return `${adminPageHero("台帳", opts.board.event.status)}
     <div class="ledger-desk">
       <section class="work">
         <div class="work-head"><h2>残高</h2>
@@ -1051,12 +1063,9 @@ export function adminOddsPage(board: Board): string {
   const panels = kinds
     .map((k) => oddsKindPanel(board, k.kind, k.area, col, ref, nums))
     .join("");
-  return `<section class="hero odds-hero">
-      <div class="hero-top">
-        <h1>オッズ</h1>${phasePill(board.event.status)}
-        <button type="button" class="secondary" id="formula-open">内部計算</button>
-      </div>
-    </section>
+  return `${adminPageHero("オッズ", board.event.status, {
+      actions: `<button type="button" class="admin-action admin-action--secondary" id="formula-open">内部計算</button>`,
+    })}
     <div class="odds-desk">${panels}</div>
     <dialog class="modal" id="formula-modal">
       <h2>内部計算</h2>
@@ -1191,12 +1200,9 @@ export function adminSettingsPage(
   const flashEl = flash?.text
     ? `<p class="settings-flash${flash.error ? " err" : ""}">${escapeHtml(flash.text)}</p>`
     : "";
-  const body = `<section class="hero settings-hero">
-      <div class="hero-top">
-        <h1>開催設定</h1>${phasePill(e.status)}
-        <div class="ctas"><button type="submit" class="primary" form="settings-form">保存</button></div>
-      </div>
-    </section>
+  const body = `${adminPageHero("開催設定", e.status, {
+      actions: `<button type="submit" class="admin-action admin-action--primary" form="settings-form">保存</button>`,
+    })}
     <form class="settings-desk" id="settings-form" method="post" action="/admin/params" data-confirm="開催設定を保存します。保存後、自動評価の出走馬は新しい条件で再計算されます。手動で入力した評価点は変更されません。\n\n保存してよろしいですか？">
       <div class="settings-top">
         <section class="work">
