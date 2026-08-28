@@ -20,6 +20,12 @@ export const ADMIN_CSS = `
   --admin-control-pad-block: .22rem;
   --admin-control-pad-inline: .55rem;
   --admin-control-optical-offset: .08em;
+  --admin-modal-max-width: 38rem;
+  --admin-modal-inset: 1rem;
+  --admin-modal-radius: 10px;
+  --admin-modal-padding: 1.1rem 1.2rem;
+  --admin-modal-backdrop: rgba(18, 22, 28, .45);
+  --admin-modal-shadow: 0 12px 36px rgba(18, 22, 28, .24);
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
@@ -214,16 +220,18 @@ th { font-size: .78rem; color: var(--admin-muted); font-weight: 600; }
   padding: .6rem .7rem; min-height: 4rem; margin: .6rem 0 0;
 }
 dialog.modal {
-  position: fixed; z-index: 100; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  max-width: 38rem; width: calc(100% - 2rem); max-height: calc(100vh - 2rem);
-  overflow: auto; border: 1px solid var(--admin-line); border-radius: 10px;
-  padding: 1.1rem 1.2rem; background: var(--admin-surface); color: var(--admin-ink);
-  box-shadow: 0 0 0 100vmax rgba(18, 22, 28, .45), 0 12px 36px rgba(18, 22, 28, .24);
+  position: fixed; z-index: 100; inset: 0; margin: auto;
+  width: min(var(--admin-modal-max-width), calc(100% - var(--admin-modal-inset) - var(--admin-modal-inset)));
+  height: fit-content;
+  max-height: calc(100dvh - var(--admin-modal-inset) - var(--admin-modal-inset));
+  overflow: auto; border: 1px solid var(--admin-line); border-radius: var(--admin-modal-radius);
+  padding: var(--admin-modal-padding); background: var(--admin-surface); color: var(--admin-ink);
+  box-shadow: var(--admin-modal-shadow);
 }
-dialog.modal[open] { display: block; }
-dialog.modal::backdrop { background: rgba(18, 22, 28, .45); }
+dialog.modal::backdrop { background: var(--admin-modal-backdrop); }
 dialog.modal h2 { margin-top: 0; }
-.modal-actions { display: flex; justify-content: flex-end; gap: .45rem; margin-top: 1rem; }
+.modal-actions { display: flex; align-items: center; justify-content: flex-end; gap: .45rem; margin-top: 1rem; }
+.modal-actions--split { justify-content: space-between; }
 .modal-actions form { margin: 0; }
 .autofill-trap { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
 form.reauth { position: relative; }

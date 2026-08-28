@@ -27,9 +27,9 @@ export function strategicSkillsModalHtml(): string {
         <button type="button" id="strategic-add-btn">追加</button>
       </div>
     </div>
-    <div class="row" style="margin-top:1rem;justify-content:space-between">
+    <div class="modal-actions modal-actions--split">
       <a href="/admin/api/strategic-skills/export" id="strategic-export" download>JSON export</a>
-      <button type="button" class="secondary" id="strategic-close">閉じる</button>
+      <button type="button" class="admin-action admin-action--secondary" id="strategic-close">閉じる</button>
     </div>
   </dialog>`;
 }
