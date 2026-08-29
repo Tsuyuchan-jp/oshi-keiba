@@ -28,7 +28,7 @@ const sheet = document.querySelector("#detail-sheet");
 function showDetail(runner, open = true) {
   const detailImage = document.querySelector("#detail-image");
   detailImage.src = imageUrl(runner.image); detailImage.alt = runner.name;
-  document.querySelector("#detail-style").textContent = `${runner.style}　${runner.n}番`;
+  document.querySelector("#detail-style").textContent = `${runner.displayStyle || runner.style}　${runner.n}番`;
   document.querySelector("#detail-name").textContent = runner.name;
   document.querySelector("#detail-trainer").textContent = runner.trainer;
   document.querySelector("#detail-odds").textContent = runner.odds;
@@ -42,12 +42,65 @@ function showDetail(runner, open = true) {
   document.querySelectorAll(".horse").forEach(item => item.classList.toggle("selected", Number(item.dataset.number) === runner.n));
   if (open) sheet.classList.add("open");
 }
-runners.forEach((runner, index) => {
-  const [x, y] = positions[index]; const listImage = runner.image.replace("_0010.png", "_0011.png");
-  const item = document.createElement("button"); item.type = "button"; item.className = "horse"; item.dataset.number = runner.n; item.style.left = `${x}%`; item.style.top = `${y}%`;
-  item.innerHTML = `<img src="${imageUrl(listImage)}" alt="${runner.name}" onerror="this.onerror=null;this.src='${imageUrl(runner.image)}'"><i class="horse__number">${runner.n}</i><span class="horse__name">${runner.name}</span>`;
-  item.addEventListener("click", event => { event.stopPropagation(); showDetail(runner); }); horses.append(item);
-});
+const styleOrder = ["追込", "差し", "先行", "逃げ"];
+const distributionPatterns = {
+  actual: [2, 3, 9, 4],
+  even: [5, 5, 4, 4],
+  "leader-heavy": [2, 2, 12, 2],
+  "runner-heavy": [2, 2, 2, 12]
+};
+const styleGuides = document.querySelector(".style-guides");
+const boardCounts = document.querySelector(".mobile-board p");
+
+function assignmentsFor(patternKey) {
+  if (patternKey === "actual") return Object.fromEntries(runners.map(runner => [runner.n, runner.style]));
+  const assignments = {};
+  let index = 0;
+  distributionPatterns[patternKey].forEach((count, styleIndex) => {
+    runners.slice(index, index + count).forEach(runner => { assignments[runner.n] = styleOrder[styleIndex]; });
+    index += count;
+  });
+  return assignments;
+}
+
+function renderDistribution(patternKey) {
+  const assignments = assignmentsFor(patternKey);
+  const groups = Object.fromEntries(styleOrder.map(style => [style, runners.filter(runner => assignments[runner.n] === style)]));
+  const weights = styleOrder.map(style => Math.max(groups[style].length, 2));
+  const totalWeight = weights.reduce((total, weight) => total + weight, 0);
+  styleGuides.style.gridTemplateColumns = weights.map(weight => `${weight}fr`).join(" ");
+  styleGuides.querySelectorAll("span").forEach((guide, index) => { guide.textContent = styleOrder[index]; });
+  boardCounts.textContent = styleOrder.map(style => `${style} ${groups[style].length}`).join("　｜　");
+  horses.innerHTML = "";
+  let cursor = 0;
+  styleOrder.forEach((style, styleIndex) => {
+    const group = groups[style];
+    const width = (weights[styleIndex] / totalWeight) * 100;
+    const columns = group.length > 1 ? 2 : 1;
+    const rows = Math.ceil(group.length / columns);
+    group.forEach((runner, index) => {
+      const column = index % columns;
+      const row = Math.floor(index / columns);
+      const itemsInRow = Math.min(columns, group.length - row * columns);
+      const x = cursor + width * ((column + .5) / itemsInRow);
+      const y = rows === 1 ? 50 : 9 + (82 * row) / (rows - 1);
+      runner.displayStyle = style;
+      const listImage = runner.image.replace("_0010.png", "_0011.png");
+      const item = document.createElement("button");
+      item.type = "button"; item.className = "horse"; item.dataset.number = runner.n;
+      item.style.left = `${x}%`; item.style.top = `${y}%`;
+      item.innerHTML = `<img src="${imageUrl(listImage)}" alt="${runner.name}" onerror="this.onerror=null;this.src='${imageUrl(runner.image)}'"><i class="horse__number">${runner.n}</i><span class="horse__name">${runner.name}</span>`;
+      item.addEventListener("click", event => { event.stopPropagation(); showDetail(runner); });
+      horses.append(item);
+    });
+    cursor += width;
+  });
+}
 document.querySelector("#sheet-toggle").addEventListener("click", () => sheet.classList.toggle("open"));
 document.querySelector(".race-stage").addEventListener("click", () => sheet.classList.remove("open"));
+document.querySelector("#distribution-select").addEventListener("change", event => {
+  renderDistribution(event.target.value);
+  sheet.classList.remove("open");
+});
+renderDistribution("actual");
 showDetail(runners[0], false);
