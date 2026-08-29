@@ -3,74 +3,64 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>パドック レイアウト比較</title>
+  <title>パドック 完成イメージモック</title>
   <link rel="stylesheet" href="./paddock.css">
 </head>
 <body>
   <div class="transition-curtain" aria-hidden="true"></div>
   <main class="page">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">Paddock layout study</p>
-        <h1>宝塚記念　パドック</h1>
-        <p class="race-meta">芝 2200m　良　18頭　発走 15:40</p>
+    <section class="scoreboard" aria-label="レース案内">
+      <div class="scoreboard-corner">RACE DAY</div>
+      <div class="scoreboard-main">
+        <span class="race-no">11R</span>
+        <strong>宝塚記念</strong>
+        <span>芝 2200m</span><span>良</span><span>発走 15:40</span>
       </div>
-      <div class="layout-switch" role="group" aria-label="レイアウト比較">
-        <button class="switch is-active" type="button" data-layout="single">案A：1列固定</button>
-        <button class="switch" type="button" data-layout="adaptive">案B：先行のみ2列</button>
-      </div>
-    </header>
+      <div class="scoreboard-foot">脚質分布　追 2　差 3　先 9　逃 4</div>
+    </section>
 
-    <p class="study-note">先行が9人に偏った想定です。出走者カードをクリックすると、右側の詳細パネルが切り替わります。</p>
+    <p class="study-note">脚質ごとの集団を、ひと続きのコース上に配置した完成イメージです。キャラをクリックすると選手紹介パネルが切り替わります。</p>
 
     <section class="paddock-layout" id="paddock-layout">
-      <div class="lanes" aria-label="脚質分布">
-        <section class="lane lane-chaser">
-          <header><span>追込</span><b>2</b></header>
-          <div class="runner-list" data-style="chaser"></div>
-        </section>
-        <section class="lane lane-betweener">
-          <header><span>差し</span><b>3</b></header>
-          <div class="runner-list" data-style="betweener"></div>
-        </section>
-        <section class="lane lane-leader dense-lane">
-          <header><span>先行</span><b>9</b></header>
-          <div class="runner-list" data-style="leader"></div>
-        </section>
-        <section class="lane lane-runner">
-          <header><span>逃げ</span><b>4</b></header>
-          <div class="runner-list" data-style="runner"></div>
-        </section>
+      <div class="course-scene" aria-label="脚質分布">
+        <div class="sky-decoration" aria-hidden="true"></div>
+        <div class="grandstand" aria-hidden="true"></div>
+        <div class="rail rail-back" aria-hidden="true"></div>
+        <div class="rail rail-front" aria-hidden="true"></div>
+        <div class="course-title">脚質分布</div>
+        <div class="style-zones">
+          <section class="style-zone chaser">
+            <h2><span>追込</span><b>2</b></h2><div class="runner-list" data-style="chaser"></div>
+          </section>
+          <section class="style-zone betweener">
+            <h2><span>差し</span><b>3</b></h2><div class="runner-list" data-style="betweener"></div>
+          </section>
+          <section class="style-zone leader dense-zone">
+            <h2><span>先行</span><b>9</b></h2><div class="runner-list" data-style="leader"></div>
+          </section>
+          <section class="style-zone runner">
+            <h2><span>逃げ</span><b>4</b></h2><div class="runner-list" data-style="runner"></div>
+          </section>
+        </div>
       </div>
 
       <aside class="detail" aria-live="polite">
         <button class="detail-close" type="button" aria-label="詳細を閉じる">×</button>
         <div class="detail-hero">
+          <div class="rosette" aria-hidden="true">★</div>
           <img id="detail-image" alt="">
           <div>
             <p class="style-badge" id="detail-style"></p>
-            <h2><span id="detail-number"></span> <span id="detail-name"></span></h2>
+            <h2><span id="detail-number"></span><span id="detail-name"></span></h2>
             <p class="odds">暫定オッズ <strong id="detail-odds"></strong></p>
           </div>
         </div>
-        <section class="trainer-card">
-          <span class="avatar" aria-hidden="true">●</span>
-          <div><small>出走者</small><strong id="detail-trainer"></strong></div>
-        </section>
+        <section class="trainer-card"><span class="avatar" aria-hidden="true">●</span><div><small>出走者</small><strong id="detail-trainer"></strong></div></section>
         <blockquote id="detail-comment"></blockquote>
-        <section class="skill-power">
-          <span>スキルパワー</span><strong id="detail-skill"></strong>
-          <small id="detail-skill-note"></small>
-        </section>
-        <section class="stats" aria-label="能力">
-          <h3>能力</h3>
-          <div id="detail-stats"></div>
-        </section>
+        <section class="skill-power"><span>スキルパワー</span><strong id="detail-skill"></strong><small id="detail-skill-note"></small></section>
+        <section class="stats" aria-label="能力"><h3>能力</h3><div id="detail-stats"></div></section>
         <p class="aptitude" id="detail-aptitude"></p>
-        <div class="detail-actions">
-          <button class="shot-button" type="button">育成スクリーンショットを見る</button>
-          <button class="bet-button" type="button">このウマ娘を候補にして投票窓口へ</button>
-        </div>
+        <div class="detail-actions"><button class="shot-button" type="button">育成スクリーンショットを見る</button><button class="bet-button" type="button">このウマ娘を候補にして投票窓口へ</button></div>
       </aside>
     </section>
   </main>
