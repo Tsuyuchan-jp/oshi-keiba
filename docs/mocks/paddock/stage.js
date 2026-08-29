@@ -81,6 +81,13 @@ const editorPanel = document.querySelector(".layout-editor__panel");
 const editorOutput = document.querySelector(".layout-editor__output");
 const collisionLabel = document.querySelector(".layout-editor__collision");
 const layoutKey = "paddock-stage-layout-v1";
+const referenceLayout = {
+  1: { x: 13.3, y: 61.8 }, 2: { x: 0, y: 27.4 }, 3: { x: 38.3, y: 60.3 }, 4: { x: 28.5, y: 60.3 },
+  5: { x: 44.4, y: 0 }, 6: { x: 66.5, y: 61.8 }, 7: { x: 11.5, y: 15.6 }, 8: { x: 0, y: 23.7 },
+  9: { x: 6.7, y: 29.4 }, 10: { x: 40.8, y: 49.9 }, 11: { x: 36.5, y: 55.2 }, 12: { x: 25.7, y: 50.7 },
+  13: { x: 34.9, y: 28.5 }, 14: { x: 58.3, y: 30 }, 15: { x: 18.7, y: 0 }, 16: { x: 46, y: 0 },
+  17: { x: 69.3, y: -4.4 }, 18: { x: 32.6, y: 0 }
+};
 let draggedHorse = null;
 let dragMoved = false;
 
@@ -110,16 +117,20 @@ function checkCollisions() {
   horses.forEach(horse => horse.classList.toggle("is-colliding", colliding.has(horse)));
   collisionLabel.textContent = colliding.size ? `重なり判定：${colliding.size}人を確認してください` : "重なり判定：問題ありません";
 }
-function applyStoredLayout() {
-  const saved = JSON.parse(localStorage.getItem(layoutKey) || "null");
-  if (!saved) return;
+function applyLayout(layout) {
   document.querySelectorAll(".horse").forEach(horse => {
-    const position = saved[horse.dataset.number];
+    const position = layout[horse.dataset.number];
     if (!position) return;
     horse.style.left = `calc(${position.x}% - ${Math.round(horse.offsetWidth / 2)}px)`;
     horse.style.top = `${position.y}%`;
     horse.style.bottom = "auto";
   });
+}
+function applyStoredLayout() {
+  const saved = JSON.parse(localStorage.getItem(layoutKey) || "null");
+  if (!saved) return false;
+  applyLayout(saved);
+  return true;
 }
 function persistLayout() { localStorage.setItem(layoutKey, JSON.stringify(captureLayout())); updateEditorOutput(); checkCollisions(); }
 toggleEditor.addEventListener("click", () => {
@@ -152,4 +163,4 @@ document.querySelectorAll(".horse").forEach(horse => {
   horse.addEventListener("pointerup", () => { if (draggedHorse === horse) { draggedHorse = null; persistLayout(); } });
   horse.addEventListener("click", event => { if (stage.classList.contains("editing") && dragMoved) event.preventDefault(); });
 });
-applyStoredLayout();
+if (!applyStoredLayout()) applyLayout(referenceLayout);
