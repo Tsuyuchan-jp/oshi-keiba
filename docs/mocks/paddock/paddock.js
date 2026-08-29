@@ -19,6 +19,9 @@ const runners = [
   { n:18, name: "エアグルーヴ", trainer: "トレーナーS", style: "runner", label: "逃げ", odds: "20.1倍", skill: 23, note: "有効 16　金相当 3　戦略 +1", image: "petit_1018_101801_0010.png", comment: "自分のリズムで運びます。", apt: "芝A　中距離A　逃げA", stats:[1100,900,1050,860,1000] },
 ];
 
+const fade = new URLSearchParams(location.search).get("fade");
+if (fade === "standard" || fade === "slow") document.body.classList.add(`entry-${fade}`);
+
 const imageUrl = (image) => `../../../public/images/umamusume/petit/${image}`;
 const stats = ["スピード", "スタミナ", "パワー", "根性", "賢さ"];
 const detail = (runner) => {
