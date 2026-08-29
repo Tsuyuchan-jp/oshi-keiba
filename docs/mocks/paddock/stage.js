@@ -44,11 +44,13 @@ function showDetail(runner) {
   detail.classList.add("open");
 }
 const groups = Object.fromEntries(styleOrder.map(style => [style, runners.filter(runner => runner.style === style)]));
-const totalWeight = styleOrder.reduce((sum, style) => sum + 2 + groups[style].length, 0);
+const activeStyles = styleOrder.filter(style => groups[style].length > 0);
+const totalWeight = activeStyles.reduce((sum, style) => sum + 2 + groups[style].length, 0);
 let cursor = 1;
 styleOrder.forEach(style => {
   const group = document.querySelector(`[data-style="${style}"]`);
   const guide = document.querySelector(`.guide--${style}`);
+  if (!groups[style].length) { group.hidden = true; guide.hidden = true; return; }
   const width = ((2 + groups[style].length) / totalWeight) * 98;
   group.style.left = `${cursor}%`;
   group.style.width = `${width}%`;
@@ -88,14 +90,7 @@ const toggleEditor = document.querySelector(".layout-editor__toggle");
 const editorPanel = document.querySelector(".layout-editor__panel");
 const editorOutput = document.querySelector(".layout-editor__output");
 const collisionLabel = document.querySelector(".layout-editor__collision");
-const layoutKey = "paddock-stage-layout-v1";
-const referenceLayout = {
-  1: { x: 9.2, y: 68 }, 2: { x: 1.3, y: 34.2 }, 3: { x: 34.9, y: 66.4 }, 4: { x: 53.2, y: 33.5 },
-  5: { x: 7.5, y: 20.3 }, 6: { x: 60.1, y: 68 }, 7: { x: 24.2, y: 24.8 }, 8: { x: 44.4, y: 42.5 },
-  9: { x: 14.2, y: 42.7 }, 10: { x: 27.1, y: 63.2 }, 11: { x: 13.4, y: 67 }, 12: { x: 12, y: 60.5 },
-  13: { x: 43.9, y: 41.5 }, 14: { x: 71, y: 42.2 }, 15: { x: 0.2, y: 11.4 }, 16: { x: 27.3, y: 14.2 },
-  17: { x: 52.4, y: 13.3 }, 18: { x: 20.2, y: 11.4 }
-};
+const layoutKey = "paddock-stage-layout-v2";
 const handTunedTemplates = {
   3: [{ x: 32, y: 68 }, { x: 30.8, y: 10.8 }, { x: 48, y: 41.2 }],
   6: [{ x: 29.3, y: 68 }, { x: 50.7, y: 68 }, { x: 38.1, y: 40.3 }, { x: 58.5, y: 41.2 }, { x: 28.5, y: 11.2 }, { x: 49, y: 11.2 }],
@@ -103,6 +98,7 @@ const handTunedTemplates = {
   12: [{ x: 16.5, y: 68 }, { x: 34.6, y: 68 }, { x: 52.8, y: 68 }, { x: 70.7, y: 69.5 }, { x: 43.8, y: 41.9 }, { x: 7.2, y: 41.8 }, { x: 62.2, y: 43 }, { x: 26.1, y: 43.4 }, { x: 34.3, y: 16.4 }, { x: 17.1, y: 16.9 }, { x: 53.1, y: 16.6 }, { x: 70.4, y: 16.4 }],
 };
 function templatePositions(count) {
+  if (!count) return [];
   if (handTunedTemplates[count]) return handTunedTemplates[count];
   const layers = Math.ceil(count / 3);
   const base = Math.floor(count / layers);
@@ -119,6 +115,12 @@ function templatePositions(count) {
     }
   }
   return positions;
+}
+function distributionTemplateLayout() {
+  return Object.fromEntries(styleOrder.flatMap(style => {
+    const positions = templatePositions(groups[style].length);
+    return groups[style].map((runner, index) => [runner.n, positions[index]]);
+  }));
 }
 let draggedHorse = null;
 let dragMoved = false;
@@ -202,7 +204,7 @@ if (templateCount) {
   document.querySelectorAll(".guide, .horse-group").forEach((element) => {
     if (!element.classList.contains("guide--leader") && !element.classList.contains("horse-group--leader")) element.hidden = true;
   });
-} else if (!applyStoredLayout()) applyLayout(referenceLayout);
+} else if (!applyStoredLayout()) applyLayout(distributionTemplateLayout());
 document.querySelectorAll("[data-template-count]").forEach((button) => {
   button.dataset.active = String(Number(button.dataset.templateCount) === templateCount);
   button.addEventListener("click", () => {
