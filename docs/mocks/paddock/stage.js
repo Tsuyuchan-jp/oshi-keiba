@@ -18,18 +18,13 @@ const runners = [
   { n: 17, name: "シンボリルドルフ", trainer: "トレーナー R", style: "leader", label: "先行", odds: "15.8倍", skill: 27, note: "有効 19　金相当 3　戦略 +2", image: "petit_1017_101701_0010.png", comment: "皇帝の走りを見届けよう。", apt: "芝 A　中距離 A　先行 A", stats: [1140, 970, 1080, 850, 1030] },
   { n: 18, name: "エアグルーヴ", trainer: "トレーナー S", style: "runner", label: "逃げ", odds: "20.1倍", skill: 23, note: "有効 16　金相当 3　戦略 +1", image: "petit_1018_101801_0010.png", comment: "自分のリズムで走ります。", apt: "芝 A　中距離 A　逃げ A", stats: [1100, 900, 1050, 860, 1000] }
 ];
-const placements = {
-  chaser: [[0, 5], [82, -4]], betweener: [[0, 2], [74, -5], [136, 8]],
-  leader: [[0, 13], [64, -2], [125, 16], [42, 35], [106, 38], [172, 29], [83, 58], [149, 60], [211, 52]],
-  runner: [[0, 9], [71, -3], [139, 11], [203, 1]]
-};
+const styleOrder = ["chaser", "betweener", "leader", "runner"];
 const imageUrl = image => `../../../public/images/umamusume/petit/${image}`;
 const statNames = ["スピード", "スタミナ", "パワー", "根性", "賢さ"];
 function showDetail(runner) {
   const detail = document.querySelector(".detail");
   const image = document.querySelector("#detail-image");
-  image.onerror = () => { image.onerror = null; image.src = imageUrl(runner.image); };
-  image.src = imageUrl(runner.image.replace("_0010.png", "_0011.png"));
+  image.src = imageUrl(runner.image);
   image.alt = runner.name;
   document.querySelector("#detail-style").textContent = runner.label;
   document.querySelector("#detail-number").textContent = `${runner.n}番`;
@@ -44,15 +39,33 @@ function showDetail(runner) {
   document.querySelectorAll(".horse").forEach(item => item.classList.toggle("selected", Number(item.dataset.number) === runner.n));
   detail.classList.add("open");
 }
-const offsets = { chaser: 0, betweener: 0, leader: 0, runner: 0 };
-runners.forEach(runner => {
-  const [left, bottom] = placements[runner.style][offsets[runner.style]++];
+const groups = Object.fromEntries(styleOrder.map(style => [style, runners.filter(runner => runner.style === style)]));
+const totalWeight = styleOrder.reduce((sum, style) => sum + 2 + groups[style].length, 0);
+let cursor = 1;
+styleOrder.forEach(style => {
+  const group = document.querySelector(`[data-style="${style}"]`);
+  const guide = document.querySelector(`.guide--${style}`);
+  const width = ((2 + groups[style].length) / totalWeight) * 98;
+  group.style.left = `${cursor}%`;
+  group.style.width = `${width}%`;
+  guide.style.left = `calc(${cursor + width / 2}% - 75px)`;
+  cursor += width;
+});
+styleOrder.forEach(style => groups[style].forEach((runner, index) => {
+  const group = document.querySelector(`[data-style="${runner.style}"]`);
+  const rows = runner.style === "leader" || groups[runner.style].length > 4 ? 2 : 1;
+  const row = rows === 1 ? 0 : index % rows;
+  const column = Math.floor(index / rows);
+  const columns = Math.ceil(groups[runner.style].length / rows);
+  const x = ((column + .5) / columns) * 100;
+  const bottom = row === 0 ? 0 : 61;
   const horse = document.createElement("button");
   horse.type = "button"; horse.className = "horse"; horse.dataset.number = runner.n;
-  horse.style.left = `${left}px`; horse.style.bottom = `${bottom}px`;
-  horse.innerHTML = `<img src="${imageUrl(runner.image)}" alt=""><i class="horse__number">${runner.n}</i><span class="horse__name">${runner.name}</span>`;
+  horse.style.left = `calc(${x}% - 71px)`; horse.style.bottom = `${bottom}px`;
+  const listImage = runner.image.replace("_0010.png", "_0011.png");
+  horse.innerHTML = `<img src="${imageUrl(listImage)}" alt="" onerror="this.onerror=null;this.src='${imageUrl(runner.image)}'"><i class="horse__number">${runner.n}</i><span class="horse__name">${runner.name}</span>`;
   horse.addEventListener("click", () => showDetail(runner));
-  document.querySelector(`[data-style="${runner.style}"]`).append(horse);
-});
+  group.append(horse);
+}));
 document.querySelector(".detail-close").addEventListener("click", () => document.querySelector(".detail").classList.remove("open"));
 showDetail(runners[0]);
