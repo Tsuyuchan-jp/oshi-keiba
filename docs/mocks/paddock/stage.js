@@ -82,11 +82,11 @@ const editorOutput = document.querySelector(".layout-editor__output");
 const collisionLabel = document.querySelector(".layout-editor__collision");
 const layoutKey = "paddock-stage-layout-v1";
 const referenceLayout = {
-  1: { x: 13.3, y: 61.8 }, 2: { x: 0, y: 27.4 }, 3: { x: 38.3, y: 60.3 }, 4: { x: 28.5, y: 60.3 },
-  5: { x: 44.4, y: 0 }, 6: { x: 66.5, y: 61.8 }, 7: { x: 11.5, y: 15.6 }, 8: { x: 0, y: 23.7 },
-  9: { x: 6.7, y: 29.4 }, 10: { x: 40.8, y: 49.9 }, 11: { x: 36.5, y: 55.2 }, 12: { x: 25.7, y: 50.7 },
-  13: { x: 34.9, y: 28.5 }, 14: { x: 58.3, y: 30 }, 15: { x: 18.7, y: 0 }, 16: { x: 46, y: 0 },
-  17: { x: 69.3, y: -4.4 }, 18: { x: 32.6, y: 0 }
+  1: { x: 5.7, y: 68 }, 2: { x: 0, y: 28.4 }, 3: { x: 33.2, y: 62.3 }, 4: { x: 50.6, y: 28.6 },
+  5: { x: 6.7, y: 5.9 }, 6: { x: 59.6, y: 68 }, 7: { x: 26.7, y: 12.2 }, 8: { x: 44.4, y: 32.9 },
+  9: { x: 15.6, y: 37.7 }, 10: { x: 10.1, y: 61 }, 11: { x: 3.2, y: 61 }, 12: { x: 6.7, y: 45.9 },
+  13: { x: 43.9, y: 32.6 }, 14: { x: 71.5, y: 36.6 }, 15: { x: 9.1, y: 9.7 }, 16: { x: 33.2, y: 6.6 },
+  17: { x: 60.8, y: 3.9 }, 18: { x: 10.4, y: 0 }
 };
 let draggedHorse = null;
 let dragMoved = false;
@@ -121,7 +121,7 @@ function applyLayout(layout) {
   document.querySelectorAll(".horse").forEach(horse => {
     const position = layout[horse.dataset.number];
     if (!position) return;
-    horse.style.left = `calc(${position.x}% - ${Math.round(horse.offsetWidth / 2)}px)`;
+    horse.style.left = `${position.x}%`;
     horse.style.top = `${position.y}%`;
     horse.style.bottom = "auto";
   });
