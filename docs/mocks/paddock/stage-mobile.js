@@ -25,7 +25,7 @@ const imageUrl = file => `../../../public/images/umamusume/petit/${file}`;
 const statNames = ["スピード", "スタミナ", "パワー", "根性", "賢さ"];
 const horses = document.querySelector("#mobile-horses");
 const sheet = document.querySelector("#detail-sheet");
-function showDetail(runner) {
+function showDetail(runner, open = true) {
   const detailImage = document.querySelector("#detail-image");
   detailImage.src = imageUrl(runner.image); detailImage.alt = runner.name;
   document.querySelector("#detail-style").textContent = `${runner.style}　${runner.n}番`;
@@ -40,13 +40,14 @@ function showDetail(runner) {
   document.querySelector("#summary-name").textContent = runner.name;
   document.querySelector("#detail-stats").innerHTML = runner.stats.map((value, index) => `<div class="stat"><span>${statNames[index]}</span><span class="bar"><i style="width:${Math.min(value / 12.5, 100)}%"></i></span><b>${value}</b></div>`).join("");
   document.querySelectorAll(".horse").forEach(item => item.classList.toggle("selected", Number(item.dataset.number) === runner.n));
-  sheet.classList.add("open");
+  if (open) sheet.classList.add("open");
 }
 runners.forEach((runner, index) => {
   const [x, y] = positions[index]; const listImage = runner.image.replace("_0010.png", "_0011.png");
   const item = document.createElement("button"); item.type = "button"; item.className = "horse"; item.dataset.number = runner.n; item.style.left = `${x}%`; item.style.top = `${y}%`;
   item.innerHTML = `<img src="${imageUrl(listImage)}" alt="${runner.name}" onerror="this.onerror=null;this.src='${imageUrl(runner.image)}'"><i class="horse__number">${runner.n}</i><span class="horse__name">${runner.name}</span>`;
-  item.addEventListener("click", () => showDetail(runner)); horses.append(item);
+  item.addEventListener("click", event => { event.stopPropagation(); showDetail(runner); }); horses.append(item);
 });
 document.querySelector("#sheet-toggle").addEventListener("click", () => sheet.classList.toggle("open"));
-showDetail(runners[0]);
+document.querySelector(".race-stage").addEventListener("click", () => sheet.classList.remove("open"));
+showDetail(runners[0], false);
