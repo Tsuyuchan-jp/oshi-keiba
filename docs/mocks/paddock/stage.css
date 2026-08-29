@@ -26,3 +26,6 @@ body.card-fun .detail { overflow:hidden; border:1px solid rgba(117,157,119,.75);
 /* stage.html?card=fun 用：左向きのしっぽを確実に描画 */
 .detail blockquote::before,
 .card-fun .detail blockquote::before { content:""; position:absolute; z-index:5; top:12px; left:-11px; width:12px; height:16px; border:0; background:#fff8dc; clip-path:polygon(100% 0, 100% 100%, 0 50%); transform:none; }
+
+/* body.card-fun の既存指定より優先して、楽しい版にも同じ左向き三角形を適用 */
+body.card-fun .detail blockquote::before { content:""; position:absolute; z-index:5; top:12px; left:-11px; width:12px; height:16px; border:0; background:#fff8dc; clip-path:polygon(100% 0, 100% 100%, 0 50%); transform:none; pointer-events:none; }
