@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>パドック横向きステージ案</title>
+    <link rel="stylesheet" href="stage.css">
+  </head>
+  <body>
+    <main class="paddock-stage">
+      <section class="race-view" aria-label="出走ウマ娘の脚質分布">
+        <div class="scoreboard" aria-label="レース案内板">
+          <div class="scoreboard__top"><b>11R</b><span>芝 2200m　良　発走 15:40</span></div>
+          <div class="scoreboard__name">宝塚記念　出走ウマ娘紹介</div>
+          <div class="scoreboard__bottom">追込 2　｜　差し 3　｜　先行 9　｜　逃げ 4</div>
+        </div>
+        <div class="guide guide--chaser"><b>追込</b><span>←</span></div>
+        <div class="guide guide--betweener"><b>差し</b><span>←</span></div>
+        <div class="guide guide--leader"><b>先行</b><span>→</span></div>
+        <div class="guide guide--runner"><b>逃げ</b><span>↓</span></div>
+        <div class="horse-group horse-group--chaser" data-style="chaser"></div>
+        <div class="horse-group horse-group--betweener" data-style="betweener"></div>
+        <div class="horse-group horse-group--leader" data-style="leader"></div>
+        <div class="horse-group horse-group--runner" data-style="runner"></div>
+        <p class="stage-note">ウマ娘を選ぶと、右の選手紹介カードに詳細を表示します</p>
+      </section>
+      <aside class="detail" aria-live="polite">
+        <button class="detail-close" type="button" aria-label="詳細を閉じる">×</button>
+        <div class="detail__heading"><span id="detail-style"></span><span id="detail-number"></span></div>
+        <div class="detail__profile"><img id="detail-image" alt=""><div><h1 id="detail-name"></h1><p id="detail-trainer"></p><strong id="detail-odds"></strong></div></div>
+        <blockquote id="detail-comment"></blockquote>
+        <section class="skill"><div><span>スキルパワー</span><b id="detail-skill"></b></div><small id="detail-skill-note"></small></section>
+        <section class="status"><h2>基礎能力</h2><div id="detail-stats"></div><p id="detail-aptitude"></p></section>
+        <div class="detail__actions"><button type="button">育成スクリーンショットを見る</button><a href="#vote">このウマ娘を投票候補にする →</a></div>
+      </aside>
+    </main>
+    <script src="stage.js"></script>
+  </body>
+</html>
