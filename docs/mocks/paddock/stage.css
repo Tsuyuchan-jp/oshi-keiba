@@ -33,3 +33,6 @@ body.card-fun .detail blockquote::before { content:""; position:absolute; z-inde
 /* 楽しい版のしっぽは、外枠と内側を重ねて吹き出しの縁へつなぐ */
 body.card-fun .detail blockquote::before { top:10px; left:-14px; width:14px; height:20px; background:#e7b649; }
 body.card-fun .detail blockquote::after { content:""; position:absolute; z-index:6; top:13px; left:-10px; width:10px; height:14px; background:#fff8dc; clip-path:polygon(100% 0, 100% 100%, 0 50%); pointer-events:none; }
+
+/* トレーナーアイコンを吹き出しのしっぽより前面に表示 */
+.trainer-comment > img { position:relative; z-index:6; }
