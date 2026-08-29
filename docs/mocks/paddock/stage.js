@@ -19,6 +19,8 @@ const allRunners = [
   { n: 18, name: "エアグルーヴ", trainer: "トレーナー S", style: "runner", label: "逃げ", odds: "20.1倍", skill: 23, note: "有効 16　金相当 3　戦略 +1", image: "petit_1018_101801_0010.png", comment: "自分のリズムで走ります。", apt: "芝 A　中距離 A　逃げ A", stats: [1100, 900, 1050, 860, 1000] }
 ];
 const templateCount = Number(new URLSearchParams(location.search).get("template")) || 0;
+const cardMode = new URLSearchParams(location.search).get("card");
+if (cardMode === "fun") document.body.classList.add("card-fun");
 const runners = templateCount
   ? allRunners.slice(0, templateCount).map((runner) => ({ ...runner, style: "leader", label: "先行" }))
   : allRunners;
