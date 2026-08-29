@@ -92,13 +92,14 @@ const referenceLayout = {
   13: { x: 43.9, y: 41.5 }, 14: { x: 71, y: 42.2 }, 15: { x: 0.2, y: 11.4 }, 16: { x: 27.3, y: 14.2 },
   17: { x: 52.4, y: 13.3 }, 18: { x: 20.2, y: 11.4 }
 };
-const nineTemplate = [
-  { x: 9.2, y: 68 }, { x: 34.9, y: 66.4 }, { x: 60.1, y: 68 },
-  { x: 14.2, y: 42.7 }, { x: 43.9, y: 41.5 }, { x: 71, y: 42.2 },
-  { x: 0.2, y: 11.4 }, { x: 27.3, y: 14.2 }, { x: 52.4, y: 13.3 },
-];
+const handTunedTemplates = {
+  3: [{ x: 32.4, y: 11 }, { x: 31.6, y: 68 }, { x: 47.7, y: 39.9 }],
+  6: [{ x: 32.6, y: 41.9 }, { x: 24.4, y: 64.2 }, { x: 46.5, y: 68 }, { x: 22.4, y: 15 }, { x: 44.3, y: 14.5 }, { x: 55.2, y: 44.7 }],
+  9: [{ x: 20.3, y: 68 }, { x: 39.1, y: 68 }, { x: 57.6, y: 64.2 }, { x: 28.2, y: 41.8 }, { x: 46.4, y: 42.2 }, { x: 65.5, y: 42.4 }, { x: 20.3, y: 16.7 }, { x: 39.7, y: 16.7 }, { x: 58, y: 16.9 }],
+  12: [{ x: 14.6, y: 68 }, { x: 33, y: 68 }, { x: 51, y: 68 }, { x: 4.2, y: 41.6 }, { x: 41.9, y: 37.9 }, { x: 68.1, y: 69.4 }, { x: 34, y: 14.7 }, { x: 24.4, y: 43.1 }, { x: 60.1, y: 43.1 }, { x: 16.2, y: 14.8 }, { x: 51.3, y: 15.1 }, { x: 68.6, y: 15.1 }],
+};
 function templatePositions(count) {
-  if (count === 9) return nineTemplate;
+  if (handTunedTemplates[count]) return handTunedTemplates[count];
   const layers = Math.ceil(count / 3);
   const base = Math.floor(count / layers);
   const remainder = count % layers;

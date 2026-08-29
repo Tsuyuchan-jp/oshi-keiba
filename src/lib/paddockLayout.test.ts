@@ -6,10 +6,13 @@ test("パドック配置は指定人数ぶん返す", () => {
   for (const count of [0, 1, 3, 6, 9, 12, 18]) assert.equal(paddockGroupLayout(count).length, count);
 });
 
-test("9人時は調整済みの三層配置を使う", () => {
+test("代表人数は調整済みテンプレートを使う", () => {
+  assert.deepEqual(paddockGroupLayout(3)[0], { x: 32.4, y: 11, scale: 1 });
+  assert.deepEqual(paddockGroupLayout(6)[5], { x: 55.2, y: 44.7, scale: 0.955 });
   const positions = paddockGroupLayout(9);
-  assert.deepEqual(positions[0], { x: 9.2, y: 68, scale: 1 });
-  assert.deepEqual(positions[8], { x: 52.4, y: 13.3, scale: 0.94 });
+  assert.deepEqual(positions[0], { x: 20.3, y: 68, scale: 1 });
+  assert.deepEqual(positions[8], { x: 58, y: 16.9, scale: 0.91 });
+  assert.deepEqual(paddockGroupLayout(12)[11], { x: 68.6, y: 15.1, scale: 0.9 });
 });
 
 test("人数が多いほど奥側の層が増える", () => {
