@@ -36,3 +36,5 @@ body.card-fun .detail blockquote::after { content:""; position:absolute; z-index
 
 /* トレーナーアイコンを吹き出しのしっぽより前面に表示 */
 .trainer-comment > img { position:relative; z-index:6; }
+
+@media (min-width:701px) { .horse img { transform:scaleX(-1); } }
