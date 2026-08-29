@@ -76,7 +76,11 @@ styleOrder.forEach(style => groups[style].forEach((runner, index) => {
   horse.addEventListener("click", () => showDetail(runner));
   group.append(horse);
 }));
-document.querySelector(".detail-close").addEventListener("click", () => document.querySelector(".detail").classList.remove("open"));
+function clearSelection() {
+  document.querySelectorAll(".horse").forEach((horse) => horse.classList.remove("selected"));
+  document.querySelector(".detail").classList.remove("open");
+}
+document.querySelector(".detail-close").addEventListener("click", clearSelection);
 showDetail(runners[0]);
 
 const stage = document.querySelector(".paddock-stage");
@@ -122,10 +126,9 @@ let dragMoved = false;
 function captureLayout() {
   return Object.fromEntries([...document.querySelectorAll(".horse")].map(horse => {
     const group = horse.parentElement.getBoundingClientRect();
-    const item = horse.getBoundingClientRect();
     return [horse.dataset.number, {
-      x: Math.round(((item.left - group.left) / group.width) * 1000) / 10,
-      y: Math.round(((item.top - group.top) / group.height) * 1000) / 10
+      x: Math.round((horse.offsetLeft / group.width) * 1000) / 10,
+      y: Math.round((horse.offsetTop / group.height) * 1000) / 10
     }];
   }));
 }
@@ -168,6 +171,7 @@ toggleEditor.addEventListener("click", () => {
   if (editing) { updateEditorOutput(); checkCollisions(); }
 });
 document.querySelector(".layout-editor__reset").addEventListener("click", () => { localStorage.removeItem(layoutKey); location.reload(); });
+document.querySelector(".layout-editor__clear").addEventListener("click", clearSelection);
 document.querySelector(".layout-editor__copy").addEventListener("click", async () => {
   updateEditorOutput();
   const copyButton = document.querySelector(".layout-editor__copy");
