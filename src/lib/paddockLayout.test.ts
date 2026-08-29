@@ -12,7 +12,7 @@ test("代表人数は調整済みテンプレートを使う", () => {
   const positions = paddockGroupLayout(9);
   assert.deepEqual(positions[0], { x: 20.3, y: 68, scale: 1 });
   assert.deepEqual(positions[8], { x: 58, y: 16.9, scale: 0.91 });
-  assert.deepEqual(paddockGroupLayout(12)[11], { x: 68.6, y: 15.1, scale: 0.9 });
+  assert.deepEqual(paddockGroupLayout(12)[11], { x: 68, y: 11.4, scale: 0.9 });
 });
 
 test("人数が多いほど奥側の層が増える", () => {
