@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>パドック スマホ縦バンド比較モック</title>
+    <link rel="stylesheet" href="stage-mobile-bands.css">
+  </head>
+  <body class="layout-bands">
+    <main class="mobile-paddock">
+      <section class="race-stage" aria-label="出走ウマ娘紹介">
+        <header class="mobile-board">
+          <div class="mobile-board__meta"><b>11R</b><span>芝 2200m　良　発走 15:40</span></div>
+          <h1>宝塚記念　出走ウマ娘紹介</h1>
+          <p>追込 2　｜　差し 3　｜　先行 9　｜　逃げ 4</p>
+        </header>
+        <div class="style-guides" aria-hidden="true"><span>追込</span><span>差し</span><span>先行</span><span>逃げ</span></div>
+        <div id="mobile-horses" class="mobile-horses"></div>
+        <p class="stage-hint">ウマ娘をタップすると選手紹介を開きます</p>
+      </section>
+      <section id="detail-sheet" class="detail-sheet" aria-live="polite" aria-label="選手紹介">
+        <button id="sheet-toggle" class="sheet-handle" type="button" aria-label="選手紹介を開閉する"><i></i></button>
+        <div class="sheet-summary"><span id="summary-number"></span><b id="summary-name"></b><label class="distribution-test">分布テスト<select id="distribution-select" aria-label="脚質分布テスト"><option value="actual">実分布</option><option value="even">均等</option><option value="leader-heavy">先行偏重</option><option value="runner-heavy">逃げ偏重</option></select></label></div>
+        <div class="sheet-body">
+          <div class="sheet-profile"><img id="detail-image" alt=""><div><p id="detail-style"></p><h2 id="detail-name"></h2><span id="detail-trainer"></span></div><strong id="detail-odds"></strong></div>
+          <div class="trainer-comment"><img src="assets/trainer-note-icon.png" alt="トレーナーアイコン"><blockquote id="detail-comment"></blockquote></div>
+          <section class="skill"><span>スキルパワー</span><b id="detail-skill"></b><small id="detail-skill-note"></small></section>
+          <section class="status"><h3>基礎能力</h3><div id="detail-stats"></div><p id="detail-aptitude"></p></section>
+          <div class="sheet-actions"><button type="button">育成スクリーンショットを見る</button><a href="#vote">このウマ娘を投票候補にする →</a></div>
+        </div>
+      </section>
+    </main>
+    <script src="stage-mobile.js"></script>
+  </body>
+</html>

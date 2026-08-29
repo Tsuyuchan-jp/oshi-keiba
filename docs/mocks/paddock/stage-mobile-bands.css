@@ -1,0 +1,8 @@
+@import url("stage-mobile.css");
+
+.layout-bands .style-guides { display:none; }
+.layout-bands .mobile-horses { inset:35% 2% 7% 2%; }
+.layout-bands .band-zone { position:absolute; z-index:0; left:8%; right:1%; border-top:1px dashed rgba(255,255,255,.62); border-bottom:1px solid rgba(36,90,58,.12); border-radius:9px; pointer-events:none; }
+.layout-bands .band-zone--追込 { background:rgba(205,113,52,.10); }.layout-bands .band-zone--差し { background:rgba(191,145,41,.10); }.layout-bands .band-zone--先行 { background:rgba(75,154,81,.10); }.layout-bands .band-zone--逃げ { background:rgba(52,125,203,.10); }
+.layout-bands .band-label { position:absolute; z-index:3; left:0; min-width:52px; padding:3px 5px; border:1px solid rgba(255,255,255,.88); border-radius:6px; color:#fff; font-size:10px; font-weight:800; line-height:1.1; text-align:center; text-shadow:0 1px 1px rgba(0,0,0,.3); box-shadow:0 2px 2px rgba(23,69,41,.22); transform:translateY(-50%); pointer-events:none; }.layout-bands .band-label--追込 { background:#cd7134; }.layout-bands .band-label--差し { background:#bf9129; }.layout-bands .band-label--先行 { background:#4b9a51; }.layout-bands .band-label--逃げ { background:#347dcb; }
+.layout-bands .horse { z-index:2; }

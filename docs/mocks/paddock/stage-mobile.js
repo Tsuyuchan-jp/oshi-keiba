@@ -51,6 +51,7 @@ const distributionPatterns = {
 };
 const styleGuides = document.querySelector(".style-guides");
 const boardCounts = document.querySelector(".mobile-board p");
+const isBandLayout = document.body.classList.contains("layout-bands");
 
 function assignmentsFor(patternKey) {
   if (patternKey === "actual") return Object.fromEntries(runners.map(runner => [runner.n, runner.style]));
@@ -68,10 +69,40 @@ function renderDistribution(patternKey) {
   const groups = Object.fromEntries(styleOrder.map(style => [style, runners.filter(runner => assignments[runner.n] === style)]));
   const weights = styleOrder.map(style => Math.max(groups[style].length, 2));
   const totalWeight = weights.reduce((total, weight) => total + weight, 0);
-  styleGuides.style.gridTemplateColumns = weights.map(weight => `${weight}fr`).join(" ");
-  styleGuides.querySelectorAll("span").forEach((guide, index) => { guide.textContent = styleOrder[index]; });
   boardCounts.textContent = styleOrder.map(style => `${style} ${groups[style].length}`).join("　｜　");
   horses.innerHTML = "";
+  if (isBandLayout) {
+    const rowCounts = styleOrder.map(style => Math.ceil(groups[style].length / 5));
+    const totalRows = rowCounts.reduce((total, count) => total + count, 0);
+    let usedRows = 0;
+    styleOrder.forEach((style, styleIndex) => {
+      const group = groups[style];
+      const rows = rowCounts[styleIndex];
+      const zoneTop = (usedRows / totalRows) * 100;
+      const zoneHeight = (rows / totalRows) * 100;
+      const zone = document.createElement("div");
+      zone.className = `band-zone band-zone--${style}`;
+      zone.style.top = `${zoneTop}%`; zone.style.height = `${zoneHeight}%`;
+      horses.append(zone);
+      const label = document.createElement("span");
+      label.className = `band-label band-label--${style}`;
+      label.style.top = `${zoneTop + Math.min(10, zoneHeight / 2)}%`;
+      label.textContent = `${style} ${group.length}`;
+      horses.append(label);
+      group.forEach((runner, index) => {
+        const row = Math.floor(index / 5);
+        const column = index % 5;
+        const itemsInRow = Math.min(5, group.length - row * 5);
+        const x = 16 + 78 * ((column + .5) / itemsInRow);
+        const y = ((usedRows + row + .5) / totalRows) * 100;
+        appendHorse(runner, style, x, y);
+      });
+      usedRows += rows;
+    });
+    return;
+  }
+  styleGuides.style.gridTemplateColumns = weights.map(weight => `${weight}fr`).join(" ");
+  styleGuides.querySelectorAll("span").forEach((guide, index) => { guide.textContent = styleOrder[index]; });
   let cursor = 0;
   styleOrder.forEach((style, styleIndex) => {
     const group = groups[style];
@@ -84,17 +115,21 @@ function renderDistribution(patternKey) {
       const itemsInRow = Math.min(columns, group.length - row * columns);
       const x = cursor + width * ((column + .5) / itemsInRow);
       const y = rows === 1 ? 50 : 9 + (82 * row) / (rows - 1);
-      runner.displayStyle = style;
-      const listImage = runner.image.replace("_0010.png", "_0011.png");
-      const item = document.createElement("button");
-      item.type = "button"; item.className = "horse"; item.dataset.number = runner.n;
-      item.style.left = `${x}%`; item.style.top = `${y}%`;
-      item.innerHTML = `<img src="${imageUrl(listImage)}" alt="${runner.name}" onerror="this.onerror=null;this.src='${imageUrl(runner.image)}'"><i class="horse__number">${runner.n}</i><span class="horse__name">${runner.name}</span>`;
-      item.addEventListener("click", event => { event.stopPropagation(); showDetail(runner); });
-      horses.append(item);
+      appendHorse(runner, style, x, y);
     });
     cursor += width;
   });
+}
+
+function appendHorse(runner, style, x, y) {
+  runner.displayStyle = style;
+  const listImage = runner.image.replace("_0010.png", "_0011.png");
+  const item = document.createElement("button");
+  item.type = "button"; item.className = "horse"; item.dataset.number = runner.n;
+  item.style.left = `${x}%`; item.style.top = `${y}%`;
+  item.innerHTML = `<img src="${imageUrl(listImage)}" alt="${runner.name}" onerror="this.onerror=null;this.src='${imageUrl(runner.image)}'"><i class="horse__number">${runner.n}</i><span class="horse__name">${runner.name}</span>`;
+  item.addEventListener("click", event => { event.stopPropagation(); showDetail(runner); });
+  horses.append(item);
 }
 document.querySelector("#sheet-toggle").addEventListener("click", () => sheet.classList.toggle("open"));
 document.querySelector(".race-stage").addEventListener("click", () => sheet.classList.remove("open"));
