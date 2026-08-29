@@ -43,6 +43,7 @@ function showDetail(runner, open = true) {
   if (open) sheet.classList.add("open");
 }
 const styleOrder = ["追込", "差し", "先行", "逃げ"];
+const bandStyleOrder = [...styleOrder].reverse();
 const distributionPatterns = {
   actual: [2, 3, 9, 4],
   even: [5, 5, 4, 4],
@@ -69,13 +70,14 @@ function renderDistribution(patternKey) {
   const groups = Object.fromEntries(styleOrder.map(style => [style, runners.filter(runner => assignments[runner.n] === style)]));
   const weights = styleOrder.map(style => Math.max(groups[style].length, 2));
   const totalWeight = weights.reduce((total, weight) => total + weight, 0);
-  boardCounts.textContent = styleOrder.map(style => `${style} ${groups[style].length}`).join("　｜　");
+  const displayOrder = isBandLayout ? bandStyleOrder : styleOrder;
+  boardCounts.textContent = displayOrder.map(style => `${style} ${groups[style].length}`).join("　｜　");
   horses.innerHTML = "";
   if (isBandLayout) {
-    const rowCounts = styleOrder.map(style => Math.ceil(groups[style].length / 5));
+    const rowCounts = displayOrder.map(style => Math.ceil(groups[style].length / 5));
     const totalRows = rowCounts.reduce((total, count) => total + count, 0);
     let usedRows = 0;
-    styleOrder.forEach((style, styleIndex) => {
+    displayOrder.forEach((style, styleIndex) => {
       const group = groups[style];
       const rows = rowCounts[styleIndex];
       const zoneTop = (usedRows / totalRows) * 100;
