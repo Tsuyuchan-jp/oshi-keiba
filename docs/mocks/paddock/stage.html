@@ -23,6 +23,16 @@
         <div class="horse-group horse-group--leader" data-style="leader"></div>
         <div class="horse-group horse-group--runner" data-style="runner"></div>
         <p class="stage-note">ウマ娘を選ぶと、右の選手紹介カードに詳細を表示します</p>
+        <section class="layout-editor" aria-label="配置調整モード">
+          <button class="layout-editor__toggle" type="button">配置を調整する</button>
+          <div class="layout-editor__panel" hidden>
+            <strong>配置調整モード</strong>
+            <p>ウマ娘をドラッグして位置を決めます。赤い縁は近すぎる組み合わせです。</p>
+            <p class="layout-editor__collision">重なり判定：確認中</p>
+            <div><button class="layout-editor__reset" type="button">初期配置に戻す</button><button class="layout-editor__copy" type="button">JSONをコピー</button></div>
+            <textarea class="layout-editor__output" readonly aria-label="配置JSON"></textarea>
+          </div>
+        </section>
       </section>
       <aside class="detail" aria-live="polite">
         <button class="detail-close" type="button" aria-label="詳細を閉じる">×</button>

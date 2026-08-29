@@ -74,3 +74,82 @@ styleOrder.forEach(style => groups[style].forEach((runner, index) => {
 }));
 document.querySelector(".detail-close").addEventListener("click", () => document.querySelector(".detail").classList.remove("open"));
 showDetail(runners[0]);
+
+const stage = document.querySelector(".paddock-stage");
+const toggleEditor = document.querySelector(".layout-editor__toggle");
+const editorPanel = document.querySelector(".layout-editor__panel");
+const editorOutput = document.querySelector(".layout-editor__output");
+const collisionLabel = document.querySelector(".layout-editor__collision");
+const layoutKey = "paddock-stage-layout-v1";
+let draggedHorse = null;
+let dragMoved = false;
+
+function captureLayout() {
+  return Object.fromEntries([...document.querySelectorAll(".horse")].map(horse => {
+    const group = horse.parentElement.getBoundingClientRect();
+    const item = horse.getBoundingClientRect();
+    return [horse.dataset.number, {
+      x: Math.round(((item.left - group.left) / group.width) * 1000) / 10,
+      y: Math.round(((item.top - group.top) / group.height) * 1000) / 10
+    }];
+  }));
+}
+function updateEditorOutput() { editorOutput.value = JSON.stringify(captureLayout(), null, 2); }
+function checkCollisions() {
+  const horses = [...document.querySelectorAll(".horse")];
+  const colliding = new Set();
+  horses.forEach((horse, index) => {
+    const a = horse.getBoundingClientRect();
+    const ax = a.left + a.width / 2, ay = a.top + a.height * .67;
+    horses.slice(index + 1).forEach(other => {
+      const b = other.getBoundingClientRect();
+      const bx = b.left + b.width / 2, by = b.top + b.height * .67;
+      if (Math.hypot(ax - bx, ay - by) < Math.min(a.width, b.width) * .68) { colliding.add(horse); colliding.add(other); }
+    });
+  });
+  horses.forEach(horse => horse.classList.toggle("is-colliding", colliding.has(horse)));
+  collisionLabel.textContent = colliding.size ? `重なり判定：${colliding.size}人を確認してください` : "重なり判定：問題ありません";
+}
+function applyStoredLayout() {
+  const saved = JSON.parse(localStorage.getItem(layoutKey) || "null");
+  if (!saved) return;
+  document.querySelectorAll(".horse").forEach(horse => {
+    const position = saved[horse.dataset.number];
+    if (!position) return;
+    horse.style.left = `calc(${position.x}% - ${Math.round(horse.offsetWidth / 2)}px)`;
+    horse.style.top = `${position.y}%`;
+    horse.style.bottom = "auto";
+  });
+}
+function persistLayout() { localStorage.setItem(layoutKey, JSON.stringify(captureLayout())); updateEditorOutput(); checkCollisions(); }
+toggleEditor.addEventListener("click", () => {
+  const editing = stage.classList.toggle("editing");
+  editorPanel.hidden = !editing;
+  toggleEditor.textContent = editing ? "配置調整を終了する" : "配置を調整する";
+  if (editing) { updateEditorOutput(); checkCollisions(); }
+});
+document.querySelector(".layout-editor__reset").addEventListener("click", () => { localStorage.removeItem(layoutKey); location.reload(); });
+document.querySelector(".layout-editor__copy").addEventListener("click", async () => {
+  updateEditorOutput();
+  const copyButton = document.querySelector(".layout-editor__copy");
+  try { await navigator.clipboard.writeText(editorOutput.value); copyButton.textContent = "コピーしました"; }
+  catch { editorOutput.focus(); editorOutput.select(); copyButton.textContent = "下のJSONをコピー"; }
+  setTimeout(() => copyButton.textContent = "JSONをコピー", 1200);
+});
+document.querySelectorAll(".horse").forEach(horse => {
+  horse.addEventListener("pointerdown", event => {
+    if (!stage.classList.contains("editing")) return;
+    draggedHorse = horse; dragMoved = false; horse.setPointerCapture(event.pointerId); event.preventDefault();
+  });
+  horse.addEventListener("pointermove", event => {
+    if (draggedHorse !== horse) return;
+    const group = horse.parentElement.getBoundingClientRect();
+    const left = Math.max(0, Math.min(group.width - horse.offsetWidth, event.clientX - group.left - horse.offsetWidth / 2));
+    const top = Math.max(0, Math.min(group.height - horse.offsetHeight, event.clientY - group.top - horse.offsetHeight * .67));
+    horse.style.left = `${left}px`; horse.style.top = `${top}px`; horse.style.bottom = "auto"; dragMoved = true;
+    checkCollisions();
+  });
+  horse.addEventListener("pointerup", () => { if (draggedHorse === horse) { draggedHorse = null; persistLayout(); } });
+  horse.addEventListener("click", event => { if (stage.classList.contains("editing") && dragMoved) event.preventDefault(); });
+});
+applyStoredLayout();
