@@ -1,4 +1,4 @@
-const runners = [
+const allRunners = [
   { n: 1, name: "スペシャルウィーク", trainer: "トレーナー I", style: "leader", label: "先行", odds: "4.8倍", skill: 32, note: "有効 22　金相当 4　戦略 +2", image: "petit_1001_100101_0010.png", comment: "持てる力を発揮して走ります！", apt: "芝 S　中距離 S　先行 A", stats: [1200, 950, 1100, 850, 1000] },
   { n: 2, name: "サイレンススズカ", trainer: "トレーナー M", style: "runner", label: "逃げ", odds: "3.6倍", skill: 31, note: "有効 21　金相当 4　戦略 +2", image: "petit_1002_100201_0010.png", comment: "大逃げで自分の形を作ります。", apt: "芝 A　中距離 A　逃げ S", stats: [1180, 1000, 1060, 780, 1120] },
   { n: 3, name: "トウカイテイオー", trainer: "トレーナー J", style: "leader", label: "先行", odds: "5.2倍", skill: 30, note: "有効 20　金相当 4　戦略 +2", image: "petit_1003_100301_0010.png", comment: "がんばります！", apt: "芝 A　中距離 A　先行 A", stats: [1190, 920, 1080, 880, 1050] },
@@ -18,6 +18,10 @@ const runners = [
   { n: 17, name: "シンボリルドルフ", trainer: "トレーナー R", style: "leader", label: "先行", odds: "15.8倍", skill: 27, note: "有効 19　金相当 3　戦略 +2", image: "petit_1017_101701_0010.png", comment: "皇帝の走りを見届けよう。", apt: "芝 A　中距離 A　先行 A", stats: [1140, 970, 1080, 850, 1030] },
   { n: 18, name: "エアグルーヴ", trainer: "トレーナー S", style: "runner", label: "逃げ", odds: "20.1倍", skill: 23, note: "有効 16　金相当 3　戦略 +1", image: "petit_1018_101801_0010.png", comment: "自分のリズムで走ります。", apt: "芝 A　中距離 A　逃げ A", stats: [1100, 900, 1050, 860, 1000] }
 ];
+const templateCount = Number(new URLSearchParams(location.search).get("template")) || 0;
+const runners = templateCount
+  ? allRunners.slice(0, templateCount).map((runner) => ({ ...runner, style: "leader", label: "先行" }))
+  : allRunners;
 const styleOrder = ["chaser", "betweener", "leader", "runner"];
 const imageUrl = image => `../../../public/images/umamusume/petit/${image}`;
 const statNames = ["スピード", "スタミナ", "パワー", "根性", "賢さ"];
@@ -88,6 +92,29 @@ const referenceLayout = {
   13: { x: 43.9, y: 41.5 }, 14: { x: 71, y: 42.2 }, 15: { x: 0.2, y: 11.4 }, 16: { x: 27.3, y: 14.2 },
   17: { x: 52.4, y: 13.3 }, 18: { x: 20.2, y: 11.4 }
 };
+const nineTemplate = [
+  { x: 9.2, y: 68 }, { x: 34.9, y: 66.4 }, { x: 60.1, y: 68 },
+  { x: 14.2, y: 42.7 }, { x: 43.9, y: 41.5 }, { x: 71, y: 42.2 },
+  { x: 0.2, y: 11.4 }, { x: 27.3, y: 14.2 }, { x: 52.4, y: 13.3 },
+];
+function templatePositions(count) {
+  if (count === 9) return nineTemplate;
+  const layers = Math.ceil(count / 3);
+  const base = Math.floor(count / layers);
+  const remainder = count % layers;
+  const positions = [];
+  let index = 0;
+  for (let layer = 0; layer < layers; layer += 1) {
+    const size = base + (layer < remainder ? 1 : 0);
+    const y = layers === 1 ? 48 : 67 - (56 * layer) / (layers - 1);
+    const xs = size === 1 ? [42] : size === 2 ? [12, 54] : [4, 34, 64];
+    const sway = [0, 3.5, -2.5, 2, -3][layer % 5];
+    for (let column = 0; column < size; column += 1) {
+      positions[index++] = { x: xs[column] + sway, y: y + (column % 2 === 0 ? 1.8 : -1.8) };
+    }
+  }
+  return positions;
+}
 let draggedHorse = null;
 let dragMoved = false;
 
@@ -163,4 +190,20 @@ document.querySelectorAll(".horse").forEach(horse => {
   horse.addEventListener("pointerup", () => { if (draggedHorse === horse) { draggedHorse = null; persistLayout(); } });
   horse.addEventListener("click", event => { if (stage.classList.contains("editing") && dragMoved) event.preventDefault(); });
 });
-if (!applyStoredLayout()) applyLayout(referenceLayout);
+if (templateCount) {
+  const positions = templatePositions(templateCount);
+  applyLayout(Object.fromEntries(runners.map((runner, index) => [runner.n, positions[index]])));
+  document.querySelector(".scoreboard__bottom").textContent = `人数別テンプレート確認　先行 ${templateCount}人`;
+  document.querySelectorAll(".guide, .horse-group").forEach((element) => {
+    if (!element.classList.contains("guide--leader") && !element.classList.contains("horse-group--leader")) element.hidden = true;
+  });
+} else if (!applyStoredLayout()) applyLayout(referenceLayout);
+document.querySelectorAll("[data-template-count]").forEach((button) => {
+  button.dataset.active = String(Number(button.dataset.templateCount) === templateCount);
+  button.addEventListener("click", () => {
+    const url = new URL(location.href);
+    const count = Number(button.dataset.templateCount);
+    if (count) url.searchParams.set("template", String(count)); else url.searchParams.delete("template");
+    location.href = url.toString();
+  });
+});
