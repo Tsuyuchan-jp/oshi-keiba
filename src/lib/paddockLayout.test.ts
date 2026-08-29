@@ -7,11 +7,15 @@ test("パドック配置は指定人数ぶん返す", () => {
 });
 
 test("代表人数は調整済みテンプレートを使う", () => {
+  assert.deepEqual(paddockGroupLayout(1)[0], { x: 45.1, y: 40.9, scale: 1 });
+  assert.deepEqual(paddockGroupLayout(2)[1], { x: 49.6, y: 33.3, scale: 1 });
   assert.deepEqual(paddockGroupLayout(3)[0], { x: 32, y: 68, scale: 1 });
+  assert.deepEqual(paddockGroupLayout(4)[3], { x: 55.4, y: 26.6, scale: 0.955 });
   assert.deepEqual(paddockGroupLayout(6)[5], { x: 49, y: 11.2, scale: 0.955 });
   const positions = paddockGroupLayout(9);
   assert.deepEqual(positions[0], { x: 20.5, y: 68, scale: 1 });
   assert.deepEqual(positions[8], { x: 57, y: 16.2, scale: 0.91 });
+  assert.deepEqual(paddockGroupLayout(11)[10], { x: 65.7, y: 13.1, scale: 0.9 });
   assert.deepEqual(paddockGroupLayout(12)[11], { x: 70.4, y: 16.4, scale: 0.9 });
 });
 
