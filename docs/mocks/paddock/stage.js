@@ -82,11 +82,11 @@ const editorOutput = document.querySelector(".layout-editor__output");
 const collisionLabel = document.querySelector(".layout-editor__collision");
 const layoutKey = "paddock-stage-layout-v1";
 const referenceLayout = {
-  1: { x: 5.7, y: 68 }, 2: { x: 0, y: 28.4 }, 3: { x: 33.2, y: 62.3 }, 4: { x: 50.6, y: 28.6 },
-  5: { x: 6.7, y: 5.9 }, 6: { x: 59.6, y: 68 }, 7: { x: 26.7, y: 12.2 }, 8: { x: 44.4, y: 32.9 },
-  9: { x: 15.6, y: 37.7 }, 10: { x: 10.1, y: 61 }, 11: { x: 3.2, y: 61 }, 12: { x: 6.7, y: 45.9 },
-  13: { x: 43.9, y: 32.6 }, 14: { x: 71.5, y: 36.6 }, 15: { x: 9.1, y: 9.7 }, 16: { x: 33.2, y: 6.6 },
-  17: { x: 60.8, y: 3.9 }, 18: { x: 10.4, y: 0 }
+  1: { x: 9.2, y: 68 }, 2: { x: 1.3, y: 34.2 }, 3: { x: 34.9, y: 66.4 }, 4: { x: 53.2, y: 33.5 },
+  5: { x: 7.5, y: 20.3 }, 6: { x: 60.1, y: 68 }, 7: { x: 24.2, y: 24.8 }, 8: { x: 44.4, y: 42.5 },
+  9: { x: 14.2, y: 42.7 }, 10: { x: 27.1, y: 63.2 }, 11: { x: 13.4, y: 67 }, 12: { x: 12, y: 60.5 },
+  13: { x: 43.9, y: 41.5 }, 14: { x: 71, y: 42.2 }, 15: { x: 0.2, y: 11.4 }, 16: { x: 27.3, y: 14.2 },
+  17: { x: 52.4, y: 13.3 }, 18: { x: 20.2, y: 11.4 }
 };
 let draggedHorse = null;
 let dragMoved = false;
