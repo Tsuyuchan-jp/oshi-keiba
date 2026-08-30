@@ -479,6 +479,21 @@ ${MEMBER_OVERLAY_CSS}
   text-align: center;
 }
 .cta:hover { filter: brightness(1.08); }
+.foot-actions { display: flex; align-items: center; gap: .5rem; }
+.paddock-cta {
+  display: inline-block;
+  padding: .62rem 1rem;
+  border: 1px solid var(--led-dim);
+  border-radius: 2px;
+  color: var(--led);
+  background: rgba(0, 232, 216, .08);
+  font-size: .83rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-align: center;
+  text-decoration: none;
+}
+.paddock-cta:hover { background: rgba(0, 232, 216, .16); }
 .foot {
   flex: 0 0 auto;
   display: flex;
@@ -557,12 +572,15 @@ ${MEMBER_OVERLAY_CSS}
   .j-pay { flex: 1 1 auto; }
   .j-fin { flex: 1.15 1 auto; width: auto; max-width: 22rem; margin: 0 auto; min-height: 21rem; }
   .foot { display: block; }
+  .foot-actions { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.25fr); }
   .cta {
     display: flex;
     justify-content: center;
     width: 100%;
     padding: .8rem 1rem;
   }
+  .foot-actions .cta { width: auto; }
+  .foot-actions .paddock-cta { display: flex; align-items: center; justify-content: center; }
 }
 @media (min-width: 900px) {
   .scene {
@@ -586,6 +604,7 @@ ${MEMBER_OVERLAY_CSS}
     overflow: hidden;
   }
   .foot { justify-content: flex-end; }
+  .foot-actions .cta { min-width: 11rem; }
   .scene:not([data-phase="voting"]) .foot { justify-content: flex-start; }
   .cta { min-width: 11rem; text-align: center; }
 }

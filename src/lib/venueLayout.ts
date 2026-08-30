@@ -380,6 +380,7 @@ export function venueBoardPage(opts: {
     : "";
   const logout = opts.user ? `<a href="/logout">ログアウト</a>` : "";
   const ctaHref = opts.user ? "/bet" : "/login";
+  const paddockLink = status === "voting" ? `<a href="/paddock">パドックを見る</a>` : "";
   const closeHm = venueCloseHm(opts.board.event.voting_closes_at);
   const flash = opts.flash.text
     ? flashHtml(opts.flash.text, opts.flash.error)
@@ -438,7 +439,7 @@ export function venueBoardPage(opts: {
       ? `<div class="foot"><span class="hint" id="phase-hint">${escapeHtml(venueClosedHint(opts.board))}</span></div>`
       : isSetup
         ? `<div class="foot"><span class="hint" id="phase-hint">投票開始までお待ちください。</span></div>`
-        : `<div class="foot"><a class="cta" href="${ctaHref}">馬券を買う</a></div>`;
+        : `<div class="foot"><div class="foot-actions"><a class="paddock-cta" href="/paddock">パドックを見る</a><a class="cta" href="${ctaHref}">馬券を買う</a></div></div>`;
   const head = sheetHeadHtml(published);
   return `<!doctype html>
 <html lang="ja">
@@ -468,6 +469,7 @@ export function venueBoardPage(opts: {
           </div>
           <button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
           <div class="more-pop" id="more-pop">
+            ${paddockLink}
             <a href="#" id="howto-open">使い方</a>
             ${logout}
             <a href="/admin">管理者</a>
