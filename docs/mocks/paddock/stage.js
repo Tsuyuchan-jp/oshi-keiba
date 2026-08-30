@@ -128,8 +128,19 @@ function templatePositions(count) {
 }
 function distributionTemplateLayout() {
   return Object.fromEntries(styleOrder.flatMap(style => {
-    const positions = templatePositions(groups[style].length);
+    const positions = spreadTemplateAcrossGroup(templatePositions(groups[style].length));
     return groups[style].map((runner, index) => [runner.n, positions[index]]);
+  }));
+}
+function spreadTemplateAcrossGroup(positions) {
+  if (positions.length < 2) return positions;
+  const xs = positions.map(position => position.x);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  if (minX === maxX) return positions;
+  return positions.map(position => ({
+    ...position,
+    x: 12 + ((position.x - minX) / (maxX - minX)) * 76
   }));
 }
 let draggedHorse = null;
