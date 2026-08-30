@@ -21,7 +21,11 @@
 .scoreboard__top,
 .scoreboard p { padding: 4px 8px; font-size: 10px; }
 .scoreboard__top b { font-size: 12px; }
-.scoreboard__top span { max-width: 72%; overflow: hidden; text-overflow: ellipsis; }
+.scoreboard__race { max-width: 26%; overflow: hidden; text-overflow: ellipsis; }
+.scoreboard__actions { gap: 4px; }
+.paddock-site-nav { gap: 5px; }
+.paddock-site-nav a { font-size: 9px; }
+.paddock-more-btn { font-size: 16px; }
 .scoreboard h1 { padding: 9px 8px 7px; font-size: 18px; }
 
 .paddock-nav {

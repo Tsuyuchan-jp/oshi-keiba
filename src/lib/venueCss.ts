@@ -52,6 +52,9 @@ a { color: inherit; }
   gap: .35rem;
   flex: 0 0 auto;
 }
+.site-nav { display: flex; align-items: center; gap: .65rem; white-space: nowrap; }
+.site-nav a { color: var(--led-dim); font-size: .78rem; text-decoration: none; }
+.site-nav a.on { color: var(--member-accent); font-weight: 700; }
 ${MEMBER_OVERLAY_CSS}
 .led-meta {
   display: flex;

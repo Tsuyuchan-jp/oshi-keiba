@@ -380,7 +380,6 @@ export function venueBoardPage(opts: {
     : "";
   const logout = opts.user ? `<a href="/logout">ログアウト</a>` : "";
   const ctaHref = opts.user ? "/bet" : "/login";
-  const paddockLink = status === "voting" ? `<a href="/paddock">パドックを見る</a>` : "";
   const closeHm = venueCloseHm(opts.board.event.voting_closes_at);
   const flash = opts.flash.text
     ? flashHtml(opts.flash.text, opts.flash.error)
@@ -467,9 +466,13 @@ export function venueBoardPage(opts: {
             ${metaNow}
             ${metaClose}
           </div>
+          <nav class="site-nav" aria-label="ページ移動">
+            <a class="on" href="/">場内</a>
+            <a href="/paddock">パドック</a>
+            <a href="/bet">窓口</a>
+          </nav>
           <button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
           <div class="more-pop" id="more-pop">
-            ${paddockLink}
             <a href="#" id="howto-open">使い方</a>
             ${logout}
             <a href="/admin">管理者</a>
