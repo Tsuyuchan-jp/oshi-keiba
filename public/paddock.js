@@ -5,6 +5,7 @@
   const patterns = { 1: [1], 2: [1, 1], 3: [1, 1, 1], 4: [2, 2], 5: [2, 1, 2], 6: [2, 2, 2], 7: [3, 2, 2], 8: [3, 2, 3], 9: [3, 3, 3], 10: [4, 3, 3], 11: [4, 3, 4], 12: [4, 4, 4] };
   const groups = document.querySelector("#horse-groups");
   const detail = document.querySelector("#detail");
+  const statCaps = { speed: 2300, stamina: 1800, power: 1700, guts: 1700, wisdom: 1800 };
   let backdrop;
   let shotDialog;
   const esc = (v) => String(v ?? "").replace(/[&<>\"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -22,9 +23,9 @@
     if (!h.stats) return "<p>能力データは未登録です</p>";
     return [["スピード", "speed"], ["スタミナ", "stamina"], ["パワー", "power"], ["根性", "guts"], ["賢さ", "wisdom"]].map(([name, key]) => {
       const value = Number(h.stats[key]);
-      const target = Number(h.statTargets?.[key]);
-      const width = Number.isFinite(target) && target > 0 ? Math.min(100, value / target * 80) : Math.min(100, value / 12);
-      const marker = Number.isFinite(target) && target > 0 ? '<i class="bar__target" aria-hidden="true"></i>' : "";
+      const cap = statCaps[key];
+      const width = Number.isFinite(value) && cap ? Math.min(100, value / cap * 100) : 0;
+      const marker = cap ? '<i class="bar__target" aria-hidden="true"></i>' : "";
       return `<div class="stat"><span>${name}</span><i class="bar">${marker}<i class="bar__value" style="width:${width}%"></i></i><b>${value}</b></div>`;
     }).join("");
   };
