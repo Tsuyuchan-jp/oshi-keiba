@@ -1,0 +1,78 @@
+/* 最終スマホモックの競馬場レイアウト。PC版のパドック表示には適用しない。 */
+.paddock-stage {
+  display: block;
+  min-height: 100svh;
+  background: #80d5ff url('/images/paddock/racecourse-side-stage-mobile-v2.png') center -52px / auto calc(100% + 72px) no-repeat;
+}
+
+.race-view {
+  height: 100svh;
+  min-height: 650px;
+}
+
+.scoreboard {
+  top: max(calc(env(safe-area-inset-top) + 18px), clamp(56px, 9svh, 82px));
+  width: min(84vw, 350px);
+  min-width: 0;
+  border-width: 4px;
+  border-bottom-width: 7px;
+}
+
+.scoreboard__top,
+.scoreboard p { padding: 4px 8px; font-size: 10px; }
+.scoreboard__top b { font-size: 12px; }
+.scoreboard__top span { max-width: 72%; overflow: hidden; text-overflow: ellipsis; }
+.scoreboard h1 { padding: 9px 8px 7px; font-size: 18px; }
+
+.horse-groups {
+  inset: 35% 2% 7%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.horse-group {
+  flex: var(--band-rows, 1) 1 0;
+  padding: 0;
+}
+
+.guide {
+  z-index: 3;
+  top: 50%;
+  left: 0;
+  width: auto;
+  transform: translateY(-50%);
+}
+
+.guide b {
+  min-width: 52px;
+  padding: 3px 5px;
+  border-width: 1px;
+  border-radius: 6px;
+  font-size: 10px;
+}
+
+.group-rows {
+  height: 100%;
+  padding-left: 14%;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.horse-row { min-height: 0; transform: translateX(var(--row-shift, 0)); }
+.horse { width: var(--horse-width, 84px); height: 116px; }
+.horse img { height: 89px; }
+.horse__number { top: 2px; left: 0; width: 23px; height: 23px; font-size: 11px; }
+.horse__name { display: none; max-width: 96px; margin: -4px auto 0; padding: 1px 5px; font-size: 9px; }
+.horse.selected .horse__name { display: block; }
+
+.stage-note {
+  right: 0;
+  bottom: 6px;
+  left: 0;
+  padding: 4px;
+  border-radius: 0;
+  background: transparent;
+  text-align: center;
+  font-size: 10px;
+}

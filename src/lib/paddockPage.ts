@@ -23,6 +23,7 @@ export function paddockPage(view: PaddockView): string {
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>${escapeHtml(view.title)}｜出走ウマ娘紹介</title>
   <link rel="stylesheet" href="/paddock.css">
+  <link rel="stylesheet" href="/paddock-mobile.css" media="(max-width: 700px)">
 </head><body class="paddock-page">
 <main class="paddock-stage">
   <section class="race-view" aria-label="出走ウマ娘一覧">

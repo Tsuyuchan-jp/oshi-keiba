@@ -9,8 +9,10 @@
   let backdrop;
   let shotDialog;
   const esc = (v) => String(v ?? "").replace(/[&<>\"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  const rowsFor = (horses) => {
-    const p = patterns[horses.length] || [Math.ceil(horses.length / 3), Math.ceil(horses.length / 3), horses.length - Math.ceil(horses.length / 3) * 2].filter(Boolean);
+  const rowsFor = (horses, mobile = false) => {
+    const p = mobile
+      ? Array.from({ length: Math.ceil(horses.length / 5) }, (_, index) => Math.min(5, horses.length - index * 5))
+      : patterns[horses.length] || [Math.ceil(horses.length / 3), Math.ceil(horses.length / 3), horses.length - Math.ceil(horses.length / 3) * 2].filter(Boolean);
     let at = 0;
     return p.map((n) => horses.slice(at, at += n));
   };
@@ -77,19 +79,27 @@
     }
   };
   const renderGroups = () => {
+    const mobile = matchMedia("(max-width:700px)").matches;
     const active = styles.map((style) => ({ style, horses: view.horses.filter((h) => h.style === style) })).filter(({ horses }) => horses.length);
+    const displayGroups = mobile ? [...active].reverse() : active;
     groups.innerHTML = "";
-    groups.style.gridTemplateColumns = active.map(({ horses }) => `${2 + horses.length}fr`).join(" ");
-    active.forEach(({ style, horses }) => {
+    if (mobile) groups.style.removeProperty("grid-template-columns");
+    else groups.style.gridTemplateColumns = active.map(({ horses }) => `${2 + horses.length}fr`).join(" ");
+    displayGroups.forEach(({ style, horses }) => {
       const group = document.createElement("section");
       group.className = `horse-group ${style}`;
       group.innerHTML = `<div class="guide"><b>${labels[style]}</b></div><div class="group-rows"></div>`;
       const rows = group.querySelector(".group-rows");
-      rowsFor(horses).forEach((row, index) => {
+      const horseRows = rowsFor(horses, mobile);
+      group.style.setProperty("--band-rows", String(horseRows.length));
+      horseRows.forEach((row, index) => {
         const line = document.createElement("div");
         line.className = "horse-row";
         const offsetCounts = new Set([2, 4, 6, 9, 12]);
-        line.style.setProperty("--row-shift", offsetCounts.has(horses.length) ? `${index % 2 ? "8" : "-8"}%` : "0");
+        line.style.setProperty("--row-shift", !mobile && offsetCounts.has(horses.length) ? `${index % 2 ? "8" : "-8"}%` : "0");
+        if (mobile) {
+          line.style.setProperty("--horse-width", row.length === 5 ? "min(64px, 17vw)" : row.length === 4 ? "min(76px, 20vw)" : "84px");
+        }
         row.forEach((h) => {
           const button = document.createElement("button");
           button.className = "horse";
