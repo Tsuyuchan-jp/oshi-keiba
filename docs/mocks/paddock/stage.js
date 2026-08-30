@@ -137,7 +137,7 @@ const calculatedRowPatterns = {
   5: [2, 1, 2], 6: [2, 2, 2], 7: [3, 2, 2], 8: [3, 2, 3],
   9: [3, 3, 3], 10: [4, 3, 3], 11: [4, 3, 4], 12: [4, 4, 4]
 };
-const calculatedRowShifts = [-7, 6, -4];
+const calculatedRowShifts = ["-8%", "8%", "-8%"];
 function applyCalculatedDistributionLayout() {
   styleOrder.forEach(style => {
     const group = document.querySelector(`[data-style="${style}"]`);
@@ -158,7 +158,7 @@ function applyCalculatedDistributionLayout() {
     rows.forEach((count, rowIndex) => {
       const row = document.createElement("div");
       row.className = "horse-group__auto-row";
-      row.style.setProperty("--row-shift", `${calculatedRowShifts[rowIndex] || 0}px`);
+      row.style.setProperty("--row-shift", calculatedRowShifts[rowIndex] || "0");
       horses.slice(cursor, cursor + count).forEach(horse => row.append(horse));
       cursor += count;
       layout.append(row);
