@@ -306,7 +306,7 @@ export default {
             const apt = scoreInput.aptitudes;
             const previousSkillNames = scoreInput.skillNames;
             const previousSkillIds = scoreInput.skillIds;
-            const skillNames = String(form.get("skill_names") ?? "").split(/\r?\n|,|\u3001/).map((name) => name.trim()).filter(Boolean);
+            const skillNames = String(form.get("skill_names") ?? "").split(/\r?\n/).map((name) => name.trim()).filter(Boolean);
             scoreInput = parseHorseScoreInput({ stats: { speed: Number(form.get("stat_speed")), stamina: Number(form.get("stat_stamina")), power: Number(form.get("stat_power")), guts: Number(form.get("stat_guts")), wisdom: Number(form.get("stat_wisdom")) }, aptitudes: { turf: String(form.get("apt_turf") ?? apt.turf), dirt: String(form.get("apt_dirt") ?? apt.dirt), short: String(form.get("apt_short") ?? apt.short), mile: String(form.get("apt_mile") ?? apt.mile), medium: String(form.get("apt_medium") ?? apt.medium), long: String(form.get("apt_long") ?? apt.long), nige: String(form.get("apt_nige") ?? apt.nige), senkou: String(form.get("apt_senkou") ?? apt.senkou), sashi: String(form.get("apt_sashi") ?? apt.sashi), oikomi: String(form.get("apt_oikomi") ?? apt.oikomi) }, skillNames, skillIds: skillNames.map((name, index) => previousSkillNames[index] === name ? previousSkillIds[index] ?? null : null), styleKey: styleRaw });
           } else if (scoreInput) {
             scoreInput = parseHorseScoreInput({
