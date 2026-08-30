@@ -493,6 +493,7 @@ export function adminRegisterPage(
     benchMeta = "飛び入り禁止";
   }
   let nextAdd = "";
+  let editModal = "";
   if (canSetup && edit && !edit.horse.scratched) {
     const p = horseSheetParts(edit.horse);
     const scoreIn = parseHorseScoreInput(edit.horse.score_input);
@@ -546,11 +547,20 @@ export function adminRegisterPage(
               </div>
               <div class="ctas">
                 <button type="submit" class="primary">更新</button>
+                <button type="button" id="horse-edit-cancel">キャンセル</button>
               </div>
             </div>
           </div>
         </div>
       </form>`;
+    editModal = `<dialog class="modal horse-edit-modal" id="horse-edit-modal"><h2>出走内容を編集</h2>${benchInner}</dialog>`;
+    benchInner = `<div class="reg-bench reg-detail" id="bench">
+        ${edit.horse.shot_key ? `<button type="button" class="reg-shot-btn" id="shot-open" aria-label="スクリーンショットを大きく見る"><img class="reg-shot" src="/admin/shot/${escapeHtml(edit.horse.id)}" alt=""></button>` : `<div class="reg-shot empty">スクショなし</div>`}
+        <div><div class="reg-detail-names"><strong>${escapeHtml(p.umaName)}</strong><span>${escapeHtml(p.runnerName)}</span><span>${escapeHtml(styleLabel(scoreIn?.styleKey))}</span></div>
+          ${scoreIn ? registerMaterialsHtml(scoreIn, scoreIn.styleKey && setup ? effectiveIdsFromScoreSetup(setup, scoreIn.styleKey) : null, strategic.skills, dismissedIds, false) : ""}
+          <div class="reg-preview"><span class="lab">評価点</span><span class="num">${escapeHtml(String(edit.horse.strength))}</span></div>
+        </div></div>`;
+    nextAdd = `<button type="button" class="reg-next" id="horse-edit-open">編集</button>`;
   }
   const body = `${adminPageHero("出走登録", board.event.status, {
       meta: `<span class="page-hero-meta" id="count">${board.horses.length} / 18</span>`,
@@ -573,6 +583,7 @@ export function adminRegisterPage(
         ${benchInner}
       </section>
     </div>
+    ${editModal}
     <dialog class="shot-dlg shot-dlg-left" id="shot-dlg"><div class="shot-scroller fit" id="shot-scroller"><img id="shot-full" alt=""></div></dialog>
     ${strategicSkillsModalHtml()}
     <dialog class="modal" id="drop-horse-modal">
@@ -589,6 +600,9 @@ export function adminRegisterPage(
     ${bindDlgScript()}
     <script>
       const dlg = document.getElementById("shot-dlg");
+      const editDlg = document.getElementById("horse-edit-modal");
+      document.getElementById("horse-edit-open")?.addEventListener("click", () => editDlg?.showModal());
+      document.getElementById("horse-edit-cancel")?.addEventListener("click", () => editDlg?.close());
       const full = document.getElementById("shot-full");
       const sc = document.getElementById("shot-scroller");
       document.getElementById("shot-open")?.addEventListener("click", () => {

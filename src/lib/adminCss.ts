@@ -937,6 +937,13 @@ body.register-page .work .ctas a { align-self: center; font-size: .85rem; color:
   white-space: nowrap;
 }
 .reg-next:hover { background: #245d96; color: var(--admin-surface); }
+.reg-next { border: 0; cursor: pointer; }
+.reg-detail { align-items: start; }
+.reg-detail-names { display: flex; flex-wrap: wrap; align-items: baseline; gap: .35rem .7rem; margin-bottom: .65rem; }
+.reg-detail-names strong { font-size: 1.05rem; }
+.reg-detail-names span { font-size: .78rem; color: var(--admin-muted); }
+.horse-edit-modal { --admin-modal-max-width: 58rem; }
+.horse-edit-modal #bench { max-height: min(68dvh, 44rem); overflow: auto; }
 .odds-meta { font-size: .72rem; color: var(--admin-muted); }
 @media (max-width: 1199px) {
   body.settings-page .settings-top { grid-template-columns: 1fr; }
