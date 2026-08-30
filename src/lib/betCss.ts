@@ -8,6 +8,19 @@ export const BET_CSS = `
 ${MEMBER_QUIET_FRAME_CSS}
 ${MEMBER_OVERLAY_CSS}
 :root { --shell-max: 36rem; }
+.scene-bg {
+  background-color: #0a1218;
+  background-image: linear-gradient(180deg, var(--veil-top), var(--veil-bot)), var(--scene-portrait);
+  background-position: center bottom, center bottom;
+  background-size: cover, cover;
+  background-repeat: no-repeat;
+}
+.scene[data-slot="day"] { --veil-top: rgba(20, 28, 36, .18); --veil-bot: rgba(12, 18, 16, .28); --scene-portrait: url("/venue/day-9x16.png"); --scene-landscape: url("/venue/day-16x9.png"); }
+.scene[data-slot="dusk"] { --veil-top: rgba(24, 12, 8, .28); --veil-bot: rgba(18, 10, 8, .38); --scene-portrait: url("/venue/dusk-9x16.png"); --scene-landscape: url("/venue/dusk-16x9.png"); }
+.scene[data-slot="night"] { --veil-top: rgba(5, 6, 10, .38); --veil-bot: rgba(5, 8, 6, .48); --scene-portrait: url("/venue/night-9x16.png"); --scene-landscape: url("/venue/night-16x9.png"); }
+@media (min-width: 900px) {
+  .scene-bg { background-image: linear-gradient(180deg, var(--veil-top), var(--veil-bot)), var(--scene-landscape); background-position: center, center; }
+}
 .nav a {
   color: var(--member-muted);
   text-decoration: none;

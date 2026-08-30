@@ -72,6 +72,32 @@ function shellFoot(): string {
   ${memberMoreScript()}`;
 }
 
+function betSceneSlotScript(): string {
+  return `<script>
+(() => {
+  const scene = document.querySelector(".scene");
+  const slot = new URLSearchParams(location.search).get("slot");
+  function fromClock() {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Tokyo", hour: "numeric", hour12: false,
+    }).formatToParts(new Date());
+    const hour = Number(parts.find((part) => part.type === "hour")?.value ?? 0);
+    if (hour >= 6 && hour < 16) return "day";
+    if (hour >= 16 && hour < 19) return "dusk";
+    return "night";
+  }
+  function applySlot() {
+    if (!scene) return;
+    scene.dataset.slot = slot === "day" || slot === "dusk" || slot === "night"
+      ? slot
+      : fromClock();
+  }
+  applySlot();
+  setInterval(applySlot, 10000);
+})();
+</script>`;
+}
+
 function pageWrap(opts: {
   user: UserRow;
   eventStatus: EventStatus;
@@ -90,7 +116,7 @@ function pageWrap(opts: {
   <style>${BET_CSS}</style>
 </head>
 <body>
-  <div class="scene">
+  <div class="scene" data-slot="night">
     <div class="scene-bg" aria-hidden="true"></div>
     <div class="app-shell">
       ${shellChrome({ user: opts.user, eventStatus: opts.eventStatus })}
@@ -98,6 +124,7 @@ function pageWrap(opts: {
     </div>
   </div>
   ${shellFoot()}
+  ${betSceneSlotScript()}
   ${opts.scripts ?? ""}
 </body>
 </html>`;
