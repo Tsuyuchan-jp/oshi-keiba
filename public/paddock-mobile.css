@@ -25,7 +25,11 @@
 .scoreboard h1 { padding: 9px 8px 7px; font-size: 18px; }
 
 .horse-groups {
-  inset: 35% 2% 7%;
+  --horse-image-width: min(84px, 22vw);
+  --horse-image-height: 89px;
+  --horse-box-height: 102px;
+  --horse-number-offset: min(42px, 11vw);
+  inset: 31% 2% 4%;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -60,17 +64,31 @@
 }
 
 .horse-row { min-height: 0; transform: translateX(var(--row-shift, 0)); }
-.horse { width: var(--horse-width, 84px); height: 116px; }
+.horse { width: var(--horse-width, 84px); height: var(--horse-box-height); }
 .horse img {
-  width: min(84px, 22vw);
+  width: var(--horse-image-width);
   max-width: none;
-  height: 89px;
+  height: var(--horse-image-height);
   margin-left: 50%;
   transform: translateX(-50%) scaleX(-1);
 }
-.horse__number { top: 2px; left: calc(50% - min(42px, 11vw)); width: 23px; height: 23px; font-size: 11px; }
+.horse__number { top: 2px; left: calc(50% - var(--horse-number-offset)); width: 23px; height: 23px; font-size: 11px; }
 .horse__name { display: none; max-width: 96px; margin: -4px auto 0; padding: 1px 5px; font-size: 9px; }
 .horse.selected .horse__name { display: block; }
+
+.horse-groups[data-mobile-density="roomy"] {
+  --horse-image-width: min(88px, 23vw);
+  --horse-image-height: 93px;
+  --horse-box-height: 112px;
+  --horse-number-offset: min(44px, 11.5vw);
+}
+
+.horse-groups[data-mobile-density="dense"] {
+  --horse-image-width: min(72px, 19vw);
+  --horse-image-height: 78px;
+  --horse-box-height: 94px;
+  --horse-number-offset: min(36px, 9.5vw);
+}
 
 .stage-note {
   right: 0;

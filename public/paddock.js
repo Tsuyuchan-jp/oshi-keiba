@@ -83,8 +83,14 @@
     const active = styles.map((style) => ({ style, horses: view.horses.filter((h) => h.style === style) })).filter(({ horses }) => horses.length);
     const displayGroups = mobile ? [...active].reverse() : active;
     groups.innerHTML = "";
-    if (mobile) groups.style.removeProperty("grid-template-columns");
-    else groups.style.gridTemplateColumns = active.map(({ horses }) => `${2 + horses.length}fr`).join(" ");
+    if (mobile) {
+      groups.style.removeProperty("grid-template-columns");
+      const totalRows = displayGroups.reduce((total, { horses }) => total + rowsFor(horses, true).length, 0);
+      groups.dataset.mobileDensity = totalRows <= 4 ? "roomy" : totalRows === 5 ? "normal" : "dense";
+    } else {
+      delete groups.dataset.mobileDensity;
+      groups.style.gridTemplateColumns = active.map(({ horses }) => `${2 + horses.length}fr`).join(" ");
+    }
     displayGroups.forEach(({ style, horses }) => {
       const group = document.createElement("section");
       group.className = `horse-group ${style}`;
