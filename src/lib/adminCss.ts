@@ -963,7 +963,7 @@ body.register-page .work .ctas a { align-self: center; font-size: .85rem; color:
 .dress-option img { width: 2.7rem; height: 2.7rem; object-fit: contain; }
 .detail-dress { grid-template-columns: 2.2rem minmax(0, 1fr); min-width: 0; cursor: default; }
 .detail-dress img { width: 2.2rem; height: 2.2rem; }
-.detail-dress--empty { display: grid; place-items: center; min-height: 2.7rem; padding: .25rem; border: 1px dashed var(--admin-line-strong); border-radius: 6px; color: var(--admin-muted); background: var(--admin-surface-muted); font-size: .7rem; white-space: nowrap; }
+.detail-dress--empty { display: grid; grid-template-columns: 1fr; place-items: center; min-height: 2.7rem; padding: .25rem; border: 1px dashed var(--admin-line-strong); border-radius: 6px; color: var(--admin-muted); background: var(--admin-surface-muted); font-size: .7rem; white-space: nowrap; }
 .dress-picker .note { grid-column: 1 / -1; margin: 0; }
 .edit-extra { margin-top: .8rem; padding: .65rem; border: 1px solid var(--admin-line-subtle); border-radius: 8px; background: var(--admin-surface-muted); }
 .edit-extra summary { cursor: pointer; font-weight: 700; font-size: .85rem; }
