@@ -91,6 +91,19 @@ export async function tryAdminGet(
     });
   }
 
+  const trainerIcon = path.match(/^\/admin\/trainer-icon\/([^/]+)$/);
+  if (trainerIcon) {
+    const gate = await requireAdmin(request, env);
+    if (gate instanceof Response) return gate;
+    const board = await loadBoard(env.DB);
+    const horse = board.horses.find((h) => h.horse.id === trainerIcon[1]);
+    const key = horse?.horse.trainer_icon_key;
+    if (!key || !env.SHOTS) return new Response("画像がありません", { status: 404 });
+    const obj = await env.SHOTS.get(key);
+    if (!obj) return new Response("画像がありません", { status: 404 });
+    return new Response(obj.body, { headers: { "Content-Type": obj.httpMetadata?.contentType || "image/jpeg", "Cache-Control": "private, max-age=300" } });
+  }
+
   const pages = new Set([
     "/admin",
     "/admin/register",

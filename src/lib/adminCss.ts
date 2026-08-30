@@ -944,6 +944,11 @@ body.register-page .work .ctas a { align-self: center; font-size: .85rem; color:
 .reg-detail-names span { font-size: .78rem; color: var(--admin-muted); }
 .reg-detail-names .detail-runner { font-size: .88rem; font-weight: 700; color: var(--admin-ink); }
 .reg-detail-names .detail-style { font-size: .84rem; font-weight: 700; color: var(--admin-accent); background: #e8f0fa; padding: .12rem .42rem; border-radius: 999px; }
+.paddock-profile { display: flex; align-items: center; gap: .55rem; margin: .15rem 0 .75rem; padding: .5rem .6rem; background: var(--admin-surface-muted); border: 1px solid var(--admin-line-subtle); border-radius: 8px; }
+.paddock-profile img, .paddock-profile-placeholder { width: 2.35rem; height: 2.35rem; border-radius: 50%; object-fit: cover; flex: 0 0 auto; }
+.paddock-profile-placeholder { display: grid; place-items: center; background: var(--admin-line-subtle); color: var(--admin-muted); font-size: .55rem; text-align: center; line-height: 1.2; }
+.paddock-profile-k { display: block; color: var(--admin-muted); font-size: .68rem; }
+.paddock-profile p { margin: .05rem 0 0; font-size: .82rem; white-space: pre-wrap; }
 .horse-edit-modal { --admin-modal-max-width: 70rem; position: relative; }
 .horse-edit-modal #bench { max-height: min(68dvh, 44rem); overflow: auto; }
 .modal-close { position: absolute; top: .7rem; right: .8rem; width: 2rem; height: 2rem; padding: 0; border-radius: 50%; background: var(--admin-surface-muted); color: var(--admin-muted); font-size: 1.35rem; line-height: 1; }
