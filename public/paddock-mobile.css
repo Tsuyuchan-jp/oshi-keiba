@@ -20,6 +20,7 @@
 
 .scoreboard__top,
 .scoreboard p { padding: 4px 8px; font-size: 10px; }
+.scoreboard { border-width: 1px; border-bottom-width: 1px; }
 .scoreboard__top b { font-size: 12px; }
 .scoreboard__race { max-width: 26%; overflow: hidden; text-overflow: ellipsis; }
 .scoreboard__actions { gap: 4px; }
