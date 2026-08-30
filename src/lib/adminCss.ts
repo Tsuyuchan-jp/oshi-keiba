@@ -944,6 +944,13 @@ body.register-page .work .ctas a { align-self: center; font-size: .85rem; color:
 .reg-detail-names span { font-size: .78rem; color: var(--admin-muted); }
 .horse-edit-modal { --admin-modal-max-width: 58rem; }
 .horse-edit-modal #bench { max-height: min(68dvh, 44rem); overflow: auto; }
+.edit-extra { margin-top: .8rem; padding: .65rem; border: 1px solid var(--admin-line-subtle); border-radius: 8px; background: var(--admin-surface-muted); }
+.edit-extra summary { cursor: pointer; font-weight: 700; font-size: .85rem; }
+.edit-stat-grid, .edit-apt-grid { display: grid; gap: .5rem; margin-top: .65rem; }
+.edit-stat-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.edit-apt-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.edit-extra label { display: grid; gap: .18rem; margin-top: .55rem; font-size: .75rem; color: var(--admin-muted); }
+.edit-extra input, .edit-extra select, .edit-extra textarea { width: 100%; padding: .3rem .4rem; border: 1px solid var(--admin-line-strong); border-radius: 5px; background: var(--admin-surface); color: var(--admin-ink); }
 .odds-meta { font-size: .72rem; color: var(--admin-muted); }
 @media (max-width: 1199px) {
   body.settings-page .settings-top { grid-template-columns: 1fr; }
@@ -980,6 +987,7 @@ body.register-page .work .ctas a { align-self: center; font-size: .85rem; color:
   body.settings-page .settings-scroll { overflow: visible; }
   .set-row { grid-template-columns: 1fr; }
   .set-targets, .set-metrics { grid-template-columns: 1fr 1fr; }
+  .edit-stat-grid, .edit-apt-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   body.odds-page { overflow: auto; }
   body.odds-page .dash { height: auto; min-height: 100dvh; }
   body.odds-page .main { height: auto; overflow: visible; }

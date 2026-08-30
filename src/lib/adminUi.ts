@@ -1,6 +1,7 @@
 import { escapeHtml } from "./http";
 import { horseSheetParts } from "./horseName";
-import { parseHorseScoreInput, STYLE_OPTIONS } from "./horseScoreInput";
+import { parseHorseScoreInput, STYLE_OPTIONS, type HorseScoreInput } from "./horseScoreInput";
+import { findUmaDress } from "./umaDress";
 import { scoreFromHorse } from "./scoreFromHorse";
 import { eventScoreSetup, numberByHorseId } from "./store";
 import type { Board, EventRow, HorseBoard, UserRow, BetRow } from "./store";
@@ -505,10 +506,14 @@ export function adminRegisterPage(
     const manualBox =
       edit.horse.seed_source === "manual" &&
       !(auto && auto.strength === edit.horse.strength);
+    const dress = findUmaDress(edit.horse.chara_id, edit.horse.dress_id);
+    const stat = (key: keyof HorseScoreInput["stats"], label: string) => `<label>${label}<input name="stat_${key}" type="number" min="0" value="${scoreIn?.stats[key] ?? 0}" required></label>`;
+    const rank = (key: keyof HorseScoreInput["aptitudes"], label: string) => `<label>${label}<select name="apt_${key}">${["S", "A", "B", "C", "D", "E", "F", "G"].map((v) => `<option value="${v}"${scoreIn?.aptitudes[key] === v ? " selected" : ""}>${v}</option>`).join("")}</select></label>`;
+    const editExtra = scoreIn ? `<input type="hidden" name="score_edit" value="1"><details class="edit-extra" open><summary>能力・適性・スキルを編集</summary><div class="edit-stat-grid">${stat("speed", "スピード")}${stat("stamina", "スタミナ")}${stat("power", "パワー")}${stat("guts", "根性")}${stat("wisdom", "賢さ")}</div><div class="edit-apt-grid">${rank("turf", "芝")}${rank("dirt", "ダート")}${rank("short", "短距離")}${rank("mile", "マイル")}${rank("medium", "中距離")}${rank("long", "長距離")}${rank("nige", "逃げ")}${rank("senkou", "先行")}${rank("sashi", "差し")}${rank("oikomi", "追込")}</div><label>スキル（改行または「、」で区切る）<textarea name="skill_names" rows="3">${escapeHtml(scoreIn.skillNames.join("、"))}</textarea></label></details>` : "";
     benchTitle = "直し";
     benchMeta = escapeHtml(p.umaName);
     nextAdd = `<a class="reg-next" href="/admin/register">＋ 次の1頭を登録</a>`;
-    benchInner = `<form method="post" action="/admin/horse-edit" id="horse-edit">
+    benchInner = `<form method="post" action="/admin/horse-edit" enctype="multipart/form-data" id="horse-edit">
         <input type="hidden" name="horse_id" value="${escapeHtml(edit.horse.id)}">
         <div class="table-scroll" id="bench">
           <div class="reg-bench">
@@ -517,6 +522,8 @@ export function adminRegisterPage(
               <div class="reg-names">
                 <label>ウマ娘名<input name="uma_name" id="uma-name" value="${escapeHtml(p.umaName)}" required maxlength="40"></label>
                 <label>出走者<input name="runner_name" id="runner-name" value="${escapeHtml(p.runnerName)}" required maxlength="40"></label>
+                <label>衣装名<input name="dress_name" value="${escapeHtml(dress?.dressName ?? "")}" maxlength="80"></label>
+                <label>スクリーンショット（選択時のみ差し替え）<input name="shot" type="file" accept="image/png,image/jpeg,image/webp"></label>
               </div>
               ${styleSeg(scoreIn?.styleKey)}
               ${
@@ -532,6 +539,7 @@ export function adminRegisterPage(
                     )
                   : ""
               }
+              ${editExtra}
               <div class="reg-preview">
                 <span class="lab">評価点</span>
                 <span class="num">${escapeHtml(String(edit.horse.strength))}</span>

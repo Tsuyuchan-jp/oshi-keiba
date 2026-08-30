@@ -51,4 +51,11 @@ export function resolveUmaDress(charaName: string, dressName: string): UmaDress 
   return hits.length === 1 ? hits[0]! : null;
 }
 
+/** 保存済みの ID から衣装名を取得する（編集フォームの初期表示用）。 */
+export function findUmaDress(charaId: unknown, dressId: unknown): UmaDress | null {
+  const chara = Number(charaId);
+  const dress = Number(dressId);
+  return dresses.find((row) => row.charaId === chara && row.dressId === dress) ?? null;
+}
+
 export function umaDressCatalogJsonForPage(): string { return JSON.stringify(dresses); }
