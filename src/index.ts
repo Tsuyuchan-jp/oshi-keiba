@@ -1,5 +1,6 @@
 import {
   encodeSession,
+  newId,
   sessionCookie,
   sessionExpiry,
   sessionFromRequest,
@@ -89,7 +90,9 @@ async function putHorseShot(
   if (file.size > MAX_SHOT_BYTES) throw new Error("画像が大きすぎます（2MBまで）");
   const contentType = normalizeShotMime(file.type, file.name);
   if (!contentType) throw new Error("対応形式は PNG / JPEG / WebP です");
-  const key = `${eventId}/${horseId}${suffix}`;
+  // 差し替えごとに別キーへ保存する。DB の参照キーを URL の版番号にも
+  // 使うため、ブラウザが古い画像を再利用しない。
+  const key = `${eventId}/${horseId}${suffix}-${newId()}`;
   await env.SHOTS.put(key, await file.arrayBuffer(), {
     httpMetadata: { contentType },
   });

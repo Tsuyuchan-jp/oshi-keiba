@@ -75,10 +75,12 @@ export function paddockHorseView(
     styleLabel: styleLabel(style),
     ...images,
     shotKey: horse.horse.shot_key,
-    shotUrl: horse.horse.shot_key ? `/paddock/shot/${horse.horse.id}` : null,
+    shotUrl: horse.horse.shot_key
+      ? `/paddock/shot/${encodeURIComponent(horse.horse.id)}?v=${encodeURIComponent(horse.horse.shot_key)}`
+      : null,
     comment: horse.horse.paddock_comment ?? null,
     trainerIconUrl: horse.horse.trainer_icon_key
-      ? `/paddock/trainer-icon/${horse.horse.id}`
+      ? `/paddock/trainer-icon/${encodeURIComponent(horse.horse.id)}?v=${encodeURIComponent(horse.horse.trainer_icon_key)}`
       : null,
     skillPower: scored?.breakdown.skill.base ?? null,
     skillSummary: scored

@@ -498,9 +498,11 @@ export function adminRegisterPage(
   if (canSetup && edit && !edit.horse.scratched) {
     const p = horseSheetParts(edit.horse);
     const scoreIn = parseHorseScoreInput(edit.horse.score_input);
+    const shotUrl = edit.horse.shot_key ? `/admin/shot/${encodeURIComponent(edit.horse.id)}?v=${encodeURIComponent(edit.horse.shot_key)}` : "";
+    const trainerIconUrl = edit.horse.trainer_icon_key ? `/admin/trainer-icon/${encodeURIComponent(edit.horse.id)}?v=${encodeURIComponent(edit.horse.trainer_icon_key)}` : "";
     const shot = edit.horse.shot_key
       ? `<button type="button" class="reg-shot-btn" id="shot-open" aria-label="スクショを大きく見る">
-          <img class="reg-shot" src="/admin/shot/${escapeHtml(edit.horse.id)}" alt=""></button>`
+          <img class="reg-shot" src="${escapeHtml(shotUrl)}" alt=""></button>`
       : `<div class="reg-shot empty">スクショなし</div>`;
     const auto = scoreFromHorse(setup, scoreIn, strategic.skills);
     const manualBox =
@@ -573,9 +575,9 @@ export function adminRegisterPage(
       </form>`;
     editModal = `<dialog class="modal horse-edit-modal" id="horse-edit-modal"><button type="button" class="modal-close" id="horse-edit-close" aria-label="閉じる">×</button><h2>出走内容を編集</h2>${benchInner}</dialog>`;
     benchInner = `<div class="table-scroll reg-detail-scroll" id="bench"><div class="reg-bench reg-detail">
-        <div class="reg-shot-stack">${edit.horse.shot_key ? `<button type="button" class="reg-shot-btn" id="shot-open" aria-label="スクリーンショットを大きく見る"><img class="reg-shot" src="/admin/shot/${escapeHtml(edit.horse.id)}" alt=""></button>` : `<div class="reg-shot empty">スクショなし</div>`}${detailDress}</div>
+        <div class="reg-shot-stack">${edit.horse.shot_key ? `<button type="button" class="reg-shot-btn" id="shot-open" aria-label="スクリーンショットを大きく見る"><img class="reg-shot" src="${escapeHtml(shotUrl)}" alt=""></button>` : `<div class="reg-shot empty">スクショなし</div>`}${detailDress}</div>
         <div><div class="reg-detail-names"><strong>${escapeHtml(p.umaName)}</strong><span class="detail-runner">${escapeHtml(p.runnerName)}</span><span class="detail-style">${escapeHtml(styleLabel(scoreIn?.styleKey))}</span></div>
-          <div class="paddock-profile">${edit.horse.trainer_icon_key ? `<img src="/admin/trainer-icon/${escapeHtml(edit.horse.id)}" alt="${escapeHtml(p.runnerName)}のアイコン">` : `<span class="paddock-profile-placeholder">アイコン未登録</span>`}<div><span class="paddock-profile-k">意気込み</span><p>${escapeHtml(edit.horse.paddock_comment || "未登録")}</p></div></div>
+          <div class="paddock-profile">${edit.horse.trainer_icon_key ? `<img src="${escapeHtml(trainerIconUrl)}" alt="${escapeHtml(p.runnerName)}のアイコン">` : `<span class="paddock-profile-placeholder">アイコン未登録</span>`}<div><span class="paddock-profile-k">意気込み</span><p>${escapeHtml(edit.horse.paddock_comment || "未登録")}</p></div></div>
           ${scoreIn ? registerMaterialsHtml(scoreIn, scoreIn.styleKey && setup ? effectiveIdsFromScoreSetup(setup, scoreIn.styleKey) : null, strategic.skills, dismissedIds, false) : ""}
           <div class="reg-preview"><span class="lab">評価点</span><span class="num">${escapeHtml(String(edit.horse.strength))}</span></div>
         </div></div></div>`;
@@ -840,8 +842,9 @@ function pipeHtml(
   const input = parseHorseScoreInput(h.horse.score_input);
   const setup = eventScoreSetup(board.event);
   const auto = scoreFromHorse(setup, input, strategicSkills);
+  const shotUrl = h.horse.shot_key ? `/admin/shot/${encodeURIComponent(h.horse.id)}?v=${encodeURIComponent(h.horse.shot_key)}` : "";
   const shot = h.horse.shot_key
-    ? `<button type="button" class="shot-thumb" data-shot="/admin/shot/${escapeHtml(h.horse.id)}"><img src="/admin/shot/${escapeHtml(h.horse.id)}" alt=""></button>`
+    ? `<button type="button" class="shot-thumb" data-shot="${escapeHtml(shotUrl)}"><img src="${escapeHtml(shotUrl)}" alt=""></button>`
     : `<div class="shot-none">スクショなし</div>`;
   const head = `<div class="pipe-head"><div><h2>${h.number} ${escapeHtml(p.umaName)}</h2>
     <p class="note">${escapeHtml(p.runnerName)} · ${escapeHtml(styleLabel(input?.styleKey))}</p></div>${shot}</div>`;
