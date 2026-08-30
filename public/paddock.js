@@ -24,8 +24,10 @@
     return [["スピード", "speed"], ["スタミナ", "stamina"], ["パワー", "power"], ["根性", "guts"], ["賢さ", "wisdom"]].map(([name, key]) => {
       const value = Number(h.stats[key]);
       const cap = statCaps[key];
+      const target = Number(h.statTargets?.[key]);
       const width = Number.isFinite(value) && cap ? Math.min(100, value / cap * 100) : 0;
-      const marker = cap ? '<i class="bar__target" aria-hidden="true"></i>' : "";
+      const markerPosition = Number.isFinite(target) && cap ? Math.min(100, target / cap * 100) : null;
+      const marker = markerPosition != null ? `<i class="bar__target" style="left:${markerPosition}%" aria-hidden="true"></i>` : "";
       return `<div class="stat"><span>${name}</span><i class="bar">${marker}<i class="bar__value" style="width:${width}%"></i></i><b>${value}</b></div>`;
     }).join("");
   };
