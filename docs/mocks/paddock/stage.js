@@ -132,6 +132,49 @@ function distributionTemplateLayout() {
     return groups[style].map((runner, index) => [runner.n, positions[index]]);
   }));
 }
+const calculatedRowPatterns = {
+  1: [1], 2: [1, 1], 3: [1, 1, 1], 4: [2, 2],
+  5: [2, 1, 2], 6: [2, 2, 2], 7: [3, 2, 2], 8: [3, 2, 3],
+  9: [3, 3, 3], 10: [4, 3, 3], 11: [4, 3, 4], 12: [4, 4, 4]
+};
+const calculatedRowShifts = [-7, 6, -4];
+function applyCalculatedDistributionLayout() {
+  styleOrder.forEach(style => {
+    const group = document.querySelector(`[data-style="${style}"]`);
+    const horses = groups[style].map(runner => group.querySelector(`[data-number="${runner.n}"]`));
+    const rows = calculatedRowPatterns[horses.length];
+    if (!rows) return;
+    horses.forEach(horse => {
+      horse.style.removeProperty("width");
+      horse.style.removeProperty("height");
+      horse.style.removeProperty("left");
+      horse.style.removeProperty("top");
+      horse.style.removeProperty("bottom");
+      horse.querySelector("img").style.removeProperty("height");
+    });
+    const layout = document.createElement("div");
+    layout.className = "horse-group__auto-layout";
+    let cursor = 0;
+    rows.forEach((count, rowIndex) => {
+      const row = document.createElement("div");
+      row.className = "horse-group__auto-row";
+      row.style.setProperty("--row-shift", `${calculatedRowShifts[rowIndex] || 0}px`);
+      horses.slice(cursor, cursor + count).forEach(horse => row.append(horse));
+      cursor += count;
+      layout.append(row);
+    });
+    group.append(layout);
+    group.classList.add("horse-group--auto-layout");
+  });
+}
+function removeCalculatedDistributionLayout() {
+  document.querySelectorAll(".horse-group--auto-layout").forEach(group => {
+    const layout = group.querySelector(".horse-group__auto-layout");
+    if (layout) [...layout.querySelectorAll(".horse")].forEach(horse => group.append(horse));
+    layout?.remove();
+    group.classList.remove("horse-group--auto-layout");
+  });
+}
 let draggedHorse = null;
 let dragMoved = false;
 
@@ -180,7 +223,7 @@ toggleEditor.addEventListener("click", () => {
   const editing = stage.classList.toggle("editing");
   editorPanel.hidden = !editing;
   toggleEditor.textContent = editing ? "配置調整を終了する" : "配置を調整する";
-  if (editing) { updateEditorOutput(); checkCollisions(); }
+  if (editing) { removeCalculatedDistributionLayout(); applyLayout(distributionTemplateLayout()); updateEditorOutput(); checkCollisions(); }
 });
 document.querySelector(".layout-editor__reset").addEventListener("click", () => { localStorage.removeItem(layoutKey); location.reload(); });
 document.querySelector(".layout-editor__clear").addEventListener("click", clearSelection);
@@ -214,7 +257,7 @@ if (templateCount) {
   document.querySelectorAll(".guide, .horse-group").forEach((element) => {
     if (!element.classList.contains("guide--leader") && !element.classList.contains("horse-group--leader")) element.hidden = true;
   });
-} else if (!applyStoredLayout()) applyLayout(distributionTemplateLayout());
+} else if (!applyStoredLayout()) applyCalculatedDistributionLayout();
 document.querySelectorAll("[data-template-count]").forEach((button) => {
   button.dataset.active = String(Number(button.dataset.templateCount) === templateCount);
   button.addEventListener("click", () => {
