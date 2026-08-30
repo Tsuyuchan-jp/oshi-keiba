@@ -523,9 +523,8 @@ export function adminRegisterPage(
                 <label>ウマ娘名<input name="uma_name" id="uma-name" value="${escapeHtml(p.umaName)}" required maxlength="40"></label>
                 <label>出走者<input name="runner_name" id="runner-name" value="${escapeHtml(p.runnerName)}" required maxlength="40"></label>
                 <div class="dress-picker" id="dress-picker">
-                  <label>衣装（検索して選択）<input id="dress-search" type="search" value="${escapeHtml(dress?.dressName ?? "")}" placeholder="衣装名で検索" autocomplete="off"></label>
+                  <span>衣装を選択</span>
                   <input name="dress_id" id="dress-id" type="hidden" value="${dress?.dressId ?? ""}">
-                  <button type="button" class="admin-action dress-clear" id="dress-clear">未指定にする</button>
                   <div class="dress-options" id="dress-options" role="listbox"></div>
                   <p class="note" id="dress-help">ウマ娘名に対応する衣装だけを表示します</p>
                 </div>
@@ -637,17 +636,14 @@ export function adminRegisterPage(
       (() => {
         const catalog = ${umaDressCatalogJsonForPage()};
         const uma = document.getElementById("uma-name");
-        const search = document.getElementById("dress-search");
         const hidden = document.getElementById("dress-id");
         const options = document.getElementById("dress-options");
         const help = document.getElementById("dress-help");
         const norm = (value) => String(value || "").normalize("NFKC").replace(/[\\s\\u3000\\[\\]]/g, "").toLowerCase();
-        const clear = () => { if (hidden) hidden.value = ""; if (search) search.value = ""; };
         const render = () => {
-          if (!options || !uma || !search) return;
+          if (!options || !uma) return;
           const chara = norm(uma.value);
-          const query = norm(search.value);
-          const rows = catalog.filter((row) => norm(row.charaName) === chara && (!query || norm(row.dressName).includes(query)));
+          const rows = catalog.filter((row) => norm(row.charaName) === chara);
           options.innerHTML = "";
           if (!chara) { if (help) help.textContent = "先にウマ娘名を入力してください"; return; }
           if (!rows.length) { if (help) help.textContent = "一致する衣装がありません"; return; }
@@ -658,13 +654,11 @@ export function adminRegisterPage(
             if (String(hidden?.value || "") === String(row.dressId)) button.classList.add("on");
             const image = "/images/umamusume/petit/petit_" + row.charaId + "_" + row.dressId + "_0010.png";
             button.innerHTML = '<img src="' + image + '" alt=""><span>' + row.dressName + '</span>';
-            button.addEventListener("click", () => { if (hidden) hidden.value = String(row.dressId); search.value = row.dressName; render(); });
+            button.addEventListener("click", () => { if (hidden) hidden.value = String(row.dressId); render(); });
             options.append(button);
           });
         };
-        search?.addEventListener("input", () => { if (hidden) hidden.value = ""; render(); });
-        uma?.addEventListener("input", () => { clear(); render(); });
-        document.getElementById("dress-clear")?.addEventListener("click", () => { clear(); render(); });
+        uma?.addEventListener("input", () => { if (hidden) hidden.value = ""; render(); });
         render();
       })();
       const full = document.getElementById("shot-full");
