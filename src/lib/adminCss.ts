@@ -939,6 +939,7 @@ body.register-page .work .ctas a { align-self: center; font-size: .85rem; color:
 .reg-next:hover { background: #245d96; color: var(--admin-surface); }
 .reg-next { border: 0; cursor: pointer; }
 .reg-detail { align-items: start; }
+.reg-detail-scroll { min-height: 0; }
 .reg-detail-names { display: flex; flex-wrap: wrap; align-items: baseline; gap: .35rem .7rem; margin-bottom: .65rem; }
 .reg-detail-names strong { font-size: 1.05rem; }
 .reg-detail-names span { font-size: .78rem; color: var(--admin-muted); }

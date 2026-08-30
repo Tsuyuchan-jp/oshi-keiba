@@ -355,7 +355,7 @@ export default {
           }
           await env.DB.prepare("UPDATE horses SET paddock_comment = ?, trainer_icon_key = ? WHERE id = ? AND event_id = ?")
             .bind(comment || null, iconKey, horseId, board.event.id).run();
-          return bounce("/admin/register", "更新しました");
+          return bounce(`/admin/register?edit=${encodeURIComponent(horseId)}`, "更新しました");
         } catch (err) {
           return bounce("/admin/register", err instanceof Error ? err.message : "失敗", true);
         }
