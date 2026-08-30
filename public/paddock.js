@@ -14,6 +14,10 @@
     return p.map((n) => horses.slice(at, at += n));
   };
   const odds = (value) => value == null || !Number.isFinite(Number(value)) ? "—" : `${Number(value).toFixed(1)}倍`;
+  const aptitudeBadges = (aptitudes) => {
+    if (!aptitudes) return '<p class="aptitude aptitude--empty">適性データは未登録</p>';
+    return `<div class="aptitude"><span class="aptitude__title">適性</span>${[aptitudes.surface, aptitudes.distance, aptitudes.style].map((item) => `<span class="aptitude__badge${item.rank === "S" ? " is-s" : ""}"><i>${esc(item.label)}</i><b>${esc(item.rank)}</b></span>`).join("")}</div>`;
+  };
   const stats = (h) => {
     if (!h.stats) return "<p>能力データは未登録です</p>";
     return [["スピード", "speed"], ["スタミナ", "stamina"], ["パワー", "power"], ["根性", "guts"], ["賢さ", "wisdom"]].map(([name, key]) => {
@@ -50,7 +54,7 @@
     const comment = esc(h.comment || "意気込みコメントは未登録です");
     const shot = h.shotUrl ? '<button type="button" class="shot-action">育成スクリーンショットを見る</button>' : "";
     detail.className = "detail open";
-    detail.innerHTML = `<div class="detail__summary"><small>タップで詳細を閉じる</small></div><div class="detail__heading"><span>${esc(h.styleLabel)}</span>　<span>${h.number}番</span></div><div class="profile">${h.detailImageUrl ? `<img src="${esc(h.detailImageUrl)}" alt="${esc(h.umaName)}">` : ""}<div class="profile-text"><h2>${esc(h.umaName)}</h2><p class="profile-trainer"><span>トレーナー</span><b>${esc(h.trainerName)}</b></p><strong>${odds(h.odds)}</strong></div></div><div class="trainer-comment">${icon}<blockquote>${comment}</blockquote></div><section class="skill"><div><span>スキルパワー</span><b>${h.skillPower ?? "—"}</b></div><small>有効 ${h.skillSummary?.effective ?? 0}　金相当 ${h.skillSummary?.goldLike ?? 0}　戦略 +${h.skillSummary?.strategic ?? 0}</small></section><section class="status"><h3>基礎能力</h3>${stats(h)}<p class="aptitude">適性　${h.aptitudes ? `${esc(h.aptitudes.surface)}　${esc(h.aptitudes.distance)}　${esc(h.aptitudes.style)}` : "未登録"}</p></section><div class="actions">${shot}<a class="candidate" href="/bet?candidate=${encodeURIComponent(h.id)}">このウマ娘を投票候補にする →</a></div>`;
+    detail.innerHTML = `<div class="detail__summary"><small>タップで詳細を閉じる</small></div><div class="detail__heading"><span>${esc(h.styleLabel)}</span>　<span>${h.number}番</span></div><div class="profile">${h.detailImageUrl ? `<img src="${esc(h.detailImageUrl)}" alt="${esc(h.umaName)}">` : ""}<div class="profile-text"><h2>${esc(h.umaName)}</h2><p class="profile-trainer"><span>トレーナー</span><b>${esc(h.trainerName)}</b></p><strong>${odds(h.odds)}</strong></div></div><div class="trainer-comment">${icon}<blockquote>${comment}</blockquote></div><section class="skill"><div><span>スキルパワー</span><b>${h.skillPower ?? "—"}</b></div><small>有効 ${h.skillSummary?.effective ?? 0}　金相当 ${h.skillSummary?.goldLike ?? 0}　戦略 +${h.skillSummary?.strategic ?? 0}</small></section><section class="status"><h3>基礎能力</h3>${stats(h)}${aptitudeBadges(h.aptitudes)}</section><div class="actions">${shot}<a class="candidate" href="/bet?candidate=${encodeURIComponent(h.id)}">このウマ娘を投票候補にする →</a></div>`;
     detail.querySelector(".shot-action")?.addEventListener("click", () => openShot(h.shotUrl, h.umaName));
     if (matchMedia("(max-width:700px)").matches) {
       backdrop = document.createElement("button");
@@ -73,7 +77,8 @@
       rowsFor(horses).forEach((row, index) => {
         const line = document.createElement("div");
         line.className = "horse-row";
-        line.style.setProperty("--row-shift", row.length === 1 ? "0" : `${index % 2 ? "8" : "-8"}%`);
+        const offsetCounts = new Set([2, 4, 6, 9, 12]);
+        line.style.setProperty("--row-shift", offsetCounts.has(horses.length) ? `${index % 2 ? "8" : "-8"}%` : "0");
         row.forEach((h) => {
           const button = document.createElement("button");
           button.className = "horse";

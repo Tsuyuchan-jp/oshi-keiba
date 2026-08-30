@@ -35,7 +35,11 @@ export type PaddockHorseView = {
   skillPower: number | null;
   skillSummary: { effective: number; goldLike: number; strategic: number } | null;
   stats: { speed: number; stamina: number; power: number; guts: number; wisdom: number } | null;
-  aptitudes: { surface: string; distance: string; style: string } | null;
+  aptitudes: {
+    surface: { label: string; rank: string };
+    distance: { label: string; rank: string };
+    style: { label: string; rank: string };
+  } | null;
 };
 
 export type PaddockView = {
@@ -89,6 +93,10 @@ function raceInfo(board: Pick<Board, "event">): PaddockView["race"] {
   };
 }
 
+function distanceLabel(distanceType: number): string {
+  return ({ 1: "短距離", 2: "マイル", 3: "中距離", 4: "長距離" })[distanceType] ?? "距離";
+}
+
 export function paddockHorseView(
   horse: HorseBoard,
   board: Pick<Board, "event">,
@@ -137,7 +145,18 @@ export function paddockHorseView(
         }
       : null,
     stats: input?.stats ?? null,
-    aptitudes: scored?.aptitudes ?? null,
+    aptitudes: scored && setup
+      ? (() => {
+          const course = getScoreCourse(setup.conditions.courseKey);
+          return course
+            ? {
+                surface: { label: course.groundType === 1 ? "芝" : "ダート", rank: scored.aptitudes.surface },
+                distance: { label: distanceLabel(course.distanceType), rank: scored.aptitudes.distance },
+                style: { label: styleLabel(style), rank: scored.aptitudes.style },
+              }
+            : null;
+        })()
+      : null,
   };
 }
 
