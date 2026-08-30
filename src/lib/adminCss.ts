@@ -375,7 +375,6 @@ body.ledger-page .filters select {
   color: inherit;
   border-radius: 4px;
 }
-button.reg-row-link { width: 100%; border: 0; background: transparent; text-align: left; cursor: pointer; font: inherit; }
 .reg-row .n { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--admin-muted); }
 .reg-row .who { min-width: 0; }
 .reg-row .uma { display: block; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -393,27 +392,6 @@ button.reg-row-link { width: 100%; border: 0; background: transparent; text-alig
   white-space: nowrap;
 }
 .reg-unlist:hover { border-color: var(--admin-danger); color: var(--admin-danger); background: #fdf4f4; }
-.horse-edit-modal { --admin-modal-max-width: 52rem; }
-.horse-edit-form { display: flex; flex-direction: column; gap: .85rem; }
-.horse-edit-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--admin-line-subtle); padding-bottom: .7rem; }
-.horse-edit-head h2 { margin: 0; }
-.modal-kicker { margin: 0 0 .12rem; font-size: .75rem; color: var(--admin-muted); font-variant-numeric: tabular-nums; }
-.edit-basic-grid, .edit-stat-grid, .edit-apt-grid { display: grid; gap: .65rem; }
-.edit-basic-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.edit-stat-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); margin-top: .65rem; }
-.edit-apt-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); margin-top: .65rem; }
-.horse-edit-form label { display: grid; gap: .22rem; font-size: .78rem; color: var(--admin-muted); }
-.horse-edit-form input, .horse-edit-form select, .horse-edit-form textarea { width: 100%; color: var(--admin-ink); border: 1px solid var(--admin-line-strong); border-radius: 6px; padding: .38rem .48rem; background: var(--admin-surface); }
-.edit-details { border: 1px solid var(--admin-line-subtle); border-radius: 8px; padding: .65rem .75rem .75rem; background: var(--admin-surface-muted); }
-.edit-details summary { cursor: pointer; color: var(--admin-ink); font-size: .88rem; font-weight: 700; }
-.edit-skills { margin-top: .65rem; }
-.edit-shot-field { grid-template-columns: auto auto 1fr; align-items: center; column-gap: .65rem; padding: .55rem .65rem; border: 1px solid var(--admin-line-subtle); border-radius: 8px; background: var(--admin-surface-muted); }
-.edit-shot-preview { width: 3rem; height: 2.2rem; border-radius: 4px; object-fit: cover; border: 1px solid var(--admin-line); }
-.edit-shot-empty { color: var(--admin-muted); font-size: .78rem; }
-.horse-edit-form .modal-actions > div { display: flex; gap: .45rem; }
-.horse-edit-form .primary, .horse-edit-form .secondary, .horse-edit-form .danger { border: 1px solid var(--admin-line-strong); border-radius: 6px; padding: .45rem .75rem; background: var(--admin-surface); cursor: pointer; font-weight: 700; }
-.horse-edit-form .primary { color: var(--admin-surface); background: var(--admin-accent); border-color: var(--admin-accent); }
-.horse-edit-form .danger { color: var(--admin-danger); border-color: #d4a0a0; }
 .admin-offscreen {
   position: fixed; left: 0; top: 0; width: 1px; height: 1px; opacity: 0; overflow: hidden; margin: 0; padding: 0; border: 0;
 }
@@ -995,8 +973,6 @@ body.register-page .work .ctas a { align-self: center; font-size: .85rem; color:
   body.settings-page .settings-scroll { overflow: visible; }
   .set-row { grid-template-columns: 1fr; }
   .set-targets, .set-metrics { grid-template-columns: 1fr 1fr; }
-  .edit-basic-grid, .edit-stat-grid, .edit-apt-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .edit-shot-field { grid-template-columns: 1fr; }
   body.odds-page { overflow: auto; }
   body.odds-page .dash { height: auto; min-height: 100dvh; }
   body.odds-page .main { height: auto; overflow: visible; }

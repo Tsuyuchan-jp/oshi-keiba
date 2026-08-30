@@ -290,10 +290,10 @@ export default {
       if (method === "POST" && path === "/admin/horse-edit") {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
-        const form = await request.formData();
+        const form = await readForm(request);
         try {
           const board = await loadBoard(env.DB);
-          const horseId = String(form.get("horse_id") ?? "");
+          const horseId = form.get("horse_id") ?? "";
           const existing = board.horses.find((h) => h.horse.id === horseId);
           if (!existing) throw new Error("出走が見つかりません");
           const setup = eventScoreSetup(board.event);
@@ -301,41 +301,13 @@ export default {
           let scoreInput = parseHorseScoreInput(existing.horse.score_input);
           const styleRaw = String(form.get("style_key") ?? "").trim();
           if (!styleRaw) throw new Error("脚質を選んでください");
-          if (scoreInput && String(form.get("score_edit") ?? "") === "1") {
-            const apt = scoreInput.aptitudes;
-            const skillNames = String(form.get("skill_names") ?? "")
-              .split(/[\n,、]/)
-              .map((name) => name.trim())
-              .filter(Boolean);
-            scoreInput = parseHorseScoreInput({
-              stats: {
-                speed: Number(form.get("stat_speed")), stamina: Number(form.get("stat_stamina")),
-                power: Number(form.get("stat_power")), guts: Number(form.get("stat_guts")),
-                wisdom: Number(form.get("stat_wisdom")),
-              },
-              aptitudes: {
-                turf: String(form.get("apt_turf") ?? apt.turf), dirt: String(form.get("apt_dirt") ?? apt.dirt),
-                short: String(form.get("apt_short") ?? apt.short), mile: String(form.get("apt_mile") ?? apt.mile),
-                medium: String(form.get("apt_medium") ?? apt.medium), long: String(form.get("apt_long") ?? apt.long),
-                nige: String(form.get("apt_nige") ?? apt.nige), senkou: String(form.get("apt_senkou") ?? apt.senkou),
-                sashi: String(form.get("apt_sashi") ?? apt.sashi), oikomi: String(form.get("apt_oikomi") ?? apt.oikomi),
-              },
-              skillNames, skillIds: skillNames.map(() => null), styleKey: styleRaw,
-            });
-          } else if (scoreInput) {
+          if (scoreInput) {
             scoreInput = parseHorseScoreInput({
               ...scoreInput,
               styleKey: styleRaw,
             });
           }
-          if (!scoreInput && String(form.get("score_edit") ?? "") === "1") {
-            throw new Error("能力値の入力内容を確認してください");
-          }
           const forceManual = String(form.get("strength_manual") ?? "") === "1";
-          const umaName = String(form.get("uma_name") ?? "");
-          const dressName = String(form.get("dress_name") ?? "").trim();
-          const umaDress = resolveUmaDress(umaName, dressName);
-          if (dressName && !umaDress) throw new Error("衣装名をカタログの表記で入力してください");
           const resolved = resolveStrength({
             setup,
             input: scoreInput,
@@ -347,22 +319,17 @@ export default {
             env.DB,
             board.event,
             horseId,
-            umaName,
-            String(form.get("runner_name") ?? ""),
+            form.get("uma_name") ?? "",
+            form.get("runner_name") ?? "",
             {
               strength: resolved.strength,
               scoreInputJson: serializeHorseScoreInput(scoreInput),
               seedSource: resolved.source,
-              charaId: umaDress?.charaId ?? existing.horse.chara_id,
-              dressId: umaDress?.dressId ?? existing.horse.dress_id,
+              charaId: existing.horse.chara_id,
+              dressId: existing.horse.dress_id,
               keepScoreInput: false,
             },
           );
-          const shot = form.get("shot");
-          if (shot instanceof File && shot.size > 0) {
-            const key = await putHorseShot(env, board.event.id, String(horseId), shot);
-            await setHorseShotKey(env.DB, board.event, String(horseId), key);
-          }
           return bounce("/admin/register", "更新しました");
         } catch (err) {
           return bounce("/admin/register", err instanceof Error ? err.message : "失敗", true);

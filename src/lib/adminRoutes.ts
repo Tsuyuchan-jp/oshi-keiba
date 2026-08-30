@@ -143,7 +143,7 @@ export async function tryAdminGet(
     const strategic = await loadStrategicSkillsBundle(env.DB);
     const page = adminRegisterPage(
       board,
-      null,
+      url.searchParams.get("edit"),
       m,
       strategic,
     );

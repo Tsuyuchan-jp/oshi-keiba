@@ -1,7 +1,6 @@
 import { escapeHtml } from "./http";
 import { horseSheetParts } from "./horseName";
-import { parseHorseScoreInput, STYLE_OPTIONS, type HorseScoreInput } from "./horseScoreInput";
-import { findUmaDress } from "./umaDress";
+import { parseHorseScoreInput, STYLE_OPTIONS } from "./horseScoreInput";
 import { scoreFromHorse } from "./scoreFromHorse";
 import { eventScoreSetup, numberByHorseId } from "./store";
 import type { Board, EventRow, HorseBoard, UserRow, BetRow } from "./store";
@@ -465,13 +464,19 @@ export function adminRegisterPage(
   const list = board.horses
     .map((h) => {
       const p = horseSheetParts(h.horse);
+      const on = edit?.horse.id === h.horse.id ? " on" : "";
       const man = h.horse.seed_source === "manual";
-      return `<div class="reg-row">
-        <button type="button" class="reg-row-link" data-edit-open="horse-edit-modal-${escapeHtml(h.horse.id)}">
+      const dropBtn =
+        canSetup && !h.horse.scratched
+          ? `<button type="button" class="reg-unlist" data-drop-id="${escapeHtml(h.horse.id)}" data-drop-name="${escapeHtml(p.umaName)}（${escapeHtml(p.runnerName)}）">外す</button>`
+          : "";
+      return `<div class="reg-row${on}">
+        <a class="reg-row-link" href="/admin/register?edit=${escapeHtml(h.horse.id)}">
           <span class="n">${h.number}</span>
           <span class="who"><span class="uma">${escapeHtml(p.umaName)}</span><span class="run">${escapeHtml(p.runnerName)}</span></span>
           <span class="tag${man ? " warn" : ""}">${man ? "直置き" : "自動"}</span>
-        </button>
+        </a>
+        ${dropBtn}
       </div>`;
     })
     .join("");
@@ -568,7 +573,6 @@ export function adminRegisterPage(
         ${benchInner}
       </section>
     </div>
-    ${board.horses.filter((h) => !h.horse.scratched).map((h) => editHorseModal(h, canSetup)).join("")}
     <dialog class="shot-dlg shot-dlg-left" id="shot-dlg"><div class="shot-scroller fit" id="shot-scroller"><img id="shot-full" alt=""></div></dialog>
     ${strategicSkillsModalHtml()}
     <dialog class="modal" id="drop-horse-modal">
@@ -611,17 +615,10 @@ export function adminRegisterPage(
         if (ev.target instanceof HTMLImageElement) toggleShotZoom();
       });
       const ddlg = document.getElementById("drop-horse-modal");
-      document.querySelectorAll("[data-edit-open]").forEach((btn) => {
-        btn.addEventListener("click", () => document.getElementById(btn.getAttribute("data-edit-open"))?.showModal());
-      });
-      document.querySelectorAll("[data-edit-close]").forEach((btn) => {
-        btn.addEventListener("click", () => btn.closest("dialog")?.close());
-      });
       document.querySelectorAll("[data-drop-id]").forEach((btn) => {
         btn.addEventListener("click", (ev) => {
           ev.preventDefault();
           ev.stopPropagation();
-          btn.closest("dialog")?.close();
           document.getElementById("drop-horse-id").value = btn.getAttribute("data-drop-id");
           document.getElementById("drop-horse-p").textContent =
             "「" + btn.getAttribute("data-drop-name") + "」を名簿から消します。";
@@ -675,26 +672,6 @@ function styleLabel(key: string | null | undefined): string {
 /** 倍率・r は小数第3位まで */
 function fmt3(n: number): string {
   return n.toFixed(3);
-}
-
-function editHorseModal(h: HorseBoard, canSetup: boolean): string {
-  const horse = h.horse;
-  const parts = horseSheetParts(horse);
-  const score = parseHorseScoreInput(horse.score_input);
-  const dress = findUmaDress(horse.chara_id, horse.dress_id);
-  const styleOptions = STYLE_OPTIONS.map((o) => `<option value="${o.key}"${score?.styleKey === o.key ? " selected" : ""}>${escapeHtml(o.label)}</option>`).join("");
-  const stat = (key: keyof HorseScoreInput["stats"], label: string) => `<label>${label}<input name="stat_${key}" type="number" min="0" step="1" value="${score ? score.stats[key] : 0}"${score ? " required" : " disabled"}></label>`;
-  const rank = (key: keyof HorseScoreInput["aptitudes"], label: string) => `<label>${label}<select name="apt_${key}"${score ? "" : " disabled"}>${["S","A","B","C","D","E","F","G"].map((v) => `<option value="${v}"${score && score.aptitudes[key] === v ? " selected" : ""}>${v}</option>`).join("")}</select></label>`;
-  const shot = horse.shot_key ? `<img class="edit-shot-preview" src="/admin/shot/${escapeHtml(horse.id)}" alt="">` : `<span class="edit-shot-empty">未登録</span>`;
-  return `<dialog class="modal horse-edit-modal" id="horse-edit-modal-${escapeHtml(horse.id)}"><form method="post" action="/admin/horse-edit" enctype="multipart/form-data" class="horse-edit-form">
-    <input type="hidden" name="horse_id" value="${escapeHtml(horse.id)}"><input type="hidden" name="score_edit" value="${score ? "1" : ""}">
-    <div class="horse-edit-head"><div><p class="modal-kicker">${h.number}番</p><h2>${escapeHtml(parts.umaName)}を編集</h2></div><button type="button" class="secondary" data-edit-close>閉じる</button></div>
-    <div class="edit-basic-grid"><label>ウマ娘名<input name="uma_name" value="${escapeHtml(parts.umaName)}" required maxlength="40"></label><label>トレーナー名<input name="runner_name" value="${escapeHtml(parts.runnerName)}" required maxlength="40"></label><label>衣装名<input name="dress_name" value="${escapeHtml(dress?.dressName ?? "")}" maxlength="80"></label><label>脚質<select name="style_key" required>${styleOptions}</select></label></div>
-    <label class="edit-shot-field"><span>育成スクリーンショット（選択時のみ差し替え）</span>${shot}<input name="shot" type="file" accept="image/png,image/jpeg,image/webp"></label>
-    ${score ? `<details class="edit-details" open><summary>能力・適性・スキル</summary><div class="edit-stat-grid">${stat("speed","スピード")}${stat("stamina","スタミナ")}${stat("power","パワー")}${stat("guts","根性")}${stat("wisdom","賢さ")}</div><div class="edit-apt-grid">${rank("turf","芝")}${rank("dirt","ダート")}${rank("short","短距離")}${rank("mile","マイル")}${rank("medium","中距離")}${rank("long","長距離")}${rank("nige","逃げ")}${rank("senkou","先行")}${rank("sashi","差し")}${rank("oikomi","追込")}</div><label class="edit-skills">スキル（改行または「、」で区切る）<textarea name="skill_names" rows="3">${escapeHtml(score.skillNames.join("、"))}</textarea></label></details>` : `<p class="note">成育情報がないため、能力・適性・スキルは変更できません。</p>`}
-    <div class="reg-score-row"><label>評価点<input name="strength" type="number" min="0" step="0.1" value="${horse.strength}" required></label><label class="reg-manual-toggle"><input type="checkbox" name="strength_manual" value="1"${horse.seed_source === "manual" ? " checked" : ""}><span class="reg-manual-pill">評価点を手入力</span></label></div>
-    <div class="modal-actions modal-actions--split">${canSetup ? `<button type="button" class="danger edit-drop" data-drop-id="${escapeHtml(horse.id)}" data-drop-name="${escapeHtml(parts.umaName)}">出走から外す</button>` : "<span></span>"}<div><button type="button" class="secondary" data-edit-close>キャンセル</button><button type="submit" class="primary">変更を保存</button></div></div>
-  </form></dialog>`;
 }
 
 function median(values: readonly number[]): number {
