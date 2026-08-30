@@ -1,6 +1,13 @@
 import { parseHorseScoreInput } from "./horseScoreInput.ts";
 import { scoreFromHorse } from "./scoreFromHorse.ts";
-import { parseScoreSetup } from "./scoreSetup.ts";
+import {
+  getScoreCourse,
+  GROUND_CONDITION_OPTIONS,
+  parseScoreSetup,
+  SEASON_OPTIONS,
+  WEATHER_OPTIONS,
+} from "./scoreSetup.ts";
+import { staminaRequirementsForStyle } from "./score.ts";
 import type { StrategicSkillRow } from "./strategicSkills.ts";
 import type { Board, HorseBoard } from "./storeTypes.ts";
 import { resolvePetitImageUrl } from "./umaDress.ts";
@@ -24,6 +31,7 @@ export type PaddockHorseView = {
   comment: string | null;
   /** 次段階でトレーナー単位に登録する note アイコン。 */
   trainerIconUrl: string | null;
+  statTargets: { speed: number; stamina: number; power: number; guts: number; wisdom: number } | null;
   skillPower: number | null;
   skillSummary: { effective: number; goldLike: number; strategic: number } | null;
   stats: { speed: number; stamina: number; power: number; guts: number; wisdom: number } | null;
@@ -33,6 +41,14 @@ export type PaddockHorseView = {
 export type PaddockView = {
   eventId: string;
   title: string;
+  race: {
+    courseName: string;
+    distance: number;
+    surface: string;
+    season: string;
+    weather: string;
+    groundCondition: string;
+  } | null;
   horses: PaddockHorseView[];
 };
 
@@ -55,6 +71,24 @@ function imageUrls(horse: HorseBoard): Pick<PaddockHorseView, "listImageUrl" | "
   };
 }
 
+function optionLabel(options: readonly { value: number; label: string }[], value: number): string {
+  return options.find((option) => option.value === value)?.label ?? "—";
+}
+
+function raceInfo(board: Pick<Board, "event">): PaddockView["race"] {
+  const setup = parseScoreSetup(board.event.score_setup);
+  const course = setup ? getScoreCourse(setup.conditions.courseKey) : null;
+  if (!setup || !course) return null;
+  return {
+    courseName: course.place,
+    distance: course.courseDistance,
+    surface: course.groundType === 1 ? "芝" : "ダート",
+    season: optionLabel(SEASON_OPTIONS, setup.conditions.season),
+    weather: optionLabel(WEATHER_OPTIONS, setup.conditions.weather),
+    groundCondition: optionLabel(GROUND_CONDITION_OPTIONS, setup.conditions.groundCondition),
+  };
+}
+
 export function paddockHorseView(
   horse: HorseBoard,
   board: Pick<Board, "event">,
@@ -64,6 +98,9 @@ export function paddockHorseView(
   const setup = parseScoreSetup(board.event.score_setup);
   const scored = scoreFromHorse(setup, input, strategicSkills);
   const style = input?.styleKey ?? null;
+  const stamina = setup && style
+    ? staminaRequirementsForStyle(setup.requirements, style).staminaNoTempt
+    : null;
   const images = imageUrls(horse);
   return {
     id: horse.horse.id,
@@ -81,6 +118,15 @@ export function paddockHorseView(
     comment: horse.horse.paddock_comment ?? null,
     trainerIconUrl: horse.horse.trainer_icon_key
       ? `/paddock/trainer-icon/${encodeURIComponent(horse.horse.id)}?v=${encodeURIComponent(horse.horse.trainer_icon_key)}`
+      : null,
+    statTargets: setup && stamina != null
+      ? {
+          speed: setup.requirements.speedCap,
+          stamina,
+          power: setup.requirements.power,
+          guts: setup.requirements.guts,
+          wisdom: setup.requirements.wisdom,
+        }
       : null,
     skillPower: scored?.breakdown.skill.base ?? null,
     skillSummary: scored
@@ -102,6 +148,7 @@ export function paddockView(
   return {
     eventId: board.event.id,
     title: board.event.title,
+    race: raceInfo(board),
     horses: board.horses
       .filter((horse) => horse.horse.scratched === 0)
       .map((horse) => paddockHorseView(horse, board, strategicSkills)),

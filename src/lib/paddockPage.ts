@@ -15,6 +15,9 @@ export function paddockPage(view: PaddockView): string {
   const countText = styleCounts
     .map(({ style, count }) => `${styleLabel(style)} ${count}`)
     .join("　｜　");
+  const raceText = view.race
+    ? `${view.race.courseName}　${view.race.distance}m　${view.race.surface}　${view.race.season}　${view.race.weather}　${view.race.groundCondition}`
+    : "レース条件未設定";
   return `<!doctype html>
 <html lang="ja"><head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -24,7 +27,7 @@ export function paddockPage(view: PaddockView): string {
 <main class="paddock-stage">
   <section class="race-view" aria-label="出走ウマ娘一覧">
     <header class="scoreboard">
-      <div class="scoreboard__top"><b>PADDOCK</b><span>出走ウマ娘を選んで詳細を確認</span></div>
+      <div class="scoreboard__top"><b>PADDOCK</b><span>${escapeHtml(raceText)}</span></div>
       <h1>${escapeHtml(view.title)}　出走ウマ娘紹介</h1>
       <p>${escapeHtml(countText)}</p>
     </header>
