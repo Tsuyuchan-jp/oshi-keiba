@@ -657,7 +657,7 @@ export function adminRegisterPage(
             button.type = "button"; button.className = "dress-option"; button.setAttribute("role", "option");
             if (String(hidden?.value || "") === String(row.dressId)) button.classList.add("on");
             const image = "/images/umamusume/petit/petit_" + row.charaId + "_" + row.dressId + "_0010.png";
-            button.innerHTML = "<img src=\"" + image + "\" alt=\"\"><span>" + row.dressName + "</span>";
+            button.innerHTML = '<img src="' + image + '" alt=""><span>' + row.dressName + '</span>';
             button.addEventListener("click", () => { if (hidden) hidden.value = String(row.dressId); search.value = row.dressName; render(); });
             options.append(button);
           });
