@@ -38,6 +38,8 @@ export type HorseRow = {
   uma_name: string;
   runner_name: string;
   shot_key: string | null;
+  paddock_comment?: string | null;
+  trainer_icon_key?: string | null;
   /** 育成ウマ娘・衣装。旧データや未確定 OCR は null。 */
   chara_id: number | null;
   dress_id: number | null;

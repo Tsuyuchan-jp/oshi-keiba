@@ -82,9 +82,9 @@ function insertHorses(db: D1Database, rows: Record<string, unknown>[]) {
     db
       .prepare(
         `INSERT INTO horses (
-          id, event_id, name, uma_name, runner_name, shot_key, chara_id, dress_id, strength, score_input, seed_source, scratched, finish_place,
+          id, event_id, name, uma_name, runner_name, shot_key, paddock_comment, trainer_icon_key, chara_id, dress_id, strength, score_input, seed_source, scratched, finish_place,
           sort_order, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .bind(
         v(r, "id"),
@@ -93,6 +93,8 @@ function insertHorses(db: D1Database, rows: Record<string, unknown>[]) {
         v(r, "uma_name") ?? "",
         v(r, "runner_name") ?? "",
         v(r, "shot_key"),
+        v(r, "paddock_comment"),
+        v(r, "trainer_icon_key"),
         v(r, "chara_id"),
         v(r, "dress_id"),
         v(r, "strength"),

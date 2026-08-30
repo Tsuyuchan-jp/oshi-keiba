@@ -524,6 +524,8 @@ export function adminRegisterPage(
                 <label>出走者<input name="runner_name" id="runner-name" value="${escapeHtml(p.runnerName)}" required maxlength="40"></label>
                 <label>衣装名<input name="dress_name" value="${escapeHtml(dress?.dressName ?? "")}" maxlength="80"></label>
                 <div class="edit-shot-picker"><span>スクリーンショット（選択時のみ差し替え）</span><input class="admin-offscreen" name="shot" id="edit-shot-file" type="file" accept="image/png,image/jpeg,image/webp"><label class="admin-action" for="edit-shot-file">画像を選択</label><span id="edit-shot-name" class="note">変更しない</span></div>
+                <label>意気込みコメント（40文字まで）<input name="paddock_comment" value="${escapeHtml(edit.horse.paddock_comment ?? "")}" maxlength="40"></label>
+                <div class="edit-shot-picker"><span>トレーナーアイコン（選択時のみ差し替え）</span><input class="admin-offscreen" name="trainer_icon" id="trainer-icon-file" type="file" accept="image/png,image/jpeg,image/webp"><label class="admin-action" for="trainer-icon-file">画像を選択</label><span id="trainer-icon-name" class="note">${edit.horse.trainer_icon_key ? "登録済み" : "未登録"}</span></div>
               </div>
               ${styleSeg(scoreIn?.styleKey)}
               ${
@@ -619,6 +621,11 @@ export function adminRegisterPage(
         const file = ev.target instanceof HTMLInputElement ? ev.target.files?.[0] : null;
         const name = document.getElementById("edit-shot-name");
         if (name) name.textContent = file ? file.name : "変更しない";
+      });
+      document.getElementById("trainer-icon-file")?.addEventListener("change", (ev) => {
+        const file = ev.target instanceof HTMLInputElement ? ev.target.files?.[0] : null;
+        const name = document.getElementById("trainer-icon-name");
+        if (name) name.textContent = file ? file.name : "未登録";
       });
       const full = document.getElementById("shot-full");
       const sc = document.getElementById("shot-scroller");

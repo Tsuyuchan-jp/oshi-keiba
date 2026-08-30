@@ -82,13 +82,14 @@ async function putHorseShot(
   eventId: string,
   horseId: string,
   file: File,
+  suffix = "",
 ): Promise<string> {
   if (!env.SHOTS) throw new Error("画像の保存先がまだありません");
   if (file.size <= 0) throw new Error("画像が空です");
   if (file.size > MAX_SHOT_BYTES) throw new Error("画像が大きすぎます（2MBまで）");
   const contentType = normalizeShotMime(file.type, file.name);
   if (!contentType) throw new Error("対応形式は PNG / JPEG / WebP です");
-  const key = `${eventId}/${horseId}`;
+  const key = `${eventId}/${horseId}${suffix}`;
   await env.SHOTS.put(key, await file.arrayBuffer(), {
     httpMetadata: { contentType },
   });
@@ -343,6 +344,15 @@ export default {
             const key = await putHorseShot(env, board.event.id, horseId, shot);
             await setHorseShotKey(env.DB, board.event, horseId, key);
           }
+          const comment = String(form.get("paddock_comment") ?? "").trim();
+          if (comment.length > 40) throw new Error("意気込みコメントは40文字以内です");
+          const icon = form.get("trainer_icon");
+          let iconKey = existing.horse.trainer_icon_key;
+          if (icon instanceof File && icon.size > 0) {
+            iconKey = await putHorseShot(env, board.event.id, horseId, icon, "-trainer-icon");
+          }
+          await env.DB.prepare("UPDATE horses SET paddock_comment = ?, trainer_icon_key = ? WHERE id = ? AND event_id = ?")
+            .bind(comment || null, iconKey, horseId, board.event.id).run();
           return bounce("/admin/register", "更新しました");
         } catch (err) {
           return bounce("/admin/register", err instanceof Error ? err.message : "失敗", true);
