@@ -14,13 +14,15 @@ if (!fs.existsSync(mdb)) throw new Error(`master.mdb が見つかりません: $
 
 const db = new DatabaseSync(mdb, { readOnly: true });
 const rows = db.prepare(`
-  SELECT d.chara_id, d.id AS dress_id, chara.text AS chara_name,
-         dress.text AS dress_name, all_name.text AS full_name
+  SELECT DISTINCT d.chara_id, d.id AS dress_id, chara.text AS chara_name,
+         dress.text AS dress_name,
+         COALESCE(all_name.text, '[' || dress.text || ']' || chara.text) AS full_name
   FROM dress_data d
-  JOIN card_data card ON card.id = d.id AND card.chara_id = d.chara_id
   JOIN text_data chara ON chara.category = 6 AND chara."index" = d.chara_id
-  JOIN text_data dress ON dress.category = 5 AND dress."index" = d.id
-  JOIN text_data all_name ON all_name.category = 4 AND all_name."index" = d.id
+  JOIN text_data dress ON dress.category = 14 AND dress."index" = d.id
+  LEFT JOIN text_data all_name ON all_name.category = 4 AND all_name."index" = d.id
+  JOIN card_rarity_data rarity ON rarity.race_dress_id = d.id
+  JOIN card_data card ON card.id = rarity.card_id AND card.chara_id = d.chara_id
   WHERE d.chara_id BETWEEN 1000 AND 1999 AND d.have_mini = 1
   ORDER BY d.chara_id, d.id
 `).all();
