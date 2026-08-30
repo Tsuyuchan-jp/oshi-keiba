@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { resolvePetitImageUrl, resolveUmaDress } from "./umaDress.ts";
+import { findUmaDressById, resolvePetitImageUrl, resolveUmaDress } from "./umaDress.ts";
 import { addHorse, ensureEvent, listHorses } from "./store.ts";
 import { createMemoryD1 } from "./testD1.ts";
 
@@ -22,6 +22,11 @@ test("正規のウマ娘名と衣装名からのみ衣装を確定する", () =>
 test("一意な OCR 一文字誤読は衣装名でも補正する", () => {
   const hit = resolveUmaDress("スペシャルウィーク", "スペシャルドリーマー");
   assert.equal(hit?.dressId, 100101);
+});
+
+test("衣装IDからカタログの衣装を取得できる", () => {
+  assert.equal(findUmaDressById(100101)?.charaName, "スペシャルウィーク");
+  assert.equal(findUmaDressById(0), null);
 });
 
 test("衣装 ID は出走馬に保存され、ID 未指定も後方互換である", async () => {

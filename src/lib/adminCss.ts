@@ -955,6 +955,15 @@ body.register-page .work .ctas a { align-self: center; font-size: .85rem; color:
 .modal-close { position: absolute; top: .7rem; right: .8rem; width: 2rem; height: 2rem; padding: 0; border-radius: 50%; background: var(--admin-surface-muted); color: var(--admin-muted); font-size: 1.35rem; line-height: 1; }
 .edit-shot-picker { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .6rem; margin: .65rem 0; font-size: .8rem; color: var(--admin-muted); }
 .edit-shot-picker .admin-action { color: var(--admin-accent); }
+.dress-picker { display: grid; grid-template-columns: minmax(13rem, 1fr) auto; gap: .35rem .55rem; align-items: end; margin: .65rem 0; }
+.dress-picker label { display: grid; gap: .2rem; color: var(--admin-muted); font-size: .8rem; }
+.dress-picker input { min-width: 0; padding: .38rem .48rem; border: 1px solid var(--admin-line-strong); border-radius: 6px; color: var(--admin-ink); background: var(--admin-surface); }
+.dress-clear { align-self: end; padding: .4rem .55rem; white-space: nowrap; }
+.dress-options { grid-column: 1 / -1; display: flex; gap: .35rem; min-height: 0; max-height: 10.25rem; overflow: auto; padding: .35rem; border: 1px solid var(--admin-line-subtle); border-radius: 7px; background: var(--admin-surface-muted); }
+.dress-option { display: grid; grid-template-columns: 2.7rem minmax(8rem, 1fr); gap: .35rem; align-items: center; min-width: 11.5rem; padding: .25rem .35rem; border: 1px solid transparent; border-radius: 6px; color: var(--admin-ink); background: var(--admin-surface); text-align: left; cursor: pointer; font-size: .72rem; }
+.dress-option:hover, .dress-option.on { border-color: var(--admin-accent); background: #e8f0fa; }
+.dress-option img { width: 2.7rem; height: 2.7rem; object-fit: contain; }
+.dress-picker .note { grid-column: 1 / -1; margin: 0; }
 .edit-extra { margin-top: .8rem; padding: .65rem; border: 1px solid var(--admin-line-subtle); border-radius: 8px; background: var(--admin-surface-muted); }
 .edit-extra summary { cursor: pointer; font-weight: 700; font-size: .85rem; }
 .edit-stat-grid, .edit-apt-grid { display: grid; gap: .5rem; margin-top: .65rem; }

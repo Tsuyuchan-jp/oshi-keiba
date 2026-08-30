@@ -43,7 +43,7 @@ import {
   parseHorseScoreInput,
   serializeHorseScoreInput,
 } from "./lib/horseScoreInput";
-import { resolveUmaDress } from "./lib/umaDress";
+import { findUmaDressById, resolveUmaDress } from "./lib/umaDress";
 import { resolveStrength } from "./lib/scoreFromHorse";
 import { applyAutoScoreRecompute, prepareAutoScoreRecompute } from "./lib/scoreRecompute";
 import { loadStrategicSkillsBundle, tryAdminStrategicApi } from "./lib/adminStrategicApi";
@@ -94,6 +94,16 @@ async function putHorseShot(
     httpMetadata: { contentType },
   });
   return key;
+}
+
+/** DB 更新より先に画像の妥当性を確認し、途中更新を避ける。 */
+function validateHorseShot(file: string | File | null): File | null {
+  if (!(file instanceof File) || file.size <= 0) return null;
+  if (file.size > MAX_SHOT_BYTES) throw new Error("画像が大きすぎます（2MBまで）");
+  if (!normalizeShotMime(file.type, file.name)) {
+    throw new Error("対応形式は PNG / JPEG / WebP です");
+  }
+  return file;
 }
 
 export default {
@@ -316,9 +326,22 @@ export default {
           }
           const forceManual = String(form.get("strength_manual") ?? "") === "1";
           const umaName = String(form.get("uma_name") ?? "");
-          const dressName = String(form.get("dress_name") ?? "").trim();
-          const umaDress = resolveUmaDress(umaName, dressName);
-          if (dressName && !umaDress) throw new Error("衣装名をカタログの表記で入力してください");
+          const dressValue = String(form.get("dress_id") ?? "").trim();
+          const selectedDress = dressValue ? findUmaDressById(dressValue) : null;
+          if (dressValue && !selectedDress) throw new Error("衣装を候補から選択してください");
+          if (selectedDress && resolveUmaDress(umaName, selectedDress.dressName)?.dressId !== selectedDress.dressId) {
+            throw new Error("選択中の衣装はウマ娘名と一致しません。衣装を選び直してください");
+          }
+          const comment = String(form.get("paddock_comment") ?? "").trim();
+          if (comment.length > 40) throw new Error("意気込みコメントは40文字以内です");
+          const shot = validateHorseShot(form.get("shot"));
+          const icon = validateHorseShot(form.get("trainer_icon"));
+          const shotKey = shot
+            ? await putHorseShot(env, board.event.id, horseId, shot)
+            : existing.horse.shot_key;
+          const iconKey = icon
+            ? await putHorseShot(env, board.event.id, horseId, icon, "-trainer-icon")
+            : existing.horse.trainer_icon_key;
           const resolved = resolveStrength({
             setup,
             input: scoreInput,
@@ -336,25 +359,14 @@ export default {
               strength: resolved.strength,
               scoreInputJson: serializeHorseScoreInput(scoreInput),
               seedSource: resolved.source,
-              charaId: umaDress?.charaId ?? existing.horse.chara_id,
-              dressId: umaDress?.dressId ?? existing.horse.dress_id,
+              charaId: selectedDress?.charaId ?? null,
+              dressId: selectedDress?.dressId ?? null,
               keepScoreInput: false,
+              paddockComment: comment || null,
+              trainerIconKey: iconKey,
+              shotKey,
             },
           );
-          const shot = form.get("shot");
-          if (shot instanceof File && shot.size > 0) {
-            const key = await putHorseShot(env, board.event.id, horseId, shot);
-            await setHorseShotKey(env.DB, board.event, horseId, key);
-          }
-          const comment = String(form.get("paddock_comment") ?? "").trim();
-          if (comment.length > 40) throw new Error("意気込みコメントは40文字以内です");
-          const icon = form.get("trainer_icon");
-          let iconKey = existing.horse.trainer_icon_key;
-          if (icon instanceof File && icon.size > 0) {
-            iconKey = await putHorseShot(env, board.event.id, horseId, icon, "-trainer-icon");
-          }
-          await env.DB.prepare("UPDATE horses SET paddock_comment = ?, trainer_icon_key = ? WHERE id = ? AND event_id = ?")
-            .bind(comment || null, iconKey, horseId, board.event.id).run();
           return bounce(`/admin/register?edit=${encodeURIComponent(horseId)}`, "更新しました");
         } catch (err) {
           return bounce("/admin/register", err instanceof Error ? err.message : "失敗", true);

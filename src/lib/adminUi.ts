@@ -1,7 +1,7 @@
 import { escapeHtml } from "./http";
 import { horseSheetParts } from "./horseName";
 import { parseHorseScoreInput, STYLE_OPTIONS, type HorseScoreInput } from "./horseScoreInput";
-import { findUmaDress } from "./umaDress";
+import { findUmaDress, umaDressCatalogJsonForPage } from "./umaDress";
 import { scoreFromHorse } from "./scoreFromHorse";
 import { eventScoreSetup, numberByHorseId } from "./store";
 import type { Board, EventRow, HorseBoard, UserRow, BetRow } from "./store";
@@ -522,7 +522,13 @@ export function adminRegisterPage(
               <div class="reg-names">
                 <label>ウマ娘名<input name="uma_name" id="uma-name" value="${escapeHtml(p.umaName)}" required maxlength="40"></label>
                 <label>出走者<input name="runner_name" id="runner-name" value="${escapeHtml(p.runnerName)}" required maxlength="40"></label>
-                <label>衣装名<input name="dress_name" value="${escapeHtml(dress?.dressName ?? "")}" maxlength="80"></label>
+                <div class="dress-picker" id="dress-picker">
+                  <label>衣装（検索して選択）<input id="dress-search" type="search" value="${escapeHtml(dress?.dressName ?? "")}" placeholder="衣装名で検索" autocomplete="off"></label>
+                  <input name="dress_id" id="dress-id" type="hidden" value="${dress?.dressId ?? ""}">
+                  <button type="button" class="admin-action dress-clear" id="dress-clear">未指定にする</button>
+                  <div class="dress-options" id="dress-options" role="listbox"></div>
+                  <p class="note" id="dress-help">ウマ娘名に対応する衣装だけを表示します</p>
+                </div>
                 <div class="edit-shot-picker"><span>スクリーンショット（選択時のみ差し替え）</span><input class="admin-offscreen" name="shot" id="edit-shot-file" type="file" accept="image/png,image/jpeg,image/webp"><label class="admin-action" for="edit-shot-file">画像を選択</label><span id="edit-shot-name" class="note">変更しない</span></div>
                 <label>意気込みコメント（40文字まで）<input name="paddock_comment" value="${escapeHtml(edit.horse.paddock_comment ?? "")}" maxlength="40"></label>
                 <div class="edit-shot-picker"><span>トレーナーアイコン（選択時のみ差し替え）</span><input class="admin-offscreen" name="trainer_icon" id="trainer-icon-file" type="file" accept="image/png,image/jpeg,image/webp"><label class="admin-action" for="trainer-icon-file">画像を選択</label><span id="trainer-icon-name" class="note">${edit.horse.trainer_icon_key ? "登録済み" : "未登録"}</span></div>
@@ -628,6 +634,39 @@ export function adminRegisterPage(
         const name = document.getElementById("trainer-icon-name");
         if (name) name.textContent = file ? file.name : "未登録";
       });
+      (() => {
+        const catalog = ${umaDressCatalogJsonForPage()};
+        const uma = document.getElementById("uma-name");
+        const search = document.getElementById("dress-search");
+        const hidden = document.getElementById("dress-id");
+        const options = document.getElementById("dress-options");
+        const help = document.getElementById("dress-help");
+        const norm = (value) => String(value || "").normalize("NFKC").replace(/[\\s\\u3000\\[\\]]/g, "").toLowerCase();
+        const clear = () => { if (hidden) hidden.value = ""; if (search) search.value = ""; };
+        const render = () => {
+          if (!options || !uma || !search) return;
+          const chara = norm(uma.value);
+          const query = norm(search.value);
+          const rows = catalog.filter((row) => norm(row.charaName) === chara && (!query || norm(row.dressName).includes(query)));
+          options.innerHTML = "";
+          if (!chara) { if (help) help.textContent = "先にウマ娘名を入力してください"; return; }
+          if (!rows.length) { if (help) help.textContent = "一致する衣装がありません"; return; }
+          if (help) help.textContent = String(rows.length) + " 件の衣装から選べます";
+          rows.forEach((row) => {
+            const button = document.createElement("button");
+            button.type = "button"; button.className = "dress-option"; button.setAttribute("role", "option");
+            if (String(hidden?.value || "") === String(row.dressId)) button.classList.add("on");
+            const image = "/images/umamusume/petit/petit_" + row.charaId + "_" + row.dressId + "_0010.png";
+            button.innerHTML = "<img src=\"" + image + "\" alt=\"\"><span>" + row.dressName + "</span>";
+            button.addEventListener("click", () => { if (hidden) hidden.value = String(row.dressId); search.value = row.dressName; render(); });
+            options.append(button);
+          });
+        };
+        search?.addEventListener("input", () => { if (hidden) hidden.value = ""; render(); });
+        uma?.addEventListener("input", () => { clear(); render(); });
+        document.getElementById("dress-clear")?.addEventListener("click", () => { clear(); render(); });
+        render();
+      })();
       const full = document.getElementById("shot-full");
       const sc = document.getElementById("shot-scroller");
       document.getElementById("shot-open")?.addEventListener("click", () => {

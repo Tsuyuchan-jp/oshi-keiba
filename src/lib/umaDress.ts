@@ -58,4 +58,10 @@ export function findUmaDress(charaId: unknown, dressId: unknown): UmaDress | nul
   return dresses.find((row) => row.charaId === chara && row.dressId === dress) ?? null;
 }
 
+/** 衣装IDからカタログ行を引く。編集画面の選択値検証に使う。 */
+export function findUmaDressById(dressId: unknown): UmaDress | null {
+  const dress = Number(dressId);
+  return dresses.find((row) => row.dressId === dress) ?? null;
+}
+
 export function umaDressCatalogJsonForPage(): string { return JSON.stringify(dresses); }

@@ -114,9 +114,9 @@ export async function updateHorse(
   if (o.keepScoreInput) {
     await db
       .prepare(
-        "UPDATE horses SET name = ?, uma_name = ?, runner_name = ?, chara_id = ?, dress_id = ?, strength = ? WHERE id = ? AND event_id = ?",
+      "UPDATE horses SET name = ?, uma_name = ?, runner_name = ?, chara_id = ?, dress_id = ?, strength = ?, paddock_comment = CASE WHEN ? THEN ? ELSE paddock_comment END, trainer_icon_key = CASE WHEN ? THEN ? ELSE trainer_icon_key END, shot_key = CASE WHEN ? THEN ? ELSE shot_key END WHERE id = ? AND event_id = ?",
       )
-      .bind(combined, uma, runner, o.charaId ?? null, o.dressId ?? null, o.strength, horseId, event.id)
+      .bind(combined, uma, runner, o.charaId ?? null, o.dressId ?? null, o.strength, o.paddockComment !== undefined ? 1 : 0, o.paddockComment ?? null, o.trainerIconKey !== undefined ? 1 : 0, o.trainerIconKey ?? null, o.shotKey !== undefined ? 1 : 0, o.shotKey ?? null, horseId, event.id)
       .run();
     return;
   }
@@ -127,9 +127,9 @@ export async function updateHorse(
   const source = o.seedSource === "auto" ? "auto" : "manual";
   await db
     .prepare(
-      "UPDATE horses SET name = ?, uma_name = ?, runner_name = ?, chara_id = ?, dress_id = ?, strength = ?, score_input = ?, seed_source = ? WHERE id = ? AND event_id = ?",
+      "UPDATE horses SET name = ?, uma_name = ?, runner_name = ?, chara_id = ?, dress_id = ?, strength = ?, score_input = ?, seed_source = ?, paddock_comment = CASE WHEN ? THEN ? ELSE paddock_comment END, trainer_icon_key = CASE WHEN ? THEN ? ELSE trainer_icon_key END, shot_key = CASE WHEN ? THEN ? ELSE shot_key END WHERE id = ? AND event_id = ?",
     )
-    .bind(combined, uma, runner, o.charaId ?? null, o.dressId ?? null, o.strength, scoreInput, source, horseId, event.id)
+    .bind(combined, uma, runner, o.charaId ?? null, o.dressId ?? null, o.strength, scoreInput, source, o.paddockComment !== undefined ? 1 : 0, o.paddockComment ?? null, o.trainerIconKey !== undefined ? 1 : 0, o.trainerIconKey ?? null, o.shotKey !== undefined ? 1 : 0, o.shotKey ?? null, horseId, event.id)
     .run();
 }
 
