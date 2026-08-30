@@ -61,8 +61,14 @@
 
 .horse-row { min-height: 0; transform: translateX(var(--row-shift, 0)); }
 .horse { width: var(--horse-width, 84px); height: 116px; }
-.horse img { height: 89px; }
-.horse__number { top: 2px; left: 0; width: 23px; height: 23px; font-size: 11px; }
+.horse img {
+  width: min(84px, 22vw);
+  max-width: none;
+  height: 89px;
+  margin-left: 50%;
+  transform: translateX(-50%) scaleX(-1);
+}
+.horse__number { top: 2px; left: calc(50% - min(42px, 11vw)); width: 23px; height: 23px; font-size: 11px; }
 .horse__name { display: none; max-width: 96px; margin: -4px auto 0; padding: 1px 5px; font-size: 9px; }
 .horse.selected .horse__name { display: block; }
 
