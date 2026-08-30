@@ -27,9 +27,9 @@
 .horse-groups {
   --horse-image-width: min(84px, 22vw);
   --horse-image-height: 89px;
-  --horse-box-height: 102px;
+  --horse-box-height: 96px;
   --horse-number-offset: min(42px, 11vw);
-  inset: 31% 2% 4%;
+  inset: 27% 2% 11%;
   display: flex;
   flex-direction: column;
   gap: 0;
