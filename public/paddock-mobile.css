@@ -65,8 +65,8 @@
 
 .horse-row { min-height: 0; transform: translateX(var(--row-shift, 0)); }
 .horse { width: var(--horse-width, 84px); height: var(--horse-box-height); }
-.horse-row .horse:not(:only-child):nth-child(odd) { --horse-row-bob: -15px; }
-.horse-row .horse:not(:only-child):nth-child(even) { --horse-row-bob: 15px; }
+.horse-row .horse:not(:only-child):nth-child(odd) { --horse-row-bob: -25px; }
+.horse-row .horse:not(:only-child):nth-child(even) { --horse-row-bob: 25px; }
 .horse-row .horse { transform: translateY(var(--horse-row-bob, 0)); }
 .horse-row .horse:hover,
 .horse-row .horse:focus-visible,
