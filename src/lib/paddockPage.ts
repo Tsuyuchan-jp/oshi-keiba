@@ -32,6 +32,10 @@ export function paddockPage(view: PaddockView): string {
       <h1>${escapeHtml(view.title)}　出走ウマ娘紹介</h1>
       <p>${escapeHtml(countText)}</p>
     </header>
+    <nav class="paddock-nav" aria-label="パドックの移動">
+      <a href="/">← 場内へ</a>
+      <a class="paddock-nav__bet" href="/bet">窓口へ →</a>
+    </nav>
     <div id="horse-groups" class="horse-groups"></div>
     <p class="stage-note">ウマ娘を選ぶと、右の選手紹介カードに詳細を表示します</p>
   </section>

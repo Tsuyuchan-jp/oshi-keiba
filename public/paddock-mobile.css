@@ -24,12 +24,27 @@
 .scoreboard__top span { max-width: 72%; overflow: hidden; text-overflow: ellipsis; }
 .scoreboard h1 { padding: 9px 8px 7px; font-size: 18px; }
 
+.paddock-nav {
+  top: clamp(176px, 23svh, 210px);
+  left: 50%;
+  transform: translateX(-50%);
+  gap: 6px;
+}
+
+.paddock-nav a {
+  min-width: 92px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  text-align: center;
+}
+
 .horse-groups {
   --horse-image-width: min(84px, 22vw);
   --horse-image-height: 89px;
   --horse-box-height: 96px;
   --horse-number-offset: min(42px, 11vw);
-  inset: 27% 2% 11%;
+  inset: max(27%, 220px) 2% 11%;
   display: flex;
   flex-direction: column;
   gap: 0;
