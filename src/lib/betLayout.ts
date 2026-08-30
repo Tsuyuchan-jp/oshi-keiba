@@ -53,6 +53,7 @@ function shellChrome(opts: {
       <div class="nav">
         ${phasePill(opts.eventStatus)}
         <a href="/">場内</a>
+        <a href="/paddock">パドック</a>
         <a class="on" href="/bet">窓口</a>
       </div>
       <button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
