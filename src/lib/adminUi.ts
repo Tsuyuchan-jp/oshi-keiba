@@ -659,6 +659,11 @@ export function adminRegisterPage(
           });
         };
         uma?.addEventListener("input", () => { if (hidden) hidden.value = ""; render(); });
+        options?.addEventListener("wheel", (ev) => {
+          if (Math.abs(ev.deltaY) <= Math.abs(ev.deltaX)) return;
+          options.scrollLeft += ev.deltaY;
+          ev.preventDefault();
+        }, { passive: false });
         render();
       })();
       const full = document.getElementById("shot-full");
