@@ -62,11 +62,6 @@
     shotDialog.showModal();
   };
   const open = (h) => {
-    // 画面幅の切り替わりや連続操作で残ったモバイル用の背景要素が、
-    // 一覧のクリックを受け続けないよう選択開始時に必ず片付ける。
-    document.querySelectorAll(".detail-backdrop").forEach((element) => element.remove());
-    backdrop = null;
-    if (shotDialog?.open) shotDialog.close();
     document.querySelectorAll(".horse").forEach((x) => x.classList.toggle("selected", x.dataset.id === h.id));
     const icon = h.trainerIconUrl ? `<img src="${esc(h.trainerIconUrl)}" alt="${esc(h.trainerName)}のアイコン">` : '<span class="trainer-placeholder">Trainer</span>';
     const comment = esc(h.comment || "意気込みコメントは未登録です");
