@@ -942,8 +942,13 @@ body.register-page .work .ctas a { align-self: center; font-size: .85rem; color:
 .reg-detail-names { display: flex; flex-wrap: wrap; align-items: baseline; gap: .35rem .7rem; margin-bottom: .65rem; }
 .reg-detail-names strong { font-size: 1.05rem; }
 .reg-detail-names span { font-size: .78rem; color: var(--admin-muted); }
-.horse-edit-modal { --admin-modal-max-width: 58rem; }
+.reg-detail-names .detail-runner { font-size: .88rem; font-weight: 700; color: var(--admin-ink); }
+.reg-detail-names .detail-style { font-size: .84rem; font-weight: 700; color: var(--admin-accent); background: #e8f0fa; padding: .12rem .42rem; border-radius: 999px; }
+.horse-edit-modal { --admin-modal-max-width: 70rem; position: relative; }
 .horse-edit-modal #bench { max-height: min(68dvh, 44rem); overflow: auto; }
+.modal-close { position: absolute; top: .7rem; right: .8rem; width: 2rem; height: 2rem; padding: 0; border-radius: 50%; background: var(--admin-surface-muted); color: var(--admin-muted); font-size: 1.35rem; line-height: 1; }
+.edit-shot-picker { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .6rem; margin: .65rem 0; font-size: .8rem; color: var(--admin-muted); }
+.edit-shot-picker .admin-action { color: var(--admin-accent); }
 .edit-extra { margin-top: .8rem; padding: .65rem; border: 1px solid var(--admin-line-subtle); border-radius: 8px; background: var(--admin-surface-muted); }
 .edit-extra summary { cursor: pointer; font-weight: 700; font-size: .85rem; }
 .edit-stat-grid, .edit-apt-grid { display: grid; gap: .5rem; margin-top: .65rem; }

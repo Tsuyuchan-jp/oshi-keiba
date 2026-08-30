@@ -510,7 +510,7 @@ export function adminRegisterPage(
     const stat = (key: keyof HorseScoreInput["stats"], label: string) => `<label>${label}<input name="stat_${key}" type="number" min="0" value="${scoreIn?.stats[key] ?? 0}" required></label>`;
     const rank = (key: keyof HorseScoreInput["aptitudes"], label: string) => `<label>${label}<select name="apt_${key}">${["S", "A", "B", "C", "D", "E", "F", "G"].map((v) => `<option value="${v}"${scoreIn?.aptitudes[key] === v ? " selected" : ""}>${v}</option>`).join("")}</select></label>`;
     const editExtra = scoreIn ? `<input type="hidden" name="score_edit" value="1"><details class="edit-extra" open><summary>能力・適性・スキルを編集</summary><div class="edit-stat-grid">${stat("speed", "スピード")}${stat("stamina", "スタミナ")}${stat("power", "パワー")}${stat("guts", "根性")}${stat("wisdom", "賢さ")}</div><div class="edit-apt-grid">${rank("turf", "芝")}${rank("dirt", "ダート")}${rank("short", "短距離")}${rank("mile", "マイル")}${rank("medium", "中距離")}${rank("long", "長距離")}${rank("nige", "逃げ")}${rank("senkou", "先行")}${rank("sashi", "差し")}${rank("oikomi", "追込")}</div><label>スキル（改行または「、」で区切る）<textarea name="skill_names" rows="3">${escapeHtml(scoreIn.skillNames.join("、"))}</textarea></label></details>` : "";
-    benchTitle = "直し";
+    benchTitle = "詳細確認";
     benchMeta = escapeHtml(p.umaName);
     nextAdd = `<a class="reg-next" href="/admin/register">＋ 次の1頭を登録</a>`;
     benchInner = `<form method="post" action="/admin/horse-edit" enctype="multipart/form-data" id="horse-edit">
@@ -523,7 +523,7 @@ export function adminRegisterPage(
                 <label>ウマ娘名<input name="uma_name" id="uma-name" value="${escapeHtml(p.umaName)}" required maxlength="40"></label>
                 <label>出走者<input name="runner_name" id="runner-name" value="${escapeHtml(p.runnerName)}" required maxlength="40"></label>
                 <label>衣装名<input name="dress_name" value="${escapeHtml(dress?.dressName ?? "")}" maxlength="80"></label>
-                <label>スクリーンショット（選択時のみ差し替え）<input name="shot" type="file" accept="image/png,image/jpeg,image/webp"></label>
+                <div class="edit-shot-picker"><span>スクリーンショット（選択時のみ差し替え）</span><input class="admin-offscreen" name="shot" id="edit-shot-file" type="file" accept="image/png,image/jpeg,image/webp"><label class="admin-action" for="edit-shot-file">画像を選択</label><span id="edit-shot-name" class="note">変更しない</span></div>
               </div>
               ${styleSeg(scoreIn?.styleKey)}
               ${
@@ -555,16 +555,16 @@ export function adminRegisterPage(
               </div>
               <div class="ctas">
                 <button type="submit" class="primary">更新</button>
-                <button type="button" id="horse-edit-cancel">キャンセル</button>
+                <button type="button" class="admin-action" id="horse-edit-cancel">キャンセル</button>
               </div>
             </div>
           </div>
         </div>
       </form>`;
-    editModal = `<dialog class="modal horse-edit-modal" id="horse-edit-modal"><h2>出走内容を編集</h2>${benchInner}</dialog>`;
+    editModal = `<dialog class="modal horse-edit-modal" id="horse-edit-modal"><button type="button" class="modal-close" id="horse-edit-close" aria-label="閉じる">×</button><h2>出走内容を編集</h2>${benchInner}</dialog>`;
     benchInner = `<div class="reg-bench reg-detail" id="bench">
         ${edit.horse.shot_key ? `<button type="button" class="reg-shot-btn" id="shot-open" aria-label="スクリーンショットを大きく見る"><img class="reg-shot" src="/admin/shot/${escapeHtml(edit.horse.id)}" alt=""></button>` : `<div class="reg-shot empty">スクショなし</div>`}
-        <div><div class="reg-detail-names"><strong>${escapeHtml(p.umaName)}</strong><span>${escapeHtml(p.runnerName)}</span><span>${escapeHtml(styleLabel(scoreIn?.styleKey))}</span></div>
+        <div><div class="reg-detail-names"><strong>${escapeHtml(p.umaName)}</strong><span class="detail-runner">${escapeHtml(p.runnerName)}</span><span class="detail-style">${escapeHtml(styleLabel(scoreIn?.styleKey))}</span></div>
           ${scoreIn ? registerMaterialsHtml(scoreIn, scoreIn.styleKey && setup ? effectiveIdsFromScoreSetup(setup, scoreIn.styleKey) : null, strategic.skills, dismissedIds, false) : ""}
           <div class="reg-preview"><span class="lab">評価点</span><span class="num">${escapeHtml(String(edit.horse.strength))}</span></div>
         </div></div>`;
@@ -610,7 +610,16 @@ export function adminRegisterPage(
       const dlg = document.getElementById("shot-dlg");
       const editDlg = document.getElementById("horse-edit-modal");
       document.getElementById("horse-edit-open")?.addEventListener("click", () => editDlg?.showModal());
-      document.getElementById("horse-edit-cancel")?.addEventListener("click", () => editDlg?.close());
+      const closeEdit = () => {
+        if (window.confirm("編集内容を破棄して閉じます")) editDlg?.close();
+      };
+      document.getElementById("horse-edit-cancel")?.addEventListener("click", closeEdit);
+      document.getElementById("horse-edit-close")?.addEventListener("click", closeEdit);
+      document.getElementById("edit-shot-file")?.addEventListener("change", (ev) => {
+        const file = ev.target instanceof HTMLInputElement ? ev.target.files?.[0] : null;
+        const name = document.getElementById("edit-shot-name");
+        if (name) name.textContent = file ? file.name : "変更しない";
+      });
       const full = document.getElementById("shot-full");
       const sc = document.getElementById("shot-scroller");
       document.getElementById("shot-open")?.addEventListener("click", () => {
