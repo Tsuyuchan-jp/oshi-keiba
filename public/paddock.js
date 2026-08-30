@@ -50,7 +50,7 @@
     const comment = esc(h.comment || "意気込みコメントは未登録です");
     const shot = h.shotUrl ? '<button type="button" class="shot-action">育成スクリーンショットを見る</button>' : "";
     detail.className = "detail open";
-    detail.innerHTML = `<div class="detail__summary"><small>タップで詳細を閉じる</small></div><div class="detail__heading"><span>${esc(h.styleLabel)}</span>　<span>${h.number}番</span></div><div class="profile">${h.detailImageUrl ? `<img src="${esc(h.detailImageUrl)}" alt="${esc(h.umaName)}">` : ""}<div class="profile-text"><p>${esc(h.styleLabel)}　${h.number}番</p><h2>${esc(h.umaName)}</h2><p>トレーナー ${esc(h.trainerName)}</p><strong>${odds(h.odds)}</strong></div></div><div class="trainer-comment">${icon}<blockquote>${comment}</blockquote></div><section class="skill"><div><span>スキルパワー</span><b>${h.skillPower ?? "—"}</b></div><small>有効 ${h.skillSummary?.effective ?? 0}　金相当 ${h.skillSummary?.goldLike ?? 0}　戦略 +${h.skillSummary?.strategic ?? 0}</small></section><section class="status"><h3>基礎能力</h3>${stats(h)}<p class="aptitude">適性　${h.aptitudes ? `${esc(h.aptitudes.surface)}　${esc(h.aptitudes.distance)}　${esc(h.aptitudes.style)}` : "未登録"}</p></section><div class="actions">${shot}<a class="candidate" href="/bet?candidate=${encodeURIComponent(h.id)}">このウマ娘を投票候補にする →</a></div>`;
+    detail.innerHTML = `<div class="detail__summary"><small>タップで詳細を閉じる</small></div><div class="detail__heading"><span>${esc(h.styleLabel)}</span>　<span>${h.number}番</span></div><div class="profile">${h.detailImageUrl ? `<img src="${esc(h.detailImageUrl)}" alt="${esc(h.umaName)}">` : ""}<div class="profile-text"><h2>${esc(h.umaName)}</h2><p class="profile-trainer"><span>トレーナー</span><b>${esc(h.trainerName)}</b></p><strong>${odds(h.odds)}</strong></div></div><div class="trainer-comment">${icon}<blockquote>${comment}</blockquote></div><section class="skill"><div><span>スキルパワー</span><b>${h.skillPower ?? "—"}</b></div><small>有効 ${h.skillSummary?.effective ?? 0}　金相当 ${h.skillSummary?.goldLike ?? 0}　戦略 +${h.skillSummary?.strategic ?? 0}</small></section><section class="status"><h3>基礎能力</h3>${stats(h)}<p class="aptitude">適性　${h.aptitudes ? `${esc(h.aptitudes.surface)}　${esc(h.aptitudes.distance)}　${esc(h.aptitudes.style)}` : "未登録"}</p></section><div class="actions">${shot}<a class="candidate" href="/bet?candidate=${encodeURIComponent(h.id)}">このウマ娘を投票候補にする →</a></div>`;
     detail.querySelector(".shot-action")?.addEventListener("click", () => openShot(h.shotUrl, h.umaName));
     if (matchMedia("(max-width:700px)").matches) {
       backdrop = document.createElement("button");
@@ -73,7 +73,7 @@
       rowsFor(horses).forEach((row, index) => {
         const line = document.createElement("div");
         line.className = "horse-row";
-        line.style.setProperty("--row-shift", `${index % 2 ? "8" : "-8"}%`);
+        line.style.setProperty("--row-shift", row.length === 1 ? "0" : `${index % 2 ? "8" : "-8"}%`);
         row.forEach((h) => {
           const button = document.createElement("button");
           button.className = "horse";
