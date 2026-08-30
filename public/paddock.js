@@ -25,9 +25,17 @@
       const value = Number(h.stats[key]);
       const cap = statCaps[key];
       const target = Number(h.statTargets?.[key]);
-      const width = Number.isFinite(value) && cap ? Math.min(100, value / cap * 100) : 0;
-      const markerPosition = Number.isFinite(target) && cap ? Math.min(100, target / cap * 100) : null;
-      const marker = markerPosition != null ? `<i class="bar__target" style="left:${markerPosition}%" aria-hidden="true"></i>` : "";
+      const hasTarget = Number.isFinite(target) && target > 0 && cap > 0;
+      const width = !Number.isFinite(value) || !cap
+        ? 0
+        : !hasTarget
+        ? Math.min(100, value / cap * 100)
+        : target >= cap
+        ? Math.min(80, value / cap * 80)
+        : value <= target
+        ? Math.min(80, value / target * 80)
+        : Math.min(100, 80 + (value - target) / (cap - target) * 20);
+      const marker = hasTarget ? '<i class="bar__target" aria-hidden="true"></i>' : "";
       return `<div class="stat"><span>${name}</span><i class="bar">${marker}<i class="bar__value" style="width:${width}%"></i></i><b>${value}</b></div>`;
     }).join("");
   };
