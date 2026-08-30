@@ -76,6 +76,20 @@ async function requireMember(
   return { session, user };
 }
 
+/** 閲覧ページだけは、管理者セッションからも開けるようにする。 */
+async function requireMemberOrAdmin(
+  request: Request,
+  env: Env,
+): Promise<{ session: Session; user: UserRow; preview: boolean } | Response> {
+  const session = await sessionFromRequest(request, env.SESSION_SECRET);
+  if (!session || (session.role !== "member" && session.role !== "admin")) {
+    return redirect("/login");
+  }
+  const user = await getUser(env.DB, session.userId);
+  if (!user) return redirect(session.role === "admin" ? "/admin/login" : "/login");
+  return { session, user, preview: session.role === "admin" };
+}
+
 function memberPasswordOk(env: Env, password: string): boolean {
   const expected = env.MEMBER_PASSWORD;
   if (!expected) return false;
@@ -145,7 +159,7 @@ export async function tryMemberGet(
 
   const paddockMedia = path.match(/^\/paddock\/(shot|trainer-icon)\/([^/]+)$/);
   if (paddockMedia) {
-    const gate = await requireMember(request, env);
+    const gate = await requireMemberOrAdmin(request, env);
     if (gate instanceof Response) return gate;
     const board = await loadBoard(env.DB);
     const horse = board.horses.find((item) => item.horse.id === paddockMedia[2]);
@@ -159,7 +173,7 @@ export async function tryMemberGet(
   }
 
   if (path === "/paddock") {
-    const gate = await requireMember(request, env);
+    const gate = await requireMemberOrAdmin(request, env);
     if (gate instanceof Response) return gate;
     const board = await loadBoard(env.DB);
     return html(paddockPage(paddockView(board, await listStrategicSkills(env.DB))));
@@ -193,7 +207,7 @@ export async function tryMemberGet(
   }
 
   if (path === "/bet") {
-    const gate = await requireMember(request, env);
+    const gate = await requireMemberOrAdmin(request, env);
     if (gate instanceof Response) return gate;
     const board = await loadBoard(env.DB);
     const user = (await getUser(env.DB, gate.user.id))!;
@@ -208,7 +222,7 @@ export async function tryMemberGet(
     const myBets = await listUserBets(env.DB, board.event.id, user.id);
     const grouped = groupMyBets(myBets, board);
 
-    if (live && !joined) {
+    if (!gate.preview && live && !joined) {
       return html(
         betJoinPage({
           board,
@@ -219,7 +233,7 @@ export async function tryMemberGet(
       );
     }
 
-    const canBuy = board.event.status === "voting" && joined;
+    const canBuy = !gate.preview && board.event.status === "voting" && joined;
     const myBetsHtml =
       grouped.length === 0
         ? `<p class="hint">まだ馬券がありません。</p>`
@@ -234,7 +248,7 @@ export async function tryMemberGet(
         ? `<button type="submit" class="text-btn" form="redo-form" onclick="return confirm('全ての馬券がリセットされますがよろしいですか？');">やりなおし（全部取消）</button>`
         : "";
 
-    if (!canBuy) {
+    if (!canBuy && !gate.preview) {
       return html(
         betClosedPage({
           board,
@@ -253,6 +267,7 @@ export async function tryMemberGet(
         flash: m,
         myBetsHtml,
         redoHtml,
+        preview: gate.preview,
         candidateHorseId: url.searchParams.get("candidate"),
         scripts:
           (live ? livePollScript("/api/board", kind) : "") + BOARD_FLASH_SCRIPT,

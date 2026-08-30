@@ -151,6 +151,11 @@ ${MEMBER_OVERLAY_CSS}
   border: 1px solid var(--member-accent); color: var(--member-accent); font-size: .82rem;
 }
 .flash.error { border-color: var(--member-danger); color: var(--member-danger-ink); }
+.admin-preview {
+  margin: 0 0 .55rem; padding: .45rem .6rem;
+  border: 1px solid var(--member-accent); background: var(--member-accent-bg);
+  color: var(--member-accent); font-size: .78rem; font-weight: 700;
+}
 @media (min-width: 900px) {
   .app-shell { max-height: calc(100dvh - 3rem); }
 }

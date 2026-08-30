@@ -203,6 +203,7 @@ function markCardScript(opts: {
   unit: number;
   horses: { id: string; number: number; umaName: string; odds: number | null }[];
   candidateHorseId?: string | null;
+  preview?: boolean;
 }): string {
   const slots = betKindSlots(opts.kind);
   return `<script>
@@ -214,6 +215,7 @@ function markCardScript(opts: {
   const hint = ${JSON.stringify(slots.hint)};
   const unit = ${opts.unit};
   const bal = ${opts.balance};
+  const preview = ${opts.preview ? "true" : "false"};
   const horses = ${JSON.stringify(opts.horses)};
   const byNum = new Map(horses.map((h) => [h.number, h]));
   let picks = labels.map(() => null);
@@ -247,7 +249,7 @@ function markCardScript(opts: {
     h2.value = ids[1] || "";
     h3.value = ids[2] || "";
     amountInput.value = String(amount);
-    buy.disabled = !ready();
+    buy.disabled = preview || !ready();
   }
   function paint() {
     const used = new Set(picks.filter((x) => x != null));
@@ -299,6 +301,10 @@ function markCardScript(opts: {
     else if (b.hasAttribute("data-all")) setAmt(cap);
   });
   form.addEventListener("submit", (ev) => {
+    if (preview) {
+      ev.preventDefault();
+      return;
+    }
     syncHidden();
     if (!ready()) {
       ev.preventDefault();
@@ -330,6 +336,7 @@ export function betBuyPage(opts: {
   redoHtml: string;
   scripts?: string;
   candidateHorseId?: string | null;
+  preview?: boolean;
 }): string {
   const flash = opts.flash.text
     ? flashHtml(opts.flash.text, opts.flash.error)
@@ -359,6 +366,7 @@ export function betBuyPage(opts: {
       <input type="hidden" name="amount" id="bet-amount" value="0">
       <div class="desk-scroll">
         ${flash}
+        ${opts.preview ? `<p class="admin-preview">管理者プレビュー：馬券の購入・参加はできません。</p>` : ""}
         ${kindsNavHtml(opts.kind, opts.board.event.enabled_kinds)}
         <p class="hint" id="hint">${escapeHtml(slots.hint)}</p>
         <div class="wells" id="wells"></div>
@@ -397,6 +405,7 @@ export function betBuyPage(opts: {
         unit: opts.board.event.bet_unit,
         horses,
         candidateHorseId: opts.candidateHorseId,
+        preview: opts.preview,
       }) + (opts.scripts ?? ""),
   });
 }
