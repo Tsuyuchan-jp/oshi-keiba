@@ -429,6 +429,7 @@ body.ledger-page .filters select {
   border-radius: 8px; border: 1px solid var(--admin-line); background: #1a1c1f; display: block;
 }
 .reg-shot-btn { padding: 0; border: 0; background: none; cursor: pointer; border-radius: 8px; }
+.reg-shot-stack { display: grid; gap: .45rem; min-width: 0; }
 .reg-shot.empty {
   display: flex; align-items: center; justify-content: center;
   color: #8a929c; font-size: .75rem; background: var(--admin-surface-muted);
@@ -960,6 +961,9 @@ body.register-page .work .ctas a { align-self: center; font-size: .85rem; color:
 .dress-option { display: grid; grid-template-columns: 2.7rem minmax(8rem, 1fr); gap: .35rem; align-items: center; min-width: 11.5rem; padding: .25rem .35rem; border: 1px solid transparent; border-radius: 6px; color: var(--admin-ink); background: var(--admin-surface); text-align: left; cursor: pointer; font-size: .72rem; }
 .dress-option:hover, .dress-option.on { border-color: var(--admin-accent); background: #e8f0fa; }
 .dress-option img { width: 2.7rem; height: 2.7rem; object-fit: contain; }
+.detail-dress { grid-template-columns: 2.2rem minmax(0, 1fr); min-width: 0; cursor: default; }
+.detail-dress img { width: 2.2rem; height: 2.2rem; }
+.detail-dress--empty { display: grid; place-items: center; min-height: 2.7rem; padding: .25rem; border: 1px dashed var(--admin-line-strong); border-radius: 6px; color: var(--admin-muted); background: var(--admin-surface-muted); font-size: .7rem; }
 .dress-picker .note { grid-column: 1 / -1; margin: 0; }
 .edit-extra { margin-top: .8rem; padding: .65rem; border: 1px solid var(--admin-line-subtle); border-radius: 8px; background: var(--admin-surface-muted); }
 .edit-extra summary { cursor: pointer; font-weight: 700; font-size: .85rem; }

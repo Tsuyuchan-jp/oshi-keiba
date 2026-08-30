@@ -507,6 +507,9 @@ export function adminRegisterPage(
       edit.horse.seed_source === "manual" &&
       !(auto && auto.strength === edit.horse.strength);
     const dress = findUmaDress(edit.horse.chara_id, edit.horse.dress_id);
+    const detailDress = dress
+      ? `<div class="dress-option detail-dress"><img src="/images/umamusume/petit/petit_${dress.charaId}_${dress.dressId}_0010.png" alt=""><span>${escapeHtml(dress.dressName)}</span></div>`
+      : `<div class="detail-dress detail-dress--empty">衣装未設定</div>`;
     const stat = (key: keyof HorseScoreInput["stats"], label: string) => `<label>${label}<input name="stat_${key}" type="number" min="0" value="${scoreIn?.stats[key] ?? 0}" required></label>`;
     const rank = (key: keyof HorseScoreInput["aptitudes"], label: string) => `<label>${label}<select name="apt_${key}">${["S", "A", "B", "C", "D", "E", "F", "G"].map((v) => `<option value="${v}"${scoreIn?.aptitudes[key] === v ? " selected" : ""}>${v}</option>`).join("")}</select></label>`;
     const editExtra = scoreIn ? `<input type="hidden" name="score_edit" value="1"><details class="edit-extra" open><summary>能力・適性・スキルを編集</summary><div class="edit-stat-grid">${stat("speed", "スピード")}${stat("stamina", "スタミナ")}${stat("power", "パワー")}${stat("guts", "根性")}${stat("wisdom", "賢さ")}</div><div class="edit-apt-grid">${rank("turf", "芝")}${rank("dirt", "ダート")}${rank("short", "短距離")}${rank("mile", "マイル")}${rank("medium", "中距離")}${rank("long", "長距離")}${rank("nige", "逃げ")}${rank("senkou", "先行")}${rank("sashi", "差し")}${rank("oikomi", "追込")}</div><label>スキル（1行につき1スキル）<textarea name="skill_names" rows="8">${escapeHtml(scoreIn.skillNames.join("\n"))}</textarea></label></details>` : "";
@@ -570,7 +573,7 @@ export function adminRegisterPage(
       </form>`;
     editModal = `<dialog class="modal horse-edit-modal" id="horse-edit-modal"><button type="button" class="modal-close" id="horse-edit-close" aria-label="閉じる">×</button><h2>出走内容を編集</h2>${benchInner}</dialog>`;
     benchInner = `<div class="table-scroll reg-detail-scroll" id="bench"><div class="reg-bench reg-detail">
-        ${edit.horse.shot_key ? `<button type="button" class="reg-shot-btn" id="shot-open" aria-label="スクリーンショットを大きく見る"><img class="reg-shot" src="/admin/shot/${escapeHtml(edit.horse.id)}" alt=""></button>` : `<div class="reg-shot empty">スクショなし</div>`}
+        <div class="reg-shot-stack">${edit.horse.shot_key ? `<button type="button" class="reg-shot-btn" id="shot-open" aria-label="スクリーンショットを大きく見る"><img class="reg-shot" src="/admin/shot/${escapeHtml(edit.horse.id)}" alt=""></button>` : `<div class="reg-shot empty">スクショなし</div>`}${detailDress}</div>
         <div><div class="reg-detail-names"><strong>${escapeHtml(p.umaName)}</strong><span class="detail-runner">${escapeHtml(p.runnerName)}</span><span class="detail-style">${escapeHtml(styleLabel(scoreIn?.styleKey))}</span></div>
           <div class="paddock-profile">${edit.horse.trainer_icon_key ? `<img src="/admin/trainer-icon/${escapeHtml(edit.horse.id)}" alt="${escapeHtml(p.runnerName)}のアイコン">` : `<span class="paddock-profile-placeholder">アイコン未登録</span>`}<div><span class="paddock-profile-k">意気込み</span><p>${escapeHtml(edit.horse.paddock_comment || "未登録")}</p></div></div>
           ${scoreIn ? registerMaterialsHtml(scoreIn, scoreIn.styleKey && setup ? effectiveIdsFromScoreSetup(setup, scoreIn.styleKey) : null, strategic.skills, dismissedIds, false) : ""}
