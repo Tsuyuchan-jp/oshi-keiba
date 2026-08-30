@@ -19,10 +19,11 @@ export type PaddockHorseView = {
   listImageUrl: string | null;
   detailImageUrl: string | null;
   shotKey: string | null;
+  shotUrl: string | null;
   /** 次段階で管理者が入力する出走ごとの意気込み。 */
-  comment: null;
+  comment: string | null;
   /** 次段階でトレーナー単位に登録する note アイコン。 */
-  trainerIconUrl: null;
+  trainerIconUrl: string | null;
   skillPower: number | null;
   skillSummary: { effective: number; goldLike: number; strategic: number } | null;
   stats: { speed: number; stamina: number; power: number; guts: number; wisdom: number } | null;
@@ -74,8 +75,11 @@ export function paddockHorseView(
     styleLabel: styleLabel(style),
     ...images,
     shotKey: horse.horse.shot_key,
-    comment: null,
-    trainerIconUrl: null,
+    shotUrl: horse.horse.shot_key ? `/paddock/shot/${horse.horse.id}` : null,
+    comment: horse.horse.paddock_comment ?? null,
+    trainerIconUrl: horse.horse.trainer_icon_key
+      ? `/paddock/trainer-icon/${horse.horse.id}`
+      : null,
     skillPower: scored?.breakdown.skill.base ?? null,
     skillSummary: scored
       ? {

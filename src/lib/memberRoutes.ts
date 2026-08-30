@@ -52,6 +52,9 @@ import {
   venueBoardPage,
   venueTicketsHtml,
 } from "./venueLayout.ts";
+import { paddockPage } from "./paddockPage.ts";
+import { paddockView } from "./paddockView.ts";
+import { listStrategicSkills } from "./strategicSkills.ts";
 
 function msg(url: URL): { text: string | null; error: boolean } {
   return {
@@ -138,6 +141,28 @@ export async function tryMemberGet(
       statusLabel: statusLabel(board.event.status),
       kinds,
     });
+  }
+
+  const paddockMedia = path.match(/^\/paddock\/(shot|trainer-icon)\/([^/]+)$/);
+  if (paddockMedia) {
+    const gate = await requireMember(request, env);
+    if (gate instanceof Response) return gate;
+    const board = await loadBoard(env.DB);
+    const horse = board.horses.find((item) => item.horse.id === paddockMedia[2]);
+    const key = paddockMedia[1] === "shot"
+      ? horse?.horse.shot_key
+      : horse?.horse.trainer_icon_key;
+    if (!key || !env.SHOTS) return new Response("画像がありません", { status: 404 });
+    const obj = await env.SHOTS.get(key);
+    if (!obj) return new Response("画像がありません", { status: 404 });
+    return new Response(obj.body, { headers: { "Content-Type": obj.httpMetadata?.contentType || "image/jpeg", "Cache-Control": "private, max-age=300" } });
+  }
+
+  if (path === "/paddock") {
+    const gate = await requireMember(request, env);
+    if (gate instanceof Response) return gate;
+    const board = await loadBoard(env.DB);
+    return html(paddockPage(paddockView(board, await listStrategicSkills(env.DB))));
   }
 
   if (path === "/" || path === "/board") {
@@ -228,6 +253,7 @@ export async function tryMemberGet(
         flash: m,
         myBetsHtml,
         redoHtml,
+        candidateHorseId: url.searchParams.get("candidate"),
         scripts:
           (live ? livePollScript("/api/board", kind) : "") + BOARD_FLASH_SCRIPT,
       }),

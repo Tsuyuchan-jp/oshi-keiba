@@ -202,6 +202,7 @@ function markCardScript(opts: {
   balance: number;
   unit: number;
   horses: { id: string; number: number; umaName: string; odds: number | null }[];
+  candidateHorseId?: string | null;
 }): string {
   const slots = betKindSlots(opts.kind);
   return `<script>
@@ -216,6 +217,8 @@ function markCardScript(opts: {
   const horses = ${JSON.stringify(opts.horses)};
   const byNum = new Map(horses.map((h) => [h.number, h]));
   let picks = labels.map(() => null);
+  const candidate = horses.find((horse) => horse.id === ${JSON.stringify(opts.candidateHorseId ?? null)});
+  if (candidate) picks[0] = candidate.number;
   let amount = 0;
   const form = document.getElementById("bet-form");
   const h1 = document.getElementById("h1");
@@ -326,6 +329,7 @@ export function betBuyPage(opts: {
   myBetsHtml: string;
   redoHtml: string;
   scripts?: string;
+  candidateHorseId?: string | null;
 }): string {
   const flash = opts.flash.text
     ? flashHtml(opts.flash.text, opts.flash.error)
@@ -392,6 +396,7 @@ export function betBuyPage(opts: {
         balance: opts.user.balance,
         unit: opts.board.event.bet_unit,
         horses,
+        candidateHorseId: opts.candidateHorseId,
       }) + (opts.scripts ?? ""),
   });
 }
