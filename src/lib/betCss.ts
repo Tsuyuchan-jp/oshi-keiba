@@ -76,6 +76,22 @@ ${MEMBER_OVERLAY_CSS}
   background: var(--member-accent-bg); color: var(--member-accent); border-color: var(--member-accent);
 }
 .kinds span { opacity: .35; cursor: default; }
+.paddock-candidate {
+  display: flex; align-items: center; justify-content: space-between; gap: .55rem;
+  margin: 0 0 .55rem; padding: .45rem .5rem .45rem .6rem;
+  border: 1px solid var(--member-accent); background: var(--member-accent-bg);
+}
+.paddock-candidate__body { min-width: 0; display: flex; align-items: baseline; gap: .45rem; }
+.paddock-candidate__label {
+  flex: 0 0 auto; color: var(--member-accent); font-size: .65rem; font-weight: 800; letter-spacing: .08em;
+}
+.paddock-candidate__body b {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: var(--member-ink-bright); font-size: .82rem;
+}
+.paddock-candidate__clear {
+  flex: 0 0 auto; color: var(--member-muted); font-size: .7rem; text-underline-offset: .15em;
+}
 .hint { margin: 0 0 .45rem; font-size: .75rem; color: var(--member-muted); }
 .wells { display: flex; gap: 6px; margin-bottom: .55rem; }
 .well {
@@ -168,6 +184,10 @@ ${MEMBER_OVERLAY_CSS}
   margin: 0 0 .55rem; padding: .45rem .6rem;
   border: 1px solid var(--member-accent); background: var(--member-accent-bg);
   color: var(--member-accent); font-size: .78rem; font-weight: 700;
+}
+@media (max-width: 360px) {
+  .paddock-candidate { align-items: flex-start; }
+  .paddock-candidate__body { align-items: flex-start; flex-direction: column; gap: .08rem; }
 }
 @media (min-width: 900px) {
   .app-shell { max-height: calc(100dvh - 3rem); }

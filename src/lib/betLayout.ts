@@ -135,6 +135,9 @@ export function betJoinPage(opts: {
   user: UserRow;
   flash: { text: string | null; error: boolean };
   joinLabel: string;
+  kind: BetKind;
+  candidateHorseId?: string | null;
+  slot?: string | null;
 }): string {
   const flash = opts.flash.text
     ? flashHtml(opts.flash.text, opts.flash.error)
@@ -152,6 +155,9 @@ export function betJoinPage(opts: {
         <h1>窓口</h1>
         <p class="lead">投票中です。参加するとこの開催のスペが入り、馬券を買えます。</p>
         <form method="post" action="/bet/join">
+          <input type="hidden" name="kind" value="${opts.kind}">
+          <input type="hidden" name="candidate" value="${escapeHtml(opts.candidateHorseId ?? "")}">
+          <input type="hidden" name="slot" value="${escapeHtml(opts.slot ?? "")}">
           <button type="submit" class="join-btn">${escapeHtml(opts.joinLabel)}</button>
         </form>
       </div>`,
@@ -188,7 +194,12 @@ export function betClosedPage(opts: {
   });
 }
 
-function kindsNavHtml(active: BetKind, enabledRaw: string): string {
+function kindsNavHtml(
+  active: BetKind,
+  enabledRaw: string,
+  candidateHorseId: string | null | undefined,
+  slot: string | null | undefined,
+): string {
   const enabled = new Set(parseEnabledKinds(enabledRaw));
   return `<div class="kinds" id="kinds">${(["win", "umaren", "umatan", "sanrenpuku", "sanrentan"] as BetKind[])
     .map((k) => {
@@ -197,9 +208,29 @@ function kindsNavHtml(active: BetKind, enabledRaw: string): string {
         return `<span>${escapeHtml(label)}</span>`;
       }
       const on = k === active ? " on" : "";
-      return `<a class="${on.trim()}" href="/bet?kind=${k}">${escapeHtml(label)}</a>`;
+      const params = new URLSearchParams({ kind: k });
+      if (candidateHorseId) params.set("candidate", candidateHorseId);
+      if (slot === "day" || slot === "dusk" || slot === "night") params.set("slot", slot);
+      return `<a class="${on.trim()}" href="/bet?${params}">${escapeHtml(label)}</a>`;
     })
     .join("")}</div>`;
+}
+
+function candidateBarHtml(opts: {
+  kind: BetKind;
+  candidate: { id: string; number: number; umaName: string } | undefined;
+  slot?: string | null;
+}): string {
+  const { candidate } = opts;
+  if (!candidate) return "";
+  const params = new URLSearchParams({ kind: opts.kind });
+  if (opts.slot === "day" || opts.slot === "dusk" || opts.slot === "night") {
+    params.set("slot", opts.slot);
+  }
+  return `<section class="paddock-candidate" aria-label="パドック候補">
+    <div class="paddock-candidate__body"><span class="paddock-candidate__label">パドック候補</span><b>${candidate.number}番 ${escapeHtml(candidate.umaName)}</b></div>
+    <a class="paddock-candidate__clear" href="/bet?${params}">候補を外す</a>
+  </section>`;
 }
 
 function comboMiniHtml(board: Board, kind: BetKind): string {
@@ -248,7 +279,8 @@ function markCardScript(opts: {
   const byNum = new Map(horses.map((h) => [h.number, h]));
   let picks = labels.map(() => null);
   const candidate = horses.find((horse) => horse.id === ${JSON.stringify(opts.candidateHorseId ?? null)});
-  if (candidate) picks[0] = candidate.number;
+  const candidateNumber = candidate?.number ?? null;
+  if (candidateNumber != null) picks[0] = candidateNumber;
   let amount = 0;
   const form = document.getElementById("bet-form");
   const h1 = document.getElementById("h1");
@@ -261,7 +293,16 @@ function markCardScript(opts: {
   const amtEl = document.getElementById("amt");
   const restEl = document.getElementById("rest");
   const hintEl = document.getElementById("hint");
-  if (hintEl) hintEl.textContent = hint;
+  if (hintEl) {
+    const candidateHint = {
+      win: "パドック候補を選択済みにしています。金額を入力してください。",
+      umaren: "パドック候補を1枠目に入れています。相手を1頭選んでください。",
+      umatan: "パドック候補を1着に入れています。2着を選んでください。",
+      sanrenpuku: "パドック候補を1枠目に入れています。残り2頭を選んでください。",
+      sanrentan: "パドック候補を1着に入れています。2着・3着を選んでください。",
+    };
+    hintEl.textContent = candidateNumber == null ? hint : candidateHint[kind];
+  }
   const cap = Math.floor(bal / unit) * unit;
   const setAmt = (n) => {
     amount = Math.max(0, Math.min(cap, Math.floor(n / unit) * unit));
@@ -308,7 +349,9 @@ function markCardScript(opts: {
   wells.addEventListener("click", (e) => {
     const b = e.target.closest("[data-well]");
     if (!b) return;
-    picks[Number(b.dataset.well)] = null;
+    const well = Number(b.dataset.well);
+    if (well === 0 && candidateNumber != null) return;
+    picks[well] = null;
     paint();
   });
   board.addEventListener("click", (e) => {
@@ -316,7 +359,10 @@ function markCardScript(opts: {
     if (!b) return;
     const n = Number(b.dataset.n);
     const i = picks.indexOf(n);
-    if (i >= 0) { picks[i] = null; paint(); return; }
+    if (i >= 0) {
+      if (i === 0 && candidateNumber != null) return;
+      picks[i] = null; paint(); return;
+    }
     const hole = picks.findIndex((x) => x == null);
     if (hole >= 0) picks[hole] = n;
     paint();
@@ -364,6 +410,7 @@ export function betBuyPage(opts: {
   redoHtml: string;
   scripts?: string;
   candidateHorseId?: string | null;
+  slot?: string | null;
   preview?: boolean;
 }): string {
   const flash = opts.flash.text
@@ -382,6 +429,7 @@ export function betBuyPage(opts: {
         odds: h.referenceOdds,
       };
     });
+  const candidate = horses.find((horse) => horse.id === opts.candidateHorseId);
   const bodyInner = `<div class="purse">
       <span class="k">いまの所持</span>
       <div><span class="v" id="bal">${bal}</span><span class="u">スペ</span></div>
@@ -392,10 +440,13 @@ export function betBuyPage(opts: {
       <input type="hidden" name="h2" id="h2" value="">
       <input type="hidden" name="h3" id="h3" value="">
       <input type="hidden" name="amount" id="bet-amount" value="0">
+      <input type="hidden" name="candidate" value="${escapeHtml(candidate?.id ?? "")}">
+      <input type="hidden" name="slot" value="${escapeHtml(opts.slot ?? "")}">
       <div class="desk-scroll">
         ${flash}
         ${opts.preview ? `<p class="admin-preview">管理者プレビュー：馬券の購入・参加はできません。</p>` : ""}
-        ${kindsNavHtml(opts.kind, opts.board.event.enabled_kinds)}
+        ${kindsNavHtml(opts.kind, opts.board.event.enabled_kinds, candidate?.id, opts.slot)}
+        ${candidateBarHtml({ kind: opts.kind, candidate, slot: opts.slot })}
         <p class="hint" id="hint">${escapeHtml(slots.hint)}</p>
         <div class="wells" id="wells"></div>
         <div class="board" id="board"></div>
@@ -432,7 +483,7 @@ export function betBuyPage(opts: {
         balance: opts.user.balance,
         unit: opts.board.event.bet_unit,
         horses,
-        candidateHorseId: opts.candidateHorseId,
+        candidateHorseId: candidate?.id,
         preview: opts.preview,
       }) + (opts.scripts ?? ""),
   });

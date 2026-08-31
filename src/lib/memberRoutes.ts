@@ -76,6 +76,20 @@ async function requireMember(
   return { session, user };
 }
 
+/** 窓口内で引き継ぐ表示状態だけを安全に URL へ戻す。 */
+function betUrl(
+  kind: BetKind,
+  candidateHorseId: string | null,
+  slot: string | null,
+): string {
+  const params = new URLSearchParams({ kind });
+  if (candidateHorseId) params.set("candidate", candidateHorseId);
+  if (slot === "day" || slot === "dusk" || slot === "night") {
+    params.set("slot", slot);
+  }
+  return `/bet?${params}`;
+}
+
 /** 閲覧ページだけは、管理者セッションからも開けるようにする。 */
 async function requireMemberOrAdmin(
   request: Request,
@@ -229,6 +243,9 @@ export async function tryMemberGet(
           user,
           flash: m,
           joinLabel: joinButtonLabel(board.event.title),
+          kind,
+          candidateHorseId: url.searchParams.get("candidate"),
+          slot: url.searchParams.get("slot"),
         }),
       );
     }
@@ -269,6 +286,7 @@ export async function tryMemberGet(
         redoHtml,
         preview: gate.preview,
         candidateHorseId: url.searchParams.get("candidate"),
+        slot: url.searchParams.get("slot"),
         scripts:
           (live ? livePollScript("/api/board", kind) : "") + BOARD_FLASH_SCRIPT,
       }),
@@ -337,10 +355,12 @@ export async function tryMemberPost(
       const flash = encodeURIComponent(
         JSON.stringify({ hit: result.selection_key }),
       );
-      return bounce(`/bet?kind=${kind}&b=${flash}`, "買いました");
+      const target = new URL(betUrl(kind, form.get("candidate"), form.get("slot")), "https://oshi-keiba.local");
+      target.searchParams.set("b", flash);
+      return bounce(target.pathname + target.search, "買いました");
     } catch (e) {
       return bounce(
-        `/bet?kind=${kind}`,
+        betUrl(kind, form.get("candidate"), form.get("slot")),
         e instanceof Error ? e.message : "投票に失敗",
         true,
       );
@@ -353,10 +373,19 @@ export async function tryMemberPost(
     try {
       const board = await loadBoard(env.DB);
       await joinEvent(env.DB, board.event, gate.user);
-      return bounce("/bet", "参加しました");
+      const kindRaw = form.get("kind") ?? "win";
+      const kind: BetKind = isBetKind(kindRaw) ? kindRaw : "win";
+      return bounce(
+        betUrl(kind, form.get("candidate"), form.get("slot")),
+        "参加しました",
+      );
     } catch (e) {
       return bounce(
-        "/bet",
+        betUrl(
+          isBetKind(form.get("kind") ?? "") ? form.get("kind") as BetKind : "win",
+          form.get("candidate"),
+          form.get("slot"),
+        ),
         e instanceof Error ? e.message : "参加に失敗",
         true,
       );
