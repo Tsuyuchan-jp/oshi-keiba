@@ -293,6 +293,7 @@ function markCardScript(opts: {
   const amtEl = document.getElementById("amt");
   const restEl = document.getElementById("rest");
   const hintEl = document.getElementById("hint");
+  const buyGuide = document.getElementById("buy-guide");
   if (hintEl) {
     const candidateHint = {
       win: "パドック候補を選択済みにしています。金額を入力してください。",
@@ -312,13 +313,25 @@ function markCardScript(opts: {
   function ready() {
     return picks.every((x) => x != null) && amount >= unit && amount <= bal;
   }
+  function validationMessage() {
+    const missing = picks.filter((x) => x == null).length;
+    if (missing > 0) return "あと" + missing + "頭選択してください。";
+    if (bal < unit) return "残高が足りません（最低" + unit + "スペ必要です）。";
+    if (amount < unit) return "購入金額を選んでください（最低" + unit + "スペ）。";
+    return null;
+  }
   function syncHidden() {
     const ids = picks.map((n) => (n == null ? "" : byNum.get(n)?.id || ""));
     h1.value = ids[0] || "";
     h2.value = ids[1] || "";
     h3.value = ids[2] || "";
     amountInput.value = String(amount);
-    buy.disabled = preview || !ready();
+    buy.disabled = preview;
+    if (buyGuide) {
+      buyGuide.textContent = preview
+        ? "管理者プレビューでは購入できません。"
+        : validationMessage() ?? "内容を確認して「買う」を押してください。";
+    }
   }
   function paint() {
     const used = new Set(picks.filter((x) => x != null));
@@ -367,7 +380,7 @@ function markCardScript(opts: {
     if (hole >= 0) picks[hole] = n;
     paint();
   });
-  document.querySelector(".amt-row")?.addEventListener("click", (e) => {
+  document.querySelector(".amt-controls")?.addEventListener("click", (e) => {
     const b = e.target.closest("button");
     if (!b) return;
     if (b.dataset.add) setAmt(amount + Number(b.dataset.add));
@@ -380,9 +393,10 @@ function markCardScript(opts: {
       return;
     }
     syncHidden();
-    if (!ready()) {
+    const message = validationMessage();
+    if (message) {
       ev.preventDefault();
-      alert("買い目と金額（" + unit + " スペ単位）を入れてください");
+      alert(message);
       return;
     }
     const names = picks.map((n) => {
@@ -462,14 +476,18 @@ export function betBuyPage(opts: {
           <div class="amt-show">金額 <b id="amt">0</b><span> スペ</span>
             <span class="rest">買うと残り <b id="rest">${bal}</b></span>
           </div>
+          <div class="amt-controls">
           <div class="amt-row">
             <button type="button" data-add="100">+100</button>
             <button type="button" data-add="500">+500</button>
-            <button type="button" data-set="${opts.board.event.bet_unit}">${opts.board.event.bet_unit}</button>
-            <button type="button" data-all>残り</button>
+            <button type="button" data-add="1000">+1,000</button>
+            <button type="button" data-all>全額</button>
           </div>
+          <div class="amt-reset-row"><button type="button" data-set="0">リセット</button></div>
+          </div>
+          <p class="buy-guide" id="buy-guide" aria-live="polite">買い目と購入金額を選んでください。</p>
         </div>
-        <button type="submit" class="buy" id="buy" disabled>買う</button>
+        <button type="submit" class="buy" id="buy" aria-describedby="buy-guide" ${opts.preview ? "disabled" : ""}>買う</button>
       </div>
     </form>
     <form id="redo-form" method="post" action="/bet/redo" hidden></form>`;

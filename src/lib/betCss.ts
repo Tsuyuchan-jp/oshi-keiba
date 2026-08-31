@@ -154,7 +154,9 @@ ${MEMBER_OVERLAY_CSS}
   border-top: 1px solid var(--member-field-line); background: #0a0c0d;
 }
 .amt-box { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
+.amt-controls { display: flex; flex-direction: column; gap: 4px; }
 .amt-row { display: flex; gap: 4px; flex-wrap: wrap; }
+.amt-reset-row { display: flex; }
 .amt-row button {
   border: 1px solid var(--member-field-line); background: #161a1c; color: var(--member-table-ink);
   padding: .28rem .45rem; font: inherit; font-size: .72rem; cursor: pointer;
@@ -165,6 +167,7 @@ ${MEMBER_OVERLAY_CSS}
 }
 .amt-show .rest { display: block; font-size: .68rem; color: var(--member-muted); margin-top: .1rem; }
 .amt-show .rest b { color: var(--member-ink-soft); font-weight: 700; font-size: inherit; margin-left: 0; }
+.buy-guide { margin: 0; color: var(--member-muted); font-size: .68rem; line-height: 1.35; }
 .buy {
   background: var(--member-action); color: var(--member-action-ink); border: 0;
   padding: .85rem 1.25rem; font: inherit; font-weight: 800;
