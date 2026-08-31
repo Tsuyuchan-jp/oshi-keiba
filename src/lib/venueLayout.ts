@@ -53,6 +53,10 @@ export function venueCloseHm(ms: number | null): string {
 
 /** 盤見出し。評価点の記号は出さない。芝・稍重は開催条件の見た目 */
 export function venueBoardHead(board: Board): string {
+  return venueBoardHeadParts(board).join("　");
+}
+
+function venueBoardHeadParts(board: Board): string[] {
   const bits = [board.event.title];
   const setup = eventScoreSetup(board.event);
   if (setup) {
@@ -73,7 +77,7 @@ export function venueBoardHead(board: Board): string {
     );
     if (g) bits.push(g.label);
   }
-  return bits.join("　");
+  return bits;
 }
 
 export function venueWinSheetRows(board: Board): string {
@@ -490,7 +494,10 @@ export function venueBoardPage(opts: {
       <section class="board">
         ${flash}
         <div class="board-head">
-          <h1>${escapeHtml(venueBoardHead(opts.board))}</h1>
+          ${(() => {
+            const headParts = venueBoardHeadParts(opts.board);
+            return `<h1><span class="board-head-title">${escapeHtml(headParts[0] ?? "")}</span>${headParts.length > 1 ? `<span class="board-head-detail">${escapeHtml(headParts.slice(1).join("　"))}</span>` : ""}</h1>`;
+          })()}
           ${resultTabs}
         </div>
         ${jumbo}

@@ -115,6 +115,8 @@ ${MEMBER_OVERLAY_CSS}
   letter-spacing: .14em;
   font-weight: 700;
 }
+.board-head-title,
+.board-head-detail { display: inline; }
 .sheet-wrap {
   background: var(--member-black);
   border: 0;
@@ -617,6 +619,9 @@ ${MEMBER_OVERLAY_CSS}
   }
   .foot-actions .cta { width: auto; }
   .foot-actions .paddock-cta { display: flex; align-items: center; justify-content: center; }
+  .board-head h1 { display: flex; flex-direction: column; align-items: flex-start; gap: .12rem; }
+  .board-head-title,
+  .board-head-detail { display: block; }
 }
 @media (min-width: 900px) {
   .scene {
