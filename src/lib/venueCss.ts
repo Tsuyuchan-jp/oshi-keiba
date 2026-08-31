@@ -75,6 +75,8 @@ ${MEMBER_OVERLAY_CSS}
   line-height: 1;
 }
 .led-meta > span { display: inline-flex; align-items: center; }
+.led-meta #meta-now,
+.led-meta #meta-close { gap: .25em; }
 .led-meta strong { color: var(--member-white); font-weight: 700; }
 .pill {
   display: inline-flex;
