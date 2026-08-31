@@ -483,7 +483,7 @@ export function betBuyPage(opts: {
             <button type="button" data-add="1000">+1,000</button>
           </div>
           <div class="amt-action-row">
-            <button type="button" class="amt-all" data-all>全額で買う</button>
+            <button type="button" class="amt-all" data-all>全額を入力</button>
             <button type="button" class="amt-reset" data-set="0">リセット</button>
           </div>
           </div>

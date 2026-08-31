@@ -163,7 +163,7 @@ ${MEMBER_OVERLAY_CSS}
   padding: .35rem .3rem; font: inherit; font-size: .8rem; cursor: pointer;
 }
 .amt-action-row button { min-height: 44px; padding: .35rem .8rem; font: inherit; font-size: .8rem; cursor: pointer; }
-.amt-all { border: 1px solid var(--member-accent); background: var(--member-accent-bg); color: var(--member-accent); font-weight: 800; }
+.amt-all { border: 1px solid var(--member-field-line); background: #161a1c; color: var(--member-table-ink); }
 .amt-reset { border: 1px solid var(--member-field-line); background: transparent; color: var(--member-muted); }
 .amt-show { font-size: .78rem; color: var(--member-muted); }
 .amt-show b {
