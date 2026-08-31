@@ -42,6 +42,9 @@ ${MEMBER_MOBILE_CHROME_CSS}
   animation: blink 1.2s step-end infinite;
 }
 .pill.idle .dot { animation: none; opacity: .85; }
+.bet-chrome .chrome-state > span { display: inline-flex; align-items: center; }
+.bet-chrome #meta-now,
+.bet-chrome #meta-close { gap: .25em; }
 @keyframes blink { 50% { opacity: 0; } }
 .purse {
   flex: 0 0 auto;
