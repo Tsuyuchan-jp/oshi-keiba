@@ -160,6 +160,12 @@ a { color: inherit; }
 }
 .bet-chrome .chrome-state strong { color: var(--member-white); }
 @media (max-width: 899px) {
+  .app-shell {
+    background: rgba(18, 21, 22, .78);
+    border-color: rgba(58, 64, 60, .72);
+    -webkit-backdrop-filter: blur(6px) saturate(115%);
+    backdrop-filter: blur(6px) saturate(115%);
+  }
   .bet-chrome {
     display: grid;
     grid-template-columns: minmax(4.5rem, 1fr) minmax(0, 1fr) auto;
@@ -184,6 +190,15 @@ a { color: inherit; }
   }
   .bet-chrome .chrome-nav a.on { border-bottom: 2px solid var(--member-accent); }
   .bet-chrome .chrome-menu { grid-area: menu; }
+  .bet-chrome ~ .desk,
+  .bet-chrome + .desk { background: transparent; }
+  .bet-chrome {
+    background: rgba(8, 10, 10, .72);
+    -webkit-backdrop-filter: blur(6px) saturate(115%);
+    backdrop-filter: blur(6px) saturate(115%);
+  }
+  .bet-chrome + .desk,
+  .bet-chrome ~ .desk { background: rgba(8, 10, 10, .58); }
 }
 @media (min-width: 900px) {
   .scene { display: flex; align-items: center; justify-content: center; }

@@ -604,6 +604,10 @@ ${MEMBER_OVERLAY_CSS}
     margin: 14px;
     width: calc(100% - 28px);
     overflow: hidden;
+    background: rgba(5, 5, 5, .78);
+    border-color: rgba(216, 220, 224, .72);
+    -webkit-backdrop-filter: blur(6px) saturate(115%);
+    backdrop-filter: blur(6px) saturate(115%);
   }
   .col-b { display: none; }
   .jumbo { flex-direction: column; }
