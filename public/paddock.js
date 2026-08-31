@@ -51,12 +51,22 @@
     if (!shotDialog) {
       shotDialog = document.createElement("dialog");
       shotDialog.className = "shot-dialog";
-      shotDialog.innerHTML = '<button type="button" class="shot-dialog__close" aria-label="閉じる">×</button><img alt="" role="button" tabindex="0" aria-label="スクリーンショットを拡大">';
+      shotDialog.innerHTML = '<button type="button" class="shot-dialog__close" aria-label="閉じる"><span aria-hidden="true">×</span></button><img alt="" role="button" tabindex="0" aria-label="スクリーンショットを拡大">';
       shotDialog.querySelector("button").addEventListener("click", () => shotDialog.close());
       shotDialog.addEventListener("click", (event) => { if (event.target === shotDialog) shotDialog.close(); });
       const image = shotDialog.querySelector("img");
       const toggleZoom = () => {
-        const expanded = image.classList.toggle("is-zoomed");
+        const expanded = !image.classList.contains("is-zoomed");
+        if (expanded) {
+          const { width, height } = image.getBoundingClientRect();
+          image.style.width = `${Math.round(width * 2)}px`;
+          image.style.height = `${Math.round(height * 2)}px`;
+          image.classList.add("is-zoomed");
+        } else {
+          image.classList.remove("is-zoomed");
+          image.style.removeProperty("width");
+          image.style.removeProperty("height");
+        }
         image.setAttribute("aria-label", expanded ? "スクリーンショットを元の大きさに戻す" : "スクリーンショットを拡大");
       };
       image.addEventListener("click", toggleZoom);
@@ -68,6 +78,8 @@
       });
       shotDialog.addEventListener("close", () => {
         image.classList.remove("is-zoomed");
+        image.style.removeProperty("width");
+        image.style.removeProperty("height");
         image.setAttribute("aria-label", "スクリーンショットを拡大");
       });
       document.body.append(shotDialog);
