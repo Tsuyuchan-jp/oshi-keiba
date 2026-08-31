@@ -440,6 +440,9 @@ export function ocrAdminScript(
   function esc(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
+  function attrEsc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  }
   function chipKind(kind) {
     if (kind === "green") return "green";
     if (kind === "evo" || kind === "scenario") return "evo";
