@@ -102,8 +102,9 @@ export const MEMBER_MOBILE_GLASS_CSS = `
     -webkit-backdrop-filter: blur(8px) saturate(115%); backdrop-filter: blur(8px) saturate(115%);
   }
   .member-glass--venue .chrome, .member-glass--venue .board,
-  .member-glass--bet .chrome, .member-glass--bet .purse, .member-glass--bet .desk, .member-glass--bet .dock,
+  .member-glass--bet .chrome, .member-glass--bet .purse, .member-glass--bet .desk,
   .member-glass--gate .chrome, .member-glass--gate .desk { background: rgba(5, 7, 8, var(--glass-surface-alpha)); }
+  .member-glass--bet .dock { background: transparent; }
   .member-glass--venue .sheet-wrap, .member-glass--venue .sheet-row.head, .member-glass--venue .j-panel { background: transparent; }
   .member-glass--bet .kinds a, .member-glass--bet .kinds span, .member-glass--bet .well,
   .member-glass--bet .chip, .member-glass--bet .amt-row button, .member-glass--bet .amt-all,
