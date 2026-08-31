@@ -481,9 +481,11 @@ export function betBuyPage(opts: {
             <button type="button" data-add="100">+100</button>
             <button type="button" data-add="500">+500</button>
             <button type="button" data-add="1000">+1,000</button>
-            <button type="button" data-all>全額</button>
           </div>
-          <div class="amt-reset-row"><button type="button" data-set="0">リセット</button></div>
+          <div class="amt-action-row">
+            <button type="button" class="amt-all" data-all>全額で買う</button>
+            <button type="button" class="amt-reset" data-set="0">リセット</button>
+          </div>
           </div>
           <p class="buy-guide" id="buy-guide" aria-live="polite">買い目と購入金額を選んでください。</p>
         </div>

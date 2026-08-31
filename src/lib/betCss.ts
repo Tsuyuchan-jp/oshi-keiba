@@ -155,17 +155,16 @@ ${MEMBER_OVERLAY_CSS}
 }
 .amt-box { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
 .amt-controls { display: flex; flex-direction: column; gap: 4px; }
-.amt-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
-.amt-reset-row { display: flex; }
+.amt-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.amt-action-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px; }
 .amt-row button {
   min-height: 44px;
   border: 1px solid var(--member-field-line); background: #161a1c; color: var(--member-table-ink);
   padding: .35rem .3rem; font: inherit; font-size: .8rem; cursor: pointer;
 }
-.amt-reset-row button {
-  min-height: 44px; padding: .35rem .8rem; border: 1px solid var(--member-field-line);
-  background: #161a1c; color: var(--member-table-ink); font: inherit; font-size: .8rem; cursor: pointer;
-}
+.amt-action-row button { min-height: 44px; padding: .35rem .8rem; font: inherit; font-size: .8rem; cursor: pointer; }
+.amt-all { border: 1px solid var(--member-accent); background: var(--member-accent-bg); color: var(--member-accent); font-weight: 800; }
+.amt-reset { border: 1px solid var(--member-field-line); background: transparent; color: var(--member-muted); }
 .amt-show { font-size: .78rem; color: var(--member-muted); }
 .amt-show b {
   color: var(--member-white); font-size: 1.15rem; font-variant-numeric: tabular-nums; margin-left: .25rem;
