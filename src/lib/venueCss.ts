@@ -41,6 +41,7 @@ a { color: inherit; }
   border-bottom: 1px solid var(--member-chrome-line);
   font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif;
   letter-spacing: .04em;
+  line-height: 1.2;
 }
 .chrome .brand {
   color: var(--led);

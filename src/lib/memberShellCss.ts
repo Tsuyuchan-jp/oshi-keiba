@@ -155,6 +155,9 @@ a { color: inherit; }
   padding: .55rem .85rem;
   background: var(--member-black);
   border-bottom: 1px solid var(--member-chrome-line);
+  font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif;
+  letter-spacing: .04em;
+  line-height: 1.2;
 }
 .brand {
   color: var(--member-ink-soft);
