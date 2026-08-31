@@ -481,9 +481,6 @@ export function adminRegisterPage(
       </div>`;
     })
     .join("");
-  const flashEl = flash?.text
-    ? `<p class="settings-flash${flash.error ? " err" : ""}">${escapeHtml(flash.text)}</p>`
-    : "";
   const dismissedIds = new Set(strategic.dismissed.map((d) => d.skillId));
   const utilBar = heroUtilBarHtml(strategic.skills.length, canSetup);
   const numberedHorses = board.horses.filter((h) => !h.horse.scratched);
@@ -607,7 +604,6 @@ export function adminRegisterPage(
   const body = `${adminPageHero("出走登録", board.event.status, {
       meta: `<span class="page-hero-meta" id="count">${board.horses.length} / 18</span>`,
       actions: `${horseNumberEditor}${utilBar}`,
-      notice: flashEl,
     })}
     <div class="register-desk">
       <section class="work">

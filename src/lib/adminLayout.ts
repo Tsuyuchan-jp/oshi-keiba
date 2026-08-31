@@ -43,6 +43,9 @@ export function layoutAdmin(opts: {
   const settingsToast = opts.tab === "settings" && opts.flash?.text
     ? `<div class="admin-toast${opts.flash.error ? " error" : ""}" role="${opts.flash.error ? "alert" : "status"}"><span aria-hidden="true">${opts.flash.error ? "!" : "✓"}</span><span>${escapeHtml(opts.flash.text)}</span><button type="button" aria-label="通知を閉じる" onclick="this.parentElement.remove()">×</button></div>`
     : "";
+  const registerToast = opts.tab === "register" && opts.flash?.text
+    ? `<div class="admin-toast${opts.flash.error ? " error" : ""}" role="${opts.flash.error ? "alert" : "status"}"><span aria-hidden="true">${opts.flash.error ? "!" : "✓"}</span><span>${escapeHtml(opts.flash.text)}</span><button type="button" aria-label="通知を閉じる" onclick="this.parentElement.remove()">×</button></div>`
+    : "";
   const pageClass =
     opts.tab === "settings"
       ? "settings-page"
@@ -84,6 +87,17 @@ export function layoutAdmin(opts: {
   </div>
   ${settingsToast}
   ${settingsToast ? `<script>setTimeout(()=>document.querySelector('.admin-toast')?.remove(),5000);</script>` : ""}
+  ${registerToast}
+  ${registerToast ? `<script>
+    (() => {
+      const params = new URLSearchParams(location.search);
+      params.delete("msg");
+      params.delete("err");
+      const query = params.toString();
+      history.replaceState(null, "", location.pathname + (query ? "?" + query : "") + location.hash);
+      ${opts.flash?.error ? "" : "setTimeout(() => document.querySelector('.admin-toast')?.remove(), 5000);"}
+    })();
+  </script>` : ""}
   ${opts.afterDash ?? ""}
   ${opts.scripts ?? ""}
 </body>
