@@ -11,7 +11,12 @@ import {
   parseEnabledKinds,
   type BetKind,
 } from "./bets.ts";
-import { getScoreCourse, GROUND_CONDITION_OPTIONS } from "./scoreSetup.ts";
+import {
+  getScoreCourse,
+  GROUND_CONDITION_OPTIONS,
+  SEASON_OPTIONS,
+  WEATHER_OPTIONS,
+} from "./scoreSetup.ts";
 import {
   eventScoreSetup,
   numberByHorseId,
@@ -29,7 +34,6 @@ import {
 import {
   formatVenueClosedHint,
   formatVenuePublishedHint,
-  VENUE_DIST_JA,
   venueHorseRowHtml,
   venuePayKindClass,
   venuePlaceRoman,
@@ -49,17 +53,21 @@ export function venueCloseHm(ms: number | null): string {
 
 /** 盤見出し。評価点の記号は出さない。芝・稍重は開催条件の見た目 */
 export function venueBoardHead(board: Board): string {
-  const bits = [board.event.title, "単勝"];
+  const bits = [board.event.title];
   const setup = eventScoreSetup(board.event);
   if (setup) {
     const course = getScoreCourse(setup.conditions.courseKey);
     if (course) {
       const surface =
         course.groundType === 2 ? "ダート" : course.groundType === 1 ? "芝" : "";
-      const dist = VENUE_DIST_JA[course.distanceType] ?? "";
-      if (surface && dist) bits.push(`${surface}・${dist}`);
-      else if (surface) bits.push(surface);
+      if (course.place) bits.push(course.place);
+      if (course.courseDistance) bits.push(`${course.courseDistance}m`);
+      if (surface) bits.push(surface);
     }
+    const season = SEASON_OPTIONS.find((o) => o.value === setup.conditions.season);
+    if (season) bits.push(season.label);
+    const weather = WEATHER_OPTIONS.find((o) => o.value === setup.conditions.weather);
+    if (weather) bits.push(weather.label);
     const g = GROUND_CONDITION_OPTIONS.find(
       (o) => o.value === setup.conditions.groundCondition,
     );
