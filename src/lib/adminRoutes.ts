@@ -166,6 +166,7 @@ export async function tryAdminGet(
         tab: "register",
         user: gate.user,
         eventStatus: board.event.status,
+        flash: m,
         body: page.body,
         scripts: page.scripts,
       }),
