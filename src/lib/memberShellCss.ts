@@ -147,6 +147,34 @@ a { color: inherit; }
   align-items: center;
   gap: .25rem;
 }
+.chrome-menu { position: relative; }
+.bet-chrome .chrome-state { margin-left: auto; }
+@media (max-width: 899px) {
+  .bet-chrome {
+    display: grid;
+    grid-template-columns: minmax(4.5rem, 1fr) minmax(0, 1fr) auto;
+    grid-template-areas: "brand state menu" "nav nav nav";
+    align-items: start;
+    gap: .4rem .55rem;
+  }
+  .bet-chrome .chrome-brand { grid-area: brand; }
+  .bet-chrome .chrome-state { grid-area: state; margin-left: 0; justify-self: end; }
+  .bet-chrome .chrome-nav {
+    grid-area: nav;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    width: 100%;
+    border-top: 1px solid var(--member-chrome-line);
+  }
+  .bet-chrome .chrome-nav a {
+    margin-left: 0;
+    padding: .35rem .2rem .15rem;
+    text-align: center;
+  }
+  .bet-chrome .chrome-nav a.on { border-bottom: 2px solid var(--member-accent); }
+  .bet-chrome .chrome-menu { grid-area: menu; }
+}
 @media (min-width: 900px) {
   .scene { display: flex; align-items: center; justify-content: center; }
   .scene-bg {

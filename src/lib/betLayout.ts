@@ -44,18 +44,18 @@ function shellChrome(opts: {
   user: UserRow;
   eventStatus: EventStatus;
 }): string {
-  return `<header class="chrome">
-    <div>
+  return `<header class="chrome bet-chrome">
+    <div class="chrome-brand">
       <a class="brand" href="/">OSHI KEIBA</a>
       <div class="who">${escapeHtml(opts.user.display_name)}</div>
     </div>
-    <div class="chrome-end">
-      <div class="nav">
-        ${phasePill(opts.eventStatus)}
-        <a href="/">場内</a>
-        <a href="/paddock">パドック</a>
-        <a class="on" href="/bet">窓口</a>
-      </div>
+    <div class="chrome-state">${phasePill(opts.eventStatus)}</div>
+    <nav class="chrome-nav nav" aria-label="ページ移動">
+      <a href="/">場内</a>
+      <a href="/paddock">パドック</a>
+      <a class="on" href="/bet">窓口</a>
+    </nav>
+    <div class="chrome-menu">
       <button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
       <div class="more-pop" id="more-pop">
         <a href="#" id="howto-open">使い方</a>

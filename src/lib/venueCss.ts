@@ -55,6 +55,8 @@ a { color: inherit; }
 .site-nav { display: flex; align-items: center; gap: .65rem; white-space: nowrap; }
 .site-nav a { color: var(--led-dim); font-size: .78rem; text-decoration: none; }
 .site-nav a.on { color: var(--member-accent); font-weight: 700; }
+.chrome-menu { position: relative; }
+.venue-chrome .chrome-state { margin-left: auto; }
 ${MEMBER_OVERLAY_CSS}
 .led-meta {
   display: flex;
@@ -563,6 +565,37 @@ ${MEMBER_OVERLAY_CSS}
   --scene-landscape: url("/venue/night-16x9.png");
 }
 @media (max-width: 899px) {
+  .venue-chrome {
+    display: grid;
+    grid-template-columns: minmax(4.5rem, 1fr) minmax(0, 1fr) auto;
+    grid-template-areas: "brand state menu" "nav nav nav";
+    align-items: start;
+    gap: .4rem .55rem;
+  }
+  .venue-chrome .chrome-brand { grid-area: brand; }
+  .venue-chrome .chrome-state {
+    grid-area: state;
+    min-width: 0;
+    margin-left: 0;
+    justify-content: flex-end;
+    gap: .4rem;
+    font-size: .72rem;
+    white-space: nowrap;
+  }
+  .venue-chrome .chrome-nav {
+    grid-area: nav;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    width: 100%;
+    border-top: 1px solid var(--member-chrome-line);
+  }
+  .venue-chrome .chrome-nav a { padding: .35rem .2rem .15rem; text-align: center; }
+  .venue-chrome .chrome-nav a.on { border-bottom: 2px solid var(--member-accent); }
+  .venue-chrome .chrome-menu { grid-area: menu; }
+  @media (max-width: 380px) {
+    .venue-chrome #meta-close { display: none; }
+  }
   .scene { height: 100dvh; height: 100vh; }
   .scene .app-shell {
     height: calc(100% - 28px);

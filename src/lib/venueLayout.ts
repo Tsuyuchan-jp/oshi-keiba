@@ -463,22 +463,22 @@ export function venueBoardPage(opts: {
   <div class="scene" data-slot="${opts.slot}" data-phase="${phaseAttr}"${published ? ' data-result="show"' : ""}>
     <div class="scene-bg" aria-hidden="true"></div>
     <div class="app-shell">
-      <header class="chrome">
-        <div>
+      <header class="chrome venue-chrome">
+        <div class="chrome-brand">
           <a class="brand" href="/">OSHI KEIBA</a>
           <div class="who" id="who-line">${who}</div>
         </div>
-        <div class="chrome-end">
-          <div class="led-meta">
-            <span class="${pillClass}" id="phase-pill"><span class="dot"></span><span id="phase-label">${phaseLabel}</span></span>
-            ${metaNow}
-            ${metaClose}
-          </div>
-          <nav class="site-nav" aria-label="ページ移動">
-            <a class="on" href="/">場内</a>
-            <a href="/paddock">パドック</a>
-            <a href="/bet">窓口</a>
-          </nav>
+        <div class="chrome-state led-meta">
+          <span class="${pillClass}" id="phase-pill"><span class="dot"></span><span id="phase-label">${phaseLabel}</span></span>
+          ${metaNow}
+          ${metaClose}
+        </div>
+        <nav class="chrome-nav site-nav" aria-label="ページ移動">
+          <a class="on" href="/">場内</a>
+          <a href="/paddock">パドック</a>
+          <a href="/bet">窓口</a>
+        </nav>
+        <div class="chrome-menu">
           <button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
           <div class="more-pop" id="more-pop">
             <a href="#" id="howto-open">使い方</a>
