@@ -236,6 +236,7 @@ export function ocrAdminScript(
   const KEY_LS = ${JSON.stringify(KEY_LS)};
   const CATALOG = ${catalog};
   const UMA_DRESSES = ${dressCatalog};
+  const UMA_CHARACTERS = Array.from(new Map(UMA_DRESSES.map((row) => [row.charaId, row])).values());
   const CAN_AUTO = ${canAutoScore ? "true" : "false"};
   const CAN_EDIT_STRATEGIC = ${canEditStrategic ? "true" : "false"};
   const EFFECTIVE_BY_STYLE = ${JSON.stringify(effectiveByStyle)};
@@ -706,15 +707,12 @@ export function ocrAdminScript(
     }
     return prev[b.length];
   }
-  function uniqueDressMatch(rows, label, field) {
+  function uniqueDressMatch(rows, label, field, maxDistance) {
     const normalized = normDress(label);
     if (!normalized) return null;
     const exact = rows.filter((row) => normDress(row[field]) === normalized);
     if (exact.length === 1) return exact[0];
     if (exact.length > 1) return null;
-    // 衣装候補は同一ウマ娘内の少数件に限定済み。登録前に目視確認もするため、
-    // OCR の数文字ぶんの誤読まで許容する。
-    const maxDistance = Math.min(3, Math.max(2, Math.ceil(normalized.length * 0.2)));
     const ranked = rows
       .map((row) => ({ row, distance: dressEditDistance(normDress(row[field]), normalized) }))
       .filter((entry) => entry.distance <= maxDistance)
@@ -723,9 +721,24 @@ export function ocrAdminScript(
     return ranked[0].row;
   }
   function resolveOcrDress(charaName, dressName) {
-    const chara = uniqueDressMatch(UMA_DRESSES, charaName, "charaName");
+    const normalizedChara = normDress(charaName);
+    const chara = uniqueDressMatch(
+      UMA_CHARACTERS,
+      charaName,
+      "charaName",
+      Math.max(1, Math.floor(normalizedChara.length * 0.15)),
+    );
     if (!chara) return null;
-    return uniqueDressMatch(UMA_DRESSES.filter((row) => row.charaId === chara.charaId), dressName, "dressName");
+    const normalizedDress = normDress(dressName);
+    // 衣装候補は同一ウマ娘内の少数件に限定済み。登録前に目視確認もするため、
+    // OCR の数文字ぶんの誤読まで許容する。
+    const dressMaxDistance = Math.min(3, Math.max(2, Math.ceil(normalizedDress.length * 0.2)));
+    return uniqueDressMatch(
+      UMA_DRESSES.filter((row) => row.charaId === chara.charaId),
+      dressName,
+      "dressName",
+      dressMaxDistance,
+    );
   }
   (() => {
     const uma = document.getElementById("uma-name");
