@@ -59,8 +59,8 @@
         const expanded = !image.classList.contains("is-zoomed");
         if (expanded) {
           const { width, height } = image.getBoundingClientRect();
-          image.style.width = `${Math.round(width * 2)}px`;
-          image.style.height = `${Math.round(height * 2)}px`;
+          image.style.width = `${Math.round(width * 2.2)}px`;
+          image.style.height = `${Math.round(height * 2.2)}px`;
           image.classList.add("is-zoomed");
         } else {
           image.classList.remove("is-zoomed");
