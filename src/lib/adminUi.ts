@@ -499,11 +499,11 @@ export function adminRegisterPage(
             <thead><tr><th>ウマ番</th><th>ウマ娘</th><th>出走者</th></tr></thead>
             <tbody>${numberedHorses.map((h) => {
               const p = horseSheetParts(h.horse);
-              return `<tr><td><input class="horse-number-input" name="horse_number" type="number" inputmode="numeric" min="1" max="${numberedHorses.length}" step="1" required value="${h.number}" data-default="${h.number}" aria-label="${escapeHtml(p.umaName)}のウマ番"><input type="hidden" name="horse_id" value="${escapeHtml(h.horse.id)}"></td><td>${escapeHtml(p.umaName)}</td><td>${escapeHtml(p.runnerName)}</td></tr>`;
+              return `<tr><td><input class="horse-number-input" name="horse_number" type="number" inputmode="numeric" min="1" max="${numberedHorses.length}" step="1" required value="${h.number}" aria-label="${escapeHtml(p.umaName)}のウマ番"><input type="hidden" name="horse_id" value="${escapeHtml(h.horse.id)}"></td><td>${escapeHtml(p.umaName)}</td><td>${escapeHtml(p.runnerName)}</td></tr>`;
             }).join("")}</tbody>
           </table></div>
           <p class="horse-numbers-error" id="horse-numbers-error" role="alert" hidden></p>
-          <div class="modal-actions modal-actions--split"><button type="button" class="admin-action admin-action--secondary" id="horse-numbers-reset">登録順に戻す</button><span><button type="button" class="admin-action admin-action--secondary" id="horse-numbers-cancel">キャンセル</button><button type="submit" class="admin-action admin-action--primary">保存</button></span></div>
+          <div class="modal-actions"><button type="button" class="admin-action admin-action--secondary" id="horse-numbers-cancel">キャンセル</button><button type="submit" class="admin-action admin-action--primary">保存</button></div>
         </form>
       </dialog>`
     : "";
@@ -649,10 +649,6 @@ export function adminRegisterPage(
       const horseNumbersError = document.getElementById("horse-numbers-error");
       document.getElementById("horse-numbers-open")?.addEventListener("click", () => horseNumbersDlg?.showModal());
       document.getElementById("horse-numbers-cancel")?.addEventListener("click", () => horseNumbersDlg?.close());
-      document.getElementById("horse-numbers-reset")?.addEventListener("click", () => {
-        document.querySelectorAll(".horse-number-input").forEach((input) => { input.value = input.dataset.default || ""; });
-        if (horseNumbersError) horseNumbersError.hidden = true;
-      });
       horseNumbersForm?.addEventListener("submit", (ev) => {
         const inputs = [...document.querySelectorAll(".horse-number-input")];
         const values = inputs.map((input) => Number(input.value));

@@ -959,7 +959,6 @@ body.register-page .work .ctas a { align-self: center; font-size: .85rem; color:
 .horse-numbers-table th:first-child, .horse-numbers-table td:first-child { width: 5.75rem; }
 .horse-number-input { width: 4.25rem; padding: .35rem .4rem; border: 1px solid var(--admin-line-strong); border-radius: 5px; background: var(--admin-surface); color: var(--admin-ink); font: inherit; font-variant-numeric: tabular-nums; }
 .horse-numbers-error { margin: .65rem 0 0; color: var(--admin-danger); font-size: .85rem; font-weight: 700; }
-.horse-numbers-modal .modal-actions > span { display: flex; gap: .45rem; }
 .modal-close { position: absolute; top: .7rem; right: .8rem; width: 2rem; height: 2rem; padding: 0; border-radius: 50%; background: var(--admin-surface-muted); color: var(--admin-muted); font-size: 1.35rem; line-height: 1; }
 .edit-shot-picker { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .6rem; margin: .65rem 0; font-size: .8rem; color: var(--admin-muted); }
 .edit-shot-picker .admin-action { color: var(--admin-accent); }
