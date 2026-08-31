@@ -86,7 +86,16 @@ export function layoutAdmin(opts: {
     </div>
   </div>
   ${settingsToast}
-  ${settingsToast ? `<script>setTimeout(()=>document.querySelector('.admin-toast')?.remove(),5000);</script>` : ""}
+  ${settingsToast ? `<script>
+    (() => {
+      const params = new URLSearchParams(location.search);
+      params.delete("msg");
+      params.delete("err");
+      const query = params.toString();
+      history.replaceState(null, "", location.pathname + (query ? "?" + query : "") + location.hash);
+      setTimeout(() => document.querySelector('.admin-toast')?.remove(), 5000);
+    })();
+  </script>` : ""}
   ${registerToast}
   ${registerToast ? `<script>
     (() => {
