@@ -172,6 +172,7 @@ a { color: inherit; }
     grid-template-areas: "brand state menu" "nav nav nav";
     align-items: start;
     gap: .4rem .55rem;
+    background: transparent;
   }
   .bet-chrome .chrome-brand { grid-area: brand; }
   .bet-chrome .chrome-state { grid-area: state; margin-left: 0; justify-self: end; }
@@ -193,7 +194,6 @@ a { color: inherit; }
   .bet-chrome ~ .desk,
   .bet-chrome + .desk { background: transparent; }
   .bet-chrome {
-    background: rgba(8, 10, 10, .72);
     -webkit-backdrop-filter: blur(6px) saturate(115%);
     backdrop-filter: blur(6px) saturate(115%);
   }

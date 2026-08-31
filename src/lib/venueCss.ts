@@ -575,6 +575,8 @@ ${MEMBER_OVERLAY_CSS}
   --glass-panel-alpha: .04;
 }
 @media (max-width: 899px) {
+  .venue-chrome,
+  .board { background: transparent; }
   .venue-chrome {
     display: grid;
     grid-template-columns: minmax(4.5rem, 1fr) minmax(0, 1fr) auto;
