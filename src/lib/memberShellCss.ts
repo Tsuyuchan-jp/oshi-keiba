@@ -218,9 +218,14 @@ export const MEMBER_MOBILE_CHROME_CSS = `
     min-width: 0;
     margin-left: 0;
     justify-self: end;
+    display: flex;
+    align-items: center;
     justify-content: flex-end;
-    gap: .4rem;
-    font-size: .72rem;
+    gap: .85rem;
+    font-size: .82rem;
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
   .member-chrome .chrome-nav {
