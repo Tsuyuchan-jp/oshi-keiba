@@ -596,7 +596,7 @@ export function adminRegisterPage(
         <div class="reg-shot-stack">${edit.horse.shot_key ? `<button type="button" class="reg-shot-btn" id="shot-open" aria-label="スクリーンショットを大きく見る"><img class="reg-shot" src="${escapeHtml(shotUrl)}" alt=""></button>` : `<div class="reg-shot empty">スクショなし</div>`}${detailDress}</div>
         <div><div class="reg-detail-names"><strong>${escapeHtml(p.umaName)}</strong><span class="detail-runner">${escapeHtml(p.runnerName)}</span><span class="detail-style">${escapeHtml(styleLabel(scoreIn?.styleKey))}</span></div>
           <div class="paddock-profile">${edit.horse.trainer_icon_key ? `<img src="${escapeHtml(trainerIconUrl)}" alt="${escapeHtml(p.runnerName)}のアイコン">` : `<span class="paddock-profile-placeholder">アイコン未登録</span>`}<div><span class="paddock-profile-k">意気込み</span><p>${escapeHtml(edit.horse.paddock_comment || "未登録")}</p></div></div>
-          ${scoreIn ? registerMaterialsHtml(scoreIn, scoreIn.styleKey && setup ? effectiveIdsFromScoreSetup(setup, scoreIn.styleKey) : null, strategic.skills, dismissedIds, false) : ""}
+          ${scoreIn ? registerMaterialsHtml(scoreIn, scoreIn.styleKey && setup ? effectiveIdsFromScoreSetup(setup, scoreIn.styleKey) : null, strategic.skills, dismissedIds, canSetup) : ""}
           <div class="reg-preview"><span class="lab">評価点</span><span class="num">${escapeHtml(String(edit.horse.strength))}</span></div>
         </div></div></div>`;
     nextAdd = `<button type="button" class="reg-next" id="horse-edit-open">編集</button>`;

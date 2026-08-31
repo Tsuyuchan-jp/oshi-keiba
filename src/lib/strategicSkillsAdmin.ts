@@ -271,7 +271,7 @@ export function strategicSkillsAdminScript(
   function openFull() {
     setModalMode("full");
     renderTable();
-    showCandidates(window.__lastRejected || []);
+    showCandidates([]);
     dlg?.showModal();
   }
   function openCandidatesOnly(rejected) {
@@ -288,8 +288,13 @@ export function strategicSkillsAdminScript(
   document.addEventListener("click", (ev) => {
     const t = ev.target;
     if (!(t instanceof HTMLElement)) return;
-    if (t.id === "strategic-from-rejected" || t.closest("#strategic-from-rejected")) {
-      openCandidatesOnly(window.__lastRejected || []);
+    const source = t.closest("[data-strategic-rejected]");
+    if (source) {
+      try {
+        openCandidatesOnly(JSON.parse(source.getAttribute("data-strategic-rejected") || "[]"));
+      } catch {
+        showToast("候補スキルを読み込めませんでした", true);
+      }
     }
   });
   document.getElementById("strategic-add-btn")?.addEventListener("click", async () => {

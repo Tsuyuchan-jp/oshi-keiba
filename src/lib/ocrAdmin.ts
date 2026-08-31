@@ -87,7 +87,7 @@ export function registerMaterialsHtml(
   const cand = strategicCandidates(parts.rejected, strategicById, dismissedIds);
   const rejectedLink =
     canEditStrategic && cand.length
-      ? ` <button type="button" class="linkish" id="strategic-from-rejected">例外に追加…</button>`
+      ? ` <button type="button" class="linkish" data-strategic-rejected="${escapeHtml(JSON.stringify(cand))}">例外に追加…</button>`
       : "";
   const skipped = (input.skippedSkillNames ?? []).map((n) => ({
     name: n,
@@ -511,11 +511,10 @@ export function ocrAdminScript(
     ).join("");
   }
   function rejectedLinkHtml(rejected) {
-    window.__lastRejected = rejected;
     const sm = strategicMap();
     const cand = rejected.filter((h) => h.id != null && !sm.has(h.id) && !DISMISSED.has(h.id));
     if (!CAN_EDIT_STRATEGIC || !cand.length) return "";
-    return ' <button type="button" class="linkish" id="strategic-from-rejected">例外に追加…</button>';
+    return ' <button type="button" class="linkish" data-strategic-rejected="' + attrEsc(JSON.stringify(cand)) + '">例外に追加…</button>';
   }
 
   let ac = null;
