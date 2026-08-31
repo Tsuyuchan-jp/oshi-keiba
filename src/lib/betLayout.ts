@@ -25,6 +25,7 @@ import {
 import { BET_CSS } from "./betCss.ts";
 import { betKindSlots } from "./betBoard.ts";
 import { memberMoreScript, memberOutLinks } from "./memberShell.ts";
+import { memberSceneSlotScript } from "./memberSceneSlot.ts";
 
 export { betKindSlots, type BetSlotSpec } from "./betBoard.ts";
 
@@ -86,42 +87,6 @@ function shellFoot(): string {
   ${memberMoreScript()}`;
 }
 
-function betSceneSlotScript(): string {
-  return `<script>
-(() => {
-  const scene = document.querySelector(".scene");
-  const slot = new URLSearchParams(location.search).get("slot");
-  function fromClock() {
-    const parts = new Intl.DateTimeFormat("en-US", {
-      timeZone: "Asia/Tokyo", hour: "numeric", hour12: false,
-    }).formatToParts(new Date());
-    const hour = Number(parts.find((part) => part.type === "hour")?.value ?? 0);
-    if (hour >= 6 && hour < 16) return "day";
-    if (hour >= 16 && hour < 19) return "dusk";
-    return "night";
-  }
-  function applySlot() {
-    if (!scene) return;
-    scene.dataset.slot = slot === "day" || slot === "dusk" || slot === "night"
-      ? slot
-      : fromClock();
-  }
-  applySlot();
-  const clock = document.getElementById("now-clock");
-  const tick = () => {
-    if (clock) {
-      clock.textContent = new Intl.DateTimeFormat("ja-JP", {
-        timeZone: "Asia/Tokyo", hour: "2-digit", minute: "2-digit", hour12: false,
-      }).format(new Date());
-    }
-    applySlot();
-  };
-  tick();
-  setInterval(tick, 10000);
-})();
-</script>`;
-}
-
 function pageWrap(opts: {
   user: UserRow;
   board: Board;
@@ -148,7 +113,7 @@ function pageWrap(opts: {
     </div>
   </div>
   ${shellFoot()}
-  ${betSceneSlotScript()}
+  ${memberSceneSlotScript("now-clock")}
   ${opts.scripts ?? ""}
 </body>
 </html>`;
