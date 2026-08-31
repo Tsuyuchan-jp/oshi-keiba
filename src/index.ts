@@ -31,6 +31,7 @@ import {
   scratchHorse,
   setHorseShotKey,
   updateHorse,
+  updateHorseNumbers,
   updateParams,
   upsertUser,
   loadBoard,
@@ -386,6 +387,26 @@ export default {
           return bounce("/admin/register", "名簿から外しました");
         } catch (err) {
           return bounce("/admin/register", err instanceof Error ? err.message : "失敗", true);
+        }
+      }
+
+      if (method === "POST" && path === "/admin/horse-numbers") {
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) return gate;
+        const form = await readForm(request);
+        try {
+          const board = await loadBoard(env.DB);
+          const ids = form.getAll("horse_id");
+          const numbers = form.getAll("horse_number");
+          if (ids.length !== numbers.length) throw new Error("ウマ番の入力が不完全です");
+          await updateHorseNumbers(
+            env.DB,
+            board.event,
+            ids.map((id, index) => ({ horseId: String(id), number: Number(numbers[index]) })),
+          );
+          return bounce("/admin/register", "ウマ番を保存しました");
+        } catch (err) {
+          return bounce("/admin/register", err instanceof Error ? err.message : "ウマ番を保存できませんでした", true);
         }
       }
 

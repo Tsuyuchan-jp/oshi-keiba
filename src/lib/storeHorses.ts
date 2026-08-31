@@ -133,6 +133,40 @@ export async function updateHorse(
     .run();
 }
 
+/** 出走登録中に、投票・出走表で使うウマ番をまとめて並べ替える。 */
+export async function updateHorseNumbers(
+  db: D1Database,
+  event: EventRow,
+  numbers: { horseId: string; number: number }[],
+): Promise<void> {
+  if (event.status !== "setup") {
+    throw new Error("ウマ番を編集できるのは出走登録中だけです");
+  }
+  const horses = (await listHorses(db, event.id)).filter((horse) => horse.scratched === 0);
+  if (numbers.length !== horses.length) {
+    throw new Error("出走ウマ娘全員のウマ番を入力してください");
+  }
+  const ids = new Set(horses.map((horse) => horse.id));
+  const assignedIds = new Set(numbers.map((entry) => entry.horseId));
+  if (assignedIds.size !== horses.length || [...assignedIds].some((id) => !ids.has(id))) {
+    throw new Error("出走一覧が変わりました。画面を更新してからやり直してください");
+  }
+  const values = numbers.map((entry) => entry.number);
+  if (values.some((number) => !Number.isInteger(number) || number < 1 || number > horses.length)) {
+    throw new Error(`ウマ番は 1〜${horses.length} の整数で入力してください`);
+  }
+  if (new Set(values).size !== values.length) {
+    throw new Error("ウマ番が重複しています");
+  }
+  await captureAdminUndo(db, "ウマ番を編集");
+  await db.batch(
+    numbers.map((entry) =>
+      db.prepare("UPDATE horses SET sort_order = ? WHERE id = ? AND event_id = ?")
+        .bind(entry.number, entry.horseId, event.id),
+    ),
+  );
+}
+
 /** setup 中だけ。取消（返還）ではなく登録そのものを消す */
 export async function dropHorse(
   db: D1Database,

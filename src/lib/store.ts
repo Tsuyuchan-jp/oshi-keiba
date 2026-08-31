@@ -49,6 +49,7 @@ export {
 export {
   addHorse,
   updateHorse,
+  updateHorseNumbers,
   dropHorse,
   setHorseShotKey,
   seedDemoHorses,

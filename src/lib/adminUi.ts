@@ -486,6 +486,27 @@ export function adminRegisterPage(
     : "";
   const dismissedIds = new Set(strategic.dismissed.map((d) => d.skillId));
   const utilBar = heroUtilBarHtml(strategic.skills.length, canSetup);
+  const numberedHorses = board.horses.filter((h) => !h.horse.scratched);
+  const horseNumberEditor = canSetup && numberedHorses.length
+    ? `<button type="button" class="admin-action admin-action--secondary" id="horse-numbers-open">ウマ番を編集</button>`
+    : "";
+  const horseNumberModal = canSetup && numberedHorses.length
+    ? `<dialog class="modal horse-numbers-modal" id="horse-numbers-modal" aria-labelledby="horse-numbers-title">
+        <h2 id="horse-numbers-title" tabindex="-1">ウマ番を編集</h2>
+        <p class="note">投票・出走表で使う番号です。枠番ではありません。</p>
+        <form method="post" action="/admin/horse-numbers" id="horse-numbers-form">
+          <div class="horse-numbers-scroll"><table class="plain horse-numbers-table">
+            <thead><tr><th>ウマ番</th><th>ウマ娘</th><th>出走者</th></tr></thead>
+            <tbody>${numberedHorses.map((h) => {
+              const p = horseSheetParts(h.horse);
+              return `<tr><td><input class="horse-number-input" name="horse_number" type="number" inputmode="numeric" min="1" max="${numberedHorses.length}" step="1" required value="${h.number}" data-default="${h.number}" aria-label="${escapeHtml(p.umaName)}のウマ番"><input type="hidden" name="horse_id" value="${escapeHtml(h.horse.id)}"></td><td>${escapeHtml(p.umaName)}</td><td>${escapeHtml(p.runnerName)}</td></tr>`;
+            }).join("")}</tbody>
+          </table></div>
+          <p class="horse-numbers-error" id="horse-numbers-error" role="alert" hidden></p>
+          <div class="modal-actions modal-actions--split"><button type="button" class="admin-action admin-action--secondary" id="horse-numbers-reset">登録順に戻す</button><span><button type="button" class="admin-action admin-action--secondary" id="horse-numbers-cancel">キャンセル</button><button type="submit" class="admin-action admin-action--primary">保存</button></span></div>
+        </form>
+      </dialog>`
+    : "";
   let benchTitle = "次の1頭";
   let benchMeta = "選ぶ → 読む → 登録";
   let benchInner = horsesAdminBody(board, canSetup, setup, { embedded: true });
@@ -585,7 +606,7 @@ export function adminRegisterPage(
   }
   const body = `${adminPageHero("出走登録", board.event.status, {
       meta: `<span class="page-hero-meta" id="count">${board.horses.length} / 18</span>`,
-      actions: utilBar,
+      actions: `${horseNumberEditor}${utilBar}`,
       notice: flashEl,
     })}
     <div class="register-desk">
@@ -605,6 +626,7 @@ export function adminRegisterPage(
       </section>
     </div>
     ${editModal}
+    ${horseNumberModal}
     <dialog class="shot-dlg shot-dlg-left" id="shot-dlg"><div class="shot-scroller fit" id="shot-scroller"><img id="shot-full" alt=""></div></dialog>
     ${strategicSkillsModalHtml()}
     <dialog class="modal" id="drop-horse-modal">
@@ -622,6 +644,24 @@ export function adminRegisterPage(
     <script>
       const dlg = document.getElementById("shot-dlg");
       const editDlg = document.getElementById("horse-edit-modal");
+      const horseNumbersDlg = document.getElementById("horse-numbers-modal");
+      const horseNumbersForm = document.getElementById("horse-numbers-form");
+      const horseNumbersError = document.getElementById("horse-numbers-error");
+      document.getElementById("horse-numbers-open")?.addEventListener("click", () => horseNumbersDlg?.showModal());
+      document.getElementById("horse-numbers-cancel")?.addEventListener("click", () => horseNumbersDlg?.close());
+      document.getElementById("horse-numbers-reset")?.addEventListener("click", () => {
+        document.querySelectorAll(".horse-number-input").forEach((input) => { input.value = input.dataset.default || ""; });
+        if (horseNumbersError) horseNumbersError.hidden = true;
+      });
+      horseNumbersForm?.addEventListener("submit", (ev) => {
+        const inputs = [...document.querySelectorAll(".horse-number-input")];
+        const values = inputs.map((input) => Number(input.value));
+        const invalid = values.some((value) => !Number.isInteger(value) || value < 1 || value > inputs.length);
+        const duplicate = new Set(values).size !== values.length;
+        if (!invalid && !duplicate) return;
+        ev.preventDefault();
+        if (horseNumbersError) { horseNumbersError.textContent = invalid ? "ウマ番は 1〜" + inputs.length + " の整数で入力してください" : "ウマ番が重複しています"; horseNumbersError.hidden = false; }
+      });
       document.getElementById("horse-edit-open")?.addEventListener("click", () => editDlg?.showModal());
       const closeEdit = () => {
         if (window.confirm("編集内容を破棄して閉じます")) editDlg?.close();
