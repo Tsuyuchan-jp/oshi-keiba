@@ -10,8 +10,6 @@ ${MEMBER_TOKENS_CSS}
   --odds: var(--member-action);
   --pulse: rgba(255, 138, 42, .28);
   --line: var(--member-chrome-line);
-  --glass-shell-alpha: .78;
-  --glass-panel-alpha: .08;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
@@ -120,7 +118,7 @@ ${MEMBER_OVERLAY_CSS}
 .board-head-title,
 .board-head-detail { display: inline; }
 .sheet-wrap {
-  background: rgba(5, 5, 5, var(--glass-panel-alpha));
+  background: var(--member-black);
   border: 0;
   border-radius: 0;
   box-shadow: none;
@@ -157,7 +155,7 @@ ${MEMBER_OVERLAY_CSS}
   position: sticky;
   top: 0;
   z-index: 1;
-  background: rgba(5, 5, 5, var(--glass-panel-alpha));
+  background: var(--member-black);
   color: var(--led-dim);
   font-weight: 500;
   letter-spacing: .12em;
@@ -555,28 +553,20 @@ ${MEMBER_OVERLAY_CSS}
   --veil-bot: rgba(12, 18, 16, .28);
   --scene-portrait: url("/venue/day-9x16.png");
   --scene-landscape: url("/venue/day-16x9.png");
-  --glass-shell-alpha: .84;
-  --glass-panel-alpha: .12;
 }
 .scene[data-slot="dusk"] {
   --veil-top: rgba(24, 12, 8, .28);
   --veil-bot: rgba(18, 10, 8, .38);
   --scene-portrait: url("/venue/dusk-9x16.png");
   --scene-landscape: url("/venue/dusk-16x9.png");
-  --glass-shell-alpha: .78;
-  --glass-panel-alpha: .08;
 }
 .scene[data-slot="night"] {
   --veil-top: rgba(5, 6, 10, .38);
   --veil-bot: rgba(5, 8, 6, .48);
   --scene-portrait: url("/venue/night-9x16.png");
   --scene-landscape: url("/venue/night-16x9.png");
-  --glass-shell-alpha: .68;
-  --glass-panel-alpha: .04;
 }
 @media (max-width: 899px) {
-  .venue-chrome,
-  .board { background: transparent; }
   .venue-chrome {
     display: grid;
     grid-template-columns: minmax(4.5rem, 1fr) minmax(0, 1fr) auto;
@@ -614,10 +604,6 @@ ${MEMBER_OVERLAY_CSS}
     margin: 14px;
     width: calc(100% - 28px);
     overflow: hidden;
-    background: rgba(5, 5, 5, var(--glass-shell-alpha));
-    border-color: rgba(216, 220, 224, .72);
-    -webkit-backdrop-filter: blur(6px) saturate(115%);
-    backdrop-filter: blur(6px) saturate(115%);
   }
   .col-b { display: none; }
   .jumbo { flex-direction: column; }
@@ -638,8 +624,6 @@ ${MEMBER_OVERLAY_CSS}
   .board-head-detail { display: block; }
 }
 @media (min-width: 900px) {
-  .sheet-wrap,
-  .sheet-row.head { background: var(--member-black); }
   .scene {
     display: flex;
     align-items: center;
