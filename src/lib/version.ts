@@ -1,7 +1,7 @@
 /**
  * アプリ版の単一ソース。package.json の version を読む。
  * 表示は appVersionLabel()（例: v0.3.0）。版上げ時は package.json と
- * リポジトリ直下の changerog.md を同じ変更で更新する。
+ * docs/changelog.md を同じ変更で更新する。
  */
 import { version as packageVersion } from "../../package.json";
 

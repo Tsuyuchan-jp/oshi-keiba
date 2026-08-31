@@ -1,7 +1,7 @@
 # アプリ版（人間確認用）
 
 画面に出る版は `package.json` の `version` を `v` 付きで表示する（例: `0.3.0` → **v0.3.0**）。
-コード側の読み出しは `src/lib/version.ts`。変更内容の履歴と SemVer の運用は、リポジトリ直下の [changerog.md](../changerog.md) を正とする。
+コード側の読み出しは `src/lib/version.ts`。変更内容の履歴と SemVer の運用は [changelog.md](changelog.md) を正とする。
 
 表示位置:
 
@@ -12,9 +12,9 @@ SemVer（0.x）。git タグは任意。本番デプロイ手順そのものは 
 
 ## 上げ方（チェック）
 
-1. [changerog.md](../changerog.md) の `Unreleased` を対象バージョンへ確定し、日付と変更内容を記す
+1. [changelog.md](changelog.md) の `Unreleased` を対象バージョンへ確定し、日付と変更内容を記す
 2. `package.json` と `package-lock.json` の `version` を同じ数字にする
 3. ローカルでメンバー右下と管理タイトル横の表示を目視
 4. 本番に出すときは [ocr.md](ocr.md) の順（R2 → D1 `--remote` → `npm run deploy`）
 
-未デプロイの版は、[changerog.md](../changerog.md) の見出しに「未デプロイ」と添え、本番反映後に外してよい。
+未デプロイの版は、[changelog.md](changelog.md) の見出しに「未デプロイ」と添え、本番反映後に外してよい。

@@ -25,7 +25,7 @@
 | [ocr.md](ocr.md) | 本戦スクショの読み取り |
 | [ocr-aliases.md](ocr-aliases.md) | OCR スキル名の例外対応（誤読→正式名） |
 | [version.md](version.md) | 画面版の表示位置と版上げ手順 |
-| [changerog.md](../changerog.md) | リリースごとの変更内容と SemVer の運用 |
+| [changelog.md](changelog.md) | リリースごとの変更内容と SemVer の運用 |
 | [rejected.md](rejected.md) | 見送った案と理由 |
 | [next.md](next.md) | 次に取り組む項目名と参照 |
 
