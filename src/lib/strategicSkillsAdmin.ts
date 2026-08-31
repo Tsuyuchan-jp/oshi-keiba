@@ -17,6 +17,15 @@ export function strategicSkillsModalHtml(): string {
         </table>
       </div>
     </div>
+    <div id="strategic-dismissed-wrap" hidden>
+      <p class="set-k" style="margin-top:.85rem">見送り</p>
+      <div class="strategic-table-wrap table-scroll">
+        <table class="plain strategic-table">
+          <thead><tr><th>名前</th><th>id</th><th></th></tr></thead>
+          <tbody id="strategic-dismissed-tbody"></tbody>
+        </table>
+      </div>
+    </div>
     <div id="strategic-add-wrap">
       <p class="set-k" style="margin-top:.85rem">手動追加</p>
       <div class="strategic-add-form">
@@ -77,6 +86,8 @@ export function strategicSkillsAdminScript(
   const countEl = document.getElementById("strategic-open");
   const titleEl = document.getElementById("strategic-dlg-title");
   const registeredWrap = document.getElementById("strategic-registered-wrap");
+  const dismissedWrap = document.getElementById("strategic-dismissed-wrap");
+  const dismissedTbody = document.getElementById("strategic-dismissed-tbody");
   const addWrap = document.getElementById("strategic-add-wrap");
   const exportEl = document.getElementById("strategic-export");
 
@@ -101,6 +112,7 @@ export function strategicSkillsAdminScript(
     const candidatesOnly = mode === "candidates";
     if (titleEl) titleEl.textContent = candidatesOnly ? "例外に追加" : "戦略例外リスト";
     if (registeredWrap) registeredWrap.hidden = candidatesOnly;
+    if (dismissedWrap) dismissedWrap.hidden = candidatesOnly || !dismissed.length;
     if (addWrap) addWrap.hidden = candidatesOnly || !CAN_EDIT;
     if (exportEl) exportEl.hidden = candidatesOnly;
   }
@@ -125,11 +137,30 @@ export function strategicSkillsAdminScript(
     }
     return res.json().catch(() => ({}));
   }
+  function showToast(message, error = false) {
+    document.getElementById("strategic-toast")?.remove();
+    const toast = document.createElement("div");
+    toast.id = "strategic-toast";
+    toast.className = "admin-toast" + (error ? " error" : "");
+    toast.setAttribute("role", error ? "alert" : "status");
+    const icon = document.createElement("span");
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = error ? "!" : "✓";
+    const text = document.createElement("span");
+    text.textContent = message;
+    const close = document.createElement("button");
+    close.type = "button"; close.setAttribute("aria-label", "通知を閉じる"); close.textContent = "×";
+    close.addEventListener("click", () => toast.remove());
+    toast.append(icon, text, close);
+    (dlg?.open ? dlg : document.body).append(toast);
+    if (!error) setTimeout(() => toast.remove(), 5000);
+  }
   async function reload() {
     const data = await api("GET", "/admin/api/strategic-skills");
     skills = data.skills || [];
     dismissed = data.dismissed || [];
     renderTable();
+    renderDismissedTable();
     updateOpenLabel();
     if (window.__paintMaterials) window.__paintMaterials();
   }
@@ -148,8 +179,33 @@ export function strategicSkillsAdminScript(
     tbody.querySelectorAll(".strategic-del").forEach((btn) => {
       btn.addEventListener("click", async () => {
         if (!confirm("例外リストから削除しますか？")) return;
-        await api("DELETE", "/admin/api/strategic-skills?id=" + encodeURIComponent(btn.getAttribute("data-id")));
-        await reload();
+        try {
+          await api("DELETE", "/admin/api/strategic-skills?id=" + encodeURIComponent(btn.getAttribute("data-id")));
+          await reload();
+          showToast("戦略例外を削除しました。評価点を再計算しました。");
+        } catch (e) {
+          showToast(e.message || "削除できませんでした", true);
+        }
+      });
+    });
+  }
+  function renderDismissedTable() {
+    if (!dismissedWrap || !dismissedTbody) return;
+    dismissedWrap.hidden = modalMode === "candidates" || !dismissed.length;
+    dismissedTbody.innerHTML = dismissed.map((s) =>
+      "<tr><td>" + esc(s.name) + "</td><td>" + s.skillId + "</td><td>" +
+      (CAN_EDIT ? '<button type="button" class="secondary strategic-undismiss" data-id="' + s.skillId + '">戻す</button>' : "") +
+      "</td></tr>"
+    ).join("");
+    dismissedTbody.querySelectorAll(".strategic-undismiss").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        try {
+          await api("DELETE", "/admin/api/strategic-skills/dismiss?id=" + encodeURIComponent(btn.getAttribute("data-id")));
+          await reload();
+          showToast("見送りを解除しました。評価点を再計算しました。");
+        } catch (e) {
+          showToast(e.message || "見送りを解除できませんでした", true);
+        }
       });
     });
   }
@@ -191,8 +247,9 @@ export function strategicSkillsAdminScript(
           await api("POST", "/admin/api/strategic-skills", { skillId: id, name, points, memo });
           await reload();
           afterCandidateAction(list);
+          showToast("戦略例外に追加しました。評価点を再計算しました。");
         } catch (e) {
-          alert(e.message || "追加できませんでした");
+          showToast(e.message || "追加できませんでした", true);
         }
       });
       row.querySelector(".strategic-cand-dismiss")?.addEventListener("click", async () => {
@@ -203,8 +260,9 @@ export function strategicSkillsAdminScript(
           });
           await reload();
           afterCandidateAction(list);
+          showToast("見送りにしました。評価点を再計算しました。");
         } catch (e) {
-          alert(e.message || "見送りに失敗しました");
+          showToast(e.message || "見送りに失敗しました", true);
         }
       });
     });
@@ -243,8 +301,9 @@ export function strategicSkillsAdminScript(
     try {
       await api("POST", "/admin/api/strategic-skills", { skillId: id, name, points, memo });
       await reload();
+      showToast("戦略例外に追加しました。評価点を再計算しました。");
     } catch (e) {
-      alert(e.message || "追加できませんでした");
+      showToast(e.message || "追加できませんでした", true);
     }
   });
   if (!CAN_EDIT) {
@@ -253,6 +312,7 @@ export function strategicSkillsAdminScript(
     if (note) note.textContent = "投票開始後は閲覧のみです。";
   }
   renderTable();
+  renderDismissedTable();
 })();
 </script>`;
 }
