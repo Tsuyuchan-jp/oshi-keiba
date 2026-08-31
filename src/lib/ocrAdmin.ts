@@ -192,8 +192,8 @@ export function horsesAdminBody(
                   <div class="dress-options" id="dress-options" role="listbox"></div>
                   <p class="note" id="dress-help">ウマ娘名に対応する衣装だけを表示します</p>
                 </div>
-                <label>意気込みコメント（40文字まで）<input name="paddock_comment" maxlength="40"></label>
                 <div class="edit-shot-picker"><span>トレーナーアイコン</span><input class="admin-offscreen" name="trainer_icon" id="trainer-icon-file" type="file" accept="${SHOT_ACCEPT}"><label class="admin-action" for="trainer-icon-file">画像を選択</label><span id="trainer-icon-name" class="note">未登録</span></div>
+                <label>意気込みコメント（40文字まで）<input name="paddock_comment" maxlength="40"></label>
               </div>
               <p class="set-k" style="margin-top:.85rem">出走脚質</p>
               <div class="set-seg" id="styles">${styleBtns}</div>
