@@ -133,7 +133,7 @@ a { color: inherit; }
   position: absolute; inset: 0; z-index: 0;
   background:
     linear-gradient(180deg, rgba(5,6,10,.42), rgba(5,8,6,.5)),
-    url("/venue/night-9x16.png") center bottom / cover no-repeat;
+    url("/venue/night-glass-9x16.png") center bottom / cover no-repeat;
 }
 .app-shell {
   position: relative; z-index: 3;

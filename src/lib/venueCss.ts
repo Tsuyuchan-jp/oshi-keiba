@@ -567,7 +567,7 @@ ${MEMBER_OVERLAY_CSS}
 .scene[data-slot="night"] {
   --veil-top: rgba(5, 6, 10, .38);
   --veil-bot: rgba(5, 8, 6, .48);
-  --scene-portrait: url("/venue/night-9x16.png");
+  --scene-portrait: url("/venue/night-glass-9x16.png");
   --scene-landscape: url("/venue/night-16x9.png");
 }
 @media (max-width: 899px) {
