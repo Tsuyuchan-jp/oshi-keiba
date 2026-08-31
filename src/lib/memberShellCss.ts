@@ -161,7 +161,7 @@ a { color: inherit; }
 .bet-chrome .chrome-state strong { color: var(--member-white); }
 @media (max-width: 899px) {
   .app-shell {
-    background: rgba(18, 21, 22, .78);
+    background: color-mix(in srgb, var(--member-shell-bg) 72%, transparent);
     border-color: rgba(58, 64, 60, .72);
     -webkit-backdrop-filter: blur(6px) saturate(115%);
     backdrop-filter: blur(6px) saturate(115%);
@@ -198,7 +198,7 @@ a { color: inherit; }
     backdrop-filter: blur(6px) saturate(115%);
   }
   .bet-chrome + .desk,
-  .bet-chrome ~ .desk { background: rgba(8, 10, 10, .58); }
+  .bet-chrome ~ .desk { background: transparent; }
 }
 @media (min-width: 900px) {
   .scene { display: flex; align-items: center; justify-content: center; }
