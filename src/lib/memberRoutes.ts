@@ -127,7 +127,10 @@ export async function tryMemberGet(
     const session = await sessionFromRequest(request, env.SESSION_SECRET);
     if (session?.role === "member") return redirect("/");
     if (session?.role === "admin") return redirect("/admin");
-    return html(gateLoginPage({ flash: msg(url) }));
+    return html(gateLoginPage({
+      flash: msg(url),
+      slot: resolveVenueSlot(url.searchParams.get("slot")),
+    }));
   }
 
   if (path === "/api/board") {

@@ -5,9 +5,37 @@
 import { flashHtml, howToModal } from "./ui.ts";
 import { GATE_CSS } from "./gateCss.ts";
 import { memberMoreScript, memberOutLinks } from "./memberShell.ts";
+import type { VenueSlot } from "./venueBoard.ts";
+
+function gateSceneSlotScript(): string {
+  return `<script>
+(() => {
+  const scene = document.querySelector(".scene");
+  const slot = new URLSearchParams(location.search).get("slot");
+  function fromClock() {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Tokyo", hour: "numeric", hour12: false,
+    }).formatToParts(new Date());
+    const hour = Number(parts.find((part) => part.type === "hour")?.value ?? 0);
+    if (hour >= 6 && hour < 16) return "day";
+    if (hour >= 16 && hour < 19) return "dusk";
+    return "night";
+  }
+  function applySlot() {
+    if (!scene) return;
+    scene.dataset.slot = slot === "day" || slot === "dusk" || slot === "night"
+      ? slot
+      : fromClock();
+  }
+  applySlot();
+  setInterval(applySlot, 10000);
+})();
+</script>`;
+}
 
 export function gateLoginPage(opts: {
   flash: { text: string | null; error: boolean };
+  slot: VenueSlot;
 }): string {
   const flash = opts.flash.text
     ? flashHtml(opts.flash.text, opts.flash.error)
@@ -24,7 +52,7 @@ export function gateLoginPage(opts: {
   <style>${GATE_CSS}</style>
 </head>
 <body>
-  <div class="scene member-glass member-glass--gate">
+  <div class="scene member-glass member-glass--gate" data-slot="${opts.slot}">
     <div class="scene-bg" aria-hidden="true"></div>
     <div class="app-shell">
       <header class="chrome">
@@ -57,6 +85,7 @@ export function gateLoginPage(opts: {
   ${memberOutLinks()}
   ${howToModal()}
   ${memberMoreScript()}
+  ${gateSceneSlotScript()}
 </body>
 </html>`;
 }
