@@ -370,6 +370,7 @@ export async function tryMemberPost(
   if (path === "/bet/join") {
     const gate = await requireMember(request, env);
     if (gate instanceof Response) return gate;
+    const form = await readForm(request);
     try {
       const board = await loadBoard(env.DB);
       await joinEvent(env.DB, board.event, gate.user);
