@@ -155,11 +155,16 @@ ${MEMBER_OVERLAY_CSS}
 }
 .amt-box { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
 .amt-controls { display: flex; flex-direction: column; gap: 4px; }
-.amt-row { display: flex; gap: 4px; flex-wrap: wrap; }
+.amt-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
 .amt-reset-row { display: flex; }
 .amt-row button {
+  min-height: 44px;
   border: 1px solid var(--member-field-line); background: #161a1c; color: var(--member-table-ink);
-  padding: .28rem .45rem; font: inherit; font-size: .72rem; cursor: pointer;
+  padding: .35rem .3rem; font: inherit; font-size: .8rem; cursor: pointer;
+}
+.amt-reset-row button {
+  min-height: 44px; padding: .35rem .8rem; border: 1px solid var(--member-field-line);
+  background: #161a1c; color: var(--member-table-ink); font: inherit; font-size: .8rem; cursor: pointer;
 }
 .amt-show { font-size: .78rem; color: var(--member-muted); }
 .amt-show b {
