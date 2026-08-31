@@ -29,7 +29,6 @@ import {
   revertVotingToSetup,
   savePlaces,
   scratchHorse,
-  setHorseShotKey,
   updateHorse,
   updateHorseNumbers,
   updateParams,
@@ -262,7 +261,15 @@ export default {
           }
           const forceManual = String(fd.get("strength_manual") ?? "") === "1";
           const umaName = String(fd.get("uma_name") ?? "");
-          const umaDress = resolveUmaDress(umaName, String(fd.get("dress_name") ?? ""));
+          const dressValue = String(fd.get("dress_id") ?? "").trim();
+          const selectedDress = dressValue ? findUmaDressById(dressValue) : null;
+          if (dressValue && !selectedDress) throw new Error("衣装を候補から選択してください");
+          if (selectedDress && resolveUmaDress(umaName, selectedDress.dressName)?.dressId !== selectedDress.dressId) {
+            throw new Error("選択中の衣装はウマ娘名と一致しません。衣装を選び直してください");
+          }
+          const comment = String(fd.get("paddock_comment") ?? "").trim();
+          if (comment.length > 40) throw new Error("意気込みコメントは40文字以内です");
+          const trainerIcon = validateHorseShot(fd.get("trainer_icon"));
           const resolved = resolveStrength({
             setup,
             input: scoreInput,
@@ -279,20 +286,33 @@ export default {
               strength: resolved.strength,
               scoreInputJson: serializeHorseScoreInput(scoreInput),
               seedSource: resolved.source,
-              charaId: umaDress?.charaId ?? null,
-              dressId: umaDress?.dressId ?? null,
+              charaId: selectedDress?.charaId ?? null,
+              dressId: selectedDress?.dressId ?? null,
             },
           );
-          if (ocrOk && shot instanceof File) {
-            try {
-              const key = await putHorseShot(env, board.event.id, id, shot);
-              await setHorseShotKey(env.DB, board.event, id, key);
-            } catch (err) {
-              await env.DB.prepare("DELETE FROM horses WHERE id = ? AND event_id = ?")
-                .bind(id, board.event.id)
-                .run();
-              throw err;
-            }
+          try {
+            const shotKey = ocrOk && shot instanceof File
+              ? await putHorseShot(env, board.event.id, id, shot)
+              : null;
+            const trainerIconKey = trainerIcon
+              ? await putHorseShot(env, board.event.id, id, trainerIcon, "-trainer-icon")
+              : null;
+            await updateHorse(env.DB, board.event, id, umaName, String(fd.get("runner_name") ?? ""), {
+              strength: resolved.strength,
+              scoreInputJson: serializeHorseScoreInput(scoreInput),
+              seedSource: resolved.source,
+              charaId: selectedDress?.charaId ?? null,
+              dressId: selectedDress?.dressId ?? null,
+              paddockComment: comment || null,
+              trainerIconKey,
+              shotKey,
+              recordUndo: false,
+            });
+          } catch (err) {
+            await env.DB.prepare("DELETE FROM horses WHERE id = ? AND event_id = ?")
+              .bind(id, board.event.id)
+              .run();
+            throw err;
           }
           const src =
             resolved.source === "auto" ? "（自動算出）" : "（直置き）";

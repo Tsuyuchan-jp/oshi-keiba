@@ -13,6 +13,7 @@ import {
 } from "./strategicSkills";
 import type { EffectiveSkillIdsByStyle } from "./utoolsEffects";
 import type { Board } from "./store";
+import { umaDressCatalogJsonForPage } from "./umaDress";
 
 const KEY_LS = "oshi-keiba-gemini-key";
 const SHOT_ACCEPT = ALLOWED_SHOT_MIME.join(",");
@@ -148,6 +149,7 @@ export function horsesAdminBody(
         <input type="hidden" name="ocr_ok" id="ocr-ok" value="">
         <input type="hidden" name="score_input" id="score-input" value="">
         <input type="hidden" name="dress_name" id="dress-name" value="">
+        <input type="hidden" name="dress_id" id="dress-id" value="">
         <input type="file" name="shot" id="shot-from-ocr" class="admin-offscreen" accept="${SHOT_ACCEPT}" tabindex="-1">
         <input id="ocr-file" class="admin-offscreen" type="file" accept="${SHOT_ACCEPT}" tabindex="-1">
         <select name="style_key" id="style-key" class="admin-offscreen" tabindex="-1">${styleOpts}</select>
@@ -185,6 +187,13 @@ export function horsesAdminBody(
               <div class="reg-names">
                 <label>ウマ娘名<input name="uma_name" id="uma-name" required maxlength="40"></label>
                 <label>出走者<input name="runner_name" id="runner-name" required maxlength="40"></label>
+                <div class="dress-picker" id="dress-picker">
+                  <span>衣装を選択</span>
+                  <div class="dress-options" id="dress-options" role="listbox"></div>
+                  <p class="note" id="dress-help">ウマ娘名に対応する衣装だけを表示します</p>
+                </div>
+                <label>意気込みコメント（40文字まで）<input name="paddock_comment" maxlength="40"></label>
+                <div class="edit-shot-picker"><span>トレーナーアイコン</span><input class="admin-offscreen" name="trainer_icon" id="trainer-icon-file" type="file" accept="${SHOT_ACCEPT}"><label class="admin-action" for="trainer-icon-file">画像を選択</label><span id="trainer-icon-name" class="note">未登録</span></div>
               </div>
               <p class="set-k" style="margin-top:.85rem">出走脚質</p>
               <div class="set-seg" id="styles">${styleBtns}</div>
@@ -221,10 +230,12 @@ export function ocrAdminScript(
   canEditStrategic = true,
 ): string {
   const catalog = catalogJsonForPage();
+  const dressCatalog = umaDressCatalogJsonForPage();
   return `<script>
 (function () {
   const KEY_LS = ${JSON.stringify(KEY_LS)};
   const CATALOG = ${catalog};
+  const UMA_DRESSES = ${dressCatalog};
   const CAN_AUTO = ${canAutoScore ? "true" : "false"};
   const CAN_EDIT_STRATEGIC = ${canEditStrategic ? "true" : "false"};
   const EFFECTIVE_BY_STYLE = ${JSON.stringify(effectiveByStyle)};
@@ -679,6 +690,44 @@ export function ocrAdminScript(
     }
     throw new Error("JSONを直せませんでした");
   }
+  function normDress(value) { return String(value || "").normalize("NFKC").replace(/[\\s\\u3000\\[\\]]/g, "").toLowerCase(); }
+  (() => {
+    const uma = document.getElementById("uma-name");
+    const hidden = document.getElementById("dress-id");
+    const options = document.getElementById("dress-options");
+    const help = document.getElementById("dress-help");
+    const renderDresses = () => {
+      if (!options || !uma) return;
+      const chara = normDress(uma.value);
+      const rows = UMA_DRESSES.filter((row) => normDress(row.charaName) === chara);
+      options.innerHTML = "";
+      if (!chara) { if (help) help.textContent = "先にウマ娘名を入力してください"; return; }
+      if (!rows.length) { if (help) help.textContent = "一致する衣装がありません"; return; }
+      if (help) help.textContent = String(rows.length) + " 件の衣装から選べます";
+      rows.forEach((row) => {
+        const button = document.createElement("button");
+        button.type = "button"; button.className = "dress-option"; button.setAttribute("role", "option");
+        if (String(hidden?.value || "") === String(row.dressId)) button.classList.add("on");
+        const image = "/images/umamusume/petit/petit_" + row.charaId + "_" + row.dressId + "_0010.png";
+        button.innerHTML = '<img src="' + image + '" alt=""><span>' + row.dressName + "</span>";
+        button.addEventListener("click", () => { if (hidden) hidden.value = String(row.dressId); renderDresses(); });
+        options.append(button);
+      });
+    };
+    window.__renderDresses = renderDresses;
+    uma?.addEventListener("input", () => { if (hidden) hidden.value = ""; renderDresses(); });
+    options?.addEventListener("wheel", (ev) => {
+      if (Math.abs(ev.deltaY) <= Math.abs(ev.deltaX)) return;
+      options.scrollLeft += ev.deltaY;
+      ev.preventDefault();
+    }, { passive: false });
+    document.getElementById("trainer-icon-file")?.addEventListener("change", (ev) => {
+      const file = ev.target instanceof HTMLInputElement ? ev.target.files?.[0] : null;
+      const name = document.getElementById("trainer-icon-name");
+      if (name) name.textContent = file ? file.name : "未登録";
+    });
+    renderDresses();
+  })();
   function resolveShotMime(file) {
     let t = String(file.type || "").trim().toLowerCase();
     if (t === "image/jpg") t = "image/jpeg";
@@ -731,6 +780,10 @@ export function ocrAdminScript(
       if (umaEl && uma) umaEl.value = uma;
       const dressEl = document.getElementById("dress-name");
       if (dressEl) dressEl.value = dressName;
+      const dressId = document.getElementById("dress-id");
+      const matchedDress = UMA_DRESSES.find((row) => normDress(row.charaName) === normDress(uma) && normDress(row.dressName) === normDress(dressName));
+      if (dressId) dressId.value = matchedDress ? String(matchedDress.dressId) : "";
+      window.__renderDresses?.();
       const rawSkills = Array.isArray(raw.skills) ? raw.skills.map(String) : [];
       const hits = rawSkills.map((s, i) => fuzzyOne(s, i === 0));
       const skillNames = [];
