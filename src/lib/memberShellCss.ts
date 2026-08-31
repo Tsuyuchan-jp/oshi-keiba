@@ -101,6 +101,7 @@ export const MEMBER_MOBILE_GLASS_CSS = `
     background: rgba(5, 7, 8, .01); border-color: rgba(216, 220, 224, .58);
     -webkit-backdrop-filter: blur(8px) saturate(115%); backdrop-filter: blur(8px) saturate(115%);
   }
+  .member-glass--venue .app-shell { box-shadow: none; }
   .member-glass--venue .chrome, .member-glass--venue .board,
   .member-glass--bet .chrome, .member-glass--bet .purse, .member-glass--bet .desk,
   .member-glass--gate .chrome, .member-glass--gate .desk { background: rgba(5, 7, 8, var(--glass-surface-alpha)); }
