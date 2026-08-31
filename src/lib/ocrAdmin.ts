@@ -693,6 +693,38 @@ export function ocrAdminScript(
     throw new Error("JSONを直せませんでした");
   }
   function normDress(value) { return String(value || "").normalize("NFKC").replace(/[\\s\\u3000\\[\\]]/g, "").toLowerCase(); }
+  function dressEditDistance(a, b) {
+    const prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+    for (let i = 1; i <= a.length; i++) {
+      let diagonal = prev[0];
+      prev[0] = i;
+      for (let j = 1; j <= b.length; j++) {
+        const saved = prev[j];
+        prev[j] = Math.min(prev[j] + 1, prev[j - 1] + 1, diagonal + (a[i - 1] === b[j - 1] ? 0 : 1));
+        diagonal = saved;
+      }
+    }
+    return prev[b.length];
+  }
+  function uniqueDressMatch(rows, label, field) {
+    const normalized = normDress(label);
+    if (!normalized) return null;
+    const exact = rows.filter((row) => normDress(row[field]) === normalized);
+    if (exact.length === 1) return exact[0];
+    if (exact.length > 1) return null;
+    const maxDistance = Math.max(1, Math.floor(normalized.length * 0.15));
+    const ranked = rows
+      .map((row) => ({ row, distance: dressEditDistance(normDress(row[field]), normalized) }))
+      .filter((entry) => entry.distance <= maxDistance)
+      .sort((a, b) => a.distance - b.distance);
+    if (!ranked.length || (ranked[1] && ranked[1].distance === ranked[0].distance)) return null;
+    return ranked[0].row;
+  }
+  function resolveOcrDress(charaName, dressName) {
+    const chara = uniqueDressMatch(UMA_DRESSES, charaName, "charaName");
+    if (!chara) return null;
+    return uniqueDressMatch(UMA_DRESSES.filter((row) => row.charaId === chara.charaId), dressName, "dressName");
+  }
   (() => {
     const uma = document.getElementById("uma-name");
     const hidden = document.getElementById("dress-id");
@@ -759,7 +791,7 @@ export function ocrAdminScript(
       });
       // MIME 追加に備えてプレフィックスは汎用で落とす
       const b64 = String(dataUrl).replace(/^data:[^;]+;base64,/, "");
-      const instruction = "あなたはウマ娘の詳細ステータス画面を読む。JSONだけ返す。nameはウマ娘名（二つ名・ランクなし）。costumeNameは育成ウマ娘の角括弧内の衣装名（読めなければ空文字）。statsはspeed stamina power guts wisdomの整数。aptitudesはturf dirt short mile medium long nige senkou sashi oikomiのS〜G。skillsは取得スキル名を最後まで。緑も金もデバフ（右回り×等）も落とさない。";
+      const instruction = "あなたはウマ娘の詳細ステータス画面を読む。JSONだけ返す。nameはウマ娘名（二つ名・ランクなし）。trainerNameはトレーナー名（出走者名）。costumeNameは育成ウマ娘の角括弧内の衣装名。読めなければ空文字。statsはspeed stamina power guts wisdomの整数。aptitudesはturf dirt short mile medium long nige senkou sashi oikomiのS〜G。skillsは取得スキル名を最後まで。緑も金もデバフ（右回り×等）も落とさない。";
       const payload = {
         system_instruction: { parts: { text: instruction } },
         contents: [{ parts: [
@@ -777,13 +809,16 @@ export function ocrAdminScript(
       let raw;
       try { raw = JSON.parse(text); } catch { raw = cleanJson(text); }
       const uma = (raw.name || "").trim();
+      const trainerName = (raw.trainerName || raw.runnerName || "").trim();
       const dressName = (raw.costumeName || raw.dressName || "").trim();
       const umaEl = document.getElementById("uma-name");
       if (umaEl && uma) umaEl.value = uma;
+      const runnerEl = document.getElementById("runner-name");
+      if (runnerEl && trainerName) runnerEl.value = trainerName;
       const dressEl = document.getElementById("dress-name");
       if (dressEl) dressEl.value = dressName;
       const dressId = document.getElementById("dress-id");
-      const matchedDress = UMA_DRESSES.find((row) => normDress(row.charaName) === normDress(uma) && normDress(row.dressName) === normDress(dressName));
+      const matchedDress = resolveOcrDress(uma, dressName);
       if (dressId) dressId.value = matchedDress ? String(matchedDress.dressId) : "";
       window.__renderDresses?.();
       const rawSkills = Array.isArray(raw.skills) ? raw.skills.map(String) : [];

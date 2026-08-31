@@ -72,11 +72,14 @@ function phasePill(status: EventRow["status"]): string {
 function adminPageHero(
   title: string,
   status: EventRow["status"],
-  opts: { meta?: string; actions?: string; notice?: string } = {},
+  opts: { meta?: string; actions?: string; notice?: string; titleHref?: string } = {},
 ): string {
+  const heading = opts.titleHref
+    ? `<a class="page-hero-title-link" href="${escapeHtml(opts.titleHref)}">${escapeHtml(title)}</a>`
+    : escapeHtml(title);
   return `<section class="hero page-hero">
     <div class="page-hero-top">
-      <div class="page-hero-title"><h1>${escapeHtml(title)}</h1>${phasePill(status)}${opts.meta ?? ""}</div>
+      <div class="page-hero-title"><h1>${heading}</h1>${phasePill(status)}${opts.meta ?? ""}</div>
       ${opts.actions ? `<div class="page-hero-actions">${opts.actions}</div>` : ""}
     </div>
     ${opts.notice ?? ""}
@@ -604,6 +607,7 @@ export function adminRegisterPage(
   const body = `${adminPageHero("出走登録", board.event.status, {
       meta: `<span class="page-hero-meta" id="count">${board.horses.length} / 18</span>`,
       actions: `${horseNumberEditor}${utilBar}`,
+      titleHref: edit ? "/admin/register" : undefined,
     })}
     <div class="register-desk">
       <section class="work">
