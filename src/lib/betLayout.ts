@@ -58,7 +58,7 @@ function shellChrome(opts: { user: UserRow; board: Board }): string {
       : status === "setup"
         ? `<span id="meta-close">投票開始前</span>`
         : `<span id="meta-close">締切 <strong>${escapeHtml(closeHm(opts.board.event.voting_closes_at))}</strong></span>`;
-  return `<header class="chrome bet-chrome">
+  return `<header class="chrome member-chrome bet-chrome">
     <div class="chrome-brand">
       <a class="brand" href="/">OSHI KEIBA</a>
       <div class="who">${escapeHtml(opts.user.display_name)}</div>

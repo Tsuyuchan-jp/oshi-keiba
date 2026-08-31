@@ -1,6 +1,7 @@
 /** 窓口（quiet）。マークカード。骨格は memberShellCss */
 import {
   MEMBER_MOBILE_GLASS_CSS,
+  MEMBER_MOBILE_CHROME_CSS,
   MEMBER_OVERLAY_CSS,
   MEMBER_QUIET_FRAME_CSS,
 } from "./memberShellCss.ts";
@@ -8,6 +9,7 @@ import {
 export const BET_CSS = `
 ${MEMBER_QUIET_FRAME_CSS}
 ${MEMBER_OVERLAY_CSS}
+${MEMBER_MOBILE_CHROME_CSS}
 :root { --shell-max: 36rem; }
 .scene-bg {
   background-color: #0a1218;

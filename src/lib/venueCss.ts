@@ -1,12 +1,14 @@
 /** 場内電光。オーバーレイは memberShellCss。LED・盤面はここ */
 import {
   MEMBER_MOBILE_GLASS_CSS,
+  MEMBER_MOBILE_CHROME_CSS,
   MEMBER_OVERLAY_CSS,
   MEMBER_TOKENS_CSS,
 } from "./memberShellCss.ts";
 
 export const VENUE_CSS = `
 ${MEMBER_TOKENS_CSS}
+${MEMBER_MOBILE_CHROME_CSS}
 :root {
   --bg: #070808;
   --led: #00e8d8;
@@ -48,7 +50,7 @@ a { color: inherit; }
   letter-spacing: .12em;
   text-decoration: none;
 }
-.who { color: var(--led-dim); font-size: .72rem; margin-top: .2rem; }
+.who { color: var(--led-dim); font-size: .72rem; margin-top: .15rem; }
 .chrome-end {
   position: relative;
   display: flex;
@@ -571,34 +573,6 @@ ${MEMBER_OVERLAY_CSS}
   --scene-landscape: url("/venue/night-16x9.png");
 }
 @media (max-width: 899px) {
-  .venue-chrome {
-    display: grid;
-    grid-template-columns: minmax(4.5rem, 1fr) minmax(0, 1fr) auto;
-    grid-template-areas: "brand state menu" "nav nav nav";
-    align-items: start;
-    gap: .4rem .55rem;
-  }
-  .venue-chrome .chrome-brand { grid-area: brand; }
-  .venue-chrome .chrome-state {
-    grid-area: state;
-    min-width: 0;
-    margin-left: 0;
-    justify-content: flex-end;
-    gap: .4rem;
-    font-size: .72rem;
-    white-space: nowrap;
-  }
-  .venue-chrome .chrome-nav {
-    grid-area: nav;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0;
-    width: 100%;
-    border-top: 1px solid var(--member-chrome-line);
-  }
-  .venue-chrome .chrome-nav a { padding: .35rem .2rem .15rem; text-align: center; }
-  .venue-chrome .chrome-nav a.on { border-bottom: 2px solid var(--member-accent); }
-  .venue-chrome .chrome-menu { grid-area: menu; }
   @media (max-width: 380px) {
     .venue-chrome #meta-close { display: none; }
   }

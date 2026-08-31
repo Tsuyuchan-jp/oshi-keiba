@@ -467,7 +467,7 @@ export function venueBoardPage(opts: {
   <div class="scene member-glass member-glass--venue" data-slot="${opts.slot}" data-phase="${phaseAttr}"${published ? ' data-result="show"' : ""}>
     <div class="scene-bg" aria-hidden="true"></div>
     <div class="app-shell">
-      <header class="chrome venue-chrome">
+      <header class="chrome member-chrome venue-chrome">
         <div class="chrome-brand">
           <a class="brand" href="/">OSHI KEIBA</a>
           <div class="who" id="who-line">${who}</div>
