@@ -8,7 +8,6 @@ import {
 
 export const VENUE_CSS = `
 ${MEMBER_TOKENS_CSS}
-${MEMBER_MOBILE_CHROME_CSS}
 :root {
   --bg: #070808;
   --led: #00e8d8;
@@ -601,6 +600,7 @@ ${MEMBER_OVERLAY_CSS}
   .board-head-title,
   .board-head-detail { display: block; }
 }
+${MEMBER_MOBILE_CHROME_CSS}
 @media (min-width: 900px) {
   .scene {
     display: flex;
