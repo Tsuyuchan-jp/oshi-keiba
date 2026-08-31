@@ -148,7 +148,17 @@ a { color: inherit; }
   gap: .25rem;
 }
 .chrome-menu { position: relative; }
-.bet-chrome .chrome-state { margin-left: auto; }
+.bet-chrome .chrome-state {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  margin-left: auto;
+  color: var(--member-accent);
+  font-size: .72rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.bet-chrome .chrome-state strong { color: var(--member-white); }
 @media (max-width: 899px) {
   .bet-chrome {
     display: grid;

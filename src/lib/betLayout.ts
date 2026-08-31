@@ -20,6 +20,7 @@ import {
   flashHtml,
   formatOdds,
   howToModal,
+  toJstInput,
 } from "./ui.ts";
 import { BET_CSS } from "./betCss.ts";
 import { betKindSlots } from "./betBoard.ts";
@@ -40,16 +41,29 @@ function phasePill(status: EventStatus): string {
   return `<span class="pill${idle}"><span class="dot"></span>${escapeHtml(short)}</span>`;
 }
 
-function shellChrome(opts: {
-  user: UserRow;
-  eventStatus: EventStatus;
-}): string {
+function closeHm(ms: number | null): string {
+  const value = toJstInput(ms);
+  return value ? value.slice(11, 16) : "—";
+}
+
+function shellChrome(opts: { user: UserRow; board: Board }): string {
+  const status = opts.board.event.status;
+  const metaNow = status === "voting"
+    ? `<span id="meta-now">現在 <strong id="now-clock"></strong></span>`
+    : "";
+  const metaClose = status === "published"
+    ? `<span id="meta-close">払戻済み</span>`
+    : status === "closed"
+      ? `<span id="meta-close">確定配当</span>`
+      : status === "setup"
+        ? `<span id="meta-close">投票開始前</span>`
+        : `<span id="meta-close">締切 <strong>${escapeHtml(closeHm(opts.board.event.voting_closes_at))}</strong></span>`;
   return `<header class="chrome bet-chrome">
     <div class="chrome-brand">
       <a class="brand" href="/">OSHI KEIBA</a>
       <div class="who">${escapeHtml(opts.user.display_name)}</div>
     </div>
-    <div class="chrome-state">${phasePill(opts.eventStatus)}</div>
+    <div class="chrome-state">${phasePill(status)}${metaNow}${metaClose}</div>
     <nav class="chrome-nav nav" aria-label="ページ移動">
       <a href="/">場内</a>
       <a href="/paddock">パドック</a>
@@ -93,14 +107,24 @@ function betSceneSlotScript(): string {
       : fromClock();
   }
   applySlot();
-  setInterval(applySlot, 10000);
+  const clock = document.getElementById("now-clock");
+  const tick = () => {
+    if (clock) {
+      clock.textContent = new Intl.DateTimeFormat("ja-JP", {
+        timeZone: "Asia/Tokyo", hour: "2-digit", minute: "2-digit", hour12: false,
+      }).format(new Date());
+    }
+    applySlot();
+  };
+  tick();
+  setInterval(tick, 10000);
 })();
 </script>`;
 }
 
 function pageWrap(opts: {
   user: UserRow;
-  eventStatus: EventStatus;
+  board: Board;
   bodyInner: string;
   scripts?: string;
 }): string {
@@ -119,7 +143,7 @@ function pageWrap(opts: {
   <div class="scene" data-slot="night">
     <div class="scene-bg" aria-hidden="true"></div>
     <div class="app-shell">
-      ${shellChrome({ user: opts.user, eventStatus: opts.eventStatus })}
+      ${shellChrome({ user: opts.user, board: opts.board })}
       ${opts.bodyInner}
     </div>
   </div>
@@ -145,7 +169,7 @@ export function betJoinPage(opts: {
   const bal = opts.user.balance.toLocaleString("ja-JP");
   return pageWrap({
     user: opts.user,
-    eventStatus: opts.board.event.status,
+    board: opts.board,
     bodyInner: `<div class="purse">
         <span class="k">いまの所持</span>
         <div><span class="v">${bal}</span><span class="u">スペ</span></div>
@@ -179,7 +203,7 @@ export function betClosedPage(opts: {
     : "";
   return pageWrap({
     user: opts.user,
-    eventStatus: opts.board.event.status,
+    board: opts.board,
     bodyInner: `<div class="purse">
         <span class="k">いまの所持</span>
         <div><span class="v">${bal}</span><span class="u">スペ</span></div>
@@ -495,7 +519,7 @@ export function betBuyPage(opts: {
     <form id="redo-form" method="post" action="/bet/redo" hidden></form>`;
   return pageWrap({
     user: opts.user,
-    eventStatus: opts.board.event.status,
+    board: opts.board,
     bodyInner,
     scripts:
       markCardScript({
