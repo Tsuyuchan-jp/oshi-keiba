@@ -898,7 +898,7 @@ body.register-page .main {
 }
 body.register-page .hero { flex: 0 0 auto; }
 .page-hero-title-link { color: inherit; text-decoration: none; }
-.page-hero-title-link:hover { color: var(--admin-accent); text-decoration: underline; }
+.page-hero-title-link:hover { color: var(--admin-accent); text-decoration: none; }
 body.register-page .register-desk {
   flex: 1 1 auto; min-height: 0; height: 100%;
 }
