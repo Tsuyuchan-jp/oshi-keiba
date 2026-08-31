@@ -464,7 +464,7 @@ export function venueBoardPage(opts: {
   <style>${VENUE_CSS}</style>
 </head>
 <body>
-  <div class="scene" data-slot="${opts.slot}" data-phase="${phaseAttr}"${published ? ' data-result="show"' : ""}>
+  <div class="scene member-glass member-glass--venue" data-slot="${opts.slot}" data-phase="${phaseAttr}"${published ? ' data-result="show"' : ""}>
     <div class="scene-bg" aria-hidden="true"></div>
     <div class="app-shell">
       <header class="chrome venue-chrome">

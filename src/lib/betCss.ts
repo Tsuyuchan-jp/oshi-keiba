@@ -1,5 +1,6 @@
 /** 窓口（quiet）。マークカード。骨格は memberShellCss */
 import {
+  MEMBER_MOBILE_GLASS_CSS,
   MEMBER_OVERLAY_CSS,
   MEMBER_QUIET_FRAME_CSS,
 } from "./memberShellCss.ts";
@@ -199,4 +200,5 @@ ${MEMBER_OVERLAY_CSS}
 @media (min-width: 900px) {
   .app-shell { max-height: calc(100dvh - 3rem); }
 }
+${MEMBER_MOBILE_GLASS_CSS}
 `;

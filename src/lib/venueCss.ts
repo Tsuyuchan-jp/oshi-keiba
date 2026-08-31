@@ -1,5 +1,9 @@
 /** 場内電光。オーバーレイは memberShellCss。LED・盤面はここ */
-import { MEMBER_OVERLAY_CSS, MEMBER_TOKENS_CSS } from "./memberShellCss.ts";
+import {
+  MEMBER_MOBILE_GLASS_CSS,
+  MEMBER_OVERLAY_CSS,
+  MEMBER_TOKENS_CSS,
+} from "./memberShellCss.ts";
 
 export const VENUE_CSS = `
 ${MEMBER_TOKENS_CSS}
@@ -654,4 +658,5 @@ ${MEMBER_OVERLAY_CSS}
 .scene[data-phase="setup"] .cta { display: none; }
 .scene[data-phase="closed"] #meta-now,
 .scene[data-phase="published"] #meta-now { display: none; }
+${MEMBER_MOBILE_GLASS_CSS}
 `;

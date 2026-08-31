@@ -140,7 +140,7 @@ function pageWrap(opts: {
   <style>${BET_CSS}</style>
 </head>
 <body>
-  <div class="scene" data-slot="night">
+  <div class="scene member-glass member-glass--bet" data-slot="night">
     <div class="scene-bg" aria-hidden="true"></div>
     <div class="app-shell">
       ${shellChrome({ user: opts.user, board: opts.board })}

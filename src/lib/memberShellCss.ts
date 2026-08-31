@@ -90,6 +90,27 @@ export const MEMBER_OVERLAY_CSS = `
 }
 `;
 
+/** 場内・窓口・入場だけで使う、スマホ向けの共通グラス面。各画面の CSS の末尾に置く。 */
+export const MEMBER_MOBILE_GLASS_CSS = `
+@media (max-width: 899px) {
+  .member-glass { --glass-surface-alpha: .36; --glass-control-alpha: .22; }
+  .member-glass[data-slot="day"] { --glass-surface-alpha: .56; --glass-control-alpha: .30; }
+  .member-glass[data-slot="dusk"] { --glass-surface-alpha: .46; --glass-control-alpha: .26; }
+  .member-glass[data-slot="night"], .member-glass:not([data-slot]) { --glass-surface-alpha: .36; --glass-control-alpha: .22; }
+  .member-glass .app-shell {
+    background: rgba(5, 7, 8, .01); border-color: rgba(216, 220, 224, .58);
+    -webkit-backdrop-filter: blur(8px) saturate(115%); backdrop-filter: blur(8px) saturate(115%);
+  }
+  .member-glass--venue .chrome, .member-glass--venue .board,
+  .member-glass--bet .chrome, .member-glass--bet .purse, .member-glass--bet .desk, .member-glass--bet .dock,
+  .member-glass--gate .chrome, .member-glass--gate .desk { background: rgba(5, 7, 8, var(--glass-surface-alpha)); }
+  .member-glass--venue .sheet-wrap, .member-glass--venue .sheet-row.head, .member-glass--venue .j-panel { background: transparent; }
+  .member-glass--bet .kinds a, .member-glass--bet .kinds span, .member-glass--bet .well,
+  .member-glass--bet .chip, .member-glass--bet .amt-row button, .member-glass--bet .amt-all,
+  .member-glass--gate input { background: rgba(5, 7, 8, var(--glass-control-alpha)); }
+}
+`;
+
 /**
  * quiet（窓口・入場）の scene / shell / chrome。
  * 幅は --shell-max（既定 36rem）。入場は 26rem を指定。

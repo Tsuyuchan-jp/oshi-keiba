@@ -24,7 +24,7 @@ export function gateLoginPage(opts: {
   <style>${GATE_CSS}</style>
 </head>
 <body>
-  <div class="scene">
+  <div class="scene member-glass member-glass--gate">
     <div class="scene-bg" aria-hidden="true"></div>
     <div class="app-shell">
       <header class="chrome">

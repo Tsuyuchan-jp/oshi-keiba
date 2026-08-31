@@ -1,5 +1,6 @@
 /** 入場（quiet）。骨格は memberShellCss */
 import {
+  MEMBER_MOBILE_GLASS_CSS,
   MEMBER_OVERLAY_CSS,
   MEMBER_QUIET_FRAME_CSS,
 } from "./memberShellCss.ts";
@@ -42,4 +43,5 @@ input {
 @media (min-width: 900px) {
   .app-shell { max-height: none; }
 }
+${MEMBER_MOBILE_GLASS_CSS}
 `;
