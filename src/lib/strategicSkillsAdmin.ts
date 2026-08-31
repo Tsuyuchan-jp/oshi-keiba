@@ -96,17 +96,6 @@ export function strategicSkillsAdminScript(
     if (countEl) countEl.textContent = "戦略例外（" + skills.length + "）";
     document.dispatchEvent(new CustomEvent("strategic-skills-changed", { detail: { skills, dismissed } }));
   }
-  function bindBackdropClose() {
-    if (!dlg || dlg.dataset.backdropBound === "1") return;
-    dlg.dataset.backdropBound = "1";
-    dlg.addEventListener("click", (ev) => {
-      const r = dlg.getBoundingClientRect();
-      const inside =
-        ev.clientX >= r.left && ev.clientX <= r.right &&
-        ev.clientY >= r.top && ev.clientY <= r.bottom;
-      if (!inside) dlg.close();
-    });
-  }
   function setModalMode(mode) {
     modalMode = mode;
     const candidatesOnly = mode === "candidates";
@@ -225,7 +214,6 @@ export function strategicSkillsAdminScript(
     setModalMode("full");
     renderTable();
     showCandidates(window.__lastRejected || []);
-    bindBackdropClose();
     dlg?.showModal();
   }
   function openCandidatesOnly(rejected) {
@@ -235,7 +223,6 @@ export function strategicSkillsAdminScript(
       alert("追加できる候補がありません");
       return;
     }
-    bindBackdropClose();
     dlg?.showModal();
   }
   openBtn?.addEventListener("click", () => openFull());
@@ -265,7 +252,6 @@ export function strategicSkillsAdminScript(
     const note = document.getElementById("strategic-dlg-note");
     if (note) note.textContent = "投票開始後は閲覧のみです。";
   }
-  bindBackdropClose();
   renderTable();
 })();
 </script>`;

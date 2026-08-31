@@ -586,6 +586,7 @@ body.ledger-page .filters select {
   color: var(--admin-surface); font-weight: 700;
 }
 .admin-action:disabled { opacity: .55; cursor: default; }
+.hero-util .admin-action { font-size: 1rem; }
 .hero-util-sep { color: #b4bcc6; user-select: none; }
 .hero-key-wrap { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .35rem .45rem; }
 .hero-key-label { font-weight: 700; color: #3d4550; }

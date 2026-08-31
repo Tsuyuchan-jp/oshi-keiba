@@ -19,3 +19,8 @@ test("strategicSkillsAdminScript: 生成 JS に構文エラーがない", () => 
     new Function(scriptBody(html));
   });
 });
+
+test("strategicSkillsAdminScript: 戦略例外モーダルは外側クリックで閉じない", () => {
+  const html = strategicSkillsAdminScript(true, { skills: [], dismissed: [] });
+  assert.doesNotMatch(html, /bindBackdropClose/);
+});
