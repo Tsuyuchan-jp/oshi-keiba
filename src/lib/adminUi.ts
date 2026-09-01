@@ -1322,8 +1322,9 @@ export function adminSettingsPage(
   const voting = e.status === "voting";
   const canSave = e.status === "setup" || voting;
   const setupDisabled = canKinds ? "" : " disabled";
+  const staminaReadonly = canKinds ? "" : " disabled";
   const saveConfirmLabel = voting ? "この内容で保存" : "この内容で保存・再計算";
-  const votingNote = voting
+  const votingNotice = voting
     ? `<p class="set-lock">投票中に変更可能：イベント名、締切、S・E・D・w時。ほかの設定は投票開始後に固定されます。</p>`
     : "";
   const enabled = new Set(parseEnabledKinds(e.enabled_kinds));
@@ -1363,10 +1364,13 @@ export function adminSettingsPage(
   const staminaCount = staminaStyles.reduce((count, [style]) => count +
     (staminaValue(style, "noTempt") ? 1 : 0) + (staminaValue(style, "withTempt") ? 1 : 0), 0);
   const staminaStatus = staminaCount === 8 ? "設定済み" : staminaCount ? `${staminaCount} / 8` : "未設定";
+  const staminaNote = voting
+    ? "投票中は確認のみです。設定は変更できません。"
+    : "掛かりありは、同じ脚質の掛かりなし以上の値を入力してください。";
   const staminaInputs = staminaStyles.map(([style, label]) => `<tr>
     <th scope="row">${label}</th>
-    <td><input name="score_stamina_${style}_no" type="number" min="1" value="${escapeHtml(staminaValue(style, "noTempt"))}" aria-label="${label}・掛かりなし"></td>
-    <td><input name="score_stamina_${style}_with" type="number" min="1" value="${escapeHtml(staminaValue(style, "withTempt"))}" aria-label="${label}・掛かりあり"></td>
+    <td><input name="score_stamina_${style}_no" type="number" min="1" value="${escapeHtml(staminaValue(style, "noTempt"))}" aria-label="${label}・掛かりなし"${staminaReadonly}></td>
+    <td><input name="score_stamina_${style}_with" type="number" min="1" value="${escapeHtml(staminaValue(style, "withTempt"))}" aria-label="${label}・掛かりあり"${staminaReadonly}></td>
   </tr>`).join("");
   const reqVal = (saved: number | undefined, fallback: number) =>
     escapeHtml(saved == null ? String(fallback) : String(saved));
@@ -1380,11 +1384,16 @@ export function adminSettingsPage(
     : `<span class="odds-meta">キャラスペック: 未取得（×1.00）</span>`;
   const stamOn = !!r?.staminaRace;
   const skillWeightN = setup?.skillWeightN ?? DEFAULT_SCORE_SKILL_N;
+  const staminaCard = `<div class="set-target set-stamina-card">
+    <button type="button" class="set-stamina-open" id="stamina-settings-open"><span class="k">スタミナ</span><strong id="stamina-settings-status">${staminaStatus}</strong><span class="set-stamina-edit">${voting ? "確認 →" : "編集 →"}</span><span class="set-stamina-race-state">スタミナ勝負：${stamOn ? "あり" : "なし"}</span></button>
+    <input type="hidden" name="score_stamina_race" id="stamina-race" value="${stamOn ? "1" : ""}">
+  </div>`;
   const flashEl = flash?.text
     ? `<p class="settings-flash${flash.error ? " err" : ""}">${escapeHtml(flash.text)}</p>`
     : "";
   const body = `${adminPageHero("開催設定", e.status, {
       actions: `<button type="button" class="admin-action admin-action--primary" id="settings-save-open"${canSave ? "" : " disabled"}>保存</button>`,
+      notice: votingNotice,
     })}
     <form class="settings-desk" id="settings-form" method="post" action="/admin/params">
       <div class="settings-top">
@@ -1405,7 +1414,6 @@ export function adminSettingsPage(
               <input name="bet_unit" type="number" min="1" step="1" value="${e.bet_unit}"${setupDisabled}>${canKinds ? "" : `<input type="hidden" name="bet_unit" value="${e.bet_unit}">`}
             </div>
           </div>
-          ${votingNote}
         </section>
         <section class="work">
           <p class="set-k">賭式</p>
@@ -1441,12 +1449,10 @@ export function adminSettingsPage(
             <label class="set-target"><span class="k">パ</span><input name="score_power" type="number" min="1" value="${reqVal(r?.power, DEFAULT_SCORE_REQ.power)}"></label>
             <label class="set-target"><span class="k">根</span><input name="score_guts" type="number" min="1" value="${reqVal(r?.guts, DEFAULT_SCORE_REQ.guts)}"></label>
             <label class="set-target"><span class="k">賢</span><input name="score_wisdom" type="number" min="1" value="${reqVal(r?.wisdom, DEFAULT_SCORE_REQ.wisdom)}"></label>
-            <div class="set-target set-stamina-card">
-              <button type="button" class="set-stamina-open" id="stamina-settings-open"><span class="k">スタミナ</span><strong id="stamina-settings-status">${staminaStatus}</strong><span class="set-stamina-edit">編集 →</span><span class="set-stamina-race-state">スタミナ勝負：${stamOn ? "あり" : "なし"}</span></button>
-              <input type="hidden" name="score_stamina_race" id="stamina-race" value="${stamOn ? "1" : ""}">
-            </div>
+            ${canKinds ? staminaCard : ""}
           </div>
         </fieldset>
+        ${voting ? `<div class="set-targets">${staminaCard}</div>` : ""}
       </section>
       <section class="work settings-bot">
         <div class="work-head">
@@ -1491,14 +1497,14 @@ export function adminSettingsPage(
       </section>
       <dialog class="modal stamina-modal" id="stamina-settings-modal">
         <h2>脚質ごとのスタミナ目標</h2>
-        <p class="note">掛かりありは、同じ脚質の掛かりなし以上の値を入力してください。</p>
+        <p class="note">${staminaNote}</p>
         <div class="stamina-modal-toggle" aria-label="スタミナ勝負">
           <span>スタミナ勝負</span>
-          <button type="button" data-stamina-race="0"${stamOn ? "" : ` class="on"`}>なし</button>
-          <button type="button" data-stamina-race="1"${stamOn ? ` class="on"` : ""}>あり</button>
+          <button type="button" data-stamina-race="0"${stamOn ? "" : ` class="on"`}${staminaReadonly}>なし</button>
+          <button type="button" data-stamina-race="1"${stamOn ? ` class="on"` : ""}${staminaReadonly}>あり</button>
         </div>
         <table class="plain stamina-table"><thead><tr><th>脚質</th><th>掛かりなし</th><th>掛かりあり</th></tr></thead><tbody>${staminaInputs}</tbody></table>
-        <div class="modal-actions"><button type="button" class="admin-action admin-action--primary" id="stamina-settings-done">入力を確認</button><button type="button" class="admin-action admin-action--secondary" id="stamina-settings-cancel">閉じる</button></div>
+        <div class="modal-actions">${canKinds ? `<button type="button" class="admin-action admin-action--primary" id="stamina-settings-done">入力を確認</button>` : ""}<button type="button" class="admin-action admin-action--secondary" id="stamina-settings-cancel">閉じる</button></div>
       </dialog>
       <dialog class="modal" id="settings-save-modal">
         <h2>開催設定を保存</h2>
