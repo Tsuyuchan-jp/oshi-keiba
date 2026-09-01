@@ -1526,8 +1526,8 @@ export function adminSettingsPage(
         <p class="note">${staminaNote}</p>
         <div class="stamina-modal-toggle" aria-label="スタミナ勝負">
           <span>スタミナ勝負</span>
-          <button type="button" data-stamina-race="0"${stamOn ? "" : ` class="on"`}${staminaReadonly}>なし</button>
-          <button type="button" data-stamina-race="1"${stamOn ? ` class="on"` : ""}${staminaReadonly}>あり</button>
+          <button type="button" data-stamina-race="0"${!stamOn && staminaRaceSelected ? ` class="on"` : ""}${staminaReadonly}>なし</button>
+          <button type="button" data-stamina-race="1"${stamOn && staminaRaceSelected ? ` class="on"` : ""}${staminaReadonly}>あり</button>
         </div>
         <table class="plain stamina-table"><thead><tr><th>脚質</th><th>掛かりなし</th><th>掛かりあり</th></tr></thead><tbody>${staminaInputs}</tbody></table>
         <div class="modal-actions">${canKinds ? `<button type="button" class="admin-action admin-action--primary" id="stamina-settings-done">入力を確認</button>` : ""}<button type="button" class="admin-action admin-action--secondary" id="stamina-settings-cancel">閉じる</button></div>
