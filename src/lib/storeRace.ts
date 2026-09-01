@@ -15,7 +15,7 @@ import {
   payoutAmount,
   specialPayoutAmount,
 } from "./odds";
-import { captureAdminUndo } from "./undo";
+import { captureAdminUndo, prepareConditionalAdminUndo } from "./undo";
 import { buildBoard } from "./storeBoard";
 import {
   getUser,
@@ -337,44 +337,57 @@ export async function savePlaces(
   await db.batch(stmts);
 }
 
-export async function publishResults(db: D1Database, event: EventRow): Promise<void> {
-  if (event.status !== "closed") throw new Error("公開できるのは締切後だけです");
-  if (event.payouts_applied) {
+export async function publishResults(
+  db: D1Database,
+  event: EventRow,
+): Promise<"published" | "already_published"> {
+  // 呼び出し元が保持する event は古い可能性があるため、確定判断は必ずDBの値で行う。
+  const current = await db
+    .prepare("SELECT * FROM events WHERE id = ?")
+    .bind(event.id)
+    .first<EventRow>();
+  if (!current) throw new Error("開催が見つかりません");
+  if (current.status === "published") return "already_published";
+  if (current.status !== "closed") throw new Error("公開できるのは締切後だけです");
+  if (current.payouts_applied) {
     await db
       .prepare(
-        "UPDATE events SET status = 'published', published_at = ? WHERE id = ?",
+        "UPDATE events SET status = 'published', published_at = ? WHERE id = ? AND status = 'closed' AND payouts_applied = 1",
       )
-      .bind(Date.now(), event.id)
+      .bind(Date.now(), current.id)
       .run();
-    return;
+    return "published";
   }
-  const horses = await listHorses(db, event.id);
+  const horses = await listHorses(db, current.id);
   const live = horses.filter((h) => h.scratched === 0);
   if (live.some((h) => h.finish_place == null)) {
     throw new Error("着順が入っていない頭があります");
   }
-  await captureAdminUndo(db, "結果公開・払戻");
-  const bets = await listActiveBets(db, event.id);
-  const board = buildBoard(event, horses, bets);
+  const bets = await listActiveBets(db, current.id);
+  const board = buildBoard(current, horses, bets);
   const now = Date.now();
-  const stmts = [];
+  const payoutGuard = "EXISTS (SELECT 1 FROM events WHERE id = ? AND status = 'closed' AND payouts_applied = 0)";
+  const stmts: D1PreparedStatement[] = [
+    await prepareConditionalAdminUndo(db, "結果公開・払戻", current.id, "closed"),
+  ];
 
   for (const pool of board.pools) {
     const kindBets = bets.filter((b) => b.kind === pool.kind);
     if (kindBets.length === 0) continue;
     if (pool.voidSpecial) {
       for (const b of kindBets) {
-        const pay = specialPayoutAmount(b.amount, event.takeout_d);
+        const pay = specialPayoutAmount(b.amount, current.takeout_d);
         stmts.push(
-          db.prepare("UPDATE bets SET refunded = 1 WHERE id = ?").bind(b.id),
+          db.prepare(`UPDATE bets SET refunded = 1 WHERE id = ? AND ${payoutGuard}`).bind(b.id, current.id),
           db
-            .prepare("UPDATE users SET balance = balance + ? WHERE id = ?")
-            .bind(pay, b.user_id),
+            .prepare(`UPDATE users SET balance = balance + ? WHERE id = ? AND ${payoutGuard}`)
+            .bind(pay, b.user_id, current.id),
           db
             .prepare(
-              "INSERT INTO payouts (id, event_id, user_id, bet_id, amount, kind, created_at) VALUES (?, ?, ?, ?, ?, 'special', ?)",
+              `INSERT INTO payouts (id, event_id, user_id, bet_id, amount, kind, created_at)
+               SELECT ?, ?, ?, ?, ?, 'special', ? WHERE ${payoutGuard}`,
             )
-            .bind(newId(), event.id, b.user_id, b.id, pay, now),
+            .bind(newId(), current.id, b.user_id, b.id, pay, now, current.id),
         );
       }
       continue;
@@ -382,32 +395,42 @@ export async function publishResults(db: D1Database, event: EventRow): Promise<v
     const winKey = pool.winningKey;
     if (!winKey) throw new Error(`${pool.kind} の当選キーがありません`);
     const winnerReal = pool.combos.find((c) => c.selection_key === winKey)?.real ?? 0;
-    const odds = parimutuelOdds(winnerReal, pool.realTotal, event.takeout_d);
+    const odds = parimutuelOdds(winnerReal, pool.realTotal, current.takeout_d);
     if (odds == null) throw new Error(`${pool.kind} の確定配当を計算できません`);
     for (const b of kindBets) {
       if (b.selection_key !== winKey) continue;
       const pay = payoutAmount(b.amount, odds);
       stmts.push(
         db
-          .prepare(
-            "INSERT INTO payouts (id, event_id, user_id, bet_id, amount, kind, created_at) VALUES (?, ?, ?, ?, ?, 'win', ?)",
-          )
-          .bind(newId(), event.id, b.user_id, b.id, pay, now),
-        db
-          .prepare("UPDATE users SET balance = balance + ? WHERE id = ?")
-          .bind(pay, b.user_id),
+            .prepare(
+              `INSERT INTO payouts (id, event_id, user_id, bet_id, amount, kind, created_at)
+               SELECT ?, ?, ?, ?, ?, 'win', ? WHERE ${payoutGuard}`,
+            )
+            .bind(newId(), current.id, b.user_id, b.id, pay, now, current.id),
+          db
+            .prepare(`UPDATE users SET balance = balance + ? WHERE id = ? AND ${payoutGuard}`)
+            .bind(pay, b.user_id, current.id),
       );
     }
   }
 
   stmts.push(
     db
-      .prepare(
-        "UPDATE events SET status = 'published', published_at = ?, payouts_applied = 1 WHERE id = ?",
-      )
-      .bind(now, event.id),
+      .prepare("UPDATE events SET status = 'published', published_at = ?, payouts_applied = 1 WHERE id = ? AND status = 'closed' AND payouts_applied = 0")
+      .bind(now, current.id),
   );
-  await db.batch(stmts);
+  const results = await db.batch(stmts);
+  const finalResult = results.at(-1);
+  if ((finalResult?.meta.changes ?? 0) === 1) return "published";
+
+  const settled = await db
+    .prepare("SELECT status, payouts_applied FROM events WHERE id = ?")
+    .bind(current.id)
+    .first<Pick<EventRow, "status" | "payouts_applied">>();
+  if (settled?.status === "published" && settled.payouts_applied) {
+    return "already_published";
+  }
+  throw new Error("結果公開の確定に失敗しました。画面を更新して再試行してください");
 }
 
 /** 投票中を setup に戻す。票は全額返還。この開催の G は巻き戻す */

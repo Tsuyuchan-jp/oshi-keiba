@@ -13,6 +13,7 @@ import {
   getEventById,
   getUser,
   joinEvent,
+  listEventPayouts,
   listUserBets,
   openVoting,
   placeBet,
@@ -210,4 +211,59 @@ test("二人投票: 総付与と残高・控除の関係が崩れない", async 
   const grants = 2 * DEFAULTS.grantG;
   const poolLeft = aw + al - pay; // 控除と負け票の残り（当選者への払いを除く）
   assert.equal(ua.balance + ub.balance + poolLeft, grants);
+});
+
+test("結果公開を同時に再送しても、払戻と残高加算は一度だけ", async () => {
+  const db = createMemoryD1();
+  const { event, h1, h2 } = await seedRace(db);
+  const user = await joinEvent(db, event, await registerMember(db, "公開同時実行"));
+  const amount = 500;
+  await placeBet(db, event, user, "win", [h1], amount);
+  await forceClose(db, await refresh(db, event.id));
+  await savePlaces(db, await refresh(db, event.id), [
+    { horseId: h1, place: 1 },
+    { horseId: h2, place: 2 },
+  ]);
+
+  const stale = await refresh(db, event.id);
+  const results = await Promise.all([
+    publishResults(db, stale),
+    publishResults(db, stale),
+  ]);
+
+  assert.deepEqual(results.sort(), ["already_published", "published"]);
+  const odds = parimutuelOdds(amount, amount, event.takeout_d);
+  assert.ok(odds != null);
+  const userAfter = await getUser(db, user.id);
+  assert.ok(userAfter);
+  assert.equal(userAfter.balance, DEFAULTS.grantG - amount + payoutAmount(amount, odds));
+  assert.equal((await listEventPayouts(db, event.id)).length, 1);
+});
+
+test("公開バッチの失敗は全て戻り、再試行で一度だけ確定する", async () => {
+  const db = createMemoryD1();
+  const { event, h1, h2 } = await seedRace(db);
+  const user = await joinEvent(db, event, await registerMember(db, "公開再試行"));
+  await placeBet(db, event, user, "win", [h1], 500);
+  await forceClose(db, await refresh(db, event.id));
+  await savePlaces(db, await refresh(db, event.id), [
+    { horseId: h1, place: 1 },
+    { horseId: h2, place: 2 },
+  ]);
+  await db.exec(`CREATE TRIGGER fail_publish_payout BEFORE INSERT ON payouts
+    WHEN NEW.kind = 'win' BEGIN SELECT RAISE(ABORT, 'payout failure'); END`);
+
+  const beforeFailure = await refresh(db, event.id);
+  await assert.rejects(() => publishResults(db, beforeFailure), /payout failure/);
+  const failed = await refresh(db, event.id);
+  const balanceAfterFailure = await getUser(db, user.id);
+  assert.ok(balanceAfterFailure);
+  assert.equal(failed.status, "closed");
+  assert.equal(failed.payouts_applied, 0);
+  assert.equal(balanceAfterFailure.balance, DEFAULTS.grantG - 500);
+  assert.equal((await listEventPayouts(db, event.id)).length, 0);
+
+  await db.exec("DROP TRIGGER fail_publish_payout");
+  assert.equal(await publishResults(db, await refresh(db, event.id)), "published");
+  assert.equal((await listEventPayouts(db, event.id)).length, 1);
 });

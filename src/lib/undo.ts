@@ -212,6 +212,30 @@ export async function captureAdminUndo(
     .run();
 }
 
+/**
+ * 指定状態の開催に限って Undo を記録する文を用意する。
+ * 公開処理では払戻と同じ batch に入れ、負けた同時実行が Undo を上書きしないようにする。
+ */
+export async function prepareConditionalAdminUndo(
+  db: D1Database,
+  actionLabel: string,
+  eventId: string,
+  status: string,
+): Promise<D1PreparedStatement> {
+  const payload = JSON.stringify(await dumpSnapshot(db));
+  return db
+    .prepare(
+      `INSERT INTO admin_undo (id, action_label, payload, created_at)
+       SELECT 1, ?, ?, ?
+       WHERE EXISTS (SELECT 1 FROM events WHERE id = ? AND status = ?)
+       ON CONFLICT(id) DO UPDATE SET
+         action_label = excluded.action_label,
+         payload = excluded.payload,
+         created_at = excluded.created_at`,
+    )
+    .bind(actionLabel, payload, Date.now(), eventId, status);
+}
+
 export async function getAdminUndoMeta(
   db: D1Database,
 ): Promise<UndoMeta | null> {
