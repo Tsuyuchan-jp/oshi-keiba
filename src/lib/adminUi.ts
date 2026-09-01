@@ -1173,7 +1173,7 @@ export function adminLedgerPage(opts: {
         const opt = sel?.options[sel.selectedIndex];
         const name = opt && opt.value ? (opt.getAttribute("data-name") || "") : "";
         if (!name) { ev.preventDefault(); return; }
-        if (!confirm("「" + name + "」を削除します。この人の馬券も消えます。よろしいですか？")) ev.preventDefault();
+        if (!confirm("「" + name + "」を利用停止にします。過去の開催記録は残り、以後ログインできません。よろしいですか？")) ev.preventDefault();
       });
       const kind = document.getElementById("f-kind");
       const res = document.getElementById("f-res");

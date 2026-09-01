@@ -57,6 +57,8 @@ export type UserRow = {
   display_name: string;
   role: string;
   balance: number;
+  /** 利用停止日時。null のメンバーだけが入室・参加できる */
+  deleted_at: number | null;
 };
 
 export type BetRow = {

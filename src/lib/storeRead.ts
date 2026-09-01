@@ -100,7 +100,7 @@ export async function listAllBets(
 export async function listMembers(db: D1Database): Promise<UserRow[]> {
   const { results } = await db
     .prepare(
-      "SELECT * FROM users WHERE role = 'member' ORDER BY display_name COLLATE NOCASE",
+      "SELECT * FROM users WHERE role = 'member' AND deleted_at IS NULL ORDER BY display_name COLLATE NOCASE",
     )
     .all<UserRow>();
   return results ?? [];

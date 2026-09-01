@@ -71,6 +71,10 @@ function msg(url: URL): { text: string | null; error: boolean } {
   };
 }
 
+function isActiveMember(user: UserRow | null): user is UserRow {
+  return user?.role === "member" && user.deleted_at == null;
+}
+
 async function requireMember(
   request: Request,
   env: Env,
@@ -80,7 +84,7 @@ async function requireMember(
     return redirect("/login");
   }
   const user = await getUser(env.DB, session.userId);
-  if (!user) return redirect("/login");
+  if (!isActiveMember(user)) return redirect("/login");
   return { session, user };
 }
 
@@ -108,7 +112,9 @@ async function requireMemberOrAdmin(
     return redirect("/login");
   }
   const user = await getUser(env.DB, session.userId);
-  if (!user) return redirect(session.role === "admin" ? "/admin/login" : "/login");
+  if (!user || (session.role === "member" && !isActiveMember(user))) {
+    return redirect(session.role === "admin" ? "/admin/login" : "/login");
+  }
   return { session, user, preview: session.role === "admin" };
 }
 
@@ -211,7 +217,7 @@ export async function tryMemberGet(
     const m = msg(url);
 
     let ticketsHtml: string | undefined;
-    if (board.event.status === "published" && user && user.role === "member") {
+    if (board.event.status === "published" && isActiveMember(user)) {
       const bets = await listUserBets(env.DB, board.event.id, user.id);
       const payouts = await listUserPayouts(env.DB, board.event.id, user.id);
       ticketsHtml = venueTicketsHtml(bets, payouts, board);

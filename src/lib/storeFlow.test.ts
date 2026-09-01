@@ -8,13 +8,17 @@ import { DEFAULTS, payoutAmount, parimutuelOdds } from "./odds.ts";
 import { createMemoryD1 } from "./testD1.ts";
 import {
   addHorse,
+  deleteMember,
   ensureEvent,
   forceClose,
   getEventById,
   getUser,
   joinEvent,
+  listAllBets,
   listEventPayouts,
+  listMembers,
   listUserBets,
+  loginMember,
   openVoting,
   placeBet,
   publishResults,
@@ -266,4 +270,34 @@ test("公開バッチの失敗は全て戻り、再試行で一度だけ確定�
   await db.exec("DROP TRIGGER fail_publish_payout");
   assert.equal(await publishResults(db, await refresh(db, event.id)), "published");
   assert.equal((await listEventPayouts(db, event.id)).length, 1);
+});
+
+test("メンバーを利用停止にしても、公開済み開催の投票と払戻は残る", async () => {
+  const db = createMemoryD1();
+  const { event, h1, h2 } = await seedRace(db);
+  const user = await joinEvent(db, event, await registerMember(db, "記録を残す会員"));
+  await placeBet(db, event, user, "win", [h1], 500);
+  await forceClose(db, await refresh(db, event.id));
+  await savePlaces(db, await refresh(db, event.id), [
+    { horseId: h1, place: 1 },
+    { horseId: h2, place: 2 },
+  ]);
+  await publishResults(db, await refresh(db, event.id));
+
+  await deleteMember(db, user.id);
+
+  const stopped = await getUser(db, user.id);
+  assert.ok(stopped);
+  assert.ok(stopped.deleted_at != null);
+  assert.equal((await listMembers(db)).length, 0);
+  await assert.rejects(() => loginMember(db, "記録を残す会員"), /登録されていません/);
+  const bets = await listAllBets(db, event.id, "new");
+  assert.equal(bets.length, 1);
+  assert.equal(bets[0]?.display_name, "記録を残す会員");
+  assert.equal((await listEventPayouts(db, event.id)).length, 1);
+
+  const restored = await registerMember(db, "記録を残す会員");
+  assert.equal(restored.id, user.id);
+  assert.equal(restored.deleted_at, null);
+  assert.equal((await listMembers(db)).length, 1);
 });

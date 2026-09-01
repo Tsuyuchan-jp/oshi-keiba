@@ -114,8 +114,8 @@ function insertUsers(db: D1Database, rows: Record<string, unknown>[]) {
   return rows.map((r) =>
     db
       .prepare(
-        `INSERT INTO users (id, display_name, role, balance, created_at)
-         VALUES (?, ?, ?, ?, ?)`,
+        `INSERT INTO users (id, display_name, role, balance, created_at, deleted_at)
+         VALUES (?, ?, ?, ?, ?, ?)`,
       )
       .bind(
         v(r, "id"),
@@ -123,6 +123,7 @@ function insertUsers(db: D1Database, rows: Record<string, unknown>[]) {
         v(r, "role"),
         v(r, "balance"),
         v(r, "created_at"),
+        v(r, "deleted_at"),
       ),
   );
 }

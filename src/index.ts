@@ -576,7 +576,7 @@ export default {
         const form = await readForm(request);
         try {
           const name = await deleteMember(env.DB, form.get("user_id") ?? "");
-          return bounce("/admin/ledger", `「${name}」を削除しました`);
+          return bounce("/admin/ledger", `「${name}」を利用停止にしました。過去の開催記録は残っています`);
         } catch (err) {
           return bounce("/admin/ledger", err instanceof Error ? err.message : "失敗", true);
         }

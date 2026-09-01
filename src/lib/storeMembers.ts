@@ -25,6 +25,7 @@ export async function upsertUser(
     display_name: name,
     role,
     balance: 0,
+    deleted_at: null,
   };
   await db
     .prepare(
@@ -35,7 +36,7 @@ export async function upsertUser(
   return user;
 }
 
-/** 初めて入室: 同名ありは拒否。口座作成。G は開催参加時 */
+/** 初めて入室: 同名の利用停止メンバーは復帰。G は開催参加時 */
 export async function registerMember(
   db: D1Database,
   displayName: string,
@@ -47,6 +48,13 @@ export async function registerMember(
     .prepare("SELECT * FROM users WHERE display_name = ?")
     .bind(name)
     .first<UserRow>();
+  if (existing?.role === "member" && existing.deleted_at != null) {
+    await db
+      .prepare("UPDATE users SET deleted_at = NULL WHERE id = ?")
+      .bind(existing.id)
+      .run();
+    return (await getUser(db, existing.id))!;
+  }
   if (existing) throw new Error("この名前はすでに使われています");
   return upsertUser(db, name, "member");
 }
@@ -59,7 +67,7 @@ export async function loginMember(
   const name = displayName.trim();
   if (!name) throw new Error("表示名を入れてください");
   const existing = await db
-    .prepare("SELECT * FROM users WHERE display_name = ? AND role = 'member'")
+    .prepare("SELECT * FROM users WHERE display_name = ? AND role = 'member' AND deleted_at IS NULL")
     .bind(name)
     .first<UserRow>();
   if (!existing) throw new Error("この名前は登録されていません");
@@ -96,31 +104,28 @@ export async function joinEvent(
   event: EventRow,
   user: UserRow,
 ): Promise<UserRow> {
-  if (user.role !== "member") throw new Error("メンバーだけ参加できます");
+  if (user.role !== "member" || user.deleted_at != null) {
+    throw new Error("利用中のメンバーだけ参加できます");
+  }
   if (event.status !== "voting") {
     throw new Error("参加できるのは投票中だけです");
   }
   return grantIfNeeded(db, event, user);
 }
 
-/** 試運転: メンバー口座ごと削除。票はプールから消える */
+/** メンバーを利用停止にする。過去の開催記録と口座は残す */
 export async function deleteMember(
   db: D1Database,
   userId: string,
 ): Promise<string> {
   const user = await getUser(db, userId);
-  if (!user || user.role !== "member") {
+  if (!user || user.role !== "member" || user.deleted_at != null) {
     throw new Error("削除できるメンバーが見つかりません");
   }
   await captureAdminUndo(db, `メンバー削除（${user.display_name}）`);
-  await db.batch([
-    db.prepare("DELETE FROM member_operations WHERE user_id = ?").bind(userId),
-    db.prepare("DELETE FROM payouts WHERE user_id = ?").bind(userId),
-    db.prepare("DELETE FROM bets WHERE user_id = ?").bind(userId),
-    db.prepare("DELETE FROM grants WHERE user_id = ?").bind(userId),
-    db
-      .prepare("DELETE FROM users WHERE id = ? AND role = 'member'")
-      .bind(userId),
-  ]);
+  await db
+    .prepare("UPDATE users SET deleted_at = ? WHERE id = ? AND role = 'member' AND deleted_at IS NULL")
+    .bind(Date.now(), userId)
+    .run();
   return user.display_name;
 }
