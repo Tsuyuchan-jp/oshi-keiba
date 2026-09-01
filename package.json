@@ -12,7 +12,7 @@
     "extract:greens": "node scripts/extract-green-skills.mjs",
     "extract:courses": "node scripts/extract-score-courses.mjs",
     "gen:skill-catalog": "node scripts/gen-skill-catalog.mjs",
-    "test": "node --import ./scripts/test-resolve.mjs --experimental-strip-types --experimental-transform-types --test src/lib/odds.test.ts src/lib/lifecycle.test.ts src/lib/horseName.test.ts src/lib/greenSkills.test.ts src/lib/greenCondition.test.ts src/lib/score.test.ts src/lib/scoreSetup.test.ts src/lib/strategicSkills.test.ts src/lib/strategicSkillsAdmin.test.ts src/lib/utoolsEffects.test.ts src/lib/skillFuzzy.test.ts src/lib/skillCatalog.test.ts src/lib/scoreFromHorse.test.ts src/lib/scoreRecompute.test.ts src/lib/shotMime.test.ts src/lib/venueLayout.test.ts src/lib/betLayout.test.ts src/lib/gateLayout.test.ts src/lib/storeFlow.test.ts src/lib/umaDress.test.ts src/lib/paddockLayout.test.ts src/lib/paddockView.test.ts"
+    "test": "node --import ./scripts/test-resolve.mjs --experimental-strip-types --experimental-transform-types --test src/lib/adminUndo.test.ts src/lib/odds.test.ts src/lib/lifecycle.test.ts src/lib/horseName.test.ts src/lib/greenSkills.test.ts src/lib/greenCondition.test.ts src/lib/score.test.ts src/lib/scoreSetup.test.ts src/lib/strategicSkills.test.ts src/lib/strategicSkillsAdmin.test.ts src/lib/utoolsEffects.test.ts src/lib/skillFuzzy.test.ts src/lib/skillCatalog.test.ts src/lib/scoreFromHorse.test.ts src/lib/scoreRecompute.test.ts src/lib/shotMime.test.ts src/lib/venueLayout.test.ts src/lib/betLayout.test.ts src/lib/gateLayout.test.ts src/lib/storeFlow.test.ts src/lib/umaDress.test.ts src/lib/paddockLayout.test.ts src/lib/paddockView.test.ts"
   },
   "devDependencies": {
     "@types/node": "^26.4.0",

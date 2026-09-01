@@ -3,6 +3,7 @@ interface Env {
   SESSION_SECRET: string;
   MEMBER_PASSWORD: string;
   ALLOW_DEMO_RESET?: string;
+  ALLOW_ADMIN_UNDO?: string;
   SHOTS?: R2Bucket;
 }
 

@@ -149,6 +149,7 @@ function bindDlgScript(): string {
 
 function escapeDialogs(opts: {
   undoMeta: UndoMeta | null;
+  allowUndo: boolean;
   allowDemo: boolean;
   reauth: string;
 }): string {
@@ -158,6 +159,7 @@ function escapeDialogs(opts: {
     ? escapeHtml(toJstInput(u.created_at).replace("T", " ")) + " JST"
     : "";
   return `
+${opts.allowUndo ? "" : `<style>#escape-drawer .esc-grid.undo-disabled > div:nth-child(2) { display: none; }</style>`}
 <dialog class="modal" id="clear-horses-modal">
   <h2>出走を空にする</h2>
   <p><strong>この開催の出走をすべて消します。開催自体は残ります。</strong></p>
@@ -185,7 +187,7 @@ function escapeDialogs(opts: {
       <button type="button" class="secondary" id="revert-voting-cancel">やめる</button></div>
   </form>
 </dialog>
-<dialog class="modal" id="undo-modal">
+${opts.allowUndo ? `<dialog class="modal" id="undo-modal">
   <h2>直前の操作を戻す</h2>
   <p><strong>戻す操作: ${undoLabel}</strong></p>
   <p>出走・票・残高・払戻が、その操作の直前の状態に戻ります。</p>
@@ -194,7 +196,7 @@ function escapeDialogs(opts: {
     <div class="row">${opts.reauth}<button class="danger" type="submit">巻き戻す</button>
       <button type="button" class="secondary" id="undo-cancel">やめる</button></div>
   </form>
-</dialog>
+</dialog>` : ""}
 ${
   opts.allowDemo
     ? `<dialog class="modal" id="reset-modal">
@@ -212,7 +214,7 @@ ${
 <aside class="escape-drawer" id="escape-drawer">
   <div class="esc-top">  <p class="esc-k" style="margin:0">逃げ・復旧</p>
     <button type="button" id="esc-drawer-close" aria-label="閉じる">×</button></div>
-  <div class="esc-grid">
+  <div class="esc-grid${opts.allowUndo ? "" : " undo-disabled"}">
     <div>
       <p class="esc-k">開催を戻す</p>
       <button type="button" id="clear-horses-open">出走を空にする</button>
@@ -381,6 +383,7 @@ function progressWork(board: Board, recentHtml: string): string {
 export function adminProgressPage(opts: {
   board: Board;
   undoMeta: UndoMeta | null;
+  allowUndo: boolean;
   allowDemo: boolean;
   memberCount: number;
   betCount: number;
@@ -419,6 +422,7 @@ export function adminProgressPage(opts: {
     body,
     afterDash: escapeDialogs({
       undoMeta: opts.undoMeta,
+      allowUndo: opts.allowUndo,
       allowDemo: opts.allowDemo,
       reauth: adminReauthField(),
     }),

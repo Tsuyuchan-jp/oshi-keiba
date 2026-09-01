@@ -23,6 +23,7 @@ import {
   numberByHorseId,
 } from "./store";
 import { getAdminUndoMeta } from "./undo";
+import { adminUndoAllowed } from "./adminUndo";
 import { sessionFromRequest } from "./auth";
 import type { Session } from "./auth";
 import type { UserRow } from "./store";
@@ -119,20 +120,24 @@ export async function tryAdminGet(
   const board = await loadBoard(env.DB);
   const m = msg(url);
   const allowDemo = env.ALLOW_DEMO_RESET === "1";
+  const allowUndo = adminUndoAllowed(env);
 
   if (path === "/admin") {
     const members = await listMembers(env.DB);
     const allBets = await listAllBets(env.DB, board.event.id, "new");
     let undoMeta = null;
-    try {
-      undoMeta = await getAdminUndoMeta(env.DB);
-    } catch {
-      undoMeta = null;
+    if (allowUndo) {
+      try {
+        undoMeta = await getAdminUndoMeta(env.DB);
+      } catch {
+        undoMeta = null;
+      }
     }
     const nums = numberByHorseId(board);
     const page = adminProgressPage({
       board,
       undoMeta,
+      allowUndo,
       allowDemo,
       memberCount: members.length,
       betCount: allBets.length,

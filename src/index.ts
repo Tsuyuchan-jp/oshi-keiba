@@ -37,6 +37,7 @@ import {
   eventScoreSetup,
 } from "./lib/store";
 import { applyAdminUndo, captureAdminUndo } from "./lib/undo";
+import { adminUndoAllowed } from "./lib/adminUndo";
 import { formatPt, parseJstInput, plainErrorPage } from "./lib/ui";
 import { tryAdminGet } from "./lib/adminRoutes";
 import { tryMemberGet, tryMemberPost } from "./lib/memberRoutes";
@@ -584,6 +585,9 @@ export default {
       if (method === "POST" && path === "/admin/undo") {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
+        if (!adminUndoAllowed(env)) {
+          return bounce("/admin", "Undo はこの環境では無効です", true);
+        }
         const form = await readForm(request);
         const password = readAdminReauth(form);
         if (!timingSafeEqualStr(password, env.ADMIN_PASSWORD)) {
