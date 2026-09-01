@@ -25,6 +25,12 @@ test("strategicSkillsAdminScript: 戦略例外モーダルは外側クリック�
   assert.doesNotMatch(html, /bindBackdropClose/);
 });
 
+test("戦略例外の確認モーダルは確定とキャンセルを操作できる", () => {
+  const html = strategicSkillsAdminScript(true, { skills: [], dismissed: [] });
+  assert.match(html, /strategic-confirm-cancel"\)\?\.addEventListener\("click"/);
+  assert.match(html, /strategic-confirm-apply"\)\?\.addEventListener\("click", commitPendingMutation\)/);
+});
+
 test("戦略例外モーダルは見送りを戻せる", () => {
   const html = strategicSkillsModalHtml();
   assert.match(html, /strategic-dismissed-tbody/);

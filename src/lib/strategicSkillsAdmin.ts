@@ -363,6 +363,11 @@ export function strategicSkillsAdminScript(
   }
   openBtn?.addEventListener("click", () => openFull());
   document.getElementById("strategic-close")?.addEventListener("click", () => dlg?.close());
+  document.getElementById("strategic-confirm-cancel")?.addEventListener("click", () => {
+    pendingMutation = null;
+    confirmDlg?.close();
+  });
+  document.getElementById("strategic-confirm-apply")?.addEventListener("click", commitPendingMutation);
   document.addEventListener("click", (ev) => {
     const t = ev.target;
     if (!(t instanceof HTMLElement)) return;
