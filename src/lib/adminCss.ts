@@ -612,6 +612,13 @@ body.ledger-page .filters select {
   cursor: pointer;
 }
 .strategic-dlg { max-width: 36rem; }
+.strategic-confirm-dlg { max-width: 42rem; }
+.strategic-confirm-change {
+  margin: .75rem 0; padding: .6rem .7rem; border: 1px solid var(--admin-line-subtle);
+  border-radius: 8px; background: var(--admin-surface-muted); font-weight: 600;
+}
+.strategic-confirm-results { max-height: min(23rem, 44dvh); }
+.strategic-confirm-results:empty { display: none; }
 .strategic-table-wrap { max-height: 14rem; overflow: auto; margin-top: .35rem; }
 .strategic-add-form {
   display: grid;

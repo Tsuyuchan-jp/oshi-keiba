@@ -37,5 +37,15 @@ export async function applyAutoScoreRecompute(
   changes: readonly ScoreRecomputeChange[],
 ): Promise<void> {
   if (!changes.length) return;
-  await db.batch(changes.map((x) => db.prepare("UPDATE horses SET strength = ? WHERE id = ?").bind(x.after, x.horseId)));
+  await db.batch(autoScoreRecomputeStatements(db, changes));
+}
+
+/** 他の更新と同一トランザクションで確定するための評価点更新文。 */
+export function autoScoreRecomputeStatements(
+  db: D1Database,
+  changes: readonly ScoreRecomputeChange[],
+): D1PreparedStatement[] {
+  return changes.map((x) =>
+    db.prepare("UPDATE horses SET strength = ? WHERE id = ?").bind(x.after, x.horseId),
+  );
 }

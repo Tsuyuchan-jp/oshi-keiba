@@ -75,6 +75,14 @@ export async function addStrategicSkill(
   db: DbLike,
   row: { skillId: number; name: string; points: number; memo?: string },
 ): Promise<void> {
+  await db.batch(prepareAddStrategicSkill(db, row));
+}
+
+/** 戦略例外の追加・更新を、評価点更新と同じ batch に載せるための文群。 */
+export function prepareAddStrategicSkill(
+  db: DbLike,
+  row: { skillId: number; name: string; points: number; memo?: string },
+): D1PreparedStatement[] {
   if (!Number.isFinite(row.skillId) || row.skillId <= 0) {
     throw new Error("スキル id が不正です");
   }
@@ -84,8 +92,8 @@ export async function addStrategicSkill(
   if (!Number.isFinite(points) || points < 0) {
     throw new Error("点数が不正です");
   }
-  await db
-    .prepare(
+  return [
+    db.prepare(
       `INSERT INTO strategic_skills (skill_id, name, points, memo, created_at)
        VALUES (?, ?, ?, ?, ?)
        ON CONFLICT(skill_id) DO UPDATE SET
@@ -93,16 +101,18 @@ export async function addStrategicSkill(
          points = excluded.points,
          memo = excluded.memo`,
     )
-    .bind(row.skillId, name, points, (row.memo ?? "").trim(), nowIso())
-    .run();
-  await db
-    .prepare("DELETE FROM strategic_skill_dismissed WHERE skill_id = ?")
-    .bind(row.skillId)
-    .run();
+    .bind(row.skillId, name, points, (row.memo ?? "").trim(), nowIso()),
+    db.prepare("DELETE FROM strategic_skill_dismissed WHERE skill_id = ?").bind(row.skillId),
+  ];
 }
 
 export async function removeStrategicSkill(db: DbLike, skillId: number): Promise<void> {
-  await db.prepare("DELETE FROM strategic_skills WHERE skill_id = ?").bind(skillId).run();
+  await db.batch(prepareRemoveStrategicSkill(db, skillId));
+}
+
+export function prepareRemoveStrategicSkill(db: DbLike, skillId: number): D1PreparedStatement[] {
+  if (!Number.isFinite(skillId) || skillId <= 0) throw new Error("スキル id が不正です");
+  return [db.prepare("DELETE FROM strategic_skills WHERE skill_id = ?").bind(skillId)];
 }
 
 export async function dismissStrategicSkill(

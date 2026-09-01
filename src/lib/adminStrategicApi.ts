@@ -2,12 +2,12 @@
  * 戦略例外スキル API（管理・JSON）
  */
 import {
-  addStrategicSkill,
   dismissStrategicSkill,
   exportStrategicSkillsJson,
   listStrategicDismissed,
   listStrategicSkills,
-  removeStrategicSkill,
+  prepareAddStrategicSkill,
+  prepareRemoveStrategicSkill,
   undismissStrategicSkill,
 } from "./strategicSkills.ts";
 
@@ -15,7 +15,7 @@ type Gate = { session: { userId: string; role: string }; user: { id: string } };
 
 import { loadBoard } from "./store.ts";
 import { eventScoreSetup } from "./store.ts";
-import { applyAutoScoreRecompute, prepareAutoScoreRecompute } from "./scoreRecompute.ts";
+import { autoScoreRecomputeStatements, prepareAutoScoreRecompute } from "./scoreRecompute.ts";
 
 async function requireSetup(db: D1Database): Promise<void> {
   const board = await loadBoard(db);
@@ -24,11 +24,41 @@ async function requireSetup(db: D1Database): Promise<void> {
   }
 }
 
-async function recomputeCurrentAutoScores(db: D1Database): Promise<void> {
+type StrategicMutation =
+  | { action: "upsert"; skill: { skillId: number; name: string; points: number; memo?: string } }
+  | { action: "remove"; skillId: number };
+
+function projectedSkills(
+  current: Awaited<ReturnType<typeof listStrategicSkills>>,
+  mutation: StrategicMutation,
+) {
+  if (mutation.action === "remove") {
+    if (!Number.isFinite(mutation.skillId) || mutation.skillId <= 0) throw new Error("id が不正です");
+    return current.filter((skill) => skill.skillId !== mutation.skillId);
+  }
+  const { skill } = mutation;
+  if (!Number.isFinite(skill.skillId) || skill.skillId <= 0) throw new Error("スキル id が不正です");
+  const name = skill.name.trim();
+  if (!name) throw new Error("スキル名を入れてください");
+  if (!Number.isFinite(skill.points) || skill.points < 0) throw new Error("点数が不正です");
+  const next = { skillId: skill.skillId, name, points: skill.points, memo: (skill.memo ?? "").trim() };
+  return [...current.filter((row) => row.skillId !== next.skillId), next].sort((a, b) => a.name.localeCompare(b.name, "ja"));
+}
+
+async function prepareStrategicMutation(db: D1Database, mutation: StrategicMutation) {
   const board = await loadBoard(db);
-  const skills = await listStrategicSkills(db);
+  const current = await listStrategicSkills(db);
+  const skills = projectedSkills(current, mutation);
   const changes = await prepareAutoScoreRecompute(db, board.event, eventScoreSetup(board.event), skills);
-  await applyAutoScoreRecompute(db, changes);
+  const statements = mutation.action === "upsert"
+    ? prepareAddStrategicSkill(db, mutation.skill)
+    : prepareRemoveStrategicSkill(db, mutation.skillId);
+  return { changes, statements };
+}
+
+async function commitStrategicMutation(db: D1Database, mutation: StrategicMutation): Promise<void> {
+  const { changes, statements } = await prepareStrategicMutation(db, mutation);
+  await db.batch([...statements, ...autoScoreRecomputeStatements(db, changes)]);
 }
 
 /** 管理 API。該当しなければ null */
@@ -67,13 +97,12 @@ export async function tryAdminStrategicApi(
       points?: number;
       memo?: string;
     };
-    await addStrategicSkill(env.DB, {
+    await commitStrategicMutation(env.DB, { action: "upsert", skill: {
       skillId: Number(body.skillId),
       name: String(body.name ?? ""),
       points: body.points ?? 1,
       memo: body.memo ?? "",
-    });
-    await recomputeCurrentAutoScores(env.DB);
+    }});
     return Response.json({ ok: true });
   }
 
@@ -81,8 +110,7 @@ export async function tryAdminStrategicApi(
     await requireSetup(env.DB);
     const id = Number(new URL(request.url).searchParams.get("id"));
     if (!Number.isFinite(id)) throw new Error("id が不正です");
-    await removeStrategicSkill(env.DB, id);
-    await recomputeCurrentAutoScores(env.DB);
+    await commitStrategicMutation(env.DB, { action: "remove", skillId: id });
     return Response.json({ ok: true });
   }
 
@@ -93,7 +121,6 @@ export async function tryAdminStrategicApi(
       skillId: Number(body.skillId),
       name: String(body.name ?? ""),
     });
-    await recomputeCurrentAutoScores(env.DB);
     return Response.json({ ok: true });
   }
 
@@ -102,8 +129,20 @@ export async function tryAdminStrategicApi(
     const id = Number(new URL(request.url).searchParams.get("id"));
     if (!Number.isFinite(id)) throw new Error("id が不正です");
     await undismissStrategicSkill(env.DB, id);
-    await recomputeCurrentAutoScores(env.DB);
     return Response.json({ ok: true });
+  }
+
+  if (path === `${base}/preview` && request.method === "POST") {
+    await requireSetup(env.DB);
+    const body = (await request.json()) as { action?: string; skill?: { skillId?: number; name?: string; points?: number; memo?: string }; skillId?: number };
+    const mutation: StrategicMutation = body.action === "remove"
+      ? { action: "remove", skillId: Number(body.skillId) }
+      : { action: "upsert", skill: {
+          skillId: Number(body.skill?.skillId), name: String(body.skill?.name ?? ""),
+          points: Number(body.skill?.points), memo: String(body.skill?.memo ?? ""),
+        } };
+    const { changes } = await prepareStrategicMutation(env.DB, mutation);
+    return Response.json({ changes });
   }
 
   return null;

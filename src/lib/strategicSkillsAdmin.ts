@@ -40,6 +40,16 @@ export function strategicSkillsModalHtml(): string {
       <a href="/admin/api/strategic-skills/export" id="strategic-export" download>JSON export</a>
       <button type="button" class="admin-action admin-action--secondary" id="strategic-close">閉じる</button>
     </div>
+  </dialog>
+  <dialog class="modal strategic-confirm-dlg" id="strategic-confirm-dlg" aria-labelledby="strategic-confirm-title">
+    <h2 class="modal-title" id="strategic-confirm-title" tabindex="-1">戦略例外の変更を確認</h2>
+    <p class="note" id="strategic-confirm-summary">評価点への影響を確認しています。</p>
+    <div class="strategic-confirm-change" id="strategic-confirm-change"></div>
+    <div class="strategic-confirm-results table-scroll" id="strategic-confirm-results"></div>
+    <div class="modal-actions">
+      <button type="button" class="admin-action admin-action--primary" id="strategic-confirm-apply" disabled>この内容で確定</button>
+      <button type="button" class="admin-action admin-action--secondary" id="strategic-confirm-cancel">キャンセル</button>
+    </div>
   </dialog>`;
 }
 
@@ -90,6 +100,14 @@ export function strategicSkillsAdminScript(
   const dismissedTbody = document.getElementById("strategic-dismissed-tbody");
   const addWrap = document.getElementById("strategic-add-wrap");
   const exportEl = document.getElementById("strategic-export");
+  const confirmDlg = document.getElementById("strategic-confirm-dlg");
+  const confirmTitle = document.getElementById("strategic-confirm-title");
+  const confirmSummary = document.getElementById("strategic-confirm-summary");
+  const confirmChange = document.getElementById("strategic-confirm-change");
+  const confirmResults = document.getElementById("strategic-confirm-results");
+  const confirmApply = document.getElementById("strategic-confirm-apply");
+  let pendingMutation = null;
+  const confirm = () => true;
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -164,6 +182,64 @@ export function strategicSkillsAdminScript(
     updateOpenLabel();
     if (window.__paintMaterials) window.__paintMaterials();
   }
+  function renderChanges(changes) {
+    if (!confirmResults) return;
+    confirmResults.replaceChildren();
+    if (!changes.length) return;
+    const table = document.createElement("table");
+    table.className = "plain";
+    table.innerHTML = "<thead><tr><th>出走馬</th><th class=num>現在</th><th class=num>再計算後</th><th class=num>キャラスペック</th></tr></thead>";
+    const body = document.createElement("tbody");
+    changes.forEach((change) => {
+      const row = document.createElement("tr");
+      [change.name, change.before, change.after, "×" + Number(change.characterSpecMultiplier).toFixed(3)].forEach((value, index) => {
+        const cell = document.createElement("td");
+        if (index > 0) cell.className = "num";
+        cell.textContent = String(value);
+        row.append(cell);
+      });
+      body.append(row);
+    });
+    table.append(body);
+    confirmResults.append(table);
+  }
+  async function openMutationConfirm(mutation, description, successMessage) {
+    pendingMutation = null;
+    if (confirmTitle) confirmTitle.textContent = "戦略例外の変更を確認";
+    if (confirmSummary) confirmSummary.textContent = "評価点への影響を確認しています。";
+    if (confirmChange) confirmChange.textContent = description;
+    renderChanges([]);
+    if (confirmApply instanceof HTMLButtonElement) confirmApply.disabled = true;
+    confirmDlg?.showModal();
+    try {
+      const preview = await api("POST", "/admin/api/strategic-skills/preview", mutation);
+      const changes = Array.isArray(preview.changes) ? preview.changes : [];
+      if (confirmSummary) confirmSummary.textContent = changes.length ? changes.length + "頭の自動評価点を更新します。" : "評価点に変更はありません。";
+      renderChanges(changes);
+      pendingMutation = { mutation, successMessage };
+      if (confirmApply instanceof HTMLButtonElement) confirmApply.disabled = false;
+      confirmTitle?.focus();
+    } catch (e) {
+      confirmDlg?.close();
+      showToast(e.message || "再計算内容を取得できませんでした", true);
+    }
+  }
+  async function commitPendingMutation() {
+    if (!pendingMutation) return;
+    const { mutation, successMessage } = pendingMutation;
+    if (confirmApply instanceof HTMLButtonElement) confirmApply.disabled = true;
+    try {
+      if (mutation.action === "remove") await api("DELETE", "/admin/api/strategic-skills?id=" + encodeURIComponent(mutation.skillId));
+      else await api("POST", "/admin/api/strategic-skills", mutation.skill);
+      confirmDlg?.close();
+      await reload();
+      showToast(successMessage);
+    } catch (e) {
+      showToast(e.message || "確定できませんでした", true);
+    } finally {
+      pendingMutation = null;
+    }
+  }
   function renderTable() {
     if (!tbody) return;
     if (!skills.length) {
@@ -180,7 +256,8 @@ export function strategicSkillsAdminScript(
       btn.addEventListener("click", async () => {
         if (!confirm("例外リストから削除しますか？")) return;
         try {
-          await api("DELETE", "/admin/api/strategic-skills?id=" + encodeURIComponent(btn.getAttribute("data-id")));
+          await openMutationConfirm({ action: "remove", skillId: Number(btn.getAttribute("data-id")) }, "選択した戦略例外を削除します。", "戦略例外を削除し、評価点を再計算しました。");
+          return;
           await reload();
           showToast("戦略例外を削除しました。評価点を再計算しました。");
         } catch (e) {
@@ -244,7 +321,8 @@ export function strategicSkillsAdminScript(
         const points = pointsRaw === "" || pointsRaw == null ? 1 : Number(pointsRaw);
         const memo = row.querySelector(".strategic-cand-memo")?.value || "";
         try {
-          await api("POST", "/admin/api/strategic-skills", { skillId: id, name, points, memo });
+          await openMutationConfirm({ action: "upsert", skill: { skillId: id, name, points, memo } }, "選択したスキルを戦略例外に追加します。", "戦略例外を追加し、評価点を再計算しました。");
+          return;
           await reload();
           afterCandidateAction(list);
           showToast("戦略例外に追加しました。評価点を再計算しました。");
@@ -304,7 +382,8 @@ export function strategicSkillsAdminScript(
     const points = Number(document.getElementById("strategic-add-points")?.value);
     const memo = document.getElementById("strategic-add-memo")?.value || "";
     try {
-      await api("POST", "/admin/api/strategic-skills", { skillId: id, name, points, memo });
+      await openMutationConfirm({ action: "upsert", skill: { skillId: id, name, points, memo } }, "入力したスキルを戦略例外に追加します。", "戦略例外を追加し、評価点を再計算しました。");
+      return;
       await reload();
       showToast("戦略例外に追加しました。評価点を再計算しました。");
     } catch (e) {
