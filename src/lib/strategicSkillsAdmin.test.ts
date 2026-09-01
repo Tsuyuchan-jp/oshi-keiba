@@ -31,6 +31,11 @@ test("戦略例外の確認モーダルは確定とキャンセルを操作で�
   assert.match(html, /strategic-confirm-apply"\)\?\.addEventListener\("click", commitPendingMutation\)/);
 });
 
+test("候補専用モーダルで追加を確定したら候補画面を閉じる", () => {
+  const html = strategicSkillsAdminScript(true, { skills: [], dismissed: [] });
+  assert.match(html, /modalMode === "candidates" && mutation\.action === "upsert"/);
+});
+
 test("戦略例外モーダルは見送りを戻せる", () => {
   const html = strategicSkillsModalHtml();
   assert.match(html, /strategic-dismissed-tbody/);

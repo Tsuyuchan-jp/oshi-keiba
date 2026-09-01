@@ -233,6 +233,7 @@ export function strategicSkillsAdminScript(
       else await api("POST", "/admin/api/strategic-skills", mutation.skill);
       confirmDlg?.close();
       await reload();
+      if (modalMode === "candidates" && mutation.action === "upsert") dlg?.close();
       showToast(successMessage);
     } catch (e) {
       showToast(e.message || "確定できませんでした", true);
