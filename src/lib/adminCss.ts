@@ -818,7 +818,7 @@ body.settings-page .settings-desk .work {
 }
 .settings-mid.work { height: 100%; }
 .settings-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; border: 0; padding: 0; margin: 0; }
-.settings-scroll:disabled { opacity: .62; }
+.settings-scroll.is-locked { opacity: .62; }
 .settings-flash { margin: .35rem 0 0; font-size: .8rem; font-weight: 700; color: var(--admin-accent); }
 .settings-flash.err { color: var(--admin-danger); }
 .set-title {

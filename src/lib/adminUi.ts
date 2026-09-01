@@ -1297,13 +1297,14 @@ function setSegHtml(
   name: string,
   options: ReadonlyArray<{ value: number; label: string }>,
   selected: number | null | undefined,
+  disabled = false,
 ): string {
   const cur = selected == null ? "" : String(selected);
   const hidden = `<input type="hidden" name="${escapeHtml(name)}" value="${escapeHtml(cur)}">`;
   const btns = options
     .map((o) => {
       const v = String(o.value);
-      return `<button type="button"${v === cur ? ` class="on"` : ""} data-v="${escapeHtml(v)}">${escapeHtml(o.label)}</button>`;
+      return `<button type="button"${v === cur ? ` class="on"` : ""} data-v="${escapeHtml(v)}"${disabled ? " disabled" : ""}>${escapeHtml(o.label)}</button>`;
     })
     .join("");
   return `<div class="set-seg" data-seg="${escapeHtml(name)}">${hidden}${btns}</div>`;
@@ -1324,8 +1325,8 @@ export function adminSettingsPage(
   const setupDisabled = canKinds ? "" : " disabled";
   const staminaReadonly = canKinds ? "" : " disabled";
   const saveConfirmLabel = voting ? "この内容で保存" : "この内容で保存・再計算";
-  const votingNotice = voting
-    ? `<p class="set-lock">投票中に変更可能：イベント名、締切、S・E・D・w時。ほかの設定は投票開始後に固定されます。</p>`
+  const votingMeta = voting
+    ? `<span class="page-hero-meta">変更可：イベント名・締切・S・E・D・w時</span>`
     : "";
   const enabled = new Set(parseEnabledKinds(e.enabled_kinds));
   const kindsNote = canKinds
@@ -1393,7 +1394,7 @@ export function adminSettingsPage(
     : "";
   const body = `${adminPageHero("開催設定", e.status, {
       actions: `<button type="button" class="admin-action admin-action--primary" id="settings-save-open"${canSave ? "" : " disabled"}>保存</button>`,
-      notice: votingNotice,
+      meta: votingMeta,
     })}
     <form class="settings-desk" id="settings-form" method="post" action="/admin/params">
       <div class="settings-top">
@@ -1426,33 +1427,32 @@ export function adminSettingsPage(
           <h2>レギュレーション</h2>
           ${skillsMeta}${specMeta}
         </div>
-        <fieldset class="settings-scroll"${setupDisabled}>
+        <div class="settings-scroll${canKinds ? "" : " is-locked"}">
           <p class="set-k">コース</p>
-          <select class="set-course" name="score_course" aria-label="コース">${courses}</select>
+          <select class="set-course" name="score_course" aria-label="コース"${setupDisabled}>${courses}</select>
           <div class="set-conds">
             <div>
               <p class="set-k">天候</p>
-              ${setSegHtml("score_weather", WEATHER_OPTIONS, c?.weather)}
+              ${setSegHtml("score_weather", WEATHER_OPTIONS, c?.weather, !canKinds)}
             </div>
             <div>
               <p class="set-k">バ場</p>
-              ${setSegHtml("score_ground_condition", GROUND_CONDITION_OPTIONS, c?.groundCondition)}
+              ${setSegHtml("score_ground_condition", GROUND_CONDITION_OPTIONS, c?.groundCondition, !canKinds)}
             </div>
             <div>
               <p class="set-k">季節</p>
-              ${setSegHtml("score_season", SEASON_OPTIONS, c?.season)}
+              ${setSegHtml("score_season", SEASON_OPTIONS, c?.season, !canKinds)}
             </div>
           </div>
           <p class="set-k" style="margin-top:1rem">目標ステ</p>
           <div class="set-targets">
-            <label class="set-target"><span class="k">速</span><input name="score_speed_cap" type="number" min="1" value="${reqVal(r?.speedCap, DEFAULT_SCORE_REQ.speedCap)}"></label>
-            <label class="set-target"><span class="k">パ</span><input name="score_power" type="number" min="1" value="${reqVal(r?.power, DEFAULT_SCORE_REQ.power)}"></label>
-            <label class="set-target"><span class="k">根</span><input name="score_guts" type="number" min="1" value="${reqVal(r?.guts, DEFAULT_SCORE_REQ.guts)}"></label>
-            <label class="set-target"><span class="k">賢</span><input name="score_wisdom" type="number" min="1" value="${reqVal(r?.wisdom, DEFAULT_SCORE_REQ.wisdom)}"></label>
-            ${canKinds ? staminaCard : ""}
+            <label class="set-target"><span class="k">速</span><input name="score_speed_cap" type="number" min="1" value="${reqVal(r?.speedCap, DEFAULT_SCORE_REQ.speedCap)}"${setupDisabled}></label>
+            <label class="set-target"><span class="k">パ</span><input name="score_power" type="number" min="1" value="${reqVal(r?.power, DEFAULT_SCORE_REQ.power)}"${setupDisabled}></label>
+            <label class="set-target"><span class="k">根</span><input name="score_guts" type="number" min="1" value="${reqVal(r?.guts, DEFAULT_SCORE_REQ.guts)}"${setupDisabled}></label>
+            <label class="set-target"><span class="k">賢</span><input name="score_wisdom" type="number" min="1" value="${reqVal(r?.wisdom, DEFAULT_SCORE_REQ.wisdom)}"${setupDisabled}></label>
+            ${staminaCard}
           </div>
-        </fieldset>
-        ${voting ? `<div class="set-targets">${staminaCard}</div>` : ""}
+        </div>
       </section>
       <section class="work settings-bot">
         <div class="work-head">
