@@ -13,6 +13,7 @@ import {
   getEventById,
   getUser,
   joinEvent,
+  listUserBets,
   openVoting,
   placeBet,
   publishResults,
@@ -121,6 +122,53 @@ test("やりなおし: 投票中に残高が戻る", async () => {
   const final = await getUser(db, joined.id);
   assert.ok(final);
   assert.equal(final.balance, DEFAULTS.grantG);
+});
+
+test("同じ操作IDの購入を再送しても、馬券と残高控除は一度だけ", async () => {
+  const db = createMemoryD1();
+  const { event, h1 } = await seedRace(db);
+  const user = await joinEvent(db, event, await registerMember(db, "購入再送"));
+  const operationId = "7de4b798-2a82-4cf7-9827-0eb6d81f9a11";
+
+  await placeBet(db, event, user, "win", [h1], 500, operationId);
+  await placeBet(db, event, user, "win", [h1], 500, operationId);
+
+  const after = await getUser(db, user.id);
+  assert.ok(after);
+  assert.equal(after.balance, DEFAULTS.grantG - 500);
+  assert.equal((await listUserBets(db, event.id, user.id)).length, 1);
+});
+
+test("同じ操作IDのやりなおしを再送しても、返還は一度だけ", async () => {
+  const db = createMemoryD1();
+  const { event, h1 } = await seedRace(db);
+  const user = await joinEvent(db, event, await registerMember(db, "返還再送"));
+  await placeBet(db, event, user, "win", [h1], 500);
+  const operationId = "c85240e2-b8be-4d81-9701-0a07403c68a7";
+
+  assert.equal(await redoMyBets(db, event, user, operationId), 500);
+  assert.equal(await redoMyBets(db, event, user, operationId), 500);
+
+  const after = await getUser(db, user.id);
+  assert.ok(after);
+  assert.equal(after.balance, DEFAULTS.grantG);
+});
+
+test("同時購入では残高を超える購入を確定しない", async () => {
+  const db = createMemoryD1();
+  const { event, h1 } = await seedRace(db);
+  const user = await joinEvent(db, event, await registerMember(db, "同時購入"));
+
+  const results = await Promise.allSettled([
+    placeBet(db, event, user, "win", [h1], 2000, "8ac17bd4-f8f5-40d8-a6e5-cc45ebd2cc59"),
+    placeBet(db, event, user, "win", [h1], 2000, "f5f4679b-7e90-4b93-a672-62b2bbd6f635"),
+  ]);
+
+  assert.equal(results.filter((x) => x.status === "fulfilled").length, 1);
+  const after = await getUser(db, user.id);
+  assert.ok(after);
+  assert.equal(after.balance, DEFAULTS.grantG - 2000);
+  assert.equal((await listUserBets(db, event.id, user.id)).length, 1);
 });
 
 test("二人投票: 総付与と残高・控除の関係が崩れない", async () => {

@@ -9,6 +9,7 @@ import {
   sessionExpiry,
   sessionFromRequest,
   timingSafeEqualStr,
+  newId,
   type Session,
 } from "./auth.ts";
 import {
@@ -55,6 +56,13 @@ import {
 import { paddockPage } from "./paddockPage.ts";
 import { paddockView } from "./paddockView.ts";
 import { listStrategicSkills } from "./strategicSkills.ts";
+
+function requiredOperationId(value: string | null): string {
+  if (!value || !/^[0-9a-f-]{36}$/i.test(value)) {
+    throw new Error("画面を更新してからやり直してください");
+  }
+  return value;
+}
 
 function msg(url: URL): { text: string | null; error: boolean } {
   return {
@@ -287,6 +295,8 @@ export async function tryMemberGet(
         flash: m,
         myBetsHtml,
         redoHtml,
+        betOperationId: newId(),
+        redoOperationId: newId(),
         preview: gate.preview,
         candidateHorseId: url.searchParams.get("candidate"),
         slot: url.searchParams.get("slot"),
@@ -354,6 +364,7 @@ export async function tryMemberPost(
         kind,
         ids,
         Number(form.get("amount") ?? "0"),
+        requiredOperationId(form.get("operation_id")),
       );
       const flash = encodeURIComponent(
         JSON.stringify({ hit: result.selection_key }),
@@ -399,9 +410,15 @@ export async function tryMemberPost(
   if (path === "/bet/redo") {
     const gate = await requireMember(request, env);
     if (gate instanceof Response) return gate;
+    const form = await readForm(request);
     try {
       const board = await loadBoard(env.DB);
-      const total = await redoMyBets(env.DB, board.event, gate.user);
+      const total = await redoMyBets(
+        env.DB,
+        board.event,
+        gate.user,
+        requiredOperationId(form.get("operation_id")),
+      );
       return bounce(
         "/bet",
         `やりなおしました（${formatPt(total)} を戻しました）`,

@@ -411,6 +411,8 @@ export function betBuyPage(opts: {
   flash: { text: string | null; error: boolean };
   myBetsHtml: string;
   redoHtml: string;
+  betOperationId: string;
+  redoOperationId: string;
   scripts?: string;
   candidateHorseId?: string | null;
   slot?: string | null;
@@ -443,6 +445,7 @@ export function betBuyPage(opts: {
       <input type="hidden" name="h2" id="h2" value="">
       <input type="hidden" name="h3" id="h3" value="">
       <input type="hidden" name="amount" id="bet-amount" value="0">
+      <input type="hidden" name="operation_id" value="${escapeHtml(opts.betOperationId)}">
       <input type="hidden" name="candidate" value="${escapeHtml(candidate?.id ?? "")}">
       <input type="hidden" name="slot" value="${escapeHtml(opts.slot ?? "")}">
       <div class="desk-scroll">
@@ -481,7 +484,9 @@ export function betBuyPage(opts: {
         <button type="submit" class="buy" id="buy" aria-describedby="buy-guide" ${opts.preview ? "disabled" : ""}>買う</button>
       </div>
     </form>
-    <form id="redo-form" method="post" action="/bet/redo" hidden></form>`;
+    <form id="redo-form" method="post" action="/bet/redo" hidden>
+      <input type="hidden" name="operation_id" value="${escapeHtml(opts.redoOperationId)}">
+    </form>`;
   return pageWrap({
     user: opts.user,
     board: opts.board,

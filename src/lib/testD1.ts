@@ -86,16 +86,23 @@ export function createMemoryD1(): D1Database {
     },
     async batch<T = unknown>(statements: D1PreparedStatement[]) {
       const out: D1Result<T>[] = [];
-      for (const stmt of statements) {
-        const m = (stmt as unknown as { __meta?: StmtMeta }).__meta;
-        if (!m) throw new Error("testD1: batch に未対応の statement");
-        const info = db.prepare(m.sql).run(...(m.values as never[]));
-        out.push(
-          toD1Result(
-            Number(info.changes),
-            Number(info.lastInsertRowid),
-          ) as D1Result<T>,
-        );
+      db.exec("BEGIN");
+      try {
+        for (const stmt of statements) {
+          const m = (stmt as unknown as { __meta?: StmtMeta }).__meta;
+          if (!m) throw new Error("testD1: batch に未対応の statement");
+          const info = db.prepare(m.sql).run(...(m.values as never[]));
+          out.push(
+            toD1Result(
+              Number(info.changes),
+              Number(info.lastInsertRowid),
+            ) as D1Result<T>,
+          );
+        }
+        db.exec("COMMIT");
+      } catch (error) {
+        db.exec("ROLLBACK");
+        throw error;
       }
       return out;
     },

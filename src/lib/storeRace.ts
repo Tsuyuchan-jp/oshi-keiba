@@ -75,6 +75,7 @@ export async function placeBet(
   kind: BetKind,
   horseIds: string[],
   amount: number,
+  operationId = newId(),
 ): Promise<{ selection_key: string }> {
   if (event.status !== "voting") throw new Error("投票期間外です");
   if (!(await hasJoinedEvent(db, event.id, user.id))) {
@@ -95,20 +96,64 @@ export async function placeBet(
       .first<HorseRow>();
     if (!horse || horse.scratched) throw new Error("このウマ娘には投票できません");
   }
-  const fresh = await getUser(db, user.id);
-  if (!fresh) throw new Error("ユーザーが見つかりません");
-  if (amount > fresh.balance) throw new Error("残高が足りません");
+  const requestHash = `bet:${kind}:${sel.selection_key}:${amount}`;
+  const existing = await findMemberOperation(db, operationId);
+  if (existing) {
+    assertOperationMatches(existing, event.id, user.id, "bet", requestHash);
+    return { selection_key: sel.selection_key };
+  }
+
   const now = Date.now();
+  const betId = newId();
+  const horseGuards = ids.map(
+    () => `AND EXISTS (SELECT 1 FROM horses WHERE id = ? AND event_id = ? AND scratched = 0)`,
+  ).join(" ");
+  const horseValues = ids.flatMap((id) => [id, event.id]);
   await db.batch([
     db
       .prepare(
-        `INSERT INTO bets (
-          id, event_id, user_id, horse_id, kind, selection_key,
-          horse_1, horse_2, horse_3, amount, refunded, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
+        `UPDATE users SET balance = balance - ?
+         WHERE id = ? AND balance >= ?
+           AND NOT EXISTS (SELECT 1 FROM member_operations WHERE id = ?)
+           AND EXISTS (SELECT 1 FROM events WHERE id = ? AND status = 'voting')
+           AND EXISTS (SELECT 1 FROM grants WHERE event_id = ? AND user_id = ?)
+           ${horseGuards}`,
       )
       .bind(
-        newId(),
+        amount,
+        user.id,
+        amount,
+        operationId,
+        event.id,
+        event.id,
+        user.id,
+        ...horseValues,
+      ),
+    db
+      .prepare(
+        `INSERT INTO member_operations (
+          id, event_id, user_id, kind, request_hash, result_amount, bet_id, created_at
+        ) SELECT ?, ?, ?, 'bet', ?, ?, ?, ? WHERE changes() = 1`,
+      )
+      .bind(
+        operationId,
+        event.id,
+        user.id,
+        requestHash,
+        amount,
+        betId,
+        now,
+      ),
+    db
+      .prepare(
+        `INSERT OR IGNORE INTO bets (
+          id, event_id, user_id, horse_id, kind, selection_key,
+          horse_1, horse_2, horse_3, amount, refunded, created_at, operation_id
+        ) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?
+          WHERE EXISTS (SELECT 1 FROM member_operations WHERE id = ?)`,
+      )
+      .bind(
+        betId,
         event.id,
         user.id,
         sel.horse_1,
@@ -119,11 +164,13 @@ export async function placeBet(
         sel.horse_3,
         amount,
         now,
+        operationId,
+        operationId,
       ),
-    db
-      .prepare("UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?")
-      .bind(amount, user.id, amount),
   ]);
+  const completed = await findMemberOperation(db, operationId);
+  if (!completed) throw new Error("残高が足りません");
+  assertOperationMatches(completed, event.id, user.id, "bet", requestHash);
   return { selection_key: sel.selection_key };
 }
 
@@ -132,40 +179,80 @@ export async function redoMyBets(
   db: D1Database,
   event: EventRow,
   user: UserRow,
+  operationId = newId(),
 ): Promise<number> {
   if (event.status !== "voting") throw new Error("やりなおしは投票中だけです");
   if (!(await hasJoinedEvent(db, event.id, user.id))) {
     throw new Error("この開催にはまだ参加していません");
   }
-  const { results } = await db
-    .prepare(
-      "SELECT * FROM bets WHERE event_id = ? AND user_id = ? AND refunded = 0",
-    )
-    .bind(event.id, user.id)
-    .all();
-  const bets = (results ?? []).map((r) =>
-    normalizeBetRow(r as Record<string, unknown>),
-  );
-  if (bets.length === 0) throw new Error("取り消す馬券がありません");
-  const now = Date.now();
-  const stmts = [];
-  let total = 0;
-  for (const b of bets) {
-    total += b.amount;
-    stmts.push(
-      db.prepare("UPDATE bets SET refunded = 1 WHERE id = ?").bind(b.id),
-      db
-        .prepare("UPDATE users SET balance = balance + ? WHERE id = ?")
-        .bind(b.amount, b.user_id),
-      db
-        .prepare(
-          "INSERT INTO payouts (id, event_id, user_id, bet_id, amount, kind, created_at) VALUES (?, ?, ?, ?, ?, 'redo', ?)",
-        )
-        .bind(newId(), event.id, b.user_id, b.id, b.amount, now),
-    );
+  const requestHash = "redo:all-active-bets";
+  const existing = await findMemberOperation(db, operationId);
+  if (existing) {
+    assertOperationMatches(existing, event.id, user.id, "redo", requestHash);
+    return existing.result_amount;
   }
-  await db.batch(stmts);
-  return total;
+  const now = Date.now();
+  await db.batch([
+    db.prepare(
+      `INSERT INTO member_operations (
+        id, event_id, user_id, kind, request_hash, result_amount, bet_id, created_at
+      ) SELECT ?, ?, ?, 'redo', ?, 0, NULL, ?
+        WHERE NOT EXISTS (SELECT 1 FROM member_operations WHERE id = ?)
+          AND EXISTS (SELECT 1 FROM events WHERE id = ? AND status = 'voting')
+          AND EXISTS (SELECT 1 FROM bets WHERE event_id = ? AND user_id = ? AND refunded = 0)`,
+    ).bind(operationId, event.id, user.id, requestHash, now, operationId, event.id, event.id, user.id),
+    db.prepare(
+      `INSERT INTO payouts (id, event_id, user_id, bet_id, amount, kind, created_at, operation_id)
+       SELECT 'redo-' || lower(hex(randomblob(16))), b.event_id, b.user_id, b.id, b.amount, 'redo', ?, ?
+       FROM bets b
+       WHERE b.event_id = ? AND b.user_id = ? AND b.refunded = 0
+         AND EXISTS (SELECT 1 FROM member_operations WHERE id = ? AND kind = 'redo' AND result_amount = 0)`,
+    ).bind(now, operationId, event.id, user.id, operationId),
+    db.prepare(
+      `UPDATE users SET balance = balance + (
+        SELECT COALESCE(SUM(amount), 0) FROM payouts WHERE operation_id = ?
+      ) WHERE id = ?
+        AND EXISTS (SELECT 1 FROM member_operations WHERE id = ? AND result_amount = 0)
+        AND EXISTS (SELECT 1 FROM payouts WHERE operation_id = ?)`,
+    ).bind(operationId, user.id, operationId, operationId),
+    db.prepare(
+      "UPDATE bets SET refunded = 1 WHERE id IN (SELECT bet_id FROM payouts WHERE operation_id = ?)",
+    ).bind(operationId),
+    db.prepare(
+      `UPDATE member_operations SET result_amount = (
+        SELECT COALESCE(SUM(amount), 0) FROM payouts WHERE operation_id = ?
+      ) WHERE id = ? AND result_amount = 0`,
+    ).bind(operationId, operationId),
+  ]);
+  const completed = await findMemberOperation(db, operationId);
+  if (!completed) throw new Error("取り消す馬券がありません");
+  assertOperationMatches(completed, event.id, user.id, "redo", requestHash);
+  return completed.result_amount;
+}
+
+type MemberOperation = {
+  id: string;
+  event_id: string;
+  user_id: string;
+  kind: "bet" | "redo";
+  request_hash: string;
+  result_amount: number;
+};
+
+async function findMemberOperation(db: D1Database, id: string): Promise<MemberOperation | null> {
+  return await db.prepare("SELECT * FROM member_operations WHERE id = ?").bind(id).first<MemberOperation>();
+}
+
+function assertOperationMatches(
+  operation: MemberOperation,
+  eventId: string,
+  userId: string,
+  kind: MemberOperation["kind"],
+  requestHash: string,
+): void {
+  if (operation.event_id !== eventId || operation.user_id !== userId || operation.kind !== kind || operation.request_hash !== requestHash) {
+    throw new Error("この操作は再利用できません。画面を更新してからやり直してください");
+  }
 }
 
 export async function scratchHorse(

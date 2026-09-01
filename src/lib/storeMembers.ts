@@ -114,6 +114,7 @@ export async function deleteMember(
   }
   await captureAdminUndo(db, `メンバー削除（${user.display_name}）`);
   await db.batch([
+    db.prepare("DELETE FROM member_operations WHERE user_id = ?").bind(userId),
     db.prepare("DELETE FROM payouts WHERE user_id = ?").bind(userId),
     db.prepare("DELETE FROM bets WHERE user_id = ?").bind(userId),
     db.prepare("DELETE FROM grants WHERE user_id = ?").bind(userId),

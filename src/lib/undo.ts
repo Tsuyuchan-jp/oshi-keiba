@@ -15,6 +15,7 @@ type Snapshot = {
   grants: Record<string, unknown>[];
   bets: Record<string, unknown>[];
   payouts: Record<string, unknown>[];
+  member_operations: Record<string, unknown>[];
 };
 
 async function allRows(
@@ -26,15 +27,16 @@ async function allRows(
 }
 
 async function dumpSnapshot(db: D1Database): Promise<Snapshot> {
-  const [events, horses, users, grants, bets, payouts] = await Promise.all([
+  const [events, horses, users, grants, bets, payouts, member_operations] = await Promise.all([
     allRows(db, "SELECT * FROM events"),
     allRows(db, "SELECT * FROM horses"),
     allRows(db, "SELECT * FROM users"),
     allRows(db, "SELECT * FROM grants"),
     allRows(db, "SELECT * FROM bets"),
     allRows(db, "SELECT * FROM payouts"),
+    allRows(db, "SELECT * FROM member_operations"),
   ]);
-  return { events, horses, users, grants, bets, payouts };
+  return { events, horses, users, grants, bets, payouts, member_operations };
 }
 
 function v(row: Record<string, unknown>, key: string): unknown {
@@ -141,8 +143,8 @@ function insertBets(db: D1Database, rows: Record<string, unknown>[]) {
       .prepare(
         `INSERT INTO bets (
           id, event_id, user_id, horse_id, kind, selection_key,
-          horse_1, horse_2, horse_3, amount, refunded, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          horse_1, horse_2, horse_3, amount, refunded, created_at, operation_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .bind(
         v(r, "id"),
@@ -157,6 +159,7 @@ function insertBets(db: D1Database, rows: Record<string, unknown>[]) {
         v(r, "amount"),
         v(r, "refunded"),
         v(r, "created_at"),
+        v(r, "operation_id"),
       ),
   );
 }
@@ -165,8 +168,8 @@ function insertPayouts(db: D1Database, rows: Record<string, unknown>[]) {
   return rows.map((r) =>
     db
       .prepare(
-        `INSERT INTO payouts (id, event_id, user_id, bet_id, amount, kind, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO payouts (id, event_id, user_id, bet_id, amount, kind, created_at, operation_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .bind(
         v(r, "id"),
@@ -176,7 +179,21 @@ function insertPayouts(db: D1Database, rows: Record<string, unknown>[]) {
         v(r, "amount"),
         v(r, "kind"),
         v(r, "created_at"),
+        v(r, "operation_id"),
       ),
+  );
+}
+
+function insertMemberOperations(db: D1Database, rows: Record<string, unknown>[]) {
+  return rows.map((r) =>
+    db.prepare(
+      `INSERT INTO member_operations (
+        id, event_id, user_id, kind, request_hash, result_amount, bet_id, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).bind(
+      v(r, "id"), v(r, "event_id"), v(r, "user_id"), v(r, "kind"),
+      v(r, "request_hash"), v(r, "result_amount"), v(r, "bet_id"), v(r, "created_at"),
+    ),
   );
 }
 
@@ -217,6 +234,7 @@ export async function applyAdminUndo(db: D1Database): Promise<string> {
   }
 
   const stmts = [
+    db.prepare("DELETE FROM member_operations"),
     db.prepare("DELETE FROM payouts"),
     db.prepare("DELETE FROM bets"),
     db.prepare("DELETE FROM grants"),
@@ -227,6 +245,7 @@ export async function applyAdminUndo(db: D1Database): Promise<string> {
     ...insertUsers(db, snap.users),
     ...insertHorses(db, snap.horses),
     ...insertGrants(db, snap.grants),
+    ...insertMemberOperations(db, snap.member_operations ?? []),
     ...insertBets(db, snap.bets),
     ...insertPayouts(db, snap.payouts),
   ];

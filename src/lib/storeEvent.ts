@@ -204,6 +204,7 @@ export async function discardCurrentSetup(
   }
   await captureAdminUndo(db, "この開催を破棄");
   await db.batch([
+    db.prepare("DELETE FROM member_operations WHERE event_id = ?").bind(event.id),
     db.prepare("DELETE FROM payouts WHERE event_id = ?").bind(event.id),
     db.prepare("DELETE FROM bets WHERE event_id = ?").bind(event.id),
     db.prepare("DELETE FROM grants WHERE event_id = ?").bind(event.id),
@@ -227,6 +228,7 @@ export async function discardCurrentSetup(
 export async function resetDemo(db: D1Database): Promise<void> {
   await captureAdminUndo(db, "デモ初期化");
   await db.batch([
+    db.prepare("DELETE FROM member_operations"),
     db.prepare("DELETE FROM payouts"),
     db.prepare("DELETE FROM bets"),
     db.prepare("DELETE FROM grants"),
