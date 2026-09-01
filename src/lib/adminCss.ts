@@ -94,6 +94,11 @@ button, select, input, textarea { font: inherit; }
 }
 .hero { padding: .9rem 1.05rem 1rem; margin-bottom: .85rem; }
 .work, .card { padding: .85rem 1rem .95rem; margin-bottom: .75rem; }
+.start-voting-modal { max-width: 46rem; }
+.start-voting-modal .work { margin: .8rem 0; background: var(--admin-surface-muted); }
+.start-voting-modal h3 { margin: 0 0 .55rem; font-size: .95rem; }
+.start-voting-problems { border: 1px solid #d9a3a3; background: #fff4f4; padding: .7rem .8rem; border-radius: var(--admin-control-radius); }
+.start-voting-problems ul { margin: .35rem 0 .55rem; padding-left: 1.25rem; }
 .hero-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: .55rem 1rem; }
 .hero h1, .work h2, .card h1, .card h2 { margin: 0; }
 .hero h1 { font-size: 1.25rem; }

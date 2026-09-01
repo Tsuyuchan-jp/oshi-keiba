@@ -41,6 +41,7 @@ import {
   type BetKind,
 } from "./bets";
 import { parimutuelOdds } from "./odds";
+import { votingStartProblems } from "./storeRace";
 import {
   DEFAULT_SCORE_REQ,
   DEFAULT_SCORE_SKILL_N,
@@ -393,6 +394,22 @@ export function adminProgressPage(opts: {
   const liveCount = opts.board.horses.filter((h) => !h.horse.scratched).length;
   const ops = adminOpsGuide(opts.board);
   const close = toJstInput(e.voting_closes_at);
+  const startProblems = votingStartProblems(e, opts.board.horses.map((h) => h.horse));
+  const startReady = e.status === "setup" && startProblems.length === 0;
+  const startRows = opts.board.horses
+    .filter((h) => !h.horse.scratched)
+    .map((h) => {
+      const p = horseSheetParts(h.horse);
+      return `<tr><td>${h.number}</td><td>${escapeHtml(p.umaName)}</td><td>${escapeHtml(p.runnerName)}</td></tr>`;
+    }).join("");
+  const startChecks = [
+    ["締切", close ? `${close.replace("T", " ")} JST${e.voting_closes_at! > Date.now() ? "（未来）" : "（要修正）"}` : "未設定"],
+    ["出走", `${liveCount}頭（開始可能: 2〜18頭）`],
+    ["レース条件", eventScoreSetup(e) ? "設定済み" : "未設定"],
+    ["脚質別スタミナ", eventScoreSetup(e)?.requirements.staminaByStyle ? "8項目設定済み" : "未設定"],
+    ["スタミナ勝負", eventScoreSetup(e)?.staminaRaceSelected ? (eventScoreSetup(e)?.requirements.staminaRace ? "あり" : "なし") : "未選択"],
+    ["馬券・配布・オッズ", "設定済み"],
+  ].map(([label, value]) => `<tr><th scope="row">${label}</th><td>${escapeHtml(value)}</td></tr>`).join("");
   const body = `<section class="hero">
       <div class="hero-top"><h1>${escapeHtml(e.title)}</h1>${phasePill(e.status)}</div>
       <div class="kpis">
@@ -406,9 +423,7 @@ export function adminProgressPage(opts: {
         <div><div class="ops-k">次に必要な操作</div><p class="ops-next">${escapeHtml(ops.next)}</p></div>
       </div>
       <div class="ctas">
-        <form method="post" action="/admin/open" onsubmit="return confirm(${escapeHtml(JSON.stringify("投票を開始します。このあと出走の追加はできません。よろしいですか？"))});">
-          <button type="submit"${e.status !== "setup" ? " disabled" : ""}>投票開始</button>
-        </form>
+        <button type="button" id="start-voting-open"${e.status !== "setup" ? " disabled" : ""}>投票開始</button>
         <form method="post" action="/admin/close" onsubmit="return confirm(${escapeHtml(JSON.stringify("強制締切します。投票を止め、確定配当に切り替えます。よろしいですか？"))});">
           <button class="danger" type="submit"${e.status !== "voting" ? " disabled" : ""}>強制締切</button>
         </form>
@@ -417,7 +432,15 @@ export function adminProgressPage(opts: {
         </form>
       </div>
     </section>
-    ${progressWork(opts.board, opts.recentBetsHtml)}`;
+    ${progressWork(opts.board, opts.recentBetsHtml)}
+    <dialog class="modal start-voting-modal" id="start-voting-modal">
+      <h2>投票開始前の確認</h2>
+      <p class="note">開始後は出走の追加と主要な開催設定を変更できません。内容を確認してから開始してください。</p>
+      <section class="work start-voting-summary"><h3>${escapeHtml(e.title)}</h3><table class="plain"><tbody>${startChecks}</tbody></table></section>
+      <section class="work start-voting-horses"><h3>出走登録（${liveCount}頭）</h3><table class="plain"><thead><tr><th>#</th><th>ウマ娘名</th><th>出走者</th></tr></thead><tbody>${startRows || `<tr><td colspan="3" class="muted">登録なし</td></tr>`}</tbody></table></section>
+      ${startProblems.length ? `<section class="start-voting-problems"><strong>開始前に修正してください</strong><ul>${startProblems.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul><a class="more-link" href="/admin/settings">開催設定を開く</a></section>` : ""}
+      <div class="modal-actions"><form method="post" action="/admin/open"><button class="admin-action admin-action--primary" type="submit"${startReady ? "" : " disabled"}>この内容で投票を開始</button></form><button class="admin-action admin-action--secondary" type="button" id="start-voting-cancel">戻る</button></div>
+    </dialog>`;
   return {
     body,
     afterDash: escapeDialogs({
@@ -426,7 +449,7 @@ export function adminProgressPage(opts: {
       allowDemo: opts.allowDemo,
       reauth: adminReauthField(),
     }),
-    scripts: bindDlgScript(),
+    scripts: `<script>document.getElementById("start-voting-open")?.addEventListener("click", () => document.getElementById("start-voting-modal")?.showModal()); document.getElementById("start-voting-cancel")?.addEventListener("click", () => document.getElementById("start-voting-modal")?.close());</script>${bindDlgScript()}`,
   };
 }
 
@@ -1153,6 +1176,7 @@ export function adminLedgerPage(opts: {
               ${opts.members.map((u) => `<option value="${escapeHtml(u.id)}" data-name="${escapeHtml(u.display_name)}">${escapeHtml(u.display_name)}（${formatPt(u.balance)}）</option>`).join("")}
             </select>
           </label>
+          ${adminReauthField()}
           <button class="danger" type="submit">削除する</button>
           <button type="button" class="secondary" id="member-del-cancel">やめる</button>
         </div>
@@ -1384,10 +1408,12 @@ export function adminSettingsPage(
     ? `<span class="odds-meta">キャラスペック: 取得済み（${specs.length}キャラ・R ${fmt3(median(specs.map((s) => s.totalBab)))}バ）</span>`
     : `<span class="odds-meta">キャラスペック: 未取得（×1.00）</span>`;
   const stamOn = !!r?.staminaRace;
+  const staminaRaceSelected = !!setup?.staminaRaceSelected;
   const skillWeightN = setup?.skillWeightN ?? DEFAULT_SCORE_SKILL_N;
   const staminaCard = `<div class="set-target set-stamina-card">
     <button type="button" class="set-stamina-open" id="stamina-settings-open"><span class="k">スタミナ</span><strong id="stamina-settings-status">${staminaStatus}</strong><span class="set-stamina-edit">${voting ? "確認 →" : "編集 →"}</span><span class="set-stamina-race-state">スタミナ勝負：${stamOn ? "あり" : "なし"}</span></button>
     <input type="hidden" name="score_stamina_race" id="stamina-race" value="${stamOn ? "1" : ""}">
+    <input type="hidden" name="score_stamina_race_selected" id="stamina-race-selected" value="${staminaRaceSelected ? "1" : ""}">
   </div>`;
   const flashEl = flash?.text
     ? `<p class="settings-flash${flash.error ? " err" : ""}">${escapeHtml(flash.text)}</p>`
@@ -1531,10 +1557,12 @@ export function adminSettingsPage(
       });
     });
     const stamIn = document.getElementById("stamina-race");
+    const stamSelectedIn = document.getElementById("stamina-race-selected");
     document.querySelectorAll("[data-stamina-race]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const on = btn.getAttribute("data-stamina-race") === "1";
         if (stamIn) stamIn.value = on ? "1" : "";
+        if (stamSelectedIn) stamSelectedIn.value = "1";
         document.querySelectorAll("[data-stamina-race]").forEach((x) => x.classList.toggle("on", x === btn));
         const state = document.querySelector(".set-stamina-race-state");
         if (state) state.textContent = "スタミナ勝負：" + (on ? "あり" : "なし");

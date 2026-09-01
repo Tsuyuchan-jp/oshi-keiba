@@ -43,11 +43,36 @@ async function seedRace(db: D1Database) {
     strength: 10,
     recordUndo: false,
   });
+  await db.prepare("UPDATE events SET voting_closes_at = ?, score_setup = ? WHERE id = ?")
+    .bind(Date.now() + 60_000, JSON.stringify({
+      conditions: { courseKey: "10606", weather: 1, groundCondition: 1, season: 3 },
+      requirements: {
+        speedCap: 1200, staminaNoTempt: 600, staminaWithTempt: 800,
+        staminaRace: false, power: 700, guts: 400, wisdom: 600,
+        staminaByStyle: {
+          runner: { noTempt: 600, withTempt: 800 }, leader: { noTempt: 600, withTempt: 800 },
+          betweener: { noTempt: 600, withTempt: 800 }, chaser: { noTempt: 600, withTempt: 800 },
+        },
+      },
+      staminaRaceSelected: true,
+    }), event0.id).run();
   await openVoting(db, await refresh(db, event0.id), null);
   const event = await refresh(db, event0.id);
   assert.equal(event.status, "voting");
   return { event, h1, h2 };
 }
+
+test("投票開始: 締切と脚質別スタミナが未設定なら直接呼び出しても開始できない", async () => {
+  const db = createMemoryD1();
+  const event = await ensureEvent(db);
+  await addHorse(db, event, "テスト一号", "A", { strength: 10, recordUndo: false });
+  await addHorse(db, event, "テスト二号", "B", { strength: 10, recordUndo: false });
+  const current = await refresh(db, event.id);
+  await assert.rejects(
+    () => openVoting(db, current, null),
+    /投票締切日時.*レース条件/,
+  );
+});
 
 test("当選単勝: 付与→投票→締切→着順→公開で残高が払戻どおり増える", async () => {
   const db = createMemoryD1();

@@ -27,6 +27,8 @@ export type EventRaceConditions = {
 export type EventScoreSetup = {
   conditions: EventRaceConditions;
   requirements: RaceRequirements;
+  /** スタミナ勝負の有無を管理者が明示的に選んだか */
+  staminaRaceSelected?: true;
   /**
    * 保存時に取った U-tools ranked スキル id（コース×脚質）。
    * 未取得の旧データは undefined（計算時は緑以外全部有効扱い）。
@@ -170,6 +172,7 @@ export function parseScoreSetup(raw: unknown): EventScoreSetup | null {
   const wisdom = Number(r.wisdom);
   const skillWeightN = root.skillWeightN == null ? undefined : Number(root.skillWeightN);
   const staminaRace = Boolean(r.staminaRace);
+  const staminaRaceSelected = root.staminaRaceSelected === true;
   const staminaByStyle = parseStaminaByStyle(r.staminaByStyle);
 
   if (
@@ -203,6 +206,7 @@ export function parseScoreSetup(raw: unknown): EventScoreSetup | null {
       wisdom,
     },
   };
+  if (staminaRaceSelected) setup.staminaRaceSelected = true;
   if (skillWeightN !== undefined) setup.skillWeightN = skillWeightN;
 
   const ids = parseEffectiveSkillIdsByStyle(root.effectiveSkillIds);
@@ -299,6 +303,7 @@ export function scoreSetupFromForm(
   const wisdomRaw = get("score_wisdom").trim();
   const skillWeightNRaw = get("score_skill_weight_n").trim();
   const staminaRace = get("score_stamina_race") === "1";
+  const staminaRaceSelected = get("score_stamina_race_selected") === "1";
 
   const any =
     courseKey ||
@@ -311,7 +316,7 @@ export function scoreSetupFromForm(
     gutsRaw ||
     wisdomRaw ||
     skillWeightNRaw ||
-    staminaRace;
+    staminaRace || staminaRaceSelected;
 
   /** 初期表示のデフォルトだけ埋まっている状態（コースなし＝直置き） */
   const onlyReqDefaults =
@@ -354,6 +359,7 @@ export function scoreSetupFromForm(
       guts: Number(gutsRaw),
       wisdom: Number(wisdomRaw),
     },
+    ...(staminaRaceSelected ? { staminaRaceSelected: true } : {}),
     ...(skillWeightNRaw ? { skillWeightN: Number(skillWeightNRaw) } : {}),
   });
   if (!parsed) {

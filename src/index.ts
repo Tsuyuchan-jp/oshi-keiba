@@ -583,6 +583,10 @@ export default {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
         const form = await readForm(request);
+        const password = readAdminReauth(form);
+        if (!timingSafeEqualStr(password, env.ADMIN_PASSWORD)) {
+          return bounce("/admin/ledger", "管理者パスが違います（利用停止していません）", true);
+        }
         try {
           const name = await deleteMember(env.DB, form.get("user_id") ?? "");
           return bounce("/admin/ledger", `「${name}」を利用停止にしました。過去の開催記録は残っています`);

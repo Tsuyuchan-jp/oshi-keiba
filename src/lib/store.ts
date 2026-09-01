@@ -58,6 +58,7 @@ export {
 
 export {
   openVoting,
+  votingStartProblems,
   forceClose,
   placeBet,
   redoMyBets,

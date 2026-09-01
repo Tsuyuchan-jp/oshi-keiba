@@ -32,6 +32,48 @@ import {
   type HorseRow,
   type UserRow,
 } from "./storeTypes";
+import { parseEnabledKinds } from "./bets";
+import { eventScoreSetup } from "./storeEvent";
+
+/** 投票開始前に満たすべき、画面と API で共通の条件。 */
+export function votingStartProblems(
+  event: EventRow,
+  horses: HorseRow[],
+  now = Date.now(),
+): string[] {
+  const problems: string[] = [];
+  const live = horses.filter((h) => h.scratched === 0);
+  if (live.length < MIN_LIVE_HORSES || live.length > MAX_LIVE_HORSES) {
+    problems.push(`出走頭数を ${MIN_LIVE_HORSES}〜${MAX_LIVE_HORSES} 頭にしてください`);
+  }
+  if (event.voting_closes_at == null) problems.push("投票締切日時を設定してください");
+  else if (event.voting_closes_at <= now) problems.push("投票締切日時を未来に設定してください");
+  if (!event.title.trim()) problems.push("開催名を設定してください");
+  if (!Number.isInteger(event.grant_g) || event.grant_g < 0) problems.push("配布Gを設定してください");
+  if (!Number.isInteger(event.bet_unit) || event.bet_unit < 1) problems.push("馬券単位を設定してください");
+  if (!Number.isFinite(event.seed_pool_s) || event.seed_pool_s < 0 ||
+      !Number.isFinite(event.pull_e) || event.pull_e < 0 ||
+      !Number.isFinite(event.takeout_d) || event.takeout_d < 0 || event.takeout_d > .99 ||
+      !Number.isFinite(event.w_time_floor) || event.w_time_floor < 0 || event.w_time_floor > .99 ||
+      !Number.isFinite(event.w_time_exp) || event.w_time_exp < .2 || event.w_time_exp > 4) {
+    problems.push("オッズ設定を正しく入力してください");
+  }
+  if (!parseEnabledKinds(event.enabled_kinds).length) problems.push("賭式を1つ以上有効にしてください");
+
+  const setup = eventScoreSetup(event);
+  if (!setup) {
+    problems.push("レース条件と評価目標を設定してください");
+  } else {
+    const byStyle = setup.requirements.staminaByStyle;
+    const staminaComplete = byStyle && Object.values(byStyle).every((v) =>
+      Number.isInteger(v.noTempt) && v.noTempt > 0 &&
+      Number.isInteger(v.withTempt) && v.withTempt >= v.noTempt,
+    );
+    if (!staminaComplete) problems.push("脚質別スタミナ8項目をすべて設定してください");
+    if (!setup.staminaRaceSelected) problems.push("スタミナ勝負の有無を選択してください");
+  }
+  return problems;
+}
 
 export async function openVoting(
   db: D1Database,
@@ -40,12 +82,8 @@ export async function openVoting(
 ): Promise<void> {
   if (event.status !== "setup") throw new Error("投票開始できるのはセットアップ中だけです");
   const horses = await listHorses(db, event.id);
-  const live = horses.filter((h) => h.scratched === 0);
-  if (live.length < MIN_LIVE_HORSES || live.length > MAX_LIVE_HORSES) {
-    throw new Error(
-      `投票開始には取消前の頭数が ${MIN_LIVE_HORSES}〜${MAX_LIVE_HORSES} 必要です`,
-    );
-  }
+  const problems = votingStartProblems(event, horses);
+  if (problems.length) throw new Error(`投票開始できません: ${problems.join(" / ")}`);
   await captureAdminUndo(db, "投票開始");
   const now = Date.now();
   await db
