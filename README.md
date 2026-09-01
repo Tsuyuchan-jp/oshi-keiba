@@ -18,7 +18,7 @@ GitHub Pages は使いません。閉じた経路で URL を渡します。
 
 ## ローカルで動かす
 
-仮パスワードは `.dev.vars.example` を `.dev.vars` にコピーして使います。コミットしない。
+ローカル用の認証情報は `.dev.vars.example` を `.dev.vars` にコピーして使います。`.dev.vars` はコミットしません。本番の認証情報は Cloudflare Secrets で管理します。
 
 ```powershell
 copy .dev.vars.example .dev.vars
@@ -29,15 +29,15 @@ npm test
 npm run dev
 ```
 
-- 入室: http://localhost:8787/login （共有パス `loh`）
+- 入室: http://localhost:8787/login （共有パスは `.dev.vars` を参照）
 - 場内: http://localhost:8787/
 - 投票: http://localhost:8787/bet
-- 管理者: http://localhost:8787/admin 仮パス `demo-admin`
+- 管理者: http://localhost:8787/admin （パスワードは `.dev.vars` を参照）
 
 G=3000 スペ（投票中にその開催へ参加したとき。入室だけでは入らない）。賭式は単勝・馬連・馬単・3連複・3連単（1点買い）。評価点は直置き（画面表記は Strength のことがある）。ローカルのデモ初期化は `.dev.vars` の `ALLOW_DEMO_RESET=1`。
 
 ## 本番 URL
 
 - https://oshi-keiba.tsuyuchan-jp.workers.dev/
-- 入室の共有パス: `loh`
-- 管理者: https://oshi-keiba.tsuyuchan-jp.workers.dev/admin 仮パス `demo-admin`
+- 入室用・管理者用の認証情報は、主催者からメンバーへ別経路で共有します。
+- 管理者: https://oshi-keiba.tsuyuchan-jp.workers.dev/admin
