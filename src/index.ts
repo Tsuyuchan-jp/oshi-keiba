@@ -51,6 +51,7 @@ import { applyAutoScoreRecompute, prepareAutoScoreRecompute } from "./lib/scoreR
 import { loadStrategicSkillsBundle, tryAdminStrategicApi } from "./lib/adminStrategicApi";
 import { enrichScoreSetupWithEffects, scoreSetupFromForm } from "./lib/scoreSetup";
 import { normalizeShotMime } from "./lib/shotMime";
+import { adminParamsFromForm } from "./lib/adminParams";
 import type { UserRow } from "./lib/store";
 
 function demoResetAllowed(env: Env): boolean {
@@ -181,10 +182,10 @@ export default {
         if (gate instanceof Response) return gate;
         const form = await readForm(request);
         const board = await loadBoard(env.DB);
-        const closesRaw = form.get("closes_at") ?? "";
         const titleRaw = String(form.get("title") ?? "").trim();
         try {
           if (!titleRaw) throw new Error("イベント名を入力してください。");
+          const params = adminParamsFromForm((name) => String(form.get(name) ?? ""));
           const nextSetup = await (async () => {
             const base = scoreSetupFromForm((name) => String(form.get(name) ?? ""));
             if (!base) return null;
@@ -193,15 +194,7 @@ export default {
           const strategic = await loadStrategicSkillsBundle(env.DB);
           const changes = await prepareAutoScoreRecompute(env.DB, board.event, nextSetup, strategic.skills);
           await updateParams(env.DB, board.event, {
-            title: titleRaw,
-            grant_g: Number(form.get("grant_g")),
-            bet_unit: Number(form.get("bet_unit")),
-            seed_pool_s: Number(form.get("seed_pool_s")),
-            pull_e: Number(form.get("pull_e")),
-            takeout_d: Number(form.get("takeout_d")),
-            w_time_floor: Number(form.get("w_time_floor")),
-            w_time_exp: Number(form.get("w_time_exp")),
-            voting_closes_at: parseJstInput(closesRaw),
+            ...params,
             enabled_kinds:
               board.event.status === "setup"
                 ? serializeEnabledKinds(
@@ -213,8 +206,7 @@ export default {
                   )
                 : undefined,
             score_setup: nextSetup,
-          });
-          await applyAutoScoreRecompute(env.DB, changes);
+          }, changes);
           return bounce("/admin/settings", `レースイベント設定を保存しました。自動評価点 ${changes.length}頭を再計算しました`);
         } catch (err) {
           return bounce("/admin/settings", err instanceof Error ? err.message : "保存失敗", true);

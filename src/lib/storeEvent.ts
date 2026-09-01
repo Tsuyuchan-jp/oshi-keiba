@@ -15,6 +15,7 @@ import {
   type EventScoreSetup,
 } from "./scoreSetup";
 import { captureAdminUndo } from "./undo";
+import type { ScoreRecomputeChange } from "./scoreRecompute";
 import type { EventRow } from "./storeTypes";
 
 export type { EventScoreSetup };
@@ -139,6 +140,7 @@ export async function updateParams(
     /** 渡したら上書き。undefined なら触らない。null でクリア */
     score_setup?: EventScoreSetup | null;
   },
+  changes: readonly ScoreRecomputeChange[] = [],
 ): Promise<void> {
   await captureAdminUndo(db, "レースイベント設定を保存");
   const kinds =
@@ -149,7 +151,7 @@ export async function updateParams(
     patch.score_setup === undefined
       ? event.score_setup
       : serializeScoreSetup(patch.score_setup);
-  await db
+  const update = db
     .prepare(
       `UPDATE events SET
         title = ?,
@@ -181,7 +183,12 @@ export async function updateParams(
       scoreSetupJson,
       event.id,
     )
-    .run();
+    ;
+  const rescore = changes.map((change) =>
+    db.prepare("UPDATE horses SET strength = ? WHERE id = ? AND event_id = ?")
+      .bind(change.after, change.horseId, event.id),
+  );
+  await db.batch([update, ...rescore]);
 }
 
 /** 公開済みのあと、空の setup をカレントにする。口座は残す */
