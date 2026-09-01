@@ -51,7 +51,7 @@ import { applyAutoScoreRecompute, prepareAutoScoreRecompute } from "./lib/scoreR
 import { loadStrategicSkillsBundle, tryAdminStrategicApi } from "./lib/adminStrategicApi";
 import { enrichScoreSetupWithEffects, scoreSetupFromForm } from "./lib/scoreSetup";
 import { normalizeShotMime } from "./lib/shotMime";
-import { adminParamsFromForm } from "./lib/adminParams";
+import { adminParamsFromForm, assertVotingCloseIsFuture } from "./lib/adminParams";
 import type { UserRow } from "./lib/store";
 
 function demoResetAllowed(env: Env): boolean {
@@ -185,28 +185,45 @@ export default {
         const titleRaw = String(form.get("title") ?? "").trim();
         try {
           if (!titleRaw) throw new Error("イベント名を入力してください。");
+          if (board.event.status !== "setup" && board.event.status !== "voting") {
+            throw new Error("締切後の開催設定は変更できません");
+          }
           const params = adminParamsFromForm((name) => String(form.get(name) ?? ""));
+          assertVotingCloseIsFuture(board.event.status, params.voting_closes_at);
           const nextSetup = await (async () => {
+            if (board.event.status !== "setup") return undefined;
             const base = scoreSetupFromForm((name) => String(form.get(name) ?? ""));
             if (!base) return null;
             return enrichScoreSetupWithEffects(base);
           })();
-          const strategic = await loadStrategicSkillsBundle(env.DB);
-          const changes = await prepareAutoScoreRecompute(env.DB, board.event, nextSetup, strategic.skills);
-          await updateParams(env.DB, board.event, {
-            ...params,
-            enabled_kinds:
-              board.event.status === "setup"
-                ? serializeEnabledKinds(
+          const changes = board.event.status === "setup"
+            ? await (async () => {
+                const strategic = await loadStrategicSkillsBundle(env.DB);
+                return prepareAutoScoreRecompute(env.DB, board.event, nextSetup ?? null, strategic.skills);
+              })()
+            : [];
+          const patch = board.event.status === "setup"
+            ? {
+                ...params,
+                enabled_kinds: serializeEnabledKinds(
                     parseEnabledKinds(
                       ["win", ...OPTIONAL_BET_KINDS.filter((k) => form.get(`kind_${k}`))].join(
                         ",",
                       ),
                     ),
-                  )
-                : undefined,
-            score_setup: nextSetup,
-          }, changes);
+                  ),
+                score_setup: nextSetup,
+              }
+            : {
+                title: params.title,
+                voting_closes_at: params.voting_closes_at,
+                seed_pool_s: params.seed_pool_s,
+                pull_e: params.pull_e,
+                takeout_d: params.takeout_d,
+                w_time_floor: params.w_time_floor,
+                w_time_exp: params.w_time_exp,
+              };
+          await updateParams(env.DB, board.event, patch, changes);
           return bounce("/admin/settings", `レースイベント設定を保存しました。自動評価点 ${changes.length}頭を再計算しました`);
         } catch (err) {
           return bounce("/admin/settings", err instanceof Error ? err.message : "保存失敗", true);

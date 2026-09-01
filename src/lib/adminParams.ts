@@ -6,6 +6,17 @@ export type AdminParamsInput = {
   voting_closes_at: number | null;
 };
 
+/** 投票中に締切を動かす場合だけ、誤って即時締切にしないよう確認する。 */
+export function assertVotingCloseIsFuture(
+  status: "setup" | "voting" | "closed" | "published",
+  votingClosesAt: number | null,
+  now = Date.now(),
+): void {
+  if (status === "voting" && votingClosesAt != null && votingClosesAt <= now) {
+    throw new Error("投票中の締切は現在より後の日時を指定してください");
+  }
+}
+
 function numberField(get: (name: string) => string, name: string): number {
   const raw = get(name).trim();
   if (!raw) throw new Error(`${name} を入力してください`);

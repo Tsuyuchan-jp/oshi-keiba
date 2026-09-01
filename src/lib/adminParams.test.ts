@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { adminParamsFromForm } from "./adminParams.ts";
+import { adminParamsFromForm, assertVotingCloseIsFuture } from "./adminParams.ts";
 
 const valid = { title: "第1レース", grant_g: "1000", bet_unit: "100", seed_pool_s: "500", pull_e: "0", takeout_d: "0.2", w_time_floor: "0.1", w_time_exp: "1.5", closes_at: "" };
 const parse = (overrides: Record<string, string> = {}) => {
@@ -12,3 +12,8 @@ for (const [name, value] of [["grant_g", "1.5"], ["bet_unit", "0"], ["seed_pool_
   test(`管理設定の不正値を拒否する: ${name}`, () => assert.throws(() => parse({ [name]: value })));
 }
 test("管理設定の不正な締切日時を拒否する", () => assert.throws(() => parse({ closes_at: "not-a-date" })));
+test("投票中は過去の締切を拒否する", () => {
+  assert.throws(() => assertVotingCloseIsFuture("voting", 999, 1000), /現在より後/);
+  assert.doesNotThrow(() => assertVotingCloseIsFuture("voting", 1001, 1000));
+  assert.doesNotThrow(() => assertVotingCloseIsFuture("setup", 999, 1000));
+});

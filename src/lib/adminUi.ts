@@ -1319,6 +1319,13 @@ export function adminSettingsPage(
   const c = setup?.conditions;
   const r = setup?.requirements;
   const canKinds = e.status === "setup";
+  const voting = e.status === "voting";
+  const canSave = e.status === "setup" || voting;
+  const setupDisabled = canKinds ? "" : " disabled";
+  const saveConfirmLabel = voting ? "この内容で保存" : "この内容で保存・再計算";
+  const votingNote = voting
+    ? `<p class="set-lock">投票中に変更可能：イベント名、締切、S・E・D・w時。ほかの設定は投票開始後に固定されます。</p>`
+    : "";
   const enabled = new Set(parseEnabledKinds(e.enabled_kinds));
   const kindsNote = canKinds
     ? "開始前だけ変えられる。単勝は外せない。"
@@ -1377,27 +1384,28 @@ export function adminSettingsPage(
     ? `<p class="settings-flash${flash.error ? " err" : ""}">${escapeHtml(flash.text)}</p>`
     : "";
   const body = `${adminPageHero("開催設定", e.status, {
-      actions: `<button type="button" class="admin-action admin-action--primary" id="settings-save-open">保存</button>`,
+      actions: `<button type="button" class="admin-action admin-action--primary" id="settings-save-open"${canSave ? "" : " disabled"}>保存</button>`,
     })}
     <form class="settings-desk" id="settings-form" method="post" action="/admin/params">
       <div class="settings-top">
         <section class="work">
           <p class="set-k">イベント概要</p>
-          <input class="set-title" name="title" value="${escapeHtml(titleValue)}" placeholder="イベント名" aria-label="タイトル">
+          <input class="set-title" name="title" value="${escapeHtml(titleValue)}" placeholder="イベント名" aria-label="タイトル"${canSave ? "" : " disabled"}>
           <div class="set-row">
             <div class="set-field">
               <span class="k">締切（JST）</span>
-              <input name="closes_at" type="datetime-local" value="${toJstInput(e.voting_closes_at)}">
+              <input name="closes_at" type="datetime-local" value="${toJstInput(e.voting_closes_at)}"${canSave ? "" : " disabled"}>
             </div>
             <div class="set-field set-quiet">
               <span class="k">参加 G</span>
-              <input name="grant_g" type="number" min="0" step="1" value="${e.grant_g}">
+              <input name="grant_g" type="number" min="0" step="1" value="${e.grant_g}"${setupDisabled}>${canKinds ? "" : `<input type="hidden" name="grant_g" value="${e.grant_g}">`}
             </div>
             <div class="set-field set-quiet">
               <span class="k">単位</span>
-              <input name="bet_unit" type="number" min="1" step="1" value="${e.bet_unit}">
+              <input name="bet_unit" type="number" min="1" step="1" value="${e.bet_unit}"${setupDisabled}>${canKinds ? "" : `<input type="hidden" name="bet_unit" value="${e.bet_unit}">`}
             </div>
           </div>
+          ${votingNote}
         </section>
         <section class="work">
           <p class="set-k">賭式</p>
@@ -1410,7 +1418,7 @@ export function adminSettingsPage(
           <h2>レギュレーション</h2>
           ${skillsMeta}${specMeta}
         </div>
-        <div class="settings-scroll">
+        <fieldset class="settings-scroll"${setupDisabled}>
           <p class="set-k">コース</p>
           <select class="set-course" name="score_course" aria-label="コース">${courses}</select>
           <div class="set-conds">
@@ -1438,7 +1446,7 @@ export function adminSettingsPage(
               <input type="hidden" name="score_stamina_race" id="stamina-race" value="${stamOn ? "1" : ""}">
             </div>
           </div>
-        </div>
+        </fieldset>
       </section>
       <section class="work settings-bot">
         <div class="work-head">
@@ -1476,7 +1484,7 @@ export function adminSettingsPage(
           <label class="set-metric">
             <span class="sym">n</span>
             <span class="k">スキル重み</span>
-            <input name="score_skill_weight_n" type="number" min="1" max="10" step="0.1" value="${skillWeightN}">
+            <input name="score_skill_weight_n" type="number" min="1" max="10" step="0.1" value="${skillWeightN}"${setupDisabled}>
             <span class="d">S0の差を強調する累乗</span>
           </label>
         </div>
@@ -1496,7 +1504,7 @@ export function adminSettingsPage(
         <h2>開催設定を保存</h2>
         <p id="settings-save-summary">再計算内容を確認しています。</p>
         <div id="settings-save-changes"></div>
-        <div class="modal-actions"><button type="button" class="admin-action admin-action--primary" id="settings-save-confirm" disabled>この内容で保存・再計算</button><button type="button" class="admin-action admin-action--secondary" id="settings-save-cancel">キャンセル</button></div>
+        <div class="modal-actions"><button type="button" class="admin-action admin-action--primary" id="settings-save-confirm" disabled>${saveConfirmLabel}</button><button type="button" class="admin-action admin-action--secondary" id="settings-save-cancel">キャンセル</button></div>
       </dialog>
       <dialog class="modal" id="settings-alert-modal">
         <h2>入力内容を確認</h2>
@@ -1505,6 +1513,7 @@ export function adminSettingsPage(
       </dialog>
     </form>`;
   const scripts = `<script>
+    const SETTINGS_CAN_RECOMPUTE = ${canKinds ? "true" : "false"};
     document.querySelectorAll(".set-seg").forEach((seg) => {
       seg.querySelectorAll("button").forEach((b) => {
         b.addEventListener("click", () => {
@@ -1550,7 +1559,8 @@ export function adminSettingsPage(
     let focusAfterAlert = null;
     const requiredNames = ["title", "score_course", "score_weather", "score_ground_condition", "score_season", "score_speed_cap", "score_power", "score_guts", "score_wisdom", ...["runner", "leader", "betweener", "chaser"].flatMap((s) => ["score_stamina_" + s + "_no", "score_stamina_" + s + "_with"])];
     const validateSettings = () => {
-      const missing = requiredNames.map((name) => ({ name, el: settingsForm?.elements.namedItem(name) })).find(({ el }) => !el || !(el instanceof HTMLInputElement || el instanceof HTMLSelectElement) || !el.value.trim());
+      const names = SETTINGS_CAN_RECOMPUTE ? requiredNames : ["title"];
+      const missing = names.map((name) => ({ name, el: settingsForm?.elements.namedItem(name) })).find(({ el }) => !el || !(el instanceof HTMLInputElement || el instanceof HTMLSelectElement) || !el.value.trim());
       if (missing) {
         saveDlg?.close();
         focusAfterAlert = missing.el;
@@ -1562,6 +1572,13 @@ export function adminSettingsPage(
     };
     const showSavePreview = async () => {
       if (!settingsForm || !validateSettings()) return;
+      if (!SETTINGS_CAN_RECOMPUTE) {
+        if (saveSummary) saveSummary.textContent = "投票中に変更できる項目だけを保存します。評価点は再計算しません。";
+        if (saveChanges) saveChanges.replaceChildren();
+        if (saveConfirm instanceof HTMLButtonElement) saveConfirm.disabled = false;
+        saveDlg?.showModal();
+        return;
+      }
       if (saveSummary) saveSummary.textContent = "再計算内容を確認しています。";
       if (saveChanges) saveChanges.replaceChildren();
       if (saveConfirm instanceof HTMLButtonElement) saveConfirm.disabled = true;
