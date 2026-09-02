@@ -62,19 +62,21 @@ Time Travel が使える D1 は、直近の状態へ復元できる。保持期�
    npx wrangler r2 bucket create oshi-keiba-shots
    ```
 
-2. migration 一覧で未適用があるときだけ、適用する
+2. `0014_admin_identity.sql` が未適用のリリースでは、`ADMIN_USER_ID` Secret が同ファイルの固定 UUID と一致していることを確認してから、migration を適用する。管理ログインは、このSecretとDBに作られる専用管理者レコードの一致が必須である。
+
+3. migration 一覧で未適用があるときだけ、適用する。`0014` を含む場合は、**Worker の公開より先に**この操作を完了させる
 
    ```powershell
    npx wrangler d1 migrations apply oshi-keiba --remote
    ```
 
-3. Worker を公開する
+4. Worker を公開する
 
    ```powershell
    npm run deploy
    ```
 
-4. 表示された Worker の新しいデプロイメント ID と実施時刻を控える
+5. 表示された Worker の新しいデプロイメント ID と実施時刻を控える
 
 ## 公開直後の確認
 
