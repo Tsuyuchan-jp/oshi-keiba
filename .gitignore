@@ -9,3 +9,5 @@ secrets-prod.env
 .mf/
 dist/
 *.tsbuildinfo
+playwright-report/
+test-results/

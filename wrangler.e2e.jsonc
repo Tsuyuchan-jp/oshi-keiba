@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "oshi-keiba-e2e",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-21",
+  "assets": {
+    "directory": "./public"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "oshi-keiba-e2e",
+      "database_id": "00000000-0000-0000-0000-000000000001",
+      "migrations_dir": "./migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "SHOTS",
+      "bucket_name": "oshi-keiba-e2e-shots"
+    }
+  ]
+}
