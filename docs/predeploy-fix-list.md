@@ -23,27 +23,6 @@
 
 
 
-### P1-11: 本番リリース・復旧手順を実装と一致させる
-
-- 状態: 完了（本番リリース待ち）
-- 重要度: 高
-- 何が起きるか: 本番DBのマイグレーション状況、秘密情報、バックアップ、障害時の戻し方が確認できないままデプロイすると、復旧できない・想定外のDB状態で公開するリスクがあります。
-- 確認済みの事実:
-  - `npx wrangler d1 migrations list oshi-keiba --remote` は、この環境に `CLOUDFLARE_API_TOKEN` がないため実行できず、本番マイグレーション状態を未確認。
-  - `docs/version.md`、`docs/changelog.md`、`package.json` にリリース情報がある。`docs/changelog.md` には `0.3.0 — 2026-09-01（未デプロイ）` の記載がある。
-  - 現在の手順書には、シークレット確認、D1バックアップ／Time Travel、障害時の復旧判断を一連で確認するチェックリストが不足している。
-  - `docs/release.md` にデプロイ前・公開直後・障害時の手順を追加し、既存の案内を同ファイルへ統一した。
-  - `wrangler.jsonc` で `ADMIN_PASSWORD`・`MEMBER_PASSWORD`・`SESSION_SECRET` を必須 Secrets として宣言し、実際の deploy 時に不足を検出する構成にした。
-  - ローカルで `npx wrangler deploy --dry-run`、`npx tsc --noEmit`、`npm test`（146件）を確認済み。
-  - 本番確認済み: 必須 Secrets 名3項目、D1 Time Travel、R2 バケット、Worker 版履歴。D1には `0010_horse_uma_dress.sql`、`0011_horse_paddock_profile.sql`、`0012_member_operations.sql`、`0013_member_soft_delete.sql` の未適用がある。
-- 影響範囲: 本番運用、データ復旧、リリース担当者。
-- 対応方針: デプロイ前・直後・障害時の手順を文書化する。少なくともマイグレーション確認、シークレット確認、バックアップ方針、ロールバック可否、監視・ログ確認、リリース記録を含める。
-- 完了条件: 非エンジニアでも手順に沿って本番確認・障害一次対応ができ、今回のリリース番号と変更内容が一致する。
-- 確認方法: dry-run と本番確認を完了。次回リリース時は `release.md` に従い、未適用 migration を Worker 公開前に適用する。
-- デプロイ前に必須: はい
-
-
-
 ### P1-12: 管理権限の識別と公開範囲を明確にする
 
 - 状態: 未着手
@@ -133,6 +112,17 @@
 - 残る注意点:
 ```
 
+
+
+### P1-11: 本番リリース・復旧手順を実装と一致させる
+
+- 完了日: 2026-09-02
+- 実施内容: `docs/release.md` にデプロイ前・公開直後・障害時の手順を追加し、既存の案内を同ファイルへ統一した。`wrangler.jsonc` で `ADMIN_PASSWORD`・`MEMBER_PASSWORD`・`SESSION_SECRET` を必須 Secrets として宣言し、実際の deploy 時に不足を検出する構成にした。
+- 利用者の承認: あり（手順書、必須 Secrets の検査、型生成を承認）
+- コミット: `f2266d6`、`ae5d839`、`5af9f7d`
+- 検証結果: `npx wrangler deploy --dry-run`、`npx tsc --noEmit`、`npm test`（146件）成功。
+- 本番確認: 必須 Secrets 名3項目、D1 Time Travel、R2 バケット、Worker 版履歴を確認済み。確認用APIトークンは確認後に利用者が削除済み。
+- 残る注意点: 本番D1には `0010`〜`0013` の未適用 migration がある。次回リリースでは [release.md](release.md) に従い、Worker公開前に適用する。R2の不要画像はP2-13、公開URLと管理者識別はP1-12で扱う。
 
 
 ### P1-10: 戦略スキル更新と再計算を一貫して確定する
