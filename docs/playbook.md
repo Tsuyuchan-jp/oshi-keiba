@@ -2,12 +2,12 @@
 
 払いの約束は **①**。不成立は **特払い B**。開催数字は [now.md](now.md)。
 
-本番 URL: https://oshi-keiba.tsuyuchan-jp.workers.dev/  
+本番 URL: https://oshi-keiba.tsuyuchan-jp.workers.dev/（参加者へ共有する正規URL。独自ドメインRouteは使わない）
 入場: `/login`　場内: `/`　パドック: `/paddock`　窓口: `/bet`　管理: `/admin`　出走登録: `/admin/register`　出走: `/admin/horses`
 
 閉じた経路で渡す前提。検索に出さない。
 
-- メンバー共有パスと管理者パスは Cloudflare Secrets で管理し、主催者から別経路で共有する。
+- メンバー共有パスと管理者パスは Cloudflare Secrets で管理し、主催者から別経路で共有する。管理者は表示名ではなく固定IDとDB上の `admin` 権限で識別する。
 
 ## 載っているもの
 

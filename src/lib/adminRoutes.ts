@@ -25,6 +25,7 @@ import {
 import { getAdminUndoMeta } from "./undo";
 import { adminUndoAllowed } from "./adminUndo";
 import { sessionFromRequest } from "./auth";
+import { isConfiguredAdmin } from "./adminAuth";
 import type { Session } from "./auth";
 import type { UserRow } from "./store";
 import { prepareAutoScoreRecompute } from "./scoreRecompute";
@@ -45,7 +46,7 @@ async function requireAdmin(
     return redirect("/admin/login");
   }
   const user = await getUser(env.DB, session.userId);
-  if (!user) return redirect("/admin/login");
+  if (!user || !isConfiguredAdmin(session, user, env.ADMIN_USER_ID)) return redirect("/admin/login");
   return { session, user };
 }
 

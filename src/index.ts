@@ -32,7 +32,6 @@ import {
   updateHorse,
   updateHorseNumbers,
   updateParams,
-  upsertUser,
   loadBoard,
   eventScoreSetup,
 } from "./lib/store";
@@ -52,6 +51,7 @@ import { loadStrategicSkillsBundle, tryAdminStrategicApi } from "./lib/adminStra
 import { enrichScoreSetupWithEffects, scoreSetupFromForm } from "./lib/scoreSetup";
 import { normalizeShotMime } from "./lib/shotMime";
 import { adminParamsFromForm, assertVotingCloseIsFuture } from "./lib/adminParams";
+import { isConfiguredAdmin } from "./lib/adminAuth";
 import type { UserRow } from "./lib/store";
 
 function demoResetAllowed(env: Env): boolean {
@@ -76,7 +76,7 @@ async function requireAdmin(
     return redirect("/admin/login");
   }
   const user = await getUser(env.DB, session.userId);
-  if (!user) return redirect("/admin/login");
+  if (!user || !isConfiguredAdmin(session, user, env.ADMIN_USER_ID)) return redirect("/admin/login");
   return { session, user };
 }
 
@@ -148,7 +148,10 @@ export default {
         if (!timingSafeEqualStr(password, env.ADMIN_PASSWORD)) {
           return bounce("/admin/login", "管理者の仮パスワードが違います", true);
         }
-        const user = await upsertUser(env.DB, "管理者", "admin");
+        const user = await getUser(env.DB, env.ADMIN_USER_ID);
+        if (!user || user.role !== "admin") {
+          return bounce("/admin/login", "管理者の設定が完了していません。公開手順を確認してください", true);
+        }
         const token = await encodeSession(
           { userId: user.id, role: "admin", exp: sessionExpiry() },
           env.SESSION_SECRET,
