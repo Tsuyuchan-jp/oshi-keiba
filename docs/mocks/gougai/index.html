@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>号外プレビュー（仮文言）— oshi-keiba</title>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* 管理者が note 用に撮る紙面の見た目確認。本番タブではない。 */
+    :root {
+      --gougai-green: #6fbf2a;
+      --gougai-green-dark: #4a9a18;
+      --headline-yellow: #ffe44a;
+      --headline-red: #d51a2a;
+      --body-lead: #c45a12;
+      --paper: #f7f7f4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "M PLUS 1p", "Hiragino Sans", sans-serif;
+      background: #3a424c;
+      color: #1a1a1a;
+    }
+    .stage {
+      max-width: 28rem;
+      margin: 0 auto;
+      padding: 1.25rem 0.9rem 2.5rem;
+    }
+    .note {
+      color: #c5ccd4;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      margin: 0 0 0.85rem;
+    }
+    .paper {
+      background: var(--paper);
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .masthead {
+      background:
+        repeating-linear-gradient(
+          -45deg,
+          rgba(255, 255, 255, 0.12) 0 8px,
+          transparent 8px 16px
+        ),
+        linear-gradient(180deg, var(--gougai-green), var(--gougai-green-dark));
+      color: #fff;
+      text-align: center;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      padding: 0.55rem 0.75rem;
+      font-size: 0.95rem;
+      text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+    }
+
+    .cover {
+      position: relative;
+      height: 22rem;
+      background:
+        radial-gradient(ellipse at 40% 80%, #4cae3a 0%, transparent 55%),
+        linear-gradient(180deg, #1e6b4a 0%, #0d3d2c 55%, #08241a 100%);
+      overflow: hidden;
+    }
+    .cover img {
+      position: absolute;
+      left: 4%;
+      bottom: -8%;
+      height: 108%;
+      width: auto;
+      max-width: none;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.45));
+    }
+    .headlines {
+      position: absolute;
+      right: 0.55rem;
+      top: 0.7rem;
+      bottom: 1.4rem;
+      display: flex;
+      flex-direction: row-reverse;
+      gap: 0.35rem;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      pointer-events: none;
+    }
+    .headlines .kicker {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--headline-yellow);
+      letter-spacing: 0.28em;
+      text-shadow: 0 0 4px #8b1020, 1px 1px 0 #8b1020;
+      padding-top: 0.4rem;
+    }
+    .headlines .main {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: var(--headline-yellow);
+      letter-spacing: 0.12em;
+      -webkit-text-stroke: 5px var(--headline-red);
+      paint-order: stroke fill;
+      text-shadow: 2px 2px 0 #7a0d18;
+    }
+    .headlines .name {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--headline-yellow);
+      letter-spacing: 0.08em;
+      -webkit-text-stroke: 6px var(--headline-red);
+      paint-order: stroke fill;
+      text-shadow: 2px 2px 0 #7a0d18;
+    }
+
+    .trainer {
+      display: grid;
+      grid-template-columns: 4.4rem 1fr;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 0.85rem 0.95rem;
+      background: #fff;
+      border-bottom: 1px solid #e4e4de;
+    }
+    .trainer img {
+      width: 4.4rem;
+      height: 4.4rem;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--gougai-green);
+      background: #111;
+    }
+    .trainer .role {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--gougai-green-dark);
+      letter-spacing: 0.08em;
+    }
+    .trainer .who {
+      font-size: 1.35rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin: 0.1rem 0 0.2rem;
+    }
+    .trainer .uma {
+      font-size: 0.82rem;
+      color: #4a4a4a;
+    }
+
+    .article {
+      padding: 0.9rem 0.95rem 1rem;
+      background: #fff;
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .article .lead {
+      color: var(--body-lead);
+      font-weight: 800;
+    }
+
+    .memo-h {
+      background: var(--gougai-green);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.82rem;
+      letter-spacing: 0.1em;
+      padding: 0.35rem 0.85rem;
+      clip-path: polygon(0 0, 100% 0, calc(100% - 1.1rem) 100%, 0 100%);
+      width: 58%;
+    }
+    .memo {
+      padding: 0.75rem 0.95rem 1.05rem;
+      background: #eef6ea;
+    }
+    .memo dl {
+      margin: 0;
+      display: grid;
+      grid-template-columns: 5.2rem 1fr;
+      gap: 0.35rem 0.5rem;
+      font-size: 0.84rem;
+    }
+    .memo dt {
+      color: #3d6b28;
+      font-weight: 700;
+    }
+    .memo dd {
+      margin: 0;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <p class="note">号外の紙面プレビュー。文言は仮。立ち絵は添付のスペシャルウィーク。トレーナーアイコンはパドックモックの仮画像。</p>
+    <article class="paper">
+      <header class="masthead">月刊トゥインクル 号外</header>
+      <div class="cover">
+        <img src="stand-preview.png" alt="スペシャルウィークの立ち絵">
+        <div class="headlines">
+          <span class="name">スペシャルウィーク</span>
+          <span class="main">最強ウマ娘</span>
+          <span class="kicker">栄冠に輝く</span>
+        </div>
+      </div>
+      <section class="trainer" aria-label="トレーナー情報">
+        <img src="trainer-icon.png" alt="">
+        <div>
+          <div class="role">出走者</div>
+          <p class="who">プレビュー太郎</p>
+          <div class="uma">1番　スペシャルウィーク</div>
+        </div>
+      </section>
+      <div class="article">
+        <span class="lead">スペシャルウィークが第2回本戦を制した。出走はプレビュー太郎。</span>
+        直線で前を捉える展開は、場をひとつにまとめた。栄冠を、祝福したい。
+      </div>
+      <div class="memo-h">勝ち馬メモ</div>
+      <section class="memo">
+        <dl>
+          <dt>コース</dt><dd>東京　芝1600　晴　良</dd>
+          <dt>脚質</dt><dd>逃げ</dd>
+          <dt>単勝</dt><dd>3.2倍　2番人気</dd>
+        </dl>
+      </section>
+    </article>
+  </div>
+</body>
+</html>
