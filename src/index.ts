@@ -37,6 +37,7 @@ import {
 } from "./lib/store";
 import { applyAdminUndo, captureAdminUndo } from "./lib/undo";
 import { adminUndoAllowed } from "./lib/adminUndo";
+import { cancelRestoredShotDeletes, isShotKeyReferenced, listAllHorseAssetKeys, listPendingShotDeletes, queueShotDeletes, removePendingShotDelete } from "./lib/shotCleanup";
 import { formatPt, parseJstInput, plainErrorPage } from "./lib/ui";
 import { tryAdminGet } from "./lib/adminRoutes";
 import { tryMemberGet, tryMemberPost } from "./lib/memberRoutes";
@@ -99,6 +100,23 @@ async function putHorseShot(
     httpMetadata: { contentType },
   });
   return key;
+}
+
+/** 前回操作で Undo の対象から外れた、未参照 R2 画像だけを掃除する。 */
+async function flushPendingShotDeletes(env: Env, keys: string[]): Promise<void> {
+  if (!env.SHOTS) return;
+  for (const key of keys) {
+    if (await isShotKeyReferenced(env.DB, key)) {
+      await removePendingShotDelete(env.DB, key);
+      continue;
+    }
+    try {
+      await env.SHOTS.delete(key);
+      await removePendingShotDelete(env.DB, key);
+    } catch (error) {
+      console.error("R2 の削除を再試行します:", key, error);
+    }
+  }
 }
 
 /** DB 更新より先に画像の妥当性を確認し、途中更新を避ける。 */
@@ -253,6 +271,7 @@ export default {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
         try {
+          const pendingBefore = await listPendingShotDeletes(env.DB);
           const board = await loadBoard(env.DB);
           const fd = await request.formData();
           const ocrOk = String(fd.get("ocr_ok") ?? "") === "1";
@@ -303,13 +322,16 @@ export default {
               dressId: selectedDress?.dressId ?? null,
             },
           );
+          const uploadedKeys: string[] = [];
           try {
             const shotKey = ocrOk && shot instanceof File
               ? await putHorseShot(env, board.event.id, id, shot)
               : null;
+            if (shotKey) uploadedKeys.push(shotKey);
             const trainerIconKey = trainerIcon
               ? await putHorseShot(env, board.event.id, id, trainerIcon, "-trainer-icon")
               : null;
+            if (trainerIconKey) uploadedKeys.push(trainerIconKey);
             await updateHorse(env.DB, board.event, id, umaName, String(fd.get("runner_name") ?? ""), {
               strength: resolved.strength,
               scoreInputJson: serializeHorseScoreInput(scoreInput),
@@ -325,8 +347,10 @@ export default {
             await env.DB.prepare("DELETE FROM horses WHERE id = ? AND event_id = ?")
               .bind(id, board.event.id)
               .run();
+            if (env.SHOTS && uploadedKeys.length) await env.SHOTS.delete(uploadedKeys);
             throw err;
           }
+          await flushPendingShotDeletes(env, pendingBefore);
           const src =
             resolved.source === "auto" ? "（自動算出）" : "（直置き）";
           return bounce("/admin/register", `登録しました ${src}`);
@@ -340,6 +364,7 @@ export default {
         if (gate instanceof Response) return gate;
         const form = await request.formData();
         try {
+          const pendingBefore = await listPendingShotDeletes(env.DB);
           const board = await loadBoard(env.DB);
           const horseId = String(form.get("horse_id") ?? "");
           const existing = board.horses.find((h) => h.horse.id === horseId);
@@ -373,12 +398,6 @@ export default {
           if (comment.length > 40) throw new Error("意気込みコメントは40文字以内です");
           const shot = validateHorseShot(form.get("shot"));
           const icon = validateHorseShot(form.get("trainer_icon"));
-          const shotKey = shot
-            ? await putHorseShot(env, board.event.id, horseId, shot)
-            : existing.horse.shot_key;
-          const iconKey = icon
-            ? await putHorseShot(env, board.event.id, horseId, icon, "-trainer-icon")
-            : existing.horse.trainer_icon_key;
           const resolved = resolveStrength({
             setup,
             input: scoreInput,
@@ -386,24 +405,34 @@ export default {
             forceManual,
             strategicSkills: strategic.skills,
           });
-          await updateHorse(
-            env.DB,
-            board.event,
-            horseId,
-            umaName,
-            String(form.get("runner_name") ?? ""),
-            {
-              strength: resolved.strength,
-              scoreInputJson: serializeHorseScoreInput(scoreInput),
-              seedSource: resolved.source,
-              charaId: selectedDress?.charaId ?? null,
-              dressId: selectedDress?.dressId ?? null,
-              keepScoreInput: false,
-              paddockComment: comment || null,
-              trainerIconKey: iconKey,
-              shotKey,
-            },
-          );
+          const uploadedKeys: string[] = [];
+          try {
+            const shotKey = shot ? await putHorseShot(env, board.event.id, horseId, shot) : existing.horse.shot_key;
+            if (shot && shotKey) uploadedKeys.push(shotKey);
+            const iconKey = icon ? await putHorseShot(env, board.event.id, horseId, icon, "-trainer-icon") : existing.horse.trainer_icon_key;
+            if (icon && iconKey) uploadedKeys.push(iconKey);
+            const replacingKeys = [
+              shot ? existing.horse.shot_key : null,
+              icon ? existing.horse.trainer_icon_key : null,
+            ].filter((key): key is string => Boolean(key));
+            await queueShotDeletes(env.DB, replacingKeys);
+            await updateHorse(
+              env.DB, board.event, horseId, umaName, String(form.get("runner_name") ?? ""), {
+                strength: resolved.strength, scoreInputJson: serializeHorseScoreInput(scoreInput),
+                seedSource: resolved.source, charaId: selectedDress?.charaId ?? null,
+                dressId: selectedDress?.dressId ?? null, keepScoreInput: false,
+                paddockComment: comment || null, trainerIconKey: iconKey, shotKey,
+              },
+            );
+          } catch (err) {
+            if (env.SHOTS && uploadedKeys.length) await env.SHOTS.delete(uploadedKeys);
+            throw err;
+          }
+          const currentKeys = [
+            shot ? existing.horse.shot_key : null,
+            icon ? existing.horse.trainer_icon_key : null,
+          ].filter((key): key is string => Boolean(key));
+          await flushPendingShotDeletes(env, pendingBefore.filter((key) => !currentKeys.includes(key)));
           return bounce(`/admin/register?edit=${encodeURIComponent(horseId)}`, "更新しました");
         } catch (err) {
           return bounce("/admin/register", err instanceof Error ? err.message : "失敗", true);
@@ -415,8 +444,13 @@ export default {
         if (gate instanceof Response) return gate;
         const form = await readForm(request);
         try {
+          const pendingBefore = await listPendingShotDeletes(env.DB);
           const board = await loadBoard(env.DB);
+          const horse = board.horses.find((entry) => entry.horse.id === form.get("horse_id"));
+          const deletingKeys = [horse?.horse.shot_key, horse?.horse.trainer_icon_key].filter((key): key is string => Boolean(key));
+          await queueShotDeletes(env.DB, deletingKeys);
           await dropHorse(env.DB, board.event, form.get("horse_id") ?? "");
+          await flushPendingShotDeletes(env, pendingBefore.filter((key) => !deletingKeys.includes(key)));
           return bounce("/admin/register", "名簿から外しました");
         } catch (err) {
           return bounce("/admin/register", err instanceof Error ? err.message : "失敗", true);
@@ -488,8 +522,12 @@ export default {
           return bounce("/admin", "管理者パスが違います（空にしていません）", true);
         }
         try {
+          const pendingBefore = await listPendingShotDeletes(env.DB);
           const board = await loadBoard(env.DB);
+          const deletingKeys = board.horses.flatMap((entry) => [entry.horse.shot_key, entry.horse.trainer_icon_key]).filter((key): key is string => Boolean(key));
+          await queueShotDeletes(env.DB, deletingKeys);
           await clearHorses(env.DB, board.event);
+          await flushPendingShotDeletes(env, pendingBefore.filter((key) => !deletingKeys.includes(key)));
           return bounce("/admin", "出走を空にしました");
         } catch (err) {
           return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
@@ -505,8 +543,12 @@ export default {
           return bounce("/admin", "管理者パスが違います（破棄していません）", true);
         }
         try {
+          const pendingBefore = await listPendingShotDeletes(env.DB);
           const board = await loadBoard(env.DB);
+          const deletingKeys = board.horses.flatMap((entry) => [entry.horse.shot_key, entry.horse.trainer_icon_key]).filter((key): key is string => Boolean(key));
+          await queueShotDeletes(env.DB, deletingKeys);
           await discardCurrentSetup(env.DB, board.event);
+          await flushPendingShotDeletes(env, pendingBefore.filter((key) => !deletingKeys.includes(key)));
           return bounce("/admin", "開催を破棄しました");
         } catch (err) {
           return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
@@ -611,6 +653,7 @@ export default {
         }
         try {
           const label = await applyAdminUndo(env.DB);
+          await cancelRestoredShotDeletes(env.DB);
           return bounce("/admin", `「${label}」を巻き戻しました`);
         } catch (err) {
           return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
@@ -628,7 +671,11 @@ export default {
         if (!timingSafeEqualStr(password, env.ADMIN_PASSWORD)) {
           return bounce("/admin", "管理者パスが違います（初期化していません）", true);
         }
+        const pendingBefore = await listPendingShotDeletes(env.DB);
+        const deletingKeys = await listAllHorseAssetKeys(env.DB);
+        await queueShotDeletes(env.DB, deletingKeys);
         await resetDemo(env.DB);
+        await flushPendingShotDeletes(env, pendingBefore.filter((key) => !deletingKeys.includes(key)));
         return bounce("/admin", "デモを初期化しました（名前は残し、残高は 0 です）");
       }
 
