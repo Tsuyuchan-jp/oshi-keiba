@@ -28,6 +28,7 @@
 | [changelog.md](changelog.md) | リリースごとの変更内容と SemVer の運用 |
 | [testing.md](testing.md) | デプロイ前の全自動テスト、対象範囲、失敗時の見方 |
 | [release.md](release.md) | 本番リリース前後の確認、障害時の復旧判断 |
+| [release-log.md](release-log.md) | 本番リリースの実施記録と復元基準 |
 | [rejected.md](rejected.md) | 見送った案と理由 |
 | [next.md](next.md) | 次に取り組む項目名と参照 |
 
