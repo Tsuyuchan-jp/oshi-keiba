@@ -25,7 +25,7 @@
 
 ### P1-11: 本番リリース・復旧手順を実装と一致させる
 
-- 状態: 実地確認待ち
+- 状態: 完了（本番リリース待ち）
 - 重要度: 高
 - 何が起きるか: 本番DBのマイグレーション状況、秘密情報、バックアップ、障害時の戻し方が確認できないままデプロイすると、復旧できない・想定外のDB状態で公開するリスクがあります。
 - 確認済みの事実:
@@ -35,10 +35,11 @@
   - `docs/release.md` にデプロイ前・公開直後・障害時の手順を追加し、既存の案内を同ファイルへ統一した。
   - `wrangler.jsonc` で `ADMIN_PASSWORD`・`MEMBER_PASSWORD`・`SESSION_SECRET` を必須 Secrets として宣言し、実際の deploy 時に不足を検出する構成にした。
   - ローカルで `npx wrangler deploy --dry-run`、`npx tsc --noEmit`、`npm test`（146件）を確認済み。
+  - 本番確認済み: 必須 Secrets 名3項目、D1 Time Travel、R2 バケット、Worker 版履歴。D1には `0010_horse_uma_dress.sql`、`0011_horse_paddock_profile.sql`、`0012_member_operations.sql`、`0013_member_soft_delete.sql` の未適用がある。
 - 影響範囲: 本番運用、データ復旧、リリース担当者。
 - 対応方針: デプロイ前・直後・障害時の手順を文書化する。少なくともマイグレーション確認、シークレット確認、バックアップ方針、ロールバック可否、監視・ログ確認、リリース記録を含める。
 - 完了条件: 非エンジニアでも手順に沿って本番確認・障害一次対応ができ、今回のリリース番号と変更内容が一致する。
-- 確認方法: dry-run は完了。本番アカウントで、必要な権限・Secrets 名・D1 migration 状態・Time Travel・R2 バケット・Worker の公開状態を確認する。
+- 確認方法: dry-run と本番確認を完了。次回リリース時は `release.md` に従い、未適用 migration を Worker 公開前に適用する。
 - デプロイ前に必須: はい
 
 
