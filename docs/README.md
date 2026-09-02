@@ -11,7 +11,7 @@
 3. 触る作業だけ、下の該当ファイル。毎回全部は読まない
 4. 第2回までにやることは [next.md](next.md)（作業キュー。式の本文は置かない）
 
-本番に出すとき、OCR の R2 / D1 は [ocr.md](ocr.md) の **デプロイ（忘れない）**。`npm run deploy` だけでは足りない。
+本番に出すときは [release.md](release.md) の手順を使う。`npm run deploy` だけでは D1 migration と R2 作成が反映されず、復旧判断もできない。OCR 固有の補足は [ocr.md](ocr.md)。
 
 ## ファイル
 
@@ -26,6 +26,7 @@
 | [ocr-aliases.md](ocr-aliases.md) | OCR スキル名の例外対応（誤読→正式名） |
 | [version.md](version.md) | 画面版の表示位置と版上げ手順 |
 | [changelog.md](changelog.md) | リリースごとの変更内容と SemVer の運用 |
+| [release.md](release.md) | 本番リリース前後の確認、障害時の復旧判断 |
 | [rejected.md](rejected.md) | 見送った案と理由 |
 | [next.md](next.md) | 次に取り組む項目名と参照 |
 

@@ -4,6 +4,10 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-08-21",
   // 認証情報と SESSION_SECRET は Cloudflare Secrets で設定する。
+  // この3項目が未設定なら、本番 deploy を失敗させる（値はここへ書かない）。
+  "secrets": {
+    "required": ["ADMIN_PASSWORD", "MEMBER_PASSWORD", "SESSION_SECRET"]
+  },
   // ローカル開発時は Git 管理しない .dev.vars を使用する。
   "workers_dev": true,
   // 場内背景（日中／夕方／ナイター）。Worker 未一致のパスだけ静的配信

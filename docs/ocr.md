@@ -124,9 +124,9 @@ OCR とスクショ保存は **`/admin/register`**。出走タブ（`/admin/hors
 
 Workers のリクエストに 800KB を載せることは、このサイズでは問題にならない。
 
-## デプロイ（忘れない）
+## デプロイ時の OCR 固有の補足
 
-ローカルの `npm run deploy` だけでは、**D1 の新マイグレーションと R2 バケットは本番に乗らない**。スクショ保存を本番で使う前に、この順:
+本番リリース全体の確認・復旧手順は [release.md](release.md) を正とする。ローカルの `npm run deploy` だけでは、**D1 の新マイグレーションと R2 バケットは本番に乗らない**。スクショ保存を本番で使う前に、同手順の中でこの順を確認する:
 
 1. `npx wrangler r2 bucket create oshi-keiba-shots`（初回だけ。既にあれば不要）
 2. `npx wrangler d1 migrations apply oshi-keiba --remote`（`0006_horse_uma_runner_shot` など未適用分）
