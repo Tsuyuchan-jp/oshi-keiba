@@ -18,10 +18,9 @@ GitHub Pages は使いません。閉じた経路で URL を渡します。
 
 ## ローカルで動かす
 
-ローカル用の認証情報は `.dev.vars.example` を `.dev.vars` にコピーして使います。`.dev.vars` はコミットしません。本番の認証情報は Cloudflare Secrets で管理します。
+ローカル用の認証情報は、Git管理しない `.dev.vars` に設定します。`ADMIN_PASSWORD`、`ADMIN_USER_ID`、`MEMBER_PASSWORD`、`SESSION_SECRET` を用意し、`ADMIN_USER_ID` には [0014_admin_identity.sql](migrations/0014_admin_identity.sql) の固定UUIDを設定してください。本番の認証情報は Cloudflare Secrets で管理します。
 
 ```powershell
-copy .dev.vars.example .dev.vars
 npm install
 npm run dev:setup
 npx tsc --noEmit

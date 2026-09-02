@@ -1,5 +1,0 @@
-ADMIN_PASSWORD=demo-admin
-ADMIN_USER_ID=9f0cdb75-82dd-4d4e-b7b7-97f7e1ea8c44
-MEMBER_PASSWORD=loh
-SESSION_SECRET=local-dev-session-secret-change-me
-ALLOW_DEMO_RESET=1
