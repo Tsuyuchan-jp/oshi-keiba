@@ -76,25 +76,29 @@
       object-fit: contain;
       filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.45));
     }
+    /* 親は横書きのまま。各行だけ縦書きにして右から3列に並べる */
     .headlines {
       position: absolute;
-      right: 0.55rem;
-      top: 0.7rem;
-      bottom: 1.4rem;
+      right: 0.45rem;
+      top: 0.55rem;
       display: flex;
-      flex-direction: row-reverse;
-      gap: 0.35rem;
+      flex-direction: row;
+      direction: rtl;
+      align-items: flex-start;
+      gap: 0.28rem;
+      pointer-events: none;
+    }
+    .headlines span {
       writing-mode: vertical-rl;
       text-orientation: mixed;
-      pointer-events: none;
+      direction: ltr;
     }
     .headlines .kicker {
       font-size: 0.78rem;
       font-weight: 800;
       color: var(--headline-yellow);
-      letter-spacing: 0.28em;
+      letter-spacing: 0.22em;
       text-shadow: 0 0 4px #8b1020, 1px 1px 0 #8b1020;
-      padding-top: 0.4rem;
     }
     .headlines .main {
       font-size: 1.55rem;
@@ -106,7 +110,7 @@
       text-shadow: 2px 2px 0 #7a0d18;
     }
     .headlines .name {
-      font-size: 1.85rem;
+      font-size: 1.7rem;
       font-weight: 800;
       color: var(--headline-yellow);
       letter-spacing: 0.08em;
@@ -160,7 +164,7 @@
       font-weight: 800;
     }
 
-    .memo-h {
+    .places-h {
       background: var(--gougai-green);
       color: #fff;
       font-weight: 800;
@@ -168,40 +172,66 @@
       letter-spacing: 0.1em;
       padding: 0.35rem 0.85rem;
       clip-path: polygon(0 0, 100% 0, calc(100% - 1.1rem) 100%, 0 100%);
-      width: 58%;
+      width: 42%;
     }
-    .memo {
-      padding: 0.75rem 0.95rem 1.05rem;
+    .places {
+      padding: 0.35rem 0.55rem 0.55rem;
       background: #eef6ea;
     }
-    .memo dl {
-      margin: 0;
+    .place {
       display: grid;
-      grid-template-columns: 5.2rem 1fr;
-      gap: 0.35rem 0.5rem;
-      font-size: 0.84rem;
+      grid-template-columns: 2.1rem 3.4rem 2.6rem 1fr;
+      gap: 0.45rem;
+      align-items: center;
+      padding: 0.45rem 0.25rem;
+      border-bottom: 1px solid #d5e6cc;
     }
-    .memo dt {
-      color: #3d6b28;
-      font-weight: 700;
+    .place:last-child { border-bottom: 0; }
+    .place .n {
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: var(--gougai-green-dark);
+      text-align: center;
     }
-    .memo dd {
+    .place .petit {
+      width: 3.4rem;
+      height: 3.4rem;
+      object-fit: contain;
+      image-rendering: auto;
+    }
+    .place .icon {
+      width: 2.6rem;
+      height: 2.6rem;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px #c5d8bc;
+      background: #111;
+    }
+    .place .who {
+      font-size: 0.95rem;
+      font-weight: 800;
+      line-height: 1.2;
       margin: 0;
-      font-weight: 700;
+    }
+    .place .uma {
+      font-size: 0.75rem;
+      color: #4a4a4a;
+      margin-top: 0.12rem;
     }
   </style>
 </head>
 <body>
   <div class="stage">
-    <p class="note">号外の紙面プレビュー。文言は仮。立ち絵は添付のスペシャルウィーク。トレーナーアイコンはパドックモックの仮画像。</p>
+    <p class="note">号外の紙面プレビュー。文言は仮。2着・3着の petit はリポ内のデフォルメ、アイコンは同じ仮画像。</p>
     <article class="paper">
       <header class="masthead">月刊トゥインクル 号外</header>
       <div class="cover">
         <img src="stand-preview.png" alt="スペシャルウィークの立ち絵">
         <div class="headlines">
-          <span class="name">スペシャルウィーク</span>
-          <span class="main">最強ウマ娘</span>
           <span class="kicker">栄冠に輝く</span>
+          <span class="main">最強ウマ娘</span>
+          <span class="name">スペシャルウィーク</span>
         </div>
       </div>
       <section class="trainer" aria-label="トレーナー情報">
@@ -216,13 +246,26 @@
         <span class="lead">スペシャルウィークが第2回本戦を制した。出走はプレビュー太郎。</span>
         直線で前を捉える展開は、場をひとつにまとめた。栄冠を、祝福したい。
       </div>
-      <div class="memo-h">勝ち馬メモ</div>
-      <section class="memo">
-        <dl>
-          <dt>コース</dt><dd>東京　芝1600　晴　良</dd>
-          <dt>脚質</dt><dd>逃げ</dd>
-          <dt>単勝</dt><dd>3.2倍　2番人気</dd>
-        </dl>
+      <div class="places-h">2着・3着</div>
+      <section class="places" aria-label="2着と3着">
+        <div class="place">
+          <div class="n">2着</div>
+          <img class="petit" src="../../../public/images/umamusume/petit/petit_1002_100201_0010.png" alt="">
+          <img class="icon" src="trainer-icon.png" alt="">
+          <div>
+            <p class="who">プレビュー花子</p>
+            <div class="uma">サイレンススズカ</div>
+          </div>
+        </div>
+        <div class="place">
+          <div class="n">3着</div>
+          <img class="petit" src="../../../public/images/umamusume/petit/petit_1003_100301_0010.png" alt="">
+          <img class="icon" src="trainer-icon.png" alt="">
+          <div>
+            <p class="who">プレビュー次郎</p>
+            <div class="uma">トウカイテイオー</div>
+          </div>
+        </div>
       </section>
     </article>
   </div>
