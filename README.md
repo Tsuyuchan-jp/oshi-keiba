@@ -23,10 +23,12 @@ GitHub Pages は使いません。閉じた経路で URL を渡します。
 ```powershell
 npm install
 npm run dev:setup
-npx tsc --noEmit
-npm test
+npx playwright install chromium
+npm run verify
 npm run dev
 ```
+
+`npm run verify` は型検査、単体テスト、D1・R2を含むWorker結合テスト、PC・モバイルの実ブラウザE2Eをまとめて実行します。詳しくは [デプロイ前の自動テスト](docs/testing.md) を参照してください。
 
 - 入室: http://localhost:8787/login （共有パスは `.dev.vars` を参照）
 - 場内: http://localhost:8787/

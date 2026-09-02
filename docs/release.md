@@ -17,11 +17,16 @@ Time Travel が使える D1 は、直近の状態へ復元できる。保持期�
 ## リリース前
 
 1. [version.md](version.md) の版上げチェックを行い、`changelog.md` の対象版と `package.json` / `package-lock.json` の版番号を一致させる
-2. `npm test` と `npx tsc --noEmit` を通す
-3. `npx wrangler deploy --dry-run` を通し、ビルドとバインディングを確認する
+2. [testing.md](testing.md) に従い、型検査・単体・Worker結合・実ブラウザE2Eをまとめて通す。初回だけ `npx playwright install chromium` も実行する
 
    ```powershell
-   npx wrangler deploy --dry-run
+   npm run verify
+   ```
+
+3. 全自動テストを再確認したうえでCloudflareのビルドとバインディングを確認する
+
+   ```powershell
+   npm run deploy:dry-run
    ```
 
 4. 本番 Worker の Secrets 名を確認する。`ADMIN_PASSWORD`、`ADMIN_USER_ID`、`MEMBER_PASSWORD`、`SESSION_SECRET` があればよい。値は表示しない

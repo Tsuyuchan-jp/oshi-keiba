@@ -6,15 +6,18 @@
   "scripts": {
     "dev": "wrangler dev --local",
     "dev:setup": "wrangler d1 migrations apply oshi-keiba --local",
-    "predeploy": "node -e \"console.log('\\n本番デプロイ前: npx wrangler r2 bucket create oshi-keiba-shots（初回） / npx wrangler d1 migrations apply oshi-keiba --remote / 詳細 docs/ocr.md\\n')\"",
+    "predeploy": "npm run verify && node -e \"console.log('\\n自動テスト完了。本番操作前に R2・Secrets・D1 migration を確認してください。詳細: docs/release.md\\n')\"",
     "deploy": "wrangler deploy",
+    "deploy:dry-run": "npm run verify && wrangler deploy --dry-run",
     "types": "wrangler types",
     "extract:greens": "node scripts/extract-green-skills.mjs",
     "extract:courses": "node scripts/extract-score-courses.mjs",
     "gen:skill-catalog": "node scripts/gen-skill-catalog.mjs",
     "test": "node --import ./scripts/test-resolve.mjs --experimental-strip-types --experimental-transform-types --test src/lib/adminAuth.test.ts src/lib/adminUndo.test.ts src/lib/adminParams.test.ts src/lib/odds.test.ts src/lib/lifecycle.test.ts src/lib/horseName.test.ts src/lib/greenSkills.test.ts src/lib/greenCondition.test.ts src/lib/score.test.ts src/lib/scoreSetup.test.ts src/lib/strategicSkills.test.ts src/lib/strategicSkillsAdmin.test.ts src/lib/utoolsEffects.test.ts src/lib/skillFuzzy.test.ts src/lib/skillCatalog.test.ts src/lib/scoreFromHorse.test.ts src/lib/scoreRecompute.test.ts src/lib/shotMime.test.ts src/lib/shotCleanup.test.ts src/lib/venueLayout.test.ts src/lib/betLayout.test.ts src/lib/gateLayout.test.ts src/lib/storeFlow.test.ts src/lib/umaDress.test.ts src/lib/paddockLayout.test.ts src/lib/paddockView.test.ts",
     "test:worker": "vitest run --config vitest.worker.config.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit && tsc -p tests/worker/tsconfig.json --noEmit && tsc -p tests/e2e/tsconfig.json --noEmit",
+    "verify": "npm run typecheck && npm test && npm run test:worker && npm run test:e2e"
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "^1.1.3",
