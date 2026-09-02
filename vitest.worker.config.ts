@@ -9,7 +9,7 @@ export default defineConfig({
       main: "./src/index.ts",
       miniflare: {
         compatibilityDate: "2026-08-21",
-        d1Databases: ["DB"],
+        d1Databases: ["DB", "MIGRATION_DB", "MIGRATION_UPGRADE_DB"],
         r2Buckets: ["SHOTS"],
         bindings: {
           ADMIN_PASSWORD: "worker-test-admin-password",
