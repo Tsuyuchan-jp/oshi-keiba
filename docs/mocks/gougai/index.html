@@ -61,8 +61,8 @@
     /* 2. カバー */
     .cover {
       position: relative;
-      /* gogai_bg は横 1024×縦 512 */
-      height: 20rem;
+      --cover-h: 20rem;
+      height: var(--cover-h);
       overflow: hidden;
       background: #bcd4e0;
     }
@@ -74,20 +74,20 @@
       object-fit: cover;
       object-position: center 30%;
     }
-    /* 右側の青塗り（ゲーム号外の縦書き帯）。背景の上・立ち絵の下 */
+    /* 右側の青塗り。3列を大きく見せるため幅を広げている */
     .cover-blue {
       position: absolute;
       top: 0;
       right: 0;
       bottom: 0;
-      width: 24%;
+      width: 38%;
       background: #4a22e1;
       z-index: 1;
     }
-    /* 立ち絵：透過PNGを bg より前、title より後 */
+    /* 立ち絵を左へ寄せ、右の文言帯を空ける */
     .cover-stand {
       position: absolute;
-      left: 2%;
+      left: -12%;
       bottom: -6%;
       height: 106%;
       width: auto;
@@ -95,28 +95,28 @@
       filter: drop-shadow(0 6px 14px rgba(0,0,0,.35));
       z-index: 2;
     }
-    /* 縦書き3列：右から subtitle画像 → キャッチ → ウマ娘名 */
+    /* 縦書き3列：上端揃え。右から 324 → 名前 → キャッチ */
     .cover-titles {
       position: absolute;
       right: 0;
       top: 0;
       bottom: 0;
-      width: 24%;
+      width: 38%;
       display: flex;
       flex-direction: row;
       direction: rtl;
-      justify-content: flex-start;
+      justify-content: center;
       align-items: flex-start;
-      gap: 0.12rem;
-      padding: 0.45rem 0.28rem 0.55rem;
+      gap: 0.35rem;
+      padding: 0 0.4rem;
       z-index: 3;
       pointer-events: none;
     }
     .cover-titles > * { direction: ltr; }
-    /* 右列: 324.png。元画像は縦が約3/4に潰れているので 4/3 倍に伸ばす */
+    /* 右列: 324.png。縦を 4/3 に伸ばす。開始位置は他列と同じ上端 */
     .cover-titles .sub-img-wrap {
-      height: 42%;
-      width: 1.05rem;
+      height: calc(var(--cover-h) * 7 / 9);
+      width: 1.55rem;
       overflow: hidden;
       flex-shrink: 0;
     }
@@ -126,33 +126,19 @@
       height: calc(100% * 4 / 3);
       object-fit: fill;
       object-position: top center;
-      /* 黒背景の焼き込みを青帯の上で抜く */
       mix-blend-mode: screen;
     }
-    .cover-titles span {
+    /* 2・3列目: 9文字でカバー縦幅いっぱい。赤字・黄縁・影なし */
+    .cover-titles .col-text {
       writing-mode: vertical-rl;
       text-orientation: mixed;
       font-weight: 800;
-      line-height: 1.05;
-      paint-order: stroke fill;
-    }
-    /* 2列目: 「見事チャンピオンに」赤字・黄縁（最強ウマ娘相当） */
-    .cover-titles .catch {
-      font-size: 1.22rem;
+      font-size: calc(var(--cover-h) / 9);
+      line-height: 1;
+      letter-spacing: 0;
       color: #e31b23;
-      -webkit-text-stroke: 4px #ffe44a;
-      text-shadow: 1px 1px 0 #7a0d18;
-      letter-spacing: 0.08em;
-      margin-top: 1.6rem;
-    }
-    /* 3列目: ウマ娘名 黄字・赤縁（いちばん大きい） */
-    .cover-titles .uma-name {
-      font-size: 1.48rem;
-      color: #ffe44a;
-      -webkit-text-stroke: 5px #d51a2a;
-      text-shadow: 2px 2px 0 #7a0d18;
-      letter-spacing: 0.06em;
-      margin-top: 2.4rem;
+      -webkit-text-stroke: 0.12em #ffe44a;
+      paint-order: stroke fill;
     }
 
     /* 3. トレーナー段 */
@@ -240,26 +226,26 @@
           src="../../../public/twinkle/frames/gogai_bg.png"
           alt="">
 
-        <!-- 立ち絵（透過PNG・下寄せ）。今回はそのまま -->
+        <!-- 立ち絵を左へ寄せている -->
         <img class="cover-stand"
           src="stand-preview.png"
           alt="スペシャルウィーク">
 
-        <!-- 右側の青塗り帯（ゲーム号外の縦書きエリア） -->
+        <!-- 右側の青塗り帯 -->
         <div class="cover-blue" aria-hidden="true"></div>
 
         <!--
-          縦書き3列（右→左）
-          1. subtitles/324.png（縦を 4/3 に伸ばして字形を戻す）
-          2–3. 229_overlay_vertical.csv id=571 を \n で分割
-             スペシャルウィーク / 見事チャンピオンに
+          縦書き3列（右→左、上端揃え）
+          1. 324.png
+          2. CSV 571 の \n より前（ウマ娘名）
+          3. \n より後（見事チャンピオンに）
         -->
         <div class="cover-titles">
           <div class="sub-img-wrap">
             <img src="../../../public/twinkle/subtitles/324.png" alt="鮮やかな勝利！">
           </div>
-          <span class="catch">見事チャンピオンに</span>
-          <span class="uma-name">スペシャルウィーク</span>
+          <span class="col-text">スペシャルウィーク</span>
+          <span class="col-text">見事チャンピオンに</span>
         </div>
       </div>
 
