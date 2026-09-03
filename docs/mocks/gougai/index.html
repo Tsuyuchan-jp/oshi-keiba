@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>号外プレビュー v2 — oshi-keiba</title>
-  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;700;800&family=M+PLUS+Rounded+1c:wght@800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+1p:wght@400;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --green: #6fbf2a;
@@ -62,6 +62,8 @@
     .cover {
       position: relative;
       --cover-h: 20rem;
+      --cover-pad-y: 0.8rem;
+      --cover-inner-h: calc(var(--cover-h) - 2 * var(--cover-pad-y));
       height: var(--cover-h);
       overflow: hidden;
       background: #bcd4e0;
@@ -96,12 +98,10 @@
       z-index: 2;
     }
     /*
-      3列は帯より広く取り右詰め。
-      上下の隙間はパディング。9文字サイズは内側の高さ÷9。
+      上下の隙間はパディング（.cover の --cover-pad-y）。
+      9文字サイズは内側の高さ÷9。はみ出した縁はここで切って、余白が潰れないようにする。
     */
     .cover-titles {
-      --cover-pad-y: 0.8rem;
-      --cover-inner-h: calc(var(--cover-h) - 2 * var(--cover-pad-y));
       position: absolute;
       right: 0;
       top: 0;
@@ -114,6 +114,7 @@
       align-items: flex-start;
       gap: 0.35rem;
       padding: var(--cover-pad-y) 0.35rem;
+      overflow: hidden;
       z-index: 3;
       pointer-events: none;
     }
@@ -135,8 +136,8 @@
     .cover-titles .col-text {
       writing-mode: vertical-rl;
       text-orientation: mixed;
-      font-family: "M PLUS Rounded 1c", "Hiragino Sans", sans-serif;
-      font-weight: 900;
+      font-family: "Dela Gothic One", "Hiragino Sans", sans-serif;
+      font-weight: 400;
       font-size: calc(var(--cover-inner-h) / 9);
       line-height: 1;
       letter-spacing: 0;
