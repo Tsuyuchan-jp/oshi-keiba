@@ -74,13 +74,13 @@
       object-fit: cover;
       object-position: center 30%;
     }
-    /* 右側の青塗り。3列を大きく見せるため幅を広げている */
+    /* 青帯は狭く。左端は2列目の左寄り（3列目は帯の外に出す） */
     .cover-blue {
       position: absolute;
       top: 0;
       right: 0;
       bottom: 0;
-      width: 38%;
+      width: 22%;
       background: #4a22e1;
       z-index: 1;
     }
@@ -95,27 +95,31 @@
       filter: drop-shadow(0 6px 14px rgba(0,0,0,.35));
       z-index: 2;
     }
-    /* 縦書き3列：上端揃え。右から 324 → 名前 → キャッチ */
+    /*
+      3列は帯より広く取り右詰め。
+      上下の隙間はパディング。9文字サイズは内側の高さ÷9。
+    */
     .cover-titles {
+      --cover-pad-y: 1.15rem;
+      --cover-inner-h: calc(var(--cover-h) - 2 * var(--cover-pad-y));
       position: absolute;
       right: 0;
       top: 0;
       bottom: 0;
-      width: 38%;
+      width: 36%;
       display: flex;
       flex-direction: row;
       direction: rtl;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: flex-start;
       gap: 0.35rem;
-      padding: 0 0.4rem;
+      padding: var(--cover-pad-y) 0.35rem;
       z-index: 3;
       pointer-events: none;
     }
     .cover-titles > * { direction: ltr; }
-    /* 右列: 324.png。縦を 4/3 に伸ばす。開始位置は他列と同じ上端 */
     .cover-titles .sub-img-wrap {
-      height: calc(var(--cover-h) * 7 / 9);
+      height: calc(var(--cover-inner-h) * 7 / 9);
       width: 1.55rem;
       overflow: hidden;
       flex-shrink: 0;
@@ -128,12 +132,11 @@
       object-position: top center;
       mix-blend-mode: screen;
     }
-    /* 2・3列目: 9文字でカバー縦幅いっぱい。赤字・黄縁・影なし */
     .cover-titles .col-text {
       writing-mode: vertical-rl;
       text-orientation: mixed;
       font-weight: 800;
-      font-size: calc(var(--cover-h) / 9);
+      font-size: calc(var(--cover-inner-h) / 9);
       line-height: 1;
       letter-spacing: 0;
       color: #e31b23;
