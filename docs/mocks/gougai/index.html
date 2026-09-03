@@ -3,16 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>号外プレビュー（仮文言）— oshi-keiba</title>
+  <title>号外プレビュー v2 — oshi-keiba</title>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;700;800&display=swap" rel="stylesheet">
   <style>
-    /* 管理者が note 用に撮る紙面の見た目確認。本番タブではない。 */
     :root {
-      --gougai-green: #6fbf2a;
-      --gougai-green-dark: #4a9a18;
-      --headline-yellow: #ffe44a;
-      --headline-red: #d51a2a;
-      --body-lead: #c45a12;
+      --green: #6fbf2a;
+      --green-dark: #4a9a18;
+      --orange: #ff9900;
       --paper: #f7f7f4;
     }
     * { box-sizing: border-box; }
@@ -20,221 +17,237 @@
       margin: 0;
       min-height: 100vh;
       font-family: "M PLUS 1p", "Hiragino Sans", sans-serif;
-      background: #3a424c;
+      background: #2a3038;
       color: #1a1a1a;
     }
+
+    /* ---- ステージ ---- */
     .stage {
-      max-width: 28rem;
+      max-width: 26rem;
       margin: 0 auto;
-      padding: 1.25rem 0.9rem 2.5rem;
+      padding: 1rem 0.8rem 3rem;
     }
     .note {
-      color: #c5ccd4;
-      font-size: 0.82rem;
-      line-height: 1.45;
-      margin: 0 0 0.85rem;
-    }
-    .paper {
-      background: var(--paper);
-      border-radius: 4px;
-      overflow: hidden;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+      color: #9aa4b0;
+      font-size: 0.78rem;
+      line-height: 1.5;
+      margin: 0 0 0.75rem;
     }
 
+    /* ---- 紙面 ---- */
+    .paper {
+      background: var(--paper);
+      border-radius: 3px;
+      overflow: hidden;
+      box-shadow: 0 14px 48px rgba(0,0,0,.45);
+    }
+
+    /* 1. マストヘッド */
     .masthead {
       background:
-        repeating-linear-gradient(
-          -45deg,
-          rgba(255, 255, 255, 0.12) 0 8px,
-          transparent 8px 16px
-        ),
-        linear-gradient(180deg, var(--gougai-green), var(--gougai-green-dark));
+        repeating-linear-gradient(-45deg,
+          rgba(255,255,255,.13) 0 7px,
+          transparent 7px 14px),
+        linear-gradient(180deg, var(--green), var(--green-dark));
       color: #fff;
       text-align: center;
       font-weight: 800;
-      letter-spacing: 0.12em;
-      padding: 0.55rem 0.75rem;
-      font-size: 0.95rem;
-      text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+      font-size: 0.92rem;
+      letter-spacing: 0.14em;
+      padding: 0.5rem 0.6rem;
+      text-shadow: 0 1px 0 rgba(0,0,0,.18);
     }
 
+    /* 2. カバー */
     .cover {
       position: relative;
-      height: 22rem;
-      background:
-        radial-gradient(ellipse at 40% 80%, #4cae3a 0%, transparent 55%),
-        linear-gradient(180deg, #1e6b4a 0%, #0d3d2c 55%, #08241a 100%);
+      /* gogai_bg は横 1024×縦 512 */
+      height: 20rem;
       overflow: hidden;
+      background: #bcd4e0;
     }
-    .cover img {
+    .cover-bg {
       position: absolute;
-      left: 4%;
-      bottom: -8%;
-      height: 108%;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 30%;
+    }
+    /* 立ち絵：透過PNGを bg より前、title より後 */
+    .cover-stand {
+      position: absolute;
+      left: 2%;
+      bottom: -6%;
+      height: 106%;
       width: auto;
-      max-width: none;
       object-fit: contain;
-      filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.45));
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,.35));
+      z-index: 1;
     }
-    /* 親は横書きのまま。各行だけ縦書きにして右から3列に並べる */
-    .headlines {
+    /* 縦書きオーバーレイ：title画像 + subtitle画像を横並びで右端に */
+    .cover-titles {
       position: absolute;
-      right: 0.45rem;
-      top: 0.55rem;
+      right: 0.3rem;
+      top: 0.5rem;
+      bottom: 0.8rem;
       display: flex;
-      flex-direction: row;
+      flex-direction: row;   /* 右から: name列→subtitle列 */
       direction: rtl;
       align-items: flex-start;
-      gap: 0.28rem;
-      pointer-events: none;
+      gap: 0.2rem;
+      z-index: 2;
     }
-    .headlines span {
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
+    /* title画像（256×1024）をそのまま縦長で表示 */
+    .cover-titles img.title-img {
+      height: 100%;
+      width: auto;
+      object-fit: contain;
       direction: ltr;
     }
-    .headlines .kicker {
-      font-size: 0.78rem;
-      font-weight: 800;
-      color: var(--headline-yellow);
-      letter-spacing: 0.22em;
-      text-shadow: 0 0 4px #8b1020, 1px 1px 0 #8b1020;
+    /* subtitle画像（128×1024）*/
+    .cover-titles img.subtitle-img {
+      height: 85%;
+      width: auto;
+      object-fit: contain;
+      direction: ltr;
+      align-self: flex-start;
     }
-    .headlines .main {
-      font-size: 1.55rem;
+    /* 画像がないときのテキストフォールバック */
+    .cover-titles .title-text {
+      writing-mode: vertical-rl;
+      direction: ltr;
+      font-size: 1.75rem;
       font-weight: 800;
-      color: var(--headline-yellow);
-      letter-spacing: 0.12em;
-      -webkit-text-stroke: 5px var(--headline-red);
+      color: #ffe44a;
+      -webkit-text-stroke: 6px #d51a2a;
       paint-order: stroke fill;
-      text-shadow: 2px 2px 0 #7a0d18;
+      letter-spacing: 0.07em;
     }
-    .headlines .name {
-      font-size: 1.7rem;
+    .cover-titles .sub-text {
+      writing-mode: vertical-rl;
+      direction: ltr;
+      font-size: 0.9rem;
       font-weight: 800;
-      color: var(--headline-yellow);
-      letter-spacing: 0.08em;
-      -webkit-text-stroke: 6px var(--headline-red);
+      color: #ffe44a;
+      -webkit-text-stroke: 3px #d51a2a;
       paint-order: stroke fill;
-      text-shadow: 2px 2px 0 #7a0d18;
+      letter-spacing: 0.18em;
     }
 
+    /* 3. トレーナー段 */
     .trainer {
       display: grid;
-      grid-template-columns: 4.4rem 1fr;
-      gap: 0.75rem;
+      grid-template-columns: 4rem 1fr;
+      gap: 0.65rem;
       align-items: center;
-      padding: 0.85rem 0.95rem;
+      padding: 0.75rem 0.85rem;
       background: #fff;
-      border-bottom: 1px solid #e4e4de;
+      border-bottom: 1px solid #e2e2dc;
     }
     .trainer img {
-      width: 4.4rem;
-      height: 4.4rem;
+      width: 4rem;
+      height: 4rem;
       border-radius: 50%;
       object-fit: cover;
-      border: 3px solid var(--gougai-green);
+      border: 3px solid var(--green);
       background: #111;
     }
-    .trainer .role {
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: var(--gougai-green-dark);
-      letter-spacing: 0.08em;
-    }
-    .trainer .who {
-      font-size: 1.35rem;
-      font-weight: 800;
-      line-height: 1.2;
-      margin: 0.1rem 0 0.2rem;
-    }
-    .trainer .uma {
-      font-size: 0.82rem;
-      color: #4a4a4a;
-    }
+    .trainer .role  { font-size: 0.65rem; font-weight: 700; color: var(--green-dark); letter-spacing: .08em; }
+    .trainer .who   { font-size: 1.25rem; font-weight: 800; line-height: 1.2; margin: 0.1rem 0 0.2rem; }
+    .trainer .uma   { font-size: 0.78rem; color: #4a4a4a; }
 
+    /* 4. 本文 */
     .article {
-      padding: 0.9rem 0.95rem 1rem;
+      padding: 0.8rem 0.85rem 0.9rem;
       background: #fff;
-      font-size: 0.88rem;
-      line-height: 1.7;
+      font-size: 0.86rem;
+      line-height: 1.72;
+      border-bottom: 1px solid #e2e2dc;
     }
-    .article .lead {
-      color: var(--body-lead);
-      font-weight: 800;
-    }
+    .article .lead  { color: var(--orange); font-weight: 800; }
 
+    /* 5. 2着・3着 */
     .places-h {
-      background: var(--gougai-green);
+      background: var(--green);
       color: #fff;
       font-weight: 800;
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       letter-spacing: 0.1em;
-      padding: 0.35rem 0.85rem;
-      clip-path: polygon(0 0, 100% 0, calc(100% - 1.1rem) 100%, 0 100%);
-      width: 42%;
+      padding: 0.3rem 0.75rem;
+      clip-path: polygon(0 0, 100% 0, calc(100% - 1rem) 100%, 0 100%);
+      width: 40%;
     }
     .places {
-      padding: 0.35rem 0.55rem 0.55rem;
+      padding: 0.3rem 0.45rem 0.5rem;
       background: #eef6ea;
     }
     .place {
       display: grid;
-      grid-template-columns: 2.1rem 3.4rem 2.6rem 1fr;
-      gap: 0.45rem;
+      grid-template-columns: 1.9rem 3rem 2.4rem 1fr;
+      gap: 0.4rem;
       align-items: center;
-      padding: 0.45rem 0.25rem;
+      padding: 0.4rem 0.2rem;
       border-bottom: 1px solid #d5e6cc;
     }
     .place:last-child { border-bottom: 0; }
-    .place .n {
-      font-weight: 800;
-      font-size: 0.95rem;
-      color: var(--gougai-green-dark);
-      text-align: center;
+    .place .n         { font-weight: 800; font-size: 0.88rem; color: var(--green-dark); text-align: center; }
+    .place .petit     { width: 3rem; height: 3rem; object-fit: contain; }
+    .place .icon      {
+      width: 2.4rem; height: 2.4rem; border-radius: 50%;
+      object-fit: cover; border: 2px solid #fff;
+      box-shadow: 0 0 0 1px #c5d8bc; background: #111;
     }
-    .place .petit {
-      width: 3.4rem;
-      height: 3.4rem;
-      object-fit: contain;
-      image-rendering: auto;
-    }
-    .place .icon {
-      width: 2.6rem;
-      height: 2.6rem;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #fff;
-      box-shadow: 0 0 0 1px #c5d8bc;
-      background: #111;
-    }
-    .place .who {
-      font-size: 0.95rem;
-      font-weight: 800;
-      line-height: 1.2;
-      margin: 0;
-    }
-    .place .uma {
-      font-size: 0.75rem;
-      color: #4a4a4a;
-      margin-top: 0.12rem;
-    }
+    .place .who  { font-size: 0.88rem; font-weight: 800; line-height: 1.2; margin: 0; }
+    .place .uma  { font-size: 0.72rem; color: #4a4a4a; margin-top: 0.1rem; }
   </style>
 </head>
 <body>
   <div class="stage">
-    <p class="note">号外の紙面プレビュー。文言は仮。2着・3着の petit はリポ内のデフォルメ、アイコンは同じ仮画像。</p>
+    <p class="note">
+      号外 v2 プレビュー。背景・title・subtitle は public/twinkle の実アセット。
+      立ち絵は前回の仮画像。本文は 230_headline_body.csv の実テキストをそのまま使用。
+    </p>
     <article class="paper">
-      <header class="masthead">月刊トゥインクル 号外</header>
+
+      <!-- 1. マストヘッド -->
+      <header class="masthead">月刊トゥインクル　号外</header>
+
+      <!-- 2. カバー -->
       <div class="cover">
-        <img src="stand-preview.png" alt="スペシャルウィークの立ち絵">
-        <div class="headlines">
-          <span class="kicker">栄冠に輝く</span>
-          <span class="main">最強ウマ娘</span>
-          <span class="name">スペシャルウィーク</span>
+        <!-- gogai_bg.png: レース場ぼかし背景 -->
+        <img class="cover-bg"
+          src="../../../public/twinkle/frames/gogai_bg.png"
+          alt="">
+
+        <!-- 立ち絵（透過PNG・下寄せ） -->
+        <img class="cover-stand"
+          src="stand-preview.png"
+          alt="スペシャルウィーク">
+
+        <!-- 縦書き見出し：右からsubtitle→title の順に並ぶ -->
+        <div class="cover-titles">
+          <!--
+            title画像: titles/{id}.png（256×1024）
+            今回は id=3「激戦必至」を仮使用。
+            本番では chara_id / round_id から win_title.json で id を決定する。
+          -->
+          <img class="title-img"
+            src="../../../public/twinkle/titles/003.png"
+            alt="激戦必至"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+          <span class="title-text" style="display:none">激戦必至</span>
+
+          <!--
+            subtitle画像: subtitles/{id}.png（128×1024）
+            ゲーム固有の大会名が入るためここでは出さない。
+            本番実装時に推し大会向けの別文言を決める。
+          -->
         </div>
       </div>
-      <section class="trainer" aria-label="トレーナー情報">
+
+      <!-- 3. トレーナー情報 -->
+      <section class="trainer" aria-label="1着トレーナー">
         <img src="trainer-icon.png" alt="">
         <div>
           <div class="role">出走者</div>
@@ -242,15 +255,23 @@
           <div class="uma">1番　スペシャルウィーク</div>
         </div>
       </section>
+
+      <!-- 4. 本文（230_headline_body.csv id=201 + id=301 を組み合わせ。<color>タグを <span> に変換済み） -->
       <div class="article">
-        <span class="lead">スペシャルウィークが第2回本戦を制した。出走はプレビュー太郎。</span>
-        直線で前を捉える展開は、場をひとつにまとめた。栄冠を、祝福したい。
+        完璧な走りで
+        <span class="lead">「プレビュー太郎」</span>
+        に大きな1勝を届けた。
+        これからの活躍に大きく期待できそうだ！
       </div>
+
+      <!-- 5. 2着・3着 -->
       <div class="places-h">2着・3着</div>
       <section class="places" aria-label="2着と3着">
         <div class="place">
           <div class="n">2着</div>
-          <img class="petit" src="../../../public/images/umamusume/petit/petit_1002_100201_0010.png" alt="">
+          <img class="petit"
+            src="../../../public/images/umamusume/petit/petit_1002_100201_0010.png"
+            alt="">
           <img class="icon" src="trainer-icon.png" alt="">
           <div>
             <p class="who">プレビュー花子</p>
@@ -259,7 +280,9 @@
         </div>
         <div class="place">
           <div class="n">3着</div>
-          <img class="petit" src="../../../public/images/umamusume/petit/petit_1003_100301_0010.png" alt="">
+          <img class="petit"
+            src="../../../public/images/umamusume/petit/petit_1003_100301_0010.png"
+            alt="">
           <img class="icon" src="trainer-icon.png" alt="">
           <div>
             <p class="who">プレビュー次郎</p>
@@ -267,6 +290,7 @@
           </div>
         </div>
       </section>
+
     </article>
   </div>
 </body>
