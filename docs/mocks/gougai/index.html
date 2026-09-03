@@ -74,6 +74,16 @@
       object-fit: cover;
       object-position: center 30%;
     }
+    /* 右側の青塗り（ゲーム号外の縦書き帯）。背景の上・立ち絵の下 */
+    .cover-blue {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 24%;
+      background: #4a22e1;
+      z-index: 1;
+    }
     /* 立ち絵：透過PNGを bg より前、title より後 */
     .cover-stand {
       position: absolute;
@@ -83,56 +93,66 @@
       width: auto;
       object-fit: contain;
       filter: drop-shadow(0 6px 14px rgba(0,0,0,.35));
-      z-index: 1;
-    }
-    /* 縦書きオーバーレイ：title画像 + subtitle画像を横並びで右端に */
-    .cover-titles {
-      position: absolute;
-      right: 0.3rem;
-      top: 0.5rem;
-      bottom: 0.8rem;
-      display: flex;
-      flex-direction: row;   /* 右から: name列→subtitle列 */
-      direction: rtl;
-      align-items: flex-start;
-      gap: 0.2rem;
       z-index: 2;
     }
-    /* title画像（256×1024）をそのまま縦長で表示 */
-    .cover-titles img.title-img {
-      height: 100%;
-      width: auto;
-      object-fit: contain;
-      direction: ltr;
+    /* 縦書き3列：右から subtitle画像 → キャッチ → ウマ娘名 */
+    .cover-titles {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 24%;
+      display: flex;
+      flex-direction: row;
+      direction: rtl;
+      justify-content: flex-start;
+      align-items: flex-start;
+      gap: 0.12rem;
+      padding: 0.45rem 0.28rem 0.55rem;
+      z-index: 3;
+      pointer-events: none;
     }
-    /* subtitle画像（128×1024）*/
-    .cover-titles img.subtitle-img {
-      height: 85%;
-      width: auto;
-      object-fit: contain;
-      direction: ltr;
-      align-self: flex-start;
+    .cover-titles > * { direction: ltr; }
+    /* 右列: 324.png。元画像は縦が約3/4に潰れているので 4/3 倍に伸ばす */
+    .cover-titles .sub-img-wrap {
+      height: 42%;
+      width: 1.05rem;
+      overflow: hidden;
+      flex-shrink: 0;
     }
-    /* 画像がないときのテキストフォールバック */
-    .cover-titles .title-text {
+    .cover-titles .sub-img-wrap img {
+      display: block;
+      width: 100%;
+      height: calc(100% * 4 / 3);
+      object-fit: fill;
+      object-position: top center;
+      /* 黒背景の焼き込みを青帯の上で抜く */
+      mix-blend-mode: screen;
+    }
+    .cover-titles span {
       writing-mode: vertical-rl;
-      direction: ltr;
-      font-size: 1.75rem;
+      text-orientation: mixed;
       font-weight: 800;
-      color: #ffe44a;
-      -webkit-text-stroke: 6px #d51a2a;
+      line-height: 1.05;
       paint-order: stroke fill;
-      letter-spacing: 0.07em;
     }
-    .cover-titles .sub-text {
-      writing-mode: vertical-rl;
-      direction: ltr;
-      font-size: 0.9rem;
-      font-weight: 800;
+    /* 2列目: 「見事チャンピオンに」赤字・黄縁（最強ウマ娘相当） */
+    .cover-titles .catch {
+      font-size: 1.22rem;
+      color: #e31b23;
+      -webkit-text-stroke: 4px #ffe44a;
+      text-shadow: 1px 1px 0 #7a0d18;
+      letter-spacing: 0.08em;
+      margin-top: 1.6rem;
+    }
+    /* 3列目: ウマ娘名 黄字・赤縁（いちばん大きい） */
+    .cover-titles .uma-name {
+      font-size: 1.48rem;
       color: #ffe44a;
-      -webkit-text-stroke: 3px #d51a2a;
-      paint-order: stroke fill;
-      letter-spacing: 0.18em;
+      -webkit-text-stroke: 5px #d51a2a;
+      text-shadow: 2px 2px 0 #7a0d18;
+      letter-spacing: 0.06em;
+      margin-top: 2.4rem;
     }
 
     /* 3. トレーナー段 */
@@ -205,8 +225,8 @@
 <body>
   <div class="stage">
     <p class="note">
-      号外 v2 プレビュー。背景・title・subtitle は public/twinkle の実アセット。
-      立ち絵は前回の仮画像。本文は 230_headline_body.csv の実テキストをそのまま使用。
+      号外プレビュー。メイン右は青帯＋縦3列（324.png を縦伸ばし、571番を \n で2列）。
+      背景・立ち絵は前回のまま。
     </p>
     <article class="paper">
 
@@ -220,29 +240,26 @@
           src="../../../public/twinkle/frames/gogai_bg.png"
           alt="">
 
-        <!-- 立ち絵（透過PNG・下寄せ） -->
+        <!-- 立ち絵（透過PNG・下寄せ）。今回はそのまま -->
         <img class="cover-stand"
           src="stand-preview.png"
           alt="スペシャルウィーク">
 
-        <!-- 縦書き見出し：右からsubtitle→title の順に並ぶ -->
-        <div class="cover-titles">
-          <!--
-            title画像: titles/{id}.png（256×1024）
-            今回は id=3「激戦必至」を仮使用。
-            本番では chara_id / round_id から win_title.json で id を決定する。
-          -->
-          <img class="title-img"
-            src="../../../public/twinkle/titles/003.png"
-            alt="激戦必至"
-            onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
-          <span class="title-text" style="display:none">激戦必至</span>
+        <!-- 右側の青塗り帯（ゲーム号外の縦書きエリア） -->
+        <div class="cover-blue" aria-hidden="true"></div>
 
-          <!--
-            subtitle画像: subtitles/{id}.png（128×1024）
-            ゲーム固有の大会名が入るためここでは出さない。
-            本番実装時に推し大会向けの別文言を決める。
-          -->
+        <!--
+          縦書き3列（右→左）
+          1. subtitles/324.png（縦を 4/3 に伸ばして字形を戻す）
+          2–3. 229_overlay_vertical.csv id=571 を \n で分割
+             スペシャルウィーク / 見事チャンピオンに
+        -->
+        <div class="cover-titles">
+          <div class="sub-img-wrap">
+            <img src="../../../public/twinkle/subtitles/324.png" alt="鮮やかな勝利！">
+          </div>
+          <span class="catch">見事チャンピオンに</span>
+          <span class="uma-name">スペシャルウィーク</span>
         </div>
       </div>
 
