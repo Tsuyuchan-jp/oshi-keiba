@@ -1,0 +1,72 @@
+{
+  "editions": [
+    {
+      "id": "zokan",
+      "title_ja": "月刊トゥインクル増刊号",
+      "when": "パドック等から開く。出走前後。",
+      "pages": [
+        {
+          "page": 1,
+          "bg": "frames/zokan_page1_bg.png",
+          "heading_stage": "frames/zokan_page1_heading.png",
+          "vertical_title": "titles/{title_id:03d}.png",
+          "vertical_subtitle": "subtitles/{sub_title_id:03d}.png",
+          "data": "champions_news_title の title / sub_title"
+        },
+        {
+          "page": 2,
+          "bg": "frames/zokan_page2_bg.png",
+          "interviews": "texts/zokan_interview.csv"
+        },
+        {
+          "page": 3,
+          "bg": "frames/zokan_page3_bg.png",
+          "race_blurb": "champions_news_race + texts/230_headline_body.csv"
+        }
+      ]
+    },
+    {
+      "id": "gogai",
+      "title_ja": "月刊トゥインクル号外",
+      "when": "そのレースで勝ったとき。",
+      "pages": [
+        {
+          "page": 1,
+          "bg": "frames/gogai_bg.png",
+          "main_visual": "ランタイム3D。このパッケージには含めない。",
+          "vertical_overlay_text": "texts/229_overlay_vertical.csv（win_title.sub_title）",
+          "vertical_baked": "titles/ と subtitles/ に同番号があれば画像、476/529 等はテキスト描画",
+          "headline_body": "texts/230_headline_body.csv",
+          "interview": "texts/gogai_interview.csv"
+        }
+      ]
+    }
+  ],
+  "round_id": {
+    "1": "ラウンド1",
+    "2": "ラウンド2 グループA相当（round=2, tier=1）",
+    "3": "ラウンド2 グループB相当（round=2, tier=2）",
+    "4": "決勝 グループA相当（round=3, tier=1）",
+    "5": "決勝 グループB相当（round=3, tier=2）"
+  },
+  "placeholders": [
+    "<character_name>",
+    "<username>",
+    "<bashin>",
+    "<total_race_count>"
+  ],
+  "text_categories": {
+    "6": "ウマ娘名（texts/006_chara_name.csv は 1xxx のみ）",
+    "130": "称号",
+    "229": "縦書きオーバーレイ文言",
+    "230": "見出し・本文（<color> タグあり）",
+    "231": "インタビュー質問",
+    "232": "インタビュー回答"
+  },
+  "not_included": [
+    "メインビジュアルの3Dキャプチャ",
+    "全キャラの chr_icon / ランク画像（パス規約は README 参照）",
+    "緑帯「月刊トゥインクル　号外」完成PNG（実行時テキストの可能性）",
+    "CMロビー用 atlas/championsmeeting（紙面専用ではない）"
+  ]
+}

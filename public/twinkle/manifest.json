@@ -1,0 +1,2363 @@
+{
+  "exported_at": "2026-09-03T10:21:49.444292+00:00",
+  "source_meta": "C:\\Users\\PC1\\Projects\\umamusume-sp-calc\\.cache\\umamusu-utils-old-jp\\storage\\meta_decrypted_persistent_fresh",
+  "source_mdb": "D:\\DMM\\umamusumeDMM\\Umamusume\\umamusume_Data\\Persistent\\master\\master.mdb",
+  "image_count": 295,
+  "missing": [],
+  "files": [
+    {
+      "file": "zokan_page1_heading.png",
+      "width": 1024,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_heading_00",
+      "role": "frames"
+    },
+    {
+      "file": "zokan_page1_bg.png",
+      "width": 1024,
+      "height": 512,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_list_00",
+      "role": "frames"
+    },
+    {
+      "file": "zokan_page2_bg.png",
+      "width": 1024,
+      "height": 512,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_list_01",
+      "role": "frames"
+    },
+    {
+      "file": "zokan_page3_bg.png",
+      "width": 1024,
+      "height": 512,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_list_02",
+      "role": "frames"
+    },
+    {
+      "file": "gogai_bg.png",
+      "width": 1024,
+      "height": 512,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_list_win_00",
+      "role": "frames"
+    },
+    {
+      "file": "000.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_000",
+      "id": 0,
+      "role": "titles"
+    },
+    {
+      "file": "001.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_001",
+      "id": 1,
+      "role": "titles"
+    },
+    {
+      "file": "002.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_002",
+      "id": 2,
+      "role": "titles"
+    },
+    {
+      "file": "003.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_003",
+      "id": 3,
+      "role": "titles"
+    },
+    {
+      "file": "004.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_004",
+      "id": 4,
+      "role": "titles"
+    },
+    {
+      "file": "005.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_005",
+      "id": 5,
+      "role": "titles"
+    },
+    {
+      "file": "006.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_006",
+      "id": 6,
+      "role": "titles"
+    },
+    {
+      "file": "007.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_007",
+      "id": 7,
+      "role": "titles"
+    },
+    {
+      "file": "008.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_008",
+      "id": 8,
+      "role": "titles"
+    },
+    {
+      "file": "009.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_009",
+      "id": 9,
+      "role": "titles"
+    },
+    {
+      "file": "010.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_010",
+      "id": 10,
+      "role": "titles"
+    },
+    {
+      "file": "011.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_011",
+      "id": 11,
+      "role": "titles"
+    },
+    {
+      "file": "012.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_012",
+      "id": 12,
+      "role": "titles"
+    },
+    {
+      "file": "013.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_013",
+      "id": 13,
+      "role": "titles"
+    },
+    {
+      "file": "014.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_014",
+      "id": 14,
+      "role": "titles"
+    },
+    {
+      "file": "015.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_015",
+      "id": 15,
+      "role": "titles"
+    },
+    {
+      "file": "016.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_016",
+      "id": 16,
+      "role": "titles"
+    },
+    {
+      "file": "017.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_017",
+      "id": 17,
+      "role": "titles"
+    },
+    {
+      "file": "018.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_018",
+      "id": 18,
+      "role": "titles"
+    },
+    {
+      "file": "019.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_019",
+      "id": 19,
+      "role": "titles"
+    },
+    {
+      "file": "101.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_101",
+      "id": 101,
+      "role": "titles"
+    },
+    {
+      "file": "102.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_102",
+      "id": 102,
+      "role": "titles"
+    },
+    {
+      "file": "103.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_103",
+      "id": 103,
+      "role": "titles"
+    },
+    {
+      "file": "104.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_104",
+      "id": 104,
+      "role": "titles"
+    },
+    {
+      "file": "105.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_105",
+      "id": 105,
+      "role": "titles"
+    },
+    {
+      "file": "106.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_106",
+      "id": 106,
+      "role": "titles"
+    },
+    {
+      "file": "107.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_107",
+      "id": 107,
+      "role": "titles"
+    },
+    {
+      "file": "108.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_108",
+      "id": 108,
+      "role": "titles"
+    },
+    {
+      "file": "109.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_109",
+      "id": 109,
+      "role": "titles"
+    },
+    {
+      "file": "110.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_110",
+      "id": 110,
+      "role": "titles"
+    },
+    {
+      "file": "111.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_111",
+      "id": 111,
+      "role": "titles"
+    },
+    {
+      "file": "112.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_112",
+      "id": 112,
+      "role": "titles"
+    },
+    {
+      "file": "113.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_113",
+      "id": 113,
+      "role": "titles"
+    },
+    {
+      "file": "114.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_114",
+      "id": 114,
+      "role": "titles"
+    },
+    {
+      "file": "115.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_115",
+      "id": 115,
+      "role": "titles"
+    },
+    {
+      "file": "116.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_116",
+      "id": 116,
+      "role": "titles"
+    },
+    {
+      "file": "117.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_117",
+      "id": 117,
+      "role": "titles"
+    },
+    {
+      "file": "118.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_118",
+      "id": 118,
+      "role": "titles"
+    },
+    {
+      "file": "119.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_119",
+      "id": 119,
+      "role": "titles"
+    },
+    {
+      "file": "120.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_120",
+      "id": 120,
+      "role": "titles"
+    },
+    {
+      "file": "121.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_121",
+      "id": 121,
+      "role": "titles"
+    },
+    {
+      "file": "122.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_122",
+      "id": 122,
+      "role": "titles"
+    },
+    {
+      "file": "123.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_123",
+      "id": 123,
+      "role": "titles"
+    },
+    {
+      "file": "124.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_124",
+      "id": 124,
+      "role": "titles"
+    },
+    {
+      "file": "125.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_125",
+      "id": 125,
+      "role": "titles"
+    },
+    {
+      "file": "126.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_126",
+      "id": 126,
+      "role": "titles"
+    },
+    {
+      "file": "127.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_127",
+      "id": 127,
+      "role": "titles"
+    },
+    {
+      "file": "128.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_128",
+      "id": 128,
+      "role": "titles"
+    },
+    {
+      "file": "129.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_129",
+      "id": 129,
+      "role": "titles"
+    },
+    {
+      "file": "130.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_130",
+      "id": 130,
+      "role": "titles"
+    },
+    {
+      "file": "131.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_131",
+      "id": 131,
+      "role": "titles"
+    },
+    {
+      "file": "132.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_132",
+      "id": 132,
+      "role": "titles"
+    },
+    {
+      "file": "133.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_133",
+      "id": 133,
+      "role": "titles"
+    },
+    {
+      "file": "134.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_134",
+      "id": 134,
+      "role": "titles"
+    },
+    {
+      "file": "135.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_135",
+      "id": 135,
+      "role": "titles"
+    },
+    {
+      "file": "136.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_136",
+      "id": 136,
+      "role": "titles"
+    },
+    {
+      "file": "137.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_137",
+      "id": 137,
+      "role": "titles"
+    },
+    {
+      "file": "143.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_143",
+      "id": 143,
+      "role": "titles"
+    },
+    {
+      "file": "200.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_200",
+      "id": 200,
+      "role": "titles"
+    },
+    {
+      "file": "201.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_201",
+      "id": 201,
+      "role": "titles"
+    },
+    {
+      "file": "202.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_202",
+      "id": 202,
+      "role": "titles"
+    },
+    {
+      "file": "203.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_203",
+      "id": 203,
+      "role": "titles"
+    },
+    {
+      "file": "204.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_204",
+      "id": 204,
+      "role": "titles"
+    },
+    {
+      "file": "205.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_205",
+      "id": 205,
+      "role": "titles"
+    },
+    {
+      "file": "206.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_206",
+      "id": 206,
+      "role": "titles"
+    },
+    {
+      "file": "207.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_207",
+      "id": 207,
+      "role": "titles"
+    },
+    {
+      "file": "208.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_208",
+      "id": 208,
+      "role": "titles"
+    },
+    {
+      "file": "209.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_209",
+      "id": 209,
+      "role": "titles"
+    },
+    {
+      "file": "210.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_210",
+      "id": 210,
+      "role": "titles"
+    },
+    {
+      "file": "211.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_211",
+      "id": 211,
+      "role": "titles"
+    },
+    {
+      "file": "212.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_212",
+      "id": 212,
+      "role": "titles"
+    },
+    {
+      "file": "213.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_213",
+      "id": 213,
+      "role": "titles"
+    },
+    {
+      "file": "214.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_214",
+      "id": 214,
+      "role": "titles"
+    },
+    {
+      "file": "215.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_215",
+      "id": 215,
+      "role": "titles"
+    },
+    {
+      "file": "216.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_216",
+      "id": 216,
+      "role": "titles"
+    },
+    {
+      "file": "217.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_217",
+      "id": 217,
+      "role": "titles"
+    },
+    {
+      "file": "218.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_218",
+      "id": 218,
+      "role": "titles"
+    },
+    {
+      "file": "219.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_219",
+      "id": 219,
+      "role": "titles"
+    },
+    {
+      "file": "220.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_220",
+      "id": 220,
+      "role": "titles"
+    },
+    {
+      "file": "221.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_221",
+      "id": 221,
+      "role": "titles"
+    },
+    {
+      "file": "222.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_222",
+      "id": 222,
+      "role": "titles"
+    },
+    {
+      "file": "223.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_223",
+      "id": 223,
+      "role": "titles"
+    },
+    {
+      "file": "224.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_224",
+      "id": 224,
+      "role": "titles"
+    },
+    {
+      "file": "225.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_225",
+      "id": 225,
+      "role": "titles"
+    },
+    {
+      "file": "226.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_226",
+      "id": 226,
+      "role": "titles"
+    },
+    {
+      "file": "227.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_227",
+      "id": 227,
+      "role": "titles"
+    },
+    {
+      "file": "228.png",
+      "width": 256,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_title_228",
+      "id": 228,
+      "role": "titles"
+    },
+    {
+      "file": "000.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_000",
+      "id": 0,
+      "role": "subtitles"
+    },
+    {
+      "file": "001.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_001",
+      "id": 1,
+      "role": "subtitles"
+    },
+    {
+      "file": "002.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_002",
+      "id": 2,
+      "role": "subtitles"
+    },
+    {
+      "file": "003.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_003",
+      "id": 3,
+      "role": "subtitles"
+    },
+    {
+      "file": "004.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_004",
+      "id": 4,
+      "role": "subtitles"
+    },
+    {
+      "file": "005.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_005",
+      "id": 5,
+      "role": "subtitles"
+    },
+    {
+      "file": "006.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_006",
+      "id": 6,
+      "role": "subtitles"
+    },
+    {
+      "file": "007.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_007",
+      "id": 7,
+      "role": "subtitles"
+    },
+    {
+      "file": "008.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_008",
+      "id": 8,
+      "role": "subtitles"
+    },
+    {
+      "file": "009.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_009",
+      "id": 9,
+      "role": "subtitles"
+    },
+    {
+      "file": "010.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_010",
+      "id": 10,
+      "role": "subtitles"
+    },
+    {
+      "file": "011.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_011",
+      "id": 11,
+      "role": "subtitles"
+    },
+    {
+      "file": "012.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_012",
+      "id": 12,
+      "role": "subtitles"
+    },
+    {
+      "file": "013.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_013",
+      "id": 13,
+      "role": "subtitles"
+    },
+    {
+      "file": "014.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_014",
+      "id": 14,
+      "role": "subtitles"
+    },
+    {
+      "file": "015.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_015",
+      "id": 15,
+      "role": "subtitles"
+    },
+    {
+      "file": "016.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_016",
+      "id": 16,
+      "role": "subtitles"
+    },
+    {
+      "file": "017.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_017",
+      "id": 17,
+      "role": "subtitles"
+    },
+    {
+      "file": "018.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_018",
+      "id": 18,
+      "role": "subtitles"
+    },
+    {
+      "file": "019.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_019",
+      "id": 19,
+      "role": "subtitles"
+    },
+    {
+      "file": "020.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_020",
+      "id": 20,
+      "role": "subtitles"
+    },
+    {
+      "file": "021.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_021",
+      "id": 21,
+      "role": "subtitles"
+    },
+    {
+      "file": "022.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_022",
+      "id": 22,
+      "role": "subtitles"
+    },
+    {
+      "file": "023.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_023",
+      "id": 23,
+      "role": "subtitles"
+    },
+    {
+      "file": "024.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_024",
+      "id": 24,
+      "role": "subtitles"
+    },
+    {
+      "file": "025.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_025",
+      "id": 25,
+      "role": "subtitles"
+    },
+    {
+      "file": "026.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_026",
+      "id": 26,
+      "role": "subtitles"
+    },
+    {
+      "file": "027.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_027",
+      "id": 27,
+      "role": "subtitles"
+    },
+    {
+      "file": "028.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_028",
+      "id": 28,
+      "role": "subtitles"
+    },
+    {
+      "file": "029.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_029",
+      "id": 29,
+      "role": "subtitles"
+    },
+    {
+      "file": "030.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_030",
+      "id": 30,
+      "role": "subtitles"
+    },
+    {
+      "file": "031.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_031",
+      "id": 31,
+      "role": "subtitles"
+    },
+    {
+      "file": "032.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_032",
+      "id": 32,
+      "role": "subtitles"
+    },
+    {
+      "file": "033.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_033",
+      "id": 33,
+      "role": "subtitles"
+    },
+    {
+      "file": "034.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_034",
+      "id": 34,
+      "role": "subtitles"
+    },
+    {
+      "file": "035.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_035",
+      "id": 35,
+      "role": "subtitles"
+    },
+    {
+      "file": "036.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_036",
+      "id": 36,
+      "role": "subtitles"
+    },
+    {
+      "file": "037.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_037",
+      "id": 37,
+      "role": "subtitles"
+    },
+    {
+      "file": "038.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_038",
+      "id": 38,
+      "role": "subtitles"
+    },
+    {
+      "file": "039.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_039",
+      "id": 39,
+      "role": "subtitles"
+    },
+    {
+      "file": "050.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_050",
+      "id": 50,
+      "role": "subtitles"
+    },
+    {
+      "file": "051.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_051",
+      "id": 51,
+      "role": "subtitles"
+    },
+    {
+      "file": "100.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_100",
+      "id": 100,
+      "role": "subtitles"
+    },
+    {
+      "file": "101.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_101",
+      "id": 101,
+      "role": "subtitles"
+    },
+    {
+      "file": "102.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_102",
+      "id": 102,
+      "role": "subtitles"
+    },
+    {
+      "file": "103.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_103",
+      "id": 103,
+      "role": "subtitles"
+    },
+    {
+      "file": "104.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_104",
+      "id": 104,
+      "role": "subtitles"
+    },
+    {
+      "file": "105.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_105",
+      "id": 105,
+      "role": "subtitles"
+    },
+    {
+      "file": "106.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_106",
+      "id": 106,
+      "role": "subtitles"
+    },
+    {
+      "file": "107.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_107",
+      "id": 107,
+      "role": "subtitles"
+    },
+    {
+      "file": "108.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_108",
+      "id": 108,
+      "role": "subtitles"
+    },
+    {
+      "file": "109.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_109",
+      "id": 109,
+      "role": "subtitles"
+    },
+    {
+      "file": "110.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_110",
+      "id": 110,
+      "role": "subtitles"
+    },
+    {
+      "file": "111.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_111",
+      "id": 111,
+      "role": "subtitles"
+    },
+    {
+      "file": "112.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_112",
+      "id": 112,
+      "role": "subtitles"
+    },
+    {
+      "file": "113.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_113",
+      "id": 113,
+      "role": "subtitles"
+    },
+    {
+      "file": "114.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_114",
+      "id": 114,
+      "role": "subtitles"
+    },
+    {
+      "file": "115.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_115",
+      "id": 115,
+      "role": "subtitles"
+    },
+    {
+      "file": "116.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_116",
+      "id": 116,
+      "role": "subtitles"
+    },
+    {
+      "file": "117.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_117",
+      "id": 117,
+      "role": "subtitles"
+    },
+    {
+      "file": "118.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_118",
+      "id": 118,
+      "role": "subtitles"
+    },
+    {
+      "file": "119.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_119",
+      "id": 119,
+      "role": "subtitles"
+    },
+    {
+      "file": "120.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_120",
+      "id": 120,
+      "role": "subtitles"
+    },
+    {
+      "file": "121.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_121",
+      "id": 121,
+      "role": "subtitles"
+    },
+    {
+      "file": "122.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_122",
+      "id": 122,
+      "role": "subtitles"
+    },
+    {
+      "file": "123.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_123",
+      "id": 123,
+      "role": "subtitles"
+    },
+    {
+      "file": "124.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_124",
+      "id": 124,
+      "role": "subtitles"
+    },
+    {
+      "file": "200.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_200",
+      "id": 200,
+      "role": "subtitles"
+    },
+    {
+      "file": "201.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_201",
+      "id": 201,
+      "role": "subtitles"
+    },
+    {
+      "file": "202.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_202",
+      "id": 202,
+      "role": "subtitles"
+    },
+    {
+      "file": "203.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_203",
+      "id": 203,
+      "role": "subtitles"
+    },
+    {
+      "file": "204.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_204",
+      "id": 204,
+      "role": "subtitles"
+    },
+    {
+      "file": "205.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_205",
+      "id": 205,
+      "role": "subtitles"
+    },
+    {
+      "file": "206.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_206",
+      "id": 206,
+      "role": "subtitles"
+    },
+    {
+      "file": "207.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_207",
+      "id": 207,
+      "role": "subtitles"
+    },
+    {
+      "file": "208.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_208",
+      "id": 208,
+      "role": "subtitles"
+    },
+    {
+      "file": "209.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_209",
+      "id": 209,
+      "role": "subtitles"
+    },
+    {
+      "file": "210.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_210",
+      "id": 210,
+      "role": "subtitles"
+    },
+    {
+      "file": "211.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_211",
+      "id": 211,
+      "role": "subtitles"
+    },
+    {
+      "file": "212.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_212",
+      "id": 212,
+      "role": "subtitles"
+    },
+    {
+      "file": "213.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_213",
+      "id": 213,
+      "role": "subtitles"
+    },
+    {
+      "file": "214.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_214",
+      "id": 214,
+      "role": "subtitles"
+    },
+    {
+      "file": "215.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_215",
+      "id": 215,
+      "role": "subtitles"
+    },
+    {
+      "file": "216.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_216",
+      "id": 216,
+      "role": "subtitles"
+    },
+    {
+      "file": "217.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_217",
+      "id": 217,
+      "role": "subtitles"
+    },
+    {
+      "file": "218.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_218",
+      "id": 218,
+      "role": "subtitles"
+    },
+    {
+      "file": "219.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_219",
+      "id": 219,
+      "role": "subtitles"
+    },
+    {
+      "file": "220.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_220",
+      "id": 220,
+      "role": "subtitles"
+    },
+    {
+      "file": "221.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_221",
+      "id": 221,
+      "role": "subtitles"
+    },
+    {
+      "file": "222.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_222",
+      "id": 222,
+      "role": "subtitles"
+    },
+    {
+      "file": "223.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_223",
+      "id": 223,
+      "role": "subtitles"
+    },
+    {
+      "file": "224.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_224",
+      "id": 224,
+      "role": "subtitles"
+    },
+    {
+      "file": "225.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_225",
+      "id": 225,
+      "role": "subtitles"
+    },
+    {
+      "file": "226.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_226",
+      "id": 226,
+      "role": "subtitles"
+    },
+    {
+      "file": "227.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_227",
+      "id": 227,
+      "role": "subtitles"
+    },
+    {
+      "file": "228.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_228",
+      "id": 228,
+      "role": "subtitles"
+    },
+    {
+      "file": "229.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_229",
+      "id": 229,
+      "role": "subtitles"
+    },
+    {
+      "file": "230.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_230",
+      "id": 230,
+      "role": "subtitles"
+    },
+    {
+      "file": "231.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_231",
+      "id": 231,
+      "role": "subtitles"
+    },
+    {
+      "file": "232.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_232",
+      "id": 232,
+      "role": "subtitles"
+    },
+    {
+      "file": "233.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_233",
+      "id": 233,
+      "role": "subtitles"
+    },
+    {
+      "file": "234.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_234",
+      "id": 234,
+      "role": "subtitles"
+    },
+    {
+      "file": "235.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_235",
+      "id": 235,
+      "role": "subtitles"
+    },
+    {
+      "file": "236.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_236",
+      "id": 236,
+      "role": "subtitles"
+    },
+    {
+      "file": "237.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_237",
+      "id": 237,
+      "role": "subtitles"
+    },
+    {
+      "file": "238.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_238",
+      "id": 238,
+      "role": "subtitles"
+    },
+    {
+      "file": "239.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_239",
+      "id": 239,
+      "role": "subtitles"
+    },
+    {
+      "file": "240.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_240",
+      "id": 240,
+      "role": "subtitles"
+    },
+    {
+      "file": "241.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_241",
+      "id": 241,
+      "role": "subtitles"
+    },
+    {
+      "file": "242.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_242",
+      "id": 242,
+      "role": "subtitles"
+    },
+    {
+      "file": "243.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_243",
+      "id": 243,
+      "role": "subtitles"
+    },
+    {
+      "file": "244.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_244",
+      "id": 244,
+      "role": "subtitles"
+    },
+    {
+      "file": "245.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_245",
+      "id": 245,
+      "role": "subtitles"
+    },
+    {
+      "file": "246.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_246",
+      "id": 246,
+      "role": "subtitles"
+    },
+    {
+      "file": "247.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_247",
+      "id": 247,
+      "role": "subtitles"
+    },
+    {
+      "file": "248.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_248",
+      "id": 248,
+      "role": "subtitles"
+    },
+    {
+      "file": "249.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_249",
+      "id": 249,
+      "role": "subtitles"
+    },
+    {
+      "file": "250.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_250",
+      "id": 250,
+      "role": "subtitles"
+    },
+    {
+      "file": "251.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_251",
+      "id": 251,
+      "role": "subtitles"
+    },
+    {
+      "file": "252.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_252",
+      "id": 252,
+      "role": "subtitles"
+    },
+    {
+      "file": "253.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_253",
+      "id": 253,
+      "role": "subtitles"
+    },
+    {
+      "file": "254.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_254",
+      "id": 254,
+      "role": "subtitles"
+    },
+    {
+      "file": "255.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_255",
+      "id": 255,
+      "role": "subtitles"
+    },
+    {
+      "file": "256.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_256",
+      "id": 256,
+      "role": "subtitles"
+    },
+    {
+      "file": "257.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_257",
+      "id": 257,
+      "role": "subtitles"
+    },
+    {
+      "file": "258.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_258",
+      "id": 258,
+      "role": "subtitles"
+    },
+    {
+      "file": "259.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_259",
+      "id": 259,
+      "role": "subtitles"
+    },
+    {
+      "file": "260.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_260",
+      "id": 260,
+      "role": "subtitles"
+    },
+    {
+      "file": "300.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_300",
+      "id": 300,
+      "role": "subtitles"
+    },
+    {
+      "file": "301.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_301",
+      "id": 301,
+      "role": "subtitles"
+    },
+    {
+      "file": "302.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_302",
+      "id": 302,
+      "role": "subtitles"
+    },
+    {
+      "file": "303.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_303",
+      "id": 303,
+      "role": "subtitles"
+    },
+    {
+      "file": "304.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_304",
+      "id": 304,
+      "role": "subtitles"
+    },
+    {
+      "file": "305.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_305",
+      "id": 305,
+      "role": "subtitles"
+    },
+    {
+      "file": "306.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_306",
+      "id": 306,
+      "role": "subtitles"
+    },
+    {
+      "file": "307.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_307",
+      "id": 307,
+      "role": "subtitles"
+    },
+    {
+      "file": "308.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_308",
+      "id": 308,
+      "role": "subtitles"
+    },
+    {
+      "file": "309.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_309",
+      "id": 309,
+      "role": "subtitles"
+    },
+    {
+      "file": "310.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_310",
+      "id": 310,
+      "role": "subtitles"
+    },
+    {
+      "file": "311.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_311",
+      "id": 311,
+      "role": "subtitles"
+    },
+    {
+      "file": "312.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_312",
+      "id": 312,
+      "role": "subtitles"
+    },
+    {
+      "file": "313.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_313",
+      "id": 313,
+      "role": "subtitles"
+    },
+    {
+      "file": "314.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_314",
+      "id": 314,
+      "role": "subtitles"
+    },
+    {
+      "file": "315.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_315",
+      "id": 315,
+      "role": "subtitles"
+    },
+    {
+      "file": "316.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_316",
+      "id": 316,
+      "role": "subtitles"
+    },
+    {
+      "file": "317.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_317",
+      "id": 317,
+      "role": "subtitles"
+    },
+    {
+      "file": "318.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_318",
+      "id": 318,
+      "role": "subtitles"
+    },
+    {
+      "file": "319.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_319",
+      "id": 319,
+      "role": "subtitles"
+    },
+    {
+      "file": "320.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_320",
+      "id": 320,
+      "role": "subtitles"
+    },
+    {
+      "file": "321.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_321",
+      "id": 321,
+      "role": "subtitles"
+    },
+    {
+      "file": "322.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_322",
+      "id": 322,
+      "role": "subtitles"
+    },
+    {
+      "file": "323.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_323",
+      "id": 323,
+      "role": "subtitles"
+    },
+    {
+      "file": "324.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_324",
+      "id": 324,
+      "role": "subtitles"
+    },
+    {
+      "file": "325.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_325",
+      "id": 325,
+      "role": "subtitles"
+    },
+    {
+      "file": "326.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_326",
+      "id": 326,
+      "role": "subtitles"
+    },
+    {
+      "file": "327.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_327",
+      "id": 327,
+      "role": "subtitles"
+    },
+    {
+      "file": "328.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_328",
+      "id": 328,
+      "role": "subtitles"
+    },
+    {
+      "file": "329.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_329",
+      "id": 329,
+      "role": "subtitles"
+    },
+    {
+      "file": "330.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_330",
+      "id": 330,
+      "role": "subtitles"
+    },
+    {
+      "file": "331.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_331",
+      "id": 331,
+      "role": "subtitles"
+    },
+    {
+      "file": "332.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_332",
+      "id": 332,
+      "role": "subtitles"
+    },
+    {
+      "file": "333.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_333",
+      "id": 333,
+      "role": "subtitles"
+    },
+    {
+      "file": "334.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_334",
+      "id": 334,
+      "role": "subtitles"
+    },
+    {
+      "file": "335.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_335",
+      "id": 335,
+      "role": "subtitles"
+    },
+    {
+      "file": "336.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_336",
+      "id": 336,
+      "role": "subtitles"
+    },
+    {
+      "file": "400.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_400",
+      "id": 400,
+      "role": "subtitles"
+    },
+    {
+      "file": "401.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_401",
+      "id": 401,
+      "role": "subtitles"
+    },
+    {
+      "file": "402.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_402",
+      "id": 402,
+      "role": "subtitles"
+    },
+    {
+      "file": "403.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_403",
+      "id": 403,
+      "role": "subtitles"
+    },
+    {
+      "file": "404.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_404",
+      "id": 404,
+      "role": "subtitles"
+    },
+    {
+      "file": "405.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_405",
+      "id": 405,
+      "role": "subtitles"
+    },
+    {
+      "file": "406.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_406",
+      "id": 406,
+      "role": "subtitles"
+    },
+    {
+      "file": "407.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_407",
+      "id": 407,
+      "role": "subtitles"
+    },
+    {
+      "file": "408.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_408",
+      "id": 408,
+      "role": "subtitles"
+    },
+    {
+      "file": "409.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_409",
+      "id": 409,
+      "role": "subtitles"
+    },
+    {
+      "file": "410.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_410",
+      "id": 410,
+      "role": "subtitles"
+    },
+    {
+      "file": "411.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_411",
+      "id": 411,
+      "role": "subtitles"
+    },
+    {
+      "file": "412.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_412",
+      "id": 412,
+      "role": "subtitles"
+    },
+    {
+      "file": "413.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_413",
+      "id": 413,
+      "role": "subtitles"
+    },
+    {
+      "file": "414.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_414",
+      "id": 414,
+      "role": "subtitles"
+    },
+    {
+      "file": "415.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_415",
+      "id": 415,
+      "role": "subtitles"
+    },
+    {
+      "file": "416.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_416",
+      "id": 416,
+      "role": "subtitles"
+    },
+    {
+      "file": "417.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_417",
+      "id": 417,
+      "role": "subtitles"
+    },
+    {
+      "file": "418.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_418",
+      "id": 418,
+      "role": "subtitles"
+    },
+    {
+      "file": "419.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_419",
+      "id": 419,
+      "role": "subtitles"
+    },
+    {
+      "file": "420.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_420",
+      "id": 420,
+      "role": "subtitles"
+    },
+    {
+      "file": "421.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_421",
+      "id": 421,
+      "role": "subtitles"
+    },
+    {
+      "file": "422.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_422",
+      "id": 422,
+      "role": "subtitles"
+    },
+    {
+      "file": "423.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_423",
+      "id": 423,
+      "role": "subtitles"
+    },
+    {
+      "file": "424.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_424",
+      "id": 424,
+      "role": "subtitles"
+    },
+    {
+      "file": "425.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_425",
+      "id": 425,
+      "role": "subtitles"
+    },
+    {
+      "file": "426.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_426",
+      "id": 426,
+      "role": "subtitles"
+    },
+    {
+      "file": "427.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_427",
+      "id": 427,
+      "role": "subtitles"
+    },
+    {
+      "file": "428.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_428",
+      "id": 428,
+      "role": "subtitles"
+    },
+    {
+      "file": "429.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_429",
+      "id": 429,
+      "role": "subtitles"
+    },
+    {
+      "file": "430.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_430",
+      "id": 430,
+      "role": "subtitles"
+    },
+    {
+      "file": "431.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_431",
+      "id": 431,
+      "role": "subtitles"
+    },
+    {
+      "file": "432.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_432",
+      "id": 432,
+      "role": "subtitles"
+    },
+    {
+      "file": "433.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_433",
+      "id": 433,
+      "role": "subtitles"
+    },
+    {
+      "file": "434.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_434",
+      "id": 434,
+      "role": "subtitles"
+    },
+    {
+      "file": "435.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_435",
+      "id": 435,
+      "role": "subtitles"
+    },
+    {
+      "file": "436.png",
+      "width": 128,
+      "height": 1024,
+      "meta_path": "race/champions/texture/twinkle/tex_twinkle_subtitle_436",
+      "id": 436,
+      "role": "subtitles"
+    },
+    {
+      "file": "btn_news_effect.png",
+      "width": 64,
+      "height": 64,
+      "meta_path": "uianimation/uieffect/champions/pfb_uieff_champions_btn_news00",
+      "role": "chrome"
+    }
+  ]
+}
