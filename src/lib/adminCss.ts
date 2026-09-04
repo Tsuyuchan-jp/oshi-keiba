@@ -995,6 +995,146 @@ body.register-page .work .ctas a { align-self: center; font-size: .85rem; color:
 .edit-extra label { display: grid; gap: .18rem; margin-top: .55rem; font-size: .75rem; color: var(--admin-muted); }
 .edit-extra input, .edit-extra select, .edit-extra textarea { width: 100%; padding: .3rem .4rem; border: 1px solid var(--admin-line-strong); border-radius: 5px; background: var(--admin-surface); color: var(--admin-ink); }
 .odds-meta { font-size: .72rem; color: var(--admin-muted); }
+/* ウマ柱：左プレビュー・右は将来の編集。紙面トークンは .umabashira-paper に閉じる */
+body.umabashira-page { overflow: hidden; }
+body.umabashira-page .dash { height: 100dvh; min-height: 0; overflow: hidden; }
+body.umabashira-page .main {
+  display: flex; flex-direction: column; min-height: 0; height: 100%; overflow: hidden;
+  padding: 1rem 1.25rem 2.4rem;
+}
+body.umabashira-page .hero { flex: 0 0 auto; }
+body.umabashira-page #umabashira-export-msg { flex: 0 0 auto; min-height: 1.2em; margin: 0 0 .55rem; }
+body.umabashira-page #umabashira-export-msg:empty { display: none; margin: 0; }
+body.umabashira-page #umabashira-export-msg.error { color: var(--admin-danger); }
+.umabashira-desk {
+  display: grid;
+  grid-template-columns: minmax(0, 1.75fr) minmax(16rem, 0.55fr);
+  gap: .7rem;
+  min-height: 0;
+  flex: 1 1 auto;
+  height: 100%;
+}
+body.umabashira-page .umabashira-desk .work {
+  min-height: 0; height: 100%; display: flex; flex-direction: column;
+  overflow: hidden; margin-bottom: 0; padding: .8rem .9rem .9rem;
+}
+.umabashira-sheet {
+  flex: 1 1 auto; min-height: 0; overflow: auto;
+  background: var(--admin-surface-muted);
+  padding: .7rem;
+  border-radius: 6px;
+}
+.umabashira-paper {
+  --paper: #f3efe4;
+  --ink: #1a1814;
+  --rule: #2a2722;
+  --muted: #6a6458;
+  --mark: #c41218;
+  --hb: #163a8a;
+  --col-w: 3.32rem;
+  --stub-w: 2.15rem;
+  min-width: max-content;
+  background: var(--paper);
+  color: var(--ink);
+  border: 2px solid var(--rule);
+  font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
+}
+.umabashira-paper .mast {
+  display: flex; flex-wrap: wrap; gap: .35rem 1rem; align-items: baseline;
+  padding: .32rem .45rem; border-bottom: 2px solid var(--rule);
+  font-weight: 800; font-size: .78rem;
+}
+.umabashira-paper .mast .meta { font-weight: 600; font-size: .7rem; color: #3c382f; }
+.umabashira-paper .mast .keys { font-weight: 400; font-size: .62rem; color: var(--muted); margin-left: auto; }
+.umabashira-paper .board {
+  display: grid;
+  grid-template-columns: var(--stub-w) repeat(var(--n), var(--col-w));
+  grid-template-rows: repeat(8, auto);
+}
+.umabashira-paper .col {
+  display: grid; grid-template-rows: subgrid; grid-row: 1 / span 8;
+  border-left: 1px solid var(--rule); min-width: 0; min-height: 0;
+}
+.umabashira-paper .stub-col { border-left: 0; background: #e7e1d3; }
+.umabashira-paper .cell {
+  border-bottom: 1px solid #c8c0ae; padding: .14rem .08rem; text-align: center; min-width: 0;
+}
+.umabashira-paper .stub-cell {
+  color: var(--muted); font-weight: 700; display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.umabashira-paper .stub-h {
+  writing-mode: horizontal-tb; font-size: .46rem; line-height: 1.15; letter-spacing: .02em;
+  padding: .06rem .05rem; word-break: break-all;
+}
+.umabashira-paper .stub-col .runner.stub-h { word-break: normal; white-space: nowrap; font-size: .5rem; letter-spacing: 0; }
+.umabashira-paper .stub-split { flex-direction: column; gap: .02rem; line-height: 1.1; word-break: normal; }
+.umabashira-paper .stub-v > span {
+  writing-mode: vertical-rl; text-orientation: mixed; font-size: .52rem; letter-spacing: .08em; line-height: 1;
+}
+.umabashira-paper .id-row { display: flex; align-items: stretch; min-height: 2.25rem; padding: 0; }
+.umabashira-paper .num {
+  flex: 1; display: flex; flex-direction: column; justify-content: center; line-height: 1;
+}
+.umabashira-paper .num b { font-size: 1.02rem; font-weight: 800; transform: translateY(.2em); }
+.umabashira-paper .style {
+  display: inline-block; margin-top: .12rem; font-size: .64rem; font-weight: 800;
+  letter-spacing: .04em; line-height: 1; background: #ece4d2; border: 1px solid #b9b09c;
+  padding: .06rem .08rem; transform: translateY(.2em);
+}
+.umabashira-paper .who {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  gap: .16rem; padding: .18rem .06rem .2rem;
+}
+.umabashira-paper .stub-col .who { justify-content: center; padding: .18rem .06rem; }
+.umabashira-paper .who img, .umabashira-paper .who .ph {
+  width: 1.95rem; height: 1.95rem; object-fit: contain; flex: none;
+}
+.umabashira-paper .who .ph {
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem; font-weight: 800; background: #ddd6c6;
+}
+.umabashira-paper .uma {
+  writing-mode: vertical-rl; text-orientation: mixed; font-size: .78rem; font-weight: 800;
+  letter-spacing: .08em; line-height: 1; height: calc(9em + 8 * .08em + .85rem);
+}
+.umabashira-paper .runner {
+  display: flex; align-items: center; justify-content: center;
+  font-size: .56rem; font-weight: 700; line-height: 1.15; min-height: 1.55rem;
+  padding-left: .04rem; padding-right: .04rem;
+}
+.umabashira-paper .runner span {
+  white-space: nowrap; overflow: hidden; max-width: 100%; transform: translateY(.2em);
+}
+.umabashira-paper .score-cell { min-height: 1.55rem; display: flex; align-items: center; justify-content: center; }
+.umabashira-paper .score-cell b { font-size: .92rem; font-weight: 800; color: var(--hb); }
+.umabashira-paper .odds-cell {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: .08rem; min-height: 2.55rem;
+}
+.umabashira-paper .odds-cell .mk {
+  min-height: 1.15rem; font-size: 1.05rem; font-weight: 800; color: var(--mark); line-height: 1.15;
+}
+.umabashira-paper .odds-cell .mk.none {
+  color: #8d8678; font-size: .95rem; font-weight: 600; letter-spacing: 0;
+}
+.umabashira-paper .odds-cell b { font-size: .95rem; font-weight: 800; line-height: 1; }
+.umabashira-paper .stats {
+  font-size: .52rem; font-variant-numeric: tabular-nums; line-height: 1.28;
+  text-align: left; padding: .14rem .12rem;
+}
+.umabashira-paper .stats.empty { min-height: 1.55rem; display: flex; align-items: center; justify-content: center; }
+.umabashira-paper .stats span { display: flex; justify-content: space-between; padding-right: .12rem; }
+.umabashira-paper .stats .lab { color: var(--muted); font-weight: 600; }
+.umabashira-paper .empty { color: var(--muted); text-align: center; }
+.umabashira-paper .apt {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: .04rem; font-size: .52rem; font-weight: 700; line-height: 1.2; min-height: 2.2rem;
+}
+.umabashira-paper .apt .s { color: var(--mark); }
+.umabashira-paper .sp { min-height: 3.15rem; }
+.umabashira-paper .sp b { display: block; font-size: 1.12rem; font-weight: 800; line-height: 1.1; }
+.umabashira-paper .sp small { display: block; font-size: .46rem; color: var(--muted); font-weight: 600; margin-top: .04rem; line-height: 1.2; }
+.umabashira-paper .sp small:first-of-type { margin-top: .08rem; }
 @media (max-width: 1199px) {
   body.settings-page .settings-top { grid-template-columns: 1fr; }
   .set-conds { grid-template-columns: 1fr; }
@@ -1018,7 +1158,7 @@ body.register-page .work .ctas a { align-self: center; font-size: .85rem; color:
     overflow: visible;
   }
   .side .mark { width: 100%; }
-  .kpis, .ops-pair, .odds-desk, .ledger-desk, .register-desk, .horses-desk, .work-split, .split { grid-template-columns: 1fr; }
+  .kpis, .ops-pair, .odds-desk, .ledger-desk, .register-desk, .horses-desk, .umabashira-desk, .work-split, .split { grid-template-columns: 1fr; }
   .odds-desk { grid-template-areas: "win" "q" "e" "t" "f"; }
   .ranks-cols { grid-template-columns: 1fr; grid-auto-flow: row; }
   body.settings-page { overflow: auto; }
@@ -1048,6 +1188,11 @@ body.register-page .work .ctas a { align-self: center; font-size: .85rem; color:
   body.register-page .main { height: auto; overflow: visible; }
   body.register-page .register-desk { display: flex; flex-direction: column; height: auto; flex: none; }
   body.register-page .register-desk .work { height: min(70vh, 28rem); }
+  body.umabashira-page { overflow: auto; }
+  body.umabashira-page .dash { height: auto; min-height: 100dvh; }
+  body.umabashira-page .main { height: auto; overflow: visible; }
+  body.umabashira-page .umabashira-desk { display: flex; flex-direction: column; height: auto; flex: none; }
+  body.umabashira-page .umabashira-desk .work { height: min(70vh, 28rem); }
   body.progress-page { overflow: auto; }
   body.progress-page .dash { height: auto; min-height: 100dvh; }
   body.progress-page .main { height: auto; overflow: visible; padding-bottom: 4.5rem; }

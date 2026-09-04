@@ -1,0 +1,4 @@
+modern-screenshot 4.6.5
+MIT License
+https://github.com/qq15725/modern-screenshot
+License text: modern-screenshot-license.txt

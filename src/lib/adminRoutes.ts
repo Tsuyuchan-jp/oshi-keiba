@@ -12,6 +12,7 @@ import {
   betRowHtml,
   recentBetsHtml,
 } from "./adminUi";
+import { adminUmabashiraPage } from "./adminUmabashira";
 import { loadStrategicSkillsBundle } from "./adminStrategicApi";
 import {
   getUser,
@@ -113,6 +114,7 @@ export async function tryAdminGet(
     "/admin/ledger",
     "/admin/odds",
     "/admin/settings",
+    "/admin/umabashira",
   ]);
   if (!pages.has(path)) return null;
 
@@ -236,6 +238,22 @@ export async function tryAdminGet(
         eventStatus: board.event.status,
         flash: m,
         body: adminOddsPage(board),
+      }),
+    );
+  }
+
+  if (path === "/admin/umabashira") {
+    const strategic = await loadStrategicSkillsBundle(env.DB);
+    const page = adminUmabashiraPage(board, strategic.skills);
+    return html(
+      layoutAdmin({
+        title: "ウマ柱",
+        tab: "umabashira",
+        user: gate.user,
+        eventStatus: board.event.status,
+        flash: m,
+        body: page.body,
+        scripts: page.scripts,
       }),
     );
   }

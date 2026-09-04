@@ -52,6 +52,7 @@ test("管理者が主要画面を巡回でき、メンバー画面ではプレ�
     "/admin/ledger",
     "/admin/odds",
     "/admin/settings",
+    "/admin/umabashira",
   ]) {
     await page.goto(path);
     await expect(page.locator("h1").first()).toBeVisible();

@@ -12,6 +12,7 @@ export type AdminTab =
   | "ledger"
   | "odds"
   | "settings"
+  | "umabashira"
   | "login";
 
 const TABS: { id: Exclude<AdminTab, "login">; href: string; label: string }[] = [
@@ -21,6 +22,7 @@ const TABS: { id: Exclude<AdminTab, "login">; href: string; label: string }[] = 
   { id: "ledger", href: "/admin/ledger", label: "台帳" },
   { id: "odds", href: "/admin/odds", label: "オッズ" },
   { id: "settings", href: "/admin/settings", label: "開催設定" },
+  { id: "umabashira", href: "/admin/umabashira", label: "ウマ柱" },
 ];
 
 export function layoutAdmin(opts: {
@@ -55,9 +57,11 @@ export function layoutAdmin(opts: {
           ? "ledger-page"
           : opts.tab === "register"
             ? "register-page"
-            : opts.tab === "progress"
-              ? "progress-page"
-              : "";
+            : opts.tab === "umabashira"
+              ? "umabashira-page"
+              : opts.tab === "progress"
+                ? "progress-page"
+                : "";
   const mainFlash = opts.tab === "settings" || opts.tab === "register" ? "" : flash;
   return `<!doctype html>
 <html lang="ja">

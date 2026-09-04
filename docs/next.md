@@ -4,7 +4,6 @@
 
 ## 次にやること
 
-- ウマ柱の管理タブ実装（モック上段移植・差し込み・プレビュー・PNG/WebP）— [umabashira.md](umabashira.md)・[モック上段](mocks/umabashira/index.html)
 - 号外の管理タブ実装（見た目はモック確定。差し込み・プレビュー・PNG）— [gougai.md](gougai.md)・[モック](mocks/gougai/index.html)
 
 ## そのあと
@@ -21,6 +20,7 @@
 
 ## アーカイブ
 
+- ウマ柱の管理タブ（モック上段移植・差し込み・プレビュー・PNG/WebP。ナビは開催設定の下）— [umabashira.md](umabashira.md)
 - ウマ柱実装前の未決を閉じた（左列残す・PNG+WebP・タブ「ウマ柱」`/admin/umabashira`）— [umabashira.md](umabashira.md)
 - ウマ柱の見た目をモック上段で正とする（案B寄せ。案A列頭印は見送り）— [umabashira.md](umabashira.md)
 - ウマ柱のスキルは名前を出さずスキルパワー（有効・金の枚数）。レイアウト仮決めとモック2案 — [umabashira.md](umabashira.md)・[モック](mocks/umabashira/index.html)

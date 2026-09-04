@@ -70,7 +70,7 @@ function phasePill(status: EventRow["status"]): string {
 }
 
 /** 進行以外の管理タブで共有する、画面名・状態・操作のヘッダー。 */
-function adminPageHero(
+export function adminPageHero(
   title: string,
   status: EventRow["status"],
   opts: { meta?: string; actions?: string; notice?: string; titleHref?: string } = {},

@@ -203,10 +203,16 @@
       width: 1.95rem;
       height: 1.95rem;
       object-fit: contain;
-      background: #ddd6c6;
       flex: none;
     }
-    .who .ph { display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; }
+    .who .ph {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 800;
+      background: #ddd6c6;
+    }
     .uma {
       writing-mode: vertical-rl;
       text-orientation: mixed;
@@ -304,7 +310,7 @@
 <body>
   <div class="stage">
     <h1>ウマ柱モック</h1>
-    <p class="note">スキル名は出さない。列幅は全頭同じで狭め。ウマ娘名は縦書きで9文字分の高さを確保。印なしは横棒「─」。評価点セルに項目名は置かない。トレーナーは幅に合わせて字を小さくし、枠の中央に置く。petit はパドックモックと同じく <code>public/images/umamusume/petit/</code> の実ファイル（この HTML からの相対パス）。位置・サイズは上段の <code>.who img</code>（1.95rem 角）が正。</p>
+    <p class="note">スキル名は出さない。列幅は全頭同じで狭め。ウマ娘名は縦書きで9文字分の高さを確保。印なしは横棒「─」。評価点セルに項目名は置かない。トレーナーは幅に合わせて字を小さくし、枠の中央に置く。petit はパドックモックと同じく <code>public/images/umamusume/petit/</code> の実ファイル（この HTML からの相対パス）。位置・サイズは上段の <code>.who img</code>（1.95rem 角、背景色なし）が正。欠け時の頭文字だけベージュ。</p>
     <div class="toolbar" id="toolbar"></div>
     <h2>現行寄せ（案B）— 印はオッズ欄</h2>
     <p class="note">列頭はウマ番と脚質（逃げ／先行／差し／追込）。評価点は数字だけ。オッズ欄の上段が印（無印は─）、下段が倍率。SPは4行（点数・有効・白・金）。</p>
@@ -440,7 +446,7 @@
       return `<div class="paper">
         <div class="mast">
           <span>第3回春の合同練習杯</span>
-          <span class="meta">東京　芝2400m　晴・良　｜　${horses.length}頭</span>
+          <span class="meta">東京　芝2400m　春・晴・良　｜　${horses.length}頭</span>
           <span class="keys">◎本命 ○対抗 ▲単穴 △穴　／　SP＝点数・有効・白・金</span>
         </div>
         <div class="board" style="--n:${horses.length}">${stubCol(kind)}${cols}</div>

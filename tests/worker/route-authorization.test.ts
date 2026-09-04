@@ -13,6 +13,7 @@ const ADMIN_GET_PATHS = [
   "/admin/ledger",
   "/admin/odds",
   "/admin/settings",
+  "/admin/umabashira",
   "/admin/shot/missing",
   "/admin/trainer-icon/missing",
   "/admin/api/strategic-skills",
@@ -83,9 +84,9 @@ describe("管理経路の権限", () => {
     expect(response.headers.get("Location")).toBe("/admin/login");
   });
 
-  test("管理者は6つの管理画面を開ける", async () => {
+  test("管理者は7つの管理画面を開ける", async () => {
     const { cookie } = await loginAdmin();
-    for (const path of ADMIN_GET_PATHS.slice(0, 6)) {
+    for (const path of ADMIN_GET_PATHS.slice(0, 7)) {
       const response = await workerFetch(path, {}, cookie);
       expect(response.status, path).toBe(200);
     }
