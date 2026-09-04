@@ -149,78 +149,60 @@
       paint-order: stroke fill;
     }
 
-    /* 3. トレーナー段 */
-    .trainer {
-      display: grid;
-      grid-template-columns: 4rem 1fr;
-      gap: 0.65rem;
-      align-items: center;
-      padding: 0.75rem 0.85rem;
-      background: #fff;
-      border-bottom: 1px solid #e2e2dc;
-    }
-    .trainer img {
-      width: 4rem;
-      height: 4rem;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid var(--green);
-      background: #111;
-    }
-    .trainer .role  { font-size: 0.65rem; font-weight: 700; color: var(--green-dark); letter-spacing: .08em; }
-    .trainer .who   { font-size: 1.25rem; font-weight: 800; line-height: 1.2; margin: 0.1rem 0 0.2rem; }
-    .trainer .uma   { font-size: 0.78rem; color: #4a4a4a; }
-
-    /* 4. 本文 */
+    /* 3. 本文（230 の4文を連結。<color=#ff9900> は .lead） */
     .article {
       padding: 0.8rem 0.85rem 0.9rem;
       background: #fff;
       font-size: 0.86rem;
       line-height: 1.72;
-      border-bottom: 1px solid #e2e2dc;
     }
-    .article .lead  { color: var(--orange); font-weight: 800; }
+    .article .lead { color: var(--orange); font-weight: 800; }
 
-    /* 5. 2着・3着 */
-    .places-h {
-      background: var(--green);
-      color: #fff;
-      font-weight: 800;
-      font-size: 0.78rem;
-      letter-spacing: 0.1em;
-      padding: 0.3rem 0.75rem;
-      clip-path: polygon(0 0, 100% 0, calc(100% - 1rem) 100%, 0 100%);
-      width: 40%;
+    /*
+      4. トレーナー帯
+      zokan_page1_bg.png は 1024×512。縦を 3/4 に潰すと表示比 1024:(512×0.75) = 8:3。
+      中のアイコン等の中身は未確定。仮置き。
+    */
+    .trainer {
+      position: relative;
+      aspect-ratio: 8 / 3;
+      overflow: hidden;
     }
-    .places {
-      padding: 0.3rem 0.45rem 0.5rem;
-      background: #eef6ea;
+    .trainer-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
     }
-    .place {
-      display: grid;
-      grid-template-columns: 1.9rem 3rem 2.4rem 1fr;
-      gap: 0.4rem;
+    .trainer-inner {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
       align-items: center;
-      padding: 0.4rem 0.2rem;
-      border-bottom: 1px solid #d5e6cc;
+      gap: 0.65rem;
+      padding: 0.55rem 0.85rem;
     }
-    .place:last-child { border-bottom: 0; }
-    .place .n         { font-weight: 800; font-size: 0.88rem; color: var(--green-dark); text-align: center; }
-    .place .petit     { width: 3rem; height: 3rem; object-fit: contain; }
-    .place .icon      {
-      width: 2.4rem; height: 2.4rem; border-radius: 50%;
-      object-fit: cover; border: 2px solid #fff;
-      box-shadow: 0 0 0 1px #c5d8bc; background: #111;
+    .trainer-inner img {
+      width: 3.4rem;
+      height: 3.4rem;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #fff;
+      background: #111;
+      box-shadow: 0 1px 6px rgba(0,0,0,.25);
+      flex-shrink: 0;
     }
-    .place .who  { font-size: 0.88rem; font-weight: 800; line-height: 1.2; margin: 0; }
-    .place .uma  { font-size: 0.72rem; color: #4a4a4a; margin-top: 0.1rem; }
+    .trainer .role { font-size: 0.62rem; font-weight: 700; color: #1a4a78; letter-spacing: .08em; }
+    .trainer .who  { font-size: 1.15rem; font-weight: 800; line-height: 1.2; margin: 0.08rem 0 0.12rem; color: #122; }
+    .trainer .uma  { font-size: 0.74rem; color: #334; }
   </style>
 </head>
 <body>
   <div class="stage">
     <p class="note">
-      号外プレビュー。メイン右は青帯＋縦3列（324.png を縦伸ばし、571番を \n で2列）。
-      背景・立ち絵は前回のまま。
+      号外プレビュー。メイン下は本文（230 改変4文）→トレーナー帯（zokan_page1_bg を縦 3/4）。2着・3着枠なし。
     </p>
     <article class="paper">
 
@@ -257,47 +239,28 @@
         </div>
       </div>
 
-      <!-- 3. トレーナー情報 -->
-      <section class="trainer" aria-label="1着トレーナー">
-        <img src="trainer-icon.png" alt="">
-        <div>
-          <div class="role">出走者</div>
-          <p class="who">プレビュー太郎</p>
-          <div class="uma">1番　スペシャルウィーク</div>
-        </div>
-      </section>
-
-      <!-- 4. 本文（230_headline_body.csv id=201 + id=301 を組み合わせ。<color>タグを <span> に変換済み） -->
+      <!-- 3. 本文（230 改変: 33001 + 100202 + 110200 + 120201 を連結） -->
       <div class="article">
-        完璧な走りで
+        <span class="lead">プレビュー杯</span>
+        本戦！並みいる猛者を退け勝ったのは
+        <span class="lead">スペシャルウィーク</span>！
         <span class="lead">「プレビュー太郎」</span>
-        に大きな1勝を届けた。
-        これからの活躍に大きく期待できそうだ！
+        との信頼が生んだ最高の結末だ。
+        優勝に相応しい、素晴らしい走りを見せてくれた。
+        こんな走りを見られたことに、ただただ感謝したい。
       </div>
 
-      <!-- 5. 2着・3着 -->
-      <div class="places-h">2着・3着</div>
-      <section class="places" aria-label="2着と3着">
-        <div class="place">
-          <div class="n">2着</div>
-          <img class="petit"
-            src="../../../public/images/umamusume/petit/petit_1002_100201_0010.png"
-            alt="">
-          <img class="icon" src="trainer-icon.png" alt="">
+      <!-- 4. トレーナー帯（中身は後で詰める。仮置き） -->
+      <section class="trainer" aria-label="1着トレーナー">
+        <img class="trainer-bg"
+          src="../../../public/twinkle/frames/zokan_page1_bg.png"
+          alt="">
+        <div class="trainer-inner">
+          <img src="trainer-icon.png" alt="">
           <div>
-            <p class="who">プレビュー花子</p>
-            <div class="uma">サイレンススズカ</div>
-          </div>
-        </div>
-        <div class="place">
-          <div class="n">3着</div>
-          <img class="petit"
-            src="../../../public/images/umamusume/petit/petit_1003_100301_0010.png"
-            alt="">
-          <img class="icon" src="trainer-icon.png" alt="">
-          <div>
-            <p class="who">プレビュー次郎</p>
-            <div class="uma">トウカイテイオー</div>
+            <div class="role">出走者</div>
+            <p class="who">プレビュー太郎</p>
+            <div class="uma">1番　スペシャルウィーク</div>
           </div>
         </div>
       </section>
