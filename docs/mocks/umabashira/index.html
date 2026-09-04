@@ -304,7 +304,7 @@
 <body>
   <div class="stage">
     <h1>ウマ柱モック</h1>
-    <p class="note">スキル名は出さない。列幅は全頭同じで狭め。ウマ娘名は縦書きで9文字分の高さを確保。印なしは横棒「─」。評価点セルに項目名は置かない。トレーナーは幅に合わせて字を小さくし、枠の中央に置く。</p>
+    <p class="note">スキル名は出さない。列幅は全頭同じで狭め。ウマ娘名は縦書きで9文字分の高さを確保。印なしは横棒「─」。評価点セルに項目名は置かない。トレーナーは幅に合わせて字を小さくし、枠の中央に置く。petit はパドックモックと同じく <code>public/images/umamusume/petit/</code> の実ファイル（この HTML からの相対パス）。位置・サイズは上段の <code>.who img</code>（1.95rem 角）が正。</p>
     <div class="toolbar" id="toolbar"></div>
     <h2>現行寄せ（案B）— 印はオッズ欄</h2>
     <p class="note">列頭はウマ番と脚質（逃げ／先行／差し／追込）。評価点は数字だけ。オッズ欄の上段が印（無印は─）、下段が倍率。SPは4行（点数・有効・白・金）。</p>
@@ -314,26 +314,27 @@
     <div class="sheet-wrap" id="a"></div>
   </div>
   <script>
-    /* モック用の仮データ。本番の差し込みとは別 */
+    /* モック用の仮データ。本番の差し込みとは別。petit はリポジトリの実ファイル名 */
+    const PETIT_DIR = "../../../public/images/umamusume/petit/";
     const ALL = [
-      { n: 1, uma: "スペシャルウィーク", runner: "プレビュー太郎左衛門", style: "先", score: 128.4, odds: 3.8, sp: 28, eff: 16, gold: 5, stats: [1204, 980, 1120, 880, 1010], apt: ["芝S", "中S", "先A"], petit: "/images/umamusume/petit/petit_1001_000101_0010.png" },
-      { n: 2, uma: "サイレンススズカ", runner: "みほ", style: "逃", score: 121.0, odds: 5.2, sp: 24, eff: 14, gold: 4, stats: [1188, 860, 1040, 820, 990], apt: ["芝S", "中A", "逃S"], petit: "/images/umamusume/petit/petit_1002_000101_0010.png" },
-      { n: 3, uma: "トウカイテイオー", runner: "帝王くん", style: "先", score: 114.6, odds: 6.1, sp: 22, eff: 12, gold: 4, stats: [1160, 920, 1088, 900, 940], apt: ["芝S", "中S", "先S"], petit: "/images/umamusume/petit/petit_1003_100301_0010.png" },
-      { n: 4, uma: "メジロマックイーン", runner: "麦", style: "差", score: 109.2, odds: 7.4, sp: 21, eff: 13, gold: 3, stats: [1102, 1180, 1020, 860, 970], apt: ["芝A", "長S", "差A"], petit: "/images/umamusume/petit/petit_1013_101301_0010.png" },
-      { n: 5, uma: "オグリキャップ", runner: "笠松", style: "差", score: 104.8, odds: 8.9, sp: 20, eff: 11, gold: 4, stats: [1140, 900, 1110, 840, 920], apt: ["芝A", "マイルS", "差A"], petit: "/images/umamusume/petit/petit_1020_102001_0010.png" },
-      { n: 6, uma: "ゴールドシップ", runner: "しまさん", style: "追", score: 98.5, odds: 11.2, sp: 19, eff: 10, gold: 4, stats: [1088, 1040, 990, 910, 880], apt: ["芝A", "中A", "追S"], petit: "/images/umamusume/petit/petit_1035_103516_0010.png" },
-      { n: 7, uma: "ナリタブライアン", runner: "直置き花子", style: "先", score: 92.0, odds: 14.6, sp: null, eff: null, gold: null, stats: null, apt: null, petit: "/images/umamusume/petit/petit_1039_103901_0010.png" },
-      { n: 8, uma: "シンボリルドルフ", runner: "皇帝", style: "先", score: 88.4, odds: 16.8, sp: 17, eff: 9, gold: 3, stats: [1120, 1000, 1060, 950, 1020], apt: ["芝S", "中A", "先A"], petit: "/images/umamusume/petit/petit_1016_101601_0010.png" },
-      { n: 9, uma: "テイエムオペラオー", runner: "王様", style: "先", score: 81.1, odds: 22.4, sp: 16, eff: 10, gold: 2, stats: [1090, 960, 1010, 870, 930], apt: ["芝A", "中S", "先A"], petit: "/images/umamusume/petit/petit_1055_105501_0010.png" },
-      { n: 10, uma: "エルコンドルパサー", runner: "コンドル", style: "差", score: 76.3, odds: 28.0, sp: 15, eff: 8, gold: 3, stats: [1130, 840, 1070, 800, 910], apt: ["芝A", "マイルA", "差S"], petit: "/images/umamusume/petit/petit_1066_106601_0010.png" },
-      { n: 11, uma: "ヒシミラクル", runner: "ひし", style: "追", score: 70.2, odds: 36.5, sp: 14, eff: 9, gold: 2, stats: [1040, 1010, 980, 890, 860], apt: ["芝A", "中A", "追A"], petit: "/images/umamusume/petit/petit_1050_105001_0010.png" },
-      { n: 12, uma: "マチカネフクキタル", runner: "福来", style: "差", score: 64.8, odds: 48.2, sp: 12, eff: 7, gold: 2, stats: [1020, 880, 990, 820, 900], apt: ["芝A", "中A", "差A"], petit: "/images/umamusume/petit/petit_1022_102201_0010.png" },
-      { n: 13, uma: "セイウンスカイ", runner: "しょーじ", style: "逃", score: 61.0, odds: 55.0, sp: 13, eff: 8, gold: 2, stats: [1110, 820, 1000, 780, 870], apt: ["芝A", "中A", "逃S"], petit: "/images/umamusume/petit/petit_1027_000101_0010.png" },
-      { n: 14, uma: "アドマイヤベガ", runner: "ベガ", style: "差", score: 58.4, odds: 62.0, sp: 11, eff: 6, gold: 2, stats: [1070, 900, 1030, 810, 890], apt: ["芝A", "中A", "差A"], petit: "/images/umamusume/petit/petit_1083_108301_0010.png" },
-      { n: 15, uma: "ファインモーション", runner: "細", style: "先", score: 55.1, odds: 71.0, sp: 10, eff: 6, gold: 1, stats: [1050, 870, 980, 800, 940], apt: ["芝S", "マイルA", "先A"], petit: "/images/umamusume/petit/petit_1102_110201_0010.png" },
-      { n: 16, uma: "ダイワスカーレット", runner: "赤", style: "逃", score: 52.0, odds: 82.0, sp: 10, eff: 5, gold: 2, stats: [1140, 800, 1010, 770, 850], apt: ["芝A", "マイルS", "逃A"], petit: "/images/umamusume/petit/petit_1061_106101_0010.png" },
-      { n: 17, uma: "ウオッカ", runner: "ウォッカ", style: "先", score: 49.6, odds: 91.0, sp: 9, eff: 5, gold: 1, stats: [1160, 760, 1040, 740, 880], apt: ["芝A", "マイルS", "先A"], petit: "/images/umamusume/petit/petit_1032_000101_0010.png" },
-      { n: 18, uma: "ダイタクヘリオス", runner: "太陽", style: "逃", score: 44.2, odds: 120.0, sp: 8, eff: 4, gold: 1, stats: [1080, 740, 990, 720, 800], apt: ["芝A", "マイルA", "逃A"], petit: "/images/umamusume/petit/petit_9002_900201_0010.png" },
+      { n: 1, uma: "スペシャルウィーク", runner: "プレビュー太郎左衛門", style: "先", score: 128.4, odds: 3.8, sp: 28, eff: 16, gold: 5, stats: [1204, 980, 1120, 880, 1010], apt: ["芝S", "中S", "先A"], petit: "petit_1001_100101_0010.png" },
+      { n: 2, uma: "サイレンススズカ", runner: "みほ", style: "逃", score: 121.0, odds: 5.2, sp: 24, eff: 14, gold: 4, stats: [1188, 860, 1040, 820, 990], apt: ["芝S", "中A", "逃S"], petit: "petit_1002_100201_0010.png" },
+      { n: 3, uma: "トウカイテイオー", runner: "帝王くん", style: "先", score: 114.6, odds: 6.1, sp: 22, eff: 12, gold: 4, stats: [1160, 920, 1088, 900, 940], apt: ["芝S", "中S", "先S"], petit: "petit_1003_100301_0010.png" },
+      { n: 4, uma: "メジロマックイーン", runner: "麦", style: "差", score: 109.2, odds: 7.4, sp: 21, eff: 13, gold: 3, stats: [1102, 1180, 1020, 860, 970], apt: ["芝A", "長S", "差A"], petit: "petit_1013_101301_0010.png" },
+      { n: 5, uma: "オグリキャップ", runner: "笠松", style: "差", score: 104.8, odds: 8.9, sp: 20, eff: 11, gold: 4, stats: [1140, 900, 1110, 840, 920], apt: ["芝A", "マイルS", "差A"], petit: "petit_1020_102001_0010.png" },
+      { n: 6, uma: "ゴールドシップ", runner: "しまさん", style: "追", score: 98.5, odds: 11.2, sp: 19, eff: 10, gold: 4, stats: [1088, 1040, 990, 910, 880], apt: ["芝A", "中A", "追S"], petit: "petit_1035_103516_0010.png" },
+      { n: 7, uma: "ナリタブライアン", runner: "直置き花子", style: "先", score: 92.0, odds: 14.6, sp: null, eff: null, gold: null, stats: null, apt: null, petit: "petit_1039_103901_0010.png" },
+      { n: 8, uma: "シンボリルドルフ", runner: "皇帝", style: "先", score: 88.4, odds: 16.8, sp: 17, eff: 9, gold: 3, stats: [1120, 1000, 1060, 950, 1020], apt: ["芝S", "中A", "先A"], petit: "petit_1017_101701_0010.png" },
+      { n: 9, uma: "テイエムオペラオー", runner: "王様", style: "先", score: 81.1, odds: 22.4, sp: 16, eff: 10, gold: 2, stats: [1090, 960, 1010, 870, 930], apt: ["芝A", "中S", "先A"], petit: "petit_1055_105501_0010.png" },
+      { n: 10, uma: "エルコンドルパサー", runner: "コンドル", style: "差", score: 76.3, odds: 28.0, sp: 15, eff: 8, gold: 3, stats: [1130, 840, 1070, 800, 910], apt: ["芝A", "マイルA", "差S"], petit: "petit_1066_106601_0010.png" },
+      { n: 11, uma: "ヒシミラクル", runner: "ひし", style: "追", score: 70.2, odds: 36.5, sp: 14, eff: 9, gold: 2, stats: [1040, 1010, 980, 890, 860], apt: ["芝A", "中A", "追A"], petit: "petit_1050_105001_0010.png" },
+      { n: 12, uma: "マチカネフクキタル", runner: "福来", style: "差", score: 64.8, odds: 48.2, sp: 12, eff: 7, gold: 2, stats: [1020, 880, 990, 820, 900], apt: ["芝A", "中A", "差A"], petit: "petit_1022_102201_0010.png" },
+      { n: 13, uma: "セイウンスカイ", runner: "しょーじ", style: "逃", score: 61.0, odds: 55.0, sp: 13, eff: 8, gold: 2, stats: [1110, 820, 1000, 780, 870], apt: ["芝A", "中A", "逃S"], petit: "petit_1027_102701_0010.png" },
+      { n: 14, uma: "アドマイヤベガ", runner: "ベガ", style: "差", score: 58.4, odds: 62.0, sp: 11, eff: 6, gold: 2, stats: [1070, 900, 1030, 810, 890], apt: ["芝A", "中A", "差A"], petit: "petit_1083_108301_0010.png" },
+      { n: 15, uma: "ファインモーション", runner: "細", style: "先", score: 55.1, odds: 71.0, sp: 10, eff: 6, gold: 1, stats: [1050, 870, 980, 800, 940], apt: ["芝S", "マイルA", "先A"], petit: "petit_1102_110201_0010.png" },
+      { n: 16, uma: "ダイワスカーレット", runner: "赤", style: "逃", score: 52.0, odds: 82.0, sp: 10, eff: 5, gold: 2, stats: [1140, 800, 1010, 770, 850], apt: ["芝A", "マイルS", "逃A"], petit: "petit_1061_106101_0010.png" },
+      { n: 17, uma: "ウオッカ", runner: "ウォッカ", style: "先", score: 49.6, odds: 91.0, sp: 9, eff: 5, gold: 1, stats: [1160, 760, 1040, 740, 880], apt: ["芝A", "マイルS", "先A"], petit: "petit_1032_103201_0010.png" },
+      { n: 18, uma: "ダイタクヘリオス", runner: "太陽", style: "逃", score: 44.2, odds: 120.0, sp: 8, eff: 4, gold: 1, stats: [1080, 740, 990, 720, 800], apt: ["芝A", "マイルA", "逃A"], petit: "petit_9002_900201_0010.png" },
     ];
 
     function marksFor(horses) {
@@ -365,7 +366,7 @@
     }
     function face(h) {
       const ch = h.uma.slice(0, 1);
-      return `<img src="${h.petit}" alt="" data-ph="${ch}" onerror="this.outerHTML='<div class=ph>'+this.dataset.ph+'</div>'">`;
+      return `<img src="${PETIT_DIR}${h.petit}" alt="" data-ph="${ch}" onerror="this.outerHTML='<div class=ph>'+this.dataset.ph+'</div>'">`;
     }
 
     function whoHtml(h) {
