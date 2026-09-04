@@ -70,11 +70,14 @@
     }
     .cover-bg {
       position: absolute;
-      inset: 0;
-      width: 100%;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      /* 青帯（右15%）の裏に回さない。可視エリア 85% x 20rem */
+      width: 85%;
       height: 100%;
       object-fit: cover;
-      object-position: center 30%;
+      object-position: center 40%;
     }
     /* 青帯は狭く。左端は2列目の左寄り（3列目は帯の外に出す） */
     .cover-blue {
@@ -226,7 +229,7 @@
 
       <!-- 2. カバー -->
       <div class="cover">
-        <!-- gogai_bg.png: レース場ぼかし背景 -->
+        <!-- gogai_bg.png: ゴール付近の芝＋紙吹雪。幅は青帯の左まで -->
         <img class="cover-bg"
           src="../../../public/twinkle/frames/gogai_bg.png"
           alt="">
