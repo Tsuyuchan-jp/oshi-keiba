@@ -148,114 +148,23 @@
     }
     .article .lead { color: var(--orange); font-weight: 700; }
 
-    /*
-      トレーナー帯: 参考画像どおり一段。
-      左＝月桂冠＋人物。右＝3行（開催 / 場・距離芝 / 天候バ場｜頭数）。ラベルなし。
-    */
+    /* トレーナー帯は生成画像で試作。CSSレイアウトは一旦使わない */
     .trainer {
-      position: relative;
-      overflow: hidden;
-      font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
-      background:
-        radial-gradient(ellipse 55% 120% at 100% 50%, rgba(212, 181, 106, .18), transparent 62%),
-        linear-gradient(180deg, #fffaf0, #f6edd8);
-      box-shadow:
-        inset 0 1px 0 #e8d7a8,
-        inset 0 -1px 0 #e8d7a8;
-    }
-    .who-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.32rem 0.7rem 0.32rem 0.55rem;
-    }
-    .face {
-      position: relative;
-      flex-shrink: 0;
-      width: 2.85rem;
-      height: 2.85rem;
-    }
-    .face img {
       display: block;
-      width: 2.55rem;
-      height: 2.55rem;
-      margin: 0.15rem auto 0;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #d4b56a;
-      background: #111;
+      line-height: 0;
+      background: #f6edd8;
     }
-    .face svg {
-      position: absolute;
-      inset: 0;
+    .trainer img {
+      display: block;
       width: 100%;
-      height: 100%;
-      pointer-events: none;
-    }
-    .who-copy {
-      flex: 1 1 auto;
-      min-width: 0;
-    }
-    .win {
-      display: inline-block;
-      margin: 0 0 0.08rem;
-      padding: 0.02rem 0.32rem 0.04rem;
-      border-radius: 3px;
-      background: var(--orange);
-      color: #fff;
-      font-size: 0.55rem;
-      font-weight: 800;
-      letter-spacing: 0.14em;
-      line-height: 1.3;
-    }
-    .who {
-      margin: 0;
-      color: #111;
-      font-family: "M PLUS 1p", "Hiragino Sans", sans-serif;
-      font-size: 1.02rem;
-      font-weight: 800;
-      line-height: 1.12;
-    }
-    .uma {
-      margin: 0.06rem 0 0;
-      color: #555;
-      font-size: 0.72rem;
-      font-weight: 700;
-      line-height: 1.2;
-    }
-    .facts {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      flex: 0 0 38%;
-      min-width: 0;
-      margin: 0.2rem 0;
-      padding: 0 0 0 0.7rem;
-      border-left: 1px solid #d4b56a;
-      list-style: none;
-      color: #222;
-      line-height: 1.28;
-    }
-    .facts li { margin: 0; overflow-wrap: anywhere; }
-    .facts .event {
-      font-size: 0.86rem;
-      font-weight: 800;
-      line-height: 1.25;
-    }
-    .facts .course,
-    .facts .cond {
-      margin-top: 0.1rem;
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: #333;
-      letter-spacing: 0.04em;
+      height: auto;
     }
   </style>
 </head>
 <body>
   <div class="stage">
     <p class="note">
-      号外プレビュー。トレーナー帯は参考画像寄せ。右は3行（開催／コース／天候｜頭数）。
+      号外プレビュー。トレーナー帯は生成画像の試作（CSSレイアウトは一旦オフ）。
     </p>
     <article class="paper">
       <header class="masthead">月刊トゥインクル　号外</header>
@@ -283,29 +192,7 @@
         </p>
       </div>
       <section class="trainer" aria-label="優勝者と開催条件">
-        <div class="rule"></div>
-        <div class="who-row">
-          <div class="face">
-            <img src="trainer-icon.png" alt="">
-            <svg viewBox="0 0 64 64" aria-hidden="true">
-              <path fill="none" stroke="#d4b56a" stroke-width="2.2" stroke-linecap="round"
-                d="M10 38c2 10 12 18 22 18s20-8 22-18"/>
-              <path fill="none" stroke="#c9a227" stroke-width="1.6" stroke-linecap="round"
-                d="M12 36c-4-8 1-18 8-20M52 36c4-8-1-18-8-20"/>
-              <path fill="#d4b56a" d="M30 54h4l-2 6z"/>
-            </svg>
-          </div>
-          <div class="who-copy">
-            <span class="win">優勝</span>
-            <p class="who">プレビュー太郎</p>
-            <p class="uma">スペシャルウィーク　逃げ</p>
-          </div>
-          <ul class="facts">
-            <li class="event">プレビュー杯</li>
-            <li class="course">東京　芝2400m</li>
-            <li class="cond">晴・良　｜　18頭</li>
-          </ul>
-        </div>
+        <img src="../../../public/twinkle/frames/gogai_trainer_band.png" alt="プレビュー太郎 優勝　プレビュー杯　東京 芝2400m　晴・良 18頭">
       </section>
     </article>
   </div>
