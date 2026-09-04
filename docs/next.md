@@ -4,7 +4,7 @@
 
 ## 次にやること
 
-- ウマ柱: モック案A／案Bの比較で正を決める — [umabashira.md](umabashira.md)・[モック](mocks/umabashira/index.html)
+- ウマ柱: 案B寄せ（petit縦並び・印はオッズ欄）の確認 — [umabashira.md](umabashira.md)・[モック](mocks/umabashira/index.html)
 - 号外の管理タブ実装（見た目はモック確定。差し込み・プレビュー・PNG）— [gougai.md](gougai.md)・[モック](mocks/gougai/index.html)
 
 ## そのあと

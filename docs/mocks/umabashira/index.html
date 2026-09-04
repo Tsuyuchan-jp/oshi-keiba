@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ウマ柱モック — 案A / 案B</title>
+  <title>ウマ柱モック — 案B寄せ</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -13,7 +13,6 @@
       --muted: #6a6458;
       --mark: #c41218;
       --hb: #163a8a;
-      --hb-bg: #dbe6fb;
     }
     * { box-sizing: border-box; }
     body {
@@ -142,29 +141,29 @@
       letter-spacing: 0.12em;
     }
 
-    .who { height: 5.4rem; padding: 0.15rem 0.1rem 0.2rem; }
-    .who-inner {
+    .who {
       display: flex;
-      gap: 0.12rem;
-      height: 100%;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
+      gap: 0.14rem;
+      min-height: 4.55rem;
+      padding: 0.2rem 0.1rem 0.22rem;
     }
     .who img, .who .ph {
-      width: 2.05rem;
-      height: 2.05rem;
+      width: 2.2rem;
+      height: 2.2rem;
       object-fit: contain;
       background: #ddd6c6;
       flex: none;
     }
     .who .ph { display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; }
     .uma {
-      writing-mode: vertical-rl;
-      font-size: 0.72rem;
+      font-size: 0.62rem;
       font-weight: 800;
-      letter-spacing: 0.06em;
-      height: 5rem;
-      line-height: 1.05;
+      letter-spacing: 0.02em;
+      line-height: 1.18;
+      word-break: break-all;
     }
     .runner {
       font-size: 0.58rem;
@@ -176,22 +175,23 @@
     .score-cell { min-height: 1.85rem; }
     .score-cell .k { display: block; font-size: 0.5rem; color: var(--muted); font-weight: 600; }
     .score-cell b { font-size: 1.05rem; font-weight: 800; color: var(--hb); }
-    .odds-cell { min-height: 1.7rem; }
-    .odds-cell .k { display: block; font-size: 0.5rem; color: var(--muted); font-weight: 600; }
-    .odds-cell b { font-size: 0.95rem; font-weight: 800; }
-
-    /* 案B: 印と評価点をHB箱にまとめる */
-    .hb {
-      min-height: 2.15rem;
-      background: var(--hb-bg);
+    .odds-cell {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 0.15rem;
-      padding: 0.12rem;
+      gap: 0.08rem;
+      min-height: 2.55rem;
     }
-    .hb .mark { border: 0; flex: none; font-size: 1.15rem; }
-    .hb b { font-size: 1.12rem; font-weight: 800; color: var(--hb); }
+    .odds-cell .k { display: block; font-size: 0.5rem; color: var(--muted); font-weight: 600; }
+    .odds-cell .mk {
+      min-height: 1.2rem;
+      font-size: 1.12rem;
+      font-weight: 800;
+      color: var(--mark);
+      line-height: 1.2;
+    }
+    .odds-cell b { font-size: 0.95rem; font-weight: 800; line-height: 1; }
 
     .stats {
       font-size: 0.58rem;
@@ -217,11 +217,11 @@
     .sp b { display: block; font-size: 1.12rem; font-weight: 800; line-height: 1.1; }
     .sp small { display: block; font-size: 0.5rem; color: var(--muted); font-weight: 600; margin-top: 0.08rem; }
 
-    .stub .id-row, .stub .who { min-height: 1.7rem; }
-    .stub .who { height: 5.4rem; }
+    .stub .id-row { min-height: 1.7rem; }
+    .stub .who { min-height: 4.55rem; height: auto; }
     .stub .runner { min-height: 1.55rem; }
-    .stub .score-cell, .stub .odds-cell { min-height: 1.7rem; }
-    .stub .hb { min-height: 2.15rem; }
+    .stub .score-cell { min-height: 1.85rem; }
+    .stub .odds-cell { min-height: 2.55rem; }
     .stub .stats { min-height: 4.1rem; }
     .stub .apt { min-height: 2.35rem; }
     .stub .sp { min-height: 2.35rem; }
@@ -230,14 +230,14 @@
 <body>
   <div class="stage">
     <h1>ウマ柱モック</h1>
-    <p class="note">スキル名は出さない。スキルパワーはパドックと同じく土台点（有効＋金2倍＋戦略）を大きく、有効・金の枚数を小さく置く。枠番色は使わない。頭数切替は密度確認用。</p>
+    <p class="note">スキル名は出さない。スキルパワーはパドックと同じく土台点（有効＋金2倍＋戦略）を大きく、有効・金の枚数を小さく置く。枠番色は使わない。頭数切替は密度確認用。ウマ娘は petit → 名前の縦並び。印は評価点の順位で付け、表示はオッズ欄（左右中央・縦並び）。</p>
     <div class="toolbar" id="toolbar"></div>
-    <h2>案A — 印は列頭。評価点の下にオッズ</h2>
-    <p class="note">実紙の「番＋脚質 → 馬名 → 指数 → 印」を、印を一番上に出した読み。評価点とオッズは別セルで比較しやすい。</p>
-    <div class="sheet-wrap" id="a"></div>
-    <h2>案B — 印を評価点の箱へ。番は列頭</h2>
-    <p class="note">実紙の HB 指数＋印の並び。評価点が新聞の指数に見え、オッズは一段下の市場。</p>
+    <h2>現行寄せ（案B）— 印はオッズ欄</h2>
+    <p class="note">列頭はウマ番と脚質。評価点は単独。オッズ欄の上段が印、下段が倍率。無印は印の高さを空けて倍率の位置を揃える。</p>
     <div class="sheet-wrap" id="b"></div>
+    <h2>参考（案A）— 印は列頭</h2>
+    <p class="note">見送り候補。ウマ娘の縦並びだけ現行に合わせ、印の位置の違いを見る用。</p>
+    <div class="sheet-wrap" id="a"></div>
   </div>
   <script>
     /* モック用の仮データ。本番の差し込みとは別 */
@@ -292,23 +292,30 @@
       return `<img src="${h.petit}" alt="" data-ph="${ch}" onerror="this.outerHTML='<div class=ph>'+this.dataset.ph+'</div>'">`;
     }
 
+    function whoHtml(h) {
+      return `<div class="cell who">${face(h)}<span class="uma">${h.uma}</span></div>`;
+    }
+    function oddsHtml(h, mark, withMark) {
+      const mk = withMark ? `<span class="mk">${mark || "　"}</span>` : `<span class="k">オッズ</span>`;
+      return `<div class="cell odds-cell">${mk}<b>${h.odds.toFixed(1)}</b></div>`;
+    }
     function colA(h, mark) {
       return `<div class="col">
         <div class="cell id-row"><div class="mark">${mark || "　"}</div><div class="num"><b>${h.n}</b><span class="style">${h.style}</span></div></div>
-        <div class="cell who"><div class="who-inner">${face(h)}<span class="uma">${h.uma}</span></div></div>
+        ${whoHtml(h)}
         <div class="cell runner">${h.runner}</div>
         <div class="cell score-cell"><span class="k">評価点</span><b>${h.score.toFixed(1)}</b></div>
-        <div class="cell odds-cell"><span class="k">オッズ</span><b>${h.odds.toFixed(1)}</b></div>
+        ${oddsHtml(h, mark, false)}
         ${statsHtml(h)}${aptHtml(h)}${spHtml(h)}
       </div>`;
     }
     function colB(h, mark) {
       return `<div class="col">
         <div class="cell id-row"><div class="num" style="width:100%"><b>${h.n}</b><span class="style">${h.style}</span></div></div>
-        <div class="cell who"><div class="who-inner">${face(h)}<span class="uma">${h.uma}</span></div></div>
+        ${whoHtml(h)}
         <div class="cell runner">${h.runner}</div>
-        <div class="cell hb"><span class="mark">${mark || "　"}</span><b>${h.score.toFixed(1)}</b></div>
-        <div class="cell odds-cell"><span class="k">オッズ</span><b>${h.odds.toFixed(1)}</b></div>
+        <div class="cell score-cell"><span class="k">評価点</span><b>${h.score.toFixed(1)}</b></div>
+        ${oddsHtml(h, mark, true)}
         ${statsHtml(h)}${aptHtml(h)}${spHtml(h)}
       </div>`;
     }
@@ -319,8 +326,8 @@
       return `<div class="grid stub"><div class="col">${cells.map((t, i) => `<div class="cell ${cls[i]}">${t}</div>`).join("")}</div></div>`;
     }
     function stubB() {
-      const cells = ["番・脚", "ウマ娘", "出走者", "印・評価点", "オッズ", "ステ", "適性", "SP"];
-      const cls = ["id-row", "who", "runner", "hb", "odds-cell", "stats", "apt", "sp"];
+      const cells = ["番・脚", "ウマ娘", "出走者", "評価点", "印・オッズ", "ステ", "適性", "SP"];
+      const cls = ["id-row", "who", "runner", "score-cell", "odds-cell", "stats", "apt", "sp"];
       return `<div class="grid stub"><div class="col">${cells.map((t, i) => `<div class="cell ${cls[i]}">${t}</div>`).join("")}</div></div>`;
     }
 

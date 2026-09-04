@@ -8,7 +8,7 @@
 入場 `/login`　場内 `/`　パドック `/paddock`　窓口 `/bet`　管理 `/admin`
 アプリ版は [version.md](version.md)（数字の正本は `package.json`）
 
-詳細は [playbook.md](playbook.md)。第2回までにやることは [next.md](next.md)。号外の見た目は [gougai.md](gougai.md) と [モック](mocks/gougai/index.html) で確定。管理タブは未実装。ウマ柱はコミュニティ公開用。評価点と印は出す。スキル名は出さない。モック2案の比較待ち（[umabashira.md](umabashira.md)）。
+詳細は [playbook.md](playbook.md)。第2回までにやることは [next.md](next.md)。号外の見た目は [gougai.md](gougai.md) と [モック](mocks/gougai/index.html) で確定。管理タブは未実装。ウマ柱はコミュニティ公開用。評価点と印は出す。スキル名は出さない。モックは案B寄せ（印はオッズ欄）の確認待ち（[umabashira.md](umabashira.md)）。
 
 ## 仮置き（第2回）
 
