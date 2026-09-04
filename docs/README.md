@@ -31,7 +31,7 @@
 | [release-log.md](release-log.md) | 本番リリースの実施記録と復元基準 |
 | [rejected.md](rejected.md) | 見送った案と理由 |
 | [gougai.md](gougai.md) | 号外（note 用紙面）。見た目の正は mocks/gougai。管理タブは未実装 |
-| [umabashira.md](umabashira.md) | ウマ柱（競馬新聞風）。データ洗い出し済み。掲載項目・モックは未 |
+| [umabashira.md](umabashira.md) | ウマ柱（競馬新聞風）。掲載確定。レイアウト・モックは未 |
 | [next.md](next.md) | 次に取り組む項目名と参照 |
 
 内部の点数は **評価点**。メンバー画面には出さない。
