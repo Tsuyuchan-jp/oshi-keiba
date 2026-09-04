@@ -15,6 +15,10 @@
 
 ## Unreleased
 
+### Changed
+
+- 号外の見た目をモック `.paper` で確定（誌名「月刊つゅインクル　号外」。管理タブは未実装）— [gougai.md](gougai.md)
+
 ## 0.4.0 — 2026-09-02
 
 ### Added

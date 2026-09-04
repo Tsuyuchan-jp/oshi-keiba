@@ -4,7 +4,7 @@
 
 ## 次にやること
 
-- チャンミで表示される競馬新聞風の号外をある程度自動で生成できる機能を追加 — [gougai.md](gougai.md)・[モック](mocks/gougai/index.html)
+- 号外の管理タブ実装（見た目はモック確定。差し込み・プレビュー・PNG）— [gougai.md](gougai.md)・[モック](mocks/gougai/index.html)
 
 ## そのあと
 

@@ -1,6 +1,6 @@
 # いま
 
-最終更新: 2026-09-01
+最終更新: 2026-09-05
 
 動いている催しがプロダクトの本体。第1回（2026-08-23 メンバーシップエクストラLoH）は払い戻しまで完了。第2回は Neko長明さんが開催を決めた。作り直しはしない。
 
@@ -8,7 +8,7 @@
 入場 `/login`　場内 `/`　パドック `/paddock`　窓口 `/bet`　管理 `/admin`
 アプリ版は [version.md](version.md)（数字の正本は `package.json`）
 
-詳細は [playbook.md](playbook.md)。第2回までにやることは [next.md](next.md)。
+詳細は [playbook.md](playbook.md)。第2回までにやることは [next.md](next.md)。号外の見た目は [gougai.md](gougai.md) と [モック](mocks/gougai/index.html) で確定。管理タブは未実装。
 
 ## 仮置き（第2回）
 
