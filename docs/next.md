@@ -4,6 +4,8 @@
 
 ## 次にやること
 
+- チャンミで表示される競馬新聞風の号外をある程度自動で生成できる機能を追加 — [gougai.md](gougai.md)・[モック](mocks/gougai/index.html)
+
 ## そのあと
 
 - 票入り台帳の絞り込み実機 — [ledger.html](mocks/admin-dash/ledger.html)

@@ -30,6 +30,7 @@
 | [release.md](release.md) | 本番リリース前後の確認、障害時の復旧判断 |
 | [release-log.md](release-log.md) | 本番リリースの実施記録と復元基準 |
 | [rejected.md](rejected.md) | 見送った案と理由 |
+| [gougai.md](gougai.md) | 号外（note 用紙面）。管理タブ・素材・メインビューの確定 |
 | [next.md](next.md) | 次に取り組む項目名と参照 |
 
 内部の点数は **評価点**。メンバー画面には出さない。
