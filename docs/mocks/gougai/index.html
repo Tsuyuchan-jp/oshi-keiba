@@ -190,31 +190,31 @@
       gap: 0.35rem;
     }
     .face {
-      position: relative;
+      display: flex;
+      align-items: center;
       flex-shrink: 0;
-      width: 4.85rem;
       height: 100%;
+      padding: 0.18rem 0;
     }
-    .face .wreath {
-      position: absolute;
-      inset: 2% -8%;
+    .face .wreath-l,
+    .face .wreath-r {
+      display: block;
+      height: 78%;
       width: auto;
-      height: 96%;
-      margin: 0 auto;
-      object-fit: contain;
+      flex-shrink: 0;
       pointer-events: none;
     }
     .face .icon {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 2.42rem;
-      height: 2.42rem;
+      display: block;
+      width: 3.15rem;
+      height: 3.15rem;
+      margin: 0 -0.28rem;
       border-radius: 50%;
       object-fit: cover;
       border: 1.5px solid var(--gold);
       background: #111;
-      transform: translate(-50%, -50%);
+      z-index: 1;
+      position: relative;
     }
     .who-copy {
       flex: 1 1 auto;
@@ -350,8 +350,9 @@
         <img class="trainer-sparkles" src="../../../public/twinkle/frames/gogai_sparkles.png" alt="">
         <div class="who-row">
           <div class="face">
-            <img class="wreath" src="../../../public/twinkle/frames/gogai_wreath.png" alt="">
+            <img class="wreath-l" src="../../../public/twinkle/frames/gogai_wreath_l.png" alt="">
             <img class="icon" src="trainer-icon.png" alt="">
+            <img class="wreath-r" src="../../../public/twinkle/frames/gogai_wreath_r.png" alt="">
           </div>
           <div class="who-copy">
             <span class="win">優勝</span>
@@ -377,8 +378,9 @@
           <img class="trainer-sparkles" src="../../../public/twinkle/frames/gogai_sparkles.png" alt="">
           <div class="who-row">
             <div class="face">
-              <img class="wreath" src="../../../public/twinkle/frames/gogai_wreath.png" alt="">
+              <img class="wreath-l" src="../../../public/twinkle/frames/gogai_wreath_l.png" alt="">
               <img class="icon" src="trainer-icon.png" alt="">
+              <img class="wreath-r" src="../../../public/twinkle/frames/gogai_wreath_r.png" alt="">
             </div>
             <div class="who-copy">
               <span class="win">優勝</span>
