@@ -180,7 +180,7 @@
       background: #ece4d2;
       border: 1px solid #b9b09c;
       padding: 0.06rem 0.08rem;
-      transform: translateY(0.06em);
+      transform: translateY(0.08em);
     }
 
     .who {
@@ -190,6 +190,10 @@
       justify-content: flex-start;
       gap: 0.16rem;
       padding: 0.18rem 0.06rem 0.2rem;
+    }
+    .stub-col .who {
+      justify-content: center;
+      padding: 0.18rem 0.06rem;
     }
     .who img, .who .ph {
       width: 1.95rem;
@@ -223,7 +227,7 @@
       white-space: nowrap;
       overflow: hidden;
       max-width: 100%;
-      transform: translateY(0.06em);
+      transform: translateY(0.08em);
     }
 
     .score-cell {
@@ -261,10 +265,14 @@
       font-size: 0.52rem;
       font-variant-numeric: tabular-nums;
       line-height: 1.28;
-      min-height: 3.85rem;
       text-align: left;
-      padding-left: 0.12rem;
-      padding-right: 0.08rem;
+      padding: 0.14rem 0.12rem 0.14rem 0.12rem;
+    }
+    .stats.empty {
+      min-height: 1.55rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .stats span { display: flex; justify-content: space-between; padding-right: 0.12rem; }
     .stats .lab { color: var(--muted); font-weight: 600; }
