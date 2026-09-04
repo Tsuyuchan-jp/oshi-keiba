@@ -148,23 +148,178 @@
     }
     .article .lead { color: var(--orange); font-weight: 700; }
 
-    /* トレーナー帯は生成画像で試作。CSSレイアウトは一旦使わない */
+    /*
+      トレーナー帯: gogai_trainer_band.png を正。
+      地・金線・仕切り・バッジ・文字は CSS。月桂冠とキラキラは部品画像。
+      高さは正と同じアスペクト（1536×316）。
+    */
     .trainer {
-      display: block;
-      line-height: 0;
-      background: #f6edd8;
+      --gold: #c9a227;
+      --gold-line: #e0c36a;
+      --cream: #fdf8ec;
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 1536 / 316;
+      background: linear-gradient(180deg, #fffdf6, var(--cream) 45%, #f6edd8);
+      box-shadow:
+        inset 0 1px 0 var(--gold-line),
+        inset 0 2px 0 #f3e6b8,
+        inset 0 -1px 0 var(--gold-line),
+        inset 0 -2px 0 #f3e6b8;
+      font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
     }
-    .trainer img {
+    .trainer-sparkles {
+      position: absolute;
+      z-index: 0;
+      right: 0.15rem;
+      top: 8%;
+      height: 84%;
+      width: 4.8rem;
+      object-fit: contain;
+      object-position: right center;
+      pointer-events: none;
+      opacity: .88;
+    }
+    .who-row {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      height: 100%;
+      padding: 0 0.75rem 0 0.4rem;
+      gap: 0.35rem;
+    }
+    .face {
+      position: relative;
+      flex-shrink: 0;
+      width: 4.85rem;
+      height: 100%;
+    }
+    .face .wreath {
+      position: absolute;
+      inset: 2% -8%;
+      width: auto;
+      height: 96%;
+      margin: 0 auto;
+      object-fit: contain;
+      pointer-events: none;
+    }
+    .face .icon {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 2.42rem;
+      height: 2.42rem;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid var(--gold);
+      background: #111;
+      transform: translate(-50%, -50%);
+    }
+    .who-copy {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding-bottom: 0.05rem;
+    }
+    .win {
+      display: inline-block;
+      margin: 0 0 0.1rem;
+      padding: 0.04rem 0.38rem 0.05rem;
+      border-radius: 3px;
+      background: #ff8600;
+      color: #fff;
+      font-size: 0.52rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      line-height: 1.25;
+    }
+    .who {
+      margin: 0;
+      color: #151515;
+      font-family: "M PLUS 1p", "Hiragino Sans", sans-serif;
+      font-size: 1.02rem;
+      font-weight: 800;
+      line-height: 1.12;
+    }
+    .uma {
+      margin: 0.08rem 0 0;
+      color: #5a5a5a;
+      font-size: 0.68rem;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: 0.04em;
+    }
+    .facts {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex: 0 0 38.5%;
+      min-width: 0;
+      align-self: stretch;
+      margin: 0.42rem 0;
+      padding: 0 2.6rem 0 0.7rem;
+      border-left: 1px solid #b07c18;
+      list-style: none;
+      color: #222;
+    }
+    .facts li { margin: 0; }
+    .facts .event {
+      font-size: 0.84rem;
+      font-weight: 800;
+      line-height: 1.25;
+      color: #151515;
+    }
+    .facts .course,
+    .facts .cond {
+      margin-top: 0.12rem;
+      color: #4a4a4a;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      line-height: 1.25;
+    }
+
+    .cmp {
+      margin-top: 1.4rem;
+    }
+    .cmp h2 {
+      margin: 0.9rem 0 0.35rem;
+      color: #c9d4de;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+    }
+    .cmp h2:first-child { margin-top: 0; }
+    .spec-band {
       display: block;
       width: 100%;
       height: auto;
+      border-radius: 2px;
+    }
+    .stack {
+      position: relative;
+      aspect-ratio: 1536 / 316;
+    }
+    .stack .spec-band {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+    }
+    .stack .trainer {
+      position: absolute;
+      inset: 0;
+      opacity: 0.42;
+      aspect-ratio: auto;
+      height: 100%;
     }
   </style>
 </head>
 <body>
   <div class="stage">
     <p class="note">
-      号外プレビュー。トレーナー帯は生成画像の試作（CSSレイアウトは一旦オフ）。
+      号外プレビュー。トレーナー帯は CSS＋月桂冠／キラキラ部品。下で正画像と重ねて比較。
     </p>
     <article class="paper">
       <header class="masthead">月刊トゥインクル　号外</header>
@@ -192,8 +347,53 @@
         </p>
       </div>
       <section class="trainer" aria-label="優勝者と開催条件">
-        <img src="../../../public/twinkle/frames/gogai_trainer_band.png" alt="プレビュー太郎 優勝　プレビュー杯　東京 芝2400m　晴・良 18頭">
+        <img class="trainer-sparkles" src="../../../public/twinkle/frames/gogai_sparkles.png" alt="">
+        <div class="who-row">
+          <div class="face">
+            <img class="wreath" src="../../../public/twinkle/frames/gogai_wreath.png" alt="">
+            <img class="icon" src="trainer-icon.png" alt="">
+          </div>
+          <div class="who-copy">
+            <span class="win">優勝</span>
+            <p class="who">プレビュー太郎</p>
+            <p class="uma">スペシャルウィーク　逃げ</p>
+          </div>
+          <ul class="facts">
+            <li class="event">プレビュー杯</li>
+            <li class="course">東京　芝2400m</li>
+            <li class="cond">晴・良　｜　18頭</li>
+          </ul>
+        </div>
       </section>
+    </article>
+
+    <div class="cmp">
+      <h2>正（生成画像）</h2>
+      <img class="spec-band" src="../../../public/twinkle/frames/gogai_trainer_band.png" alt="">
+      <h2>重ね（正の上に CSS を半透明）</h2>
+      <div class="stack">
+        <img class="spec-band" src="../../../public/twinkle/frames/gogai_trainer_band.png" alt="">
+        <section class="trainer" aria-hidden="true">
+          <img class="trainer-sparkles" src="../../../public/twinkle/frames/gogai_sparkles.png" alt="">
+          <div class="who-row">
+            <div class="face">
+              <img class="wreath" src="../../../public/twinkle/frames/gogai_wreath.png" alt="">
+              <img class="icon" src="trainer-icon.png" alt="">
+            </div>
+            <div class="who-copy">
+              <span class="win">優勝</span>
+              <p class="who">プレビュー太郎</p>
+              <p class="uma">スペシャルウィーク　逃げ</p>
+            </div>
+            <ul class="facts">
+              <li class="event">プレビュー杯</li>
+              <li class="course">東京　芝2400m</li>
+              <li class="cond">晴・良　｜　18頭</li>
+            </ul>
+          </div>
+        </section>
+      </div>
+    </div>
     </article>
   </div>
 </body>
