@@ -31,14 +31,7 @@
       line-height: 1.5;
       margin: 0 0 0.75rem;
     }
-    .variant-h {
-      color: #c9d4de;
-      font-size: 0.8rem;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      margin: 1.7rem 0 0.45rem;
-    }
-    .variant-h:first-of-type { margin-top: 0.35rem; }
+
     .paper {
       background: var(--paper);
       border-radius: 3px;
@@ -155,117 +148,17 @@
     }
     .article .lead { color: var(--orange); font-weight: 700; }
 
-    /* ---- トレーナー帯 共通部品 ---- */
-    .face {
-      position: relative;
-      flex-shrink: 0;
-    }
-    .face img {
-      display: block;
-      width: 3.1rem;
-      height: 3.1rem;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #fff;
-      background: #111;
-    }
-    .face .no {
-      position: absolute;
-      right: -0.12rem;
-      bottom: -0.08rem;
-      display: grid;
-      place-items: center;
-      width: 1.1rem;
-      height: 1.1rem;
-      border-radius: 50%;
-      background: var(--green);
-      color: #fff;
-      font-size: 0.58rem;
-      font-weight: 800;
-      box-shadow: 0 0 0 2px #fff;
-    }
-    .who {
-      margin: 0;
-      font-family: "M PLUS 1p", "Hiragino Sans", sans-serif;
-      font-weight: 800;
-      line-height: 1.15;
-    }
-    .uma { margin: 0; font-weight: 700; }
-    .win {
-      display: inline-block;
-      padding: 0.04rem 0.32rem;
-      background: var(--orange);
-      color: #fff;
-      font-size: 0.55rem;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-    }
-
-    /* A: 勝利者会見場。メインの芝とは別画像。下だけグラデ */
-    .tb-a {
-      position: relative;
-      height: 5.35rem;
-      overflow: hidden;
-      font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
-    }
-    .tb-a .bg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center 58%;
-    }
-    .tb-a::after {
-      content: "";
-      position: absolute;
-      inset: 22% 0 0;
-      background: linear-gradient(transparent, rgba(8,16,28,.82));
-    }
-    .tb-a .row {
-      position: absolute;
-      z-index: 1;
-      left: 0.55rem;
-      right: 0.5rem;
-      bottom: 0.4rem;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      gap: 0.5rem 0.55rem;
-      color: #fff;
-      text-shadow: 0 1px 4px rgba(0,0,0,.5);
-    }
-    .tb-a .who { font-size: 1.05rem; }
-    .tb-a .uma { font-size: 0.68rem; opacity: .95; margin-top: 0.08rem; }
-    .tb-a .specs {
-      display: grid;
-      grid-template-columns: 7.2rem 7.2rem;
-      gap: 0.18rem 0.7rem;
-      margin: 0;
-      padding-left: 0.7rem;
-      border-left: 1px solid rgba(255,255,255,.35);
-    }
-    .tb-a .specs dt {
-      margin: 0;
-      font-size: 0.5rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      opacity: .78;
-    }
-    .tb-a .specs dd {
-      margin: 0.04rem 0 0;
-      font-size: 0.68rem;
-      font-weight: 700;
-      line-height: 1.2;
-    }
-
-    /* D: 新聞欄外。左=人物、右=2×2のスペック */
-    .tb-d {
+    /*
+      トレーナー帯（D・確定）
+      上段: 人物（大きく）。下段: 開催スペックを全幅4列。
+      同じ段に名前と4項目を詰めると字が小さくなり視認性が落ちる。
+    */
+    .trainer {
       font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
       background: #f4f1e8;
       border-top: 3px solid #1a1a1a;
     }
-    .tb-d .rule {
+    .trainer .rule {
       height: 4px;
       background: repeating-linear-gradient(
         90deg,
@@ -275,49 +168,95 @@
         #fff 24px 28px
       );
     }
-    .tb-d .row {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+    .who-row {
+      display: flex;
       align-items: center;
-      gap: 0.5rem 0.55rem;
-      padding: 0.42rem 0.55rem 0.48rem;
+      gap: 0.55rem;
+      padding: 0.5rem 0.65rem 0.45rem;
     }
-    .tb-d .face img { border-color: #1a1a1a; }
-    .tb-d .who { font-size: 1.02rem; color: #111; }
-    .tb-d .uma { font-size: 0.66rem; color: #444; margin-top: 0.08rem; }
-    .tb-d .specs {
+    .face {
+      position: relative;
+      flex-shrink: 0;
+    }
+    .face img {
+      display: block;
+      width: 3.15rem;
+      height: 3.15rem;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #1a1a1a;
+      background: #111;
+    }
+    .face .no {
+      position: absolute;
+      right: -0.12rem;
+      bottom: -0.08rem;
       display: grid;
-      grid-template-columns: 6.6rem 7.4rem;
-      gap: 0.22rem 0.85rem;
-      margin: 0;
-      padding-left: 0.75rem;
-      border-left: 1px solid #c9c1aa;
-    }
-    .tb-d .specs dt {
-      margin: 0;
-      color: #7a7364;
-      font-size: 0.5rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-    }
-    .tb-d .specs dd {
-      margin: 0.04rem 0 0;
-      color: #1a1a1a;
-      font-size: 0.7rem;
+      place-items: center;
+      width: 1.15rem;
+      height: 1.15rem;
+      border-radius: 50%;
+      background: var(--green);
+      color: #fff;
+      font-size: 0.6rem;
       font-weight: 800;
-      line-height: 1.2;
+      box-shadow: 0 0 0 2px #f4f1e8;
+    }
+    .win {
+      display: inline-block;
+      margin: 0 0 0.12rem;
+      padding: 0.04rem 0.35rem;
+      background: var(--orange);
+      color: #fff;
+      font-size: 0.58rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+    }
+    .who {
+      margin: 0;
+      color: #111;
+      font-family: "M PLUS 1p", "Hiragino Sans", sans-serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      line-height: 1.15;
+    }
+    .uma {
+      margin: 0.1rem 0 0;
+      color: #444;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .specs {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.2rem 0.45rem;
+      margin: 0;
+      padding: 0.4rem 0.65rem 0.48rem;
+      background: #ebe4d0;
+      border-top: 1px solid #d4ccb4;
+    }
+    .specs dt {
+      margin: 0;
+      color: #6e6758;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+    .specs dd {
+      margin: 0.08rem 0 0;
+      color: #1a1a1a;
+      font-size: 0.78rem;
+      font-weight: 800;
+      line-height: 1.3;
+      overflow-wrap: anywhere;
     }
   </style>
 </head>
 <body>
   <div class="stage">
     <p class="note">
-      トレーナー帯は A（会見場）と D（欄外の段組み直し）の2案。B・Cは見送り。
+      号外プレビュー。トレーナー帯は D（上段＝人物、下段＝開催4列）。イラスト案は見送り。
     </p>
-    <div id="variants"></div>
-  </div>
-
-  <template id="paper-tpl">
     <article class="paper">
       <header class="masthead">月刊トゥインクル　号外</header>
       <div class="cover">
@@ -343,68 +282,39 @@
           こんな走りを見られたことに、ただただ感謝したい。
         </p>
       </div>
-      <div class="band-slot"></div>
+      <section class="trainer" aria-label="優勝者と開催条件">
+        <div class="rule"></div>
+        <div class="who-row">
+          <div class="face">
+            <img src="trainer-icon.png" alt="">
+            <span class="no">1</span>
+          </div>
+          <div>
+            <span class="win">優勝</span>
+            <p class="who">プレビュー太郎</p>
+            <p class="uma">スペシャルウィーク　逃げ</p>
+          </div>
+        </div>
+        <dl class="specs">
+          <div>
+            <dt>開催</dt>
+            <dd>プレビュー杯</dd>
+          </div>
+          <div>
+            <dt>コース</dt>
+            <dd>東京 2400m（芝）</dd>
+          </div>
+          <div>
+            <dt>天候・バ場</dt>
+            <dd>晴・良</dd>
+          </div>
+          <div>
+            <dt>頭数</dt>
+            <dd>8頭</dd>
+          </div>
+        </dl>
+      </section>
     </article>
-  </template>
-
-  <script>
-    const face = `
-      <div class="face">
-        <img src="trainer-icon.png" alt="">
-        <span class="no">1</span>
-      </div>`;
-    const specs = `
-      <dl class="specs">
-        <div><dt>開催</dt><dd>プレビュー杯</dd></div>
-        <div><dt>コース</dt><dd>東京 2400m（芝）</dd></div>
-        <div><dt>天候・バ場</dt><dd>晴・良</dd></div>
-        <div><dt>頭数</dt><dd>8頭</dd></div>
-      </dl>`;
-    const variants = [
-      {
-        title: "A. 勝利者会見場キャプション",
-        html: `
-          <section class="tb-a" aria-label="優勝者と開催条件">
-            <img class="bg" src="../../../public/twinkle/frames/gogai_press.png" alt="">
-            <div class="row">
-              ${face}
-              <div>
-                <span class="win">優勝</span>
-                <p class="who">プレビュー太郎</p>
-                <p class="uma">スペシャルウィーク　逃げ</p>
-              </div>
-              ${specs}
-            </div>
-          </section>`
-      },
-      {
-        title: "D. 新聞欄外（段組み）",
-        html: `
-          <section class="tb-d" aria-label="優勝者と開催条件">
-            <div class="rule"></div>
-            <div class="row">
-              ${face}
-              <div>
-                <span class="win">優勝</span>
-                <p class="who">プレビュー太郎</p>
-                <p class="uma">スペシャルウィーク　逃げ</p>
-              </div>
-              ${specs}
-            </div>
-          </section>`
-      }
-    ];
-    const root = document.getElementById("variants");
-    const tpl = document.getElementById("paper-tpl");
-    for (const v of variants) {
-      const h = document.createElement("h2");
-      h.className = "variant-h";
-      h.textContent = v.title;
-      root.appendChild(h);
-      const node = tpl.content.cloneNode(true);
-      node.querySelector(".band-slot").outerHTML = v.html;
-      root.appendChild(node);
-    }
-  </script>
+  </div>
 </body>
 </html>
