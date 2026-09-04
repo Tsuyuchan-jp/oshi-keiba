@@ -149,114 +149,113 @@
     .article .lead { color: var(--orange); font-weight: 700; }
 
     /*
-      トレーナー帯（D）: 一段。左＝人物（現状どおり）、右＝開催4値（ラベルなし）。
-      右の4値はウマ娘行と同じ 0.78rem / 700、余白は格子で揃える。
+      トレーナー帯: 参考画像どおり一段。
+      左＝月桂冠＋人物。右＝3行（開催 / 場・距離芝 / 天候バ場｜頭数）。ラベルなし。
     */
     .trainer {
+      position: relative;
+      overflow: hidden;
       font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
-      background: #f4f1e8;
-      border-top: 3px solid #1a1a1a;
-    }
-    .trainer .rule {
-      height: 4px;
-      background: repeating-linear-gradient(
-        90deg,
-        var(--orange) 0 10px,
-        #fff 10px 14px,
-        var(--green) 14px 24px,
-        #fff 24px 28px
-      );
+      background:
+        radial-gradient(ellipse 55% 120% at 100% 50%, rgba(212, 181, 106, .18), transparent 62%),
+        linear-gradient(180deg, #fffaf0, #f6edd8);
+      box-shadow:
+        inset 0 1px 0 #e8d7a8,
+        inset 0 -1px 0 #e8d7a8;
     }
     .who-row {
       display: flex;
       align-items: center;
-      gap: 0.55rem;
-      padding: 0.5rem 0.65rem 0.45rem;
+      gap: 0.5rem;
+      padding: 0.32rem 0.7rem 0.32rem 0.55rem;
     }
     .face {
       position: relative;
       flex-shrink: 0;
+      width: 2.85rem;
+      height: 2.85rem;
     }
     .face img {
       display: block;
-      width: 3.15rem;
-      height: 3.15rem;
+      width: 2.55rem;
+      height: 2.55rem;
+      margin: 0.15rem auto 0;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid #1a1a1a;
+      border: 2px solid #d4b56a;
       background: #111;
     }
-    .face .no {
+    .face svg {
       position: absolute;
-      right: -0.12rem;
-      bottom: -0.08rem;
-      display: grid;
-      place-items: center;
-      width: 1.15rem;
-      height: 1.15rem;
-      border-radius: 50%;
-      background: var(--green);
-      color: #fff;
-      font-size: 0.6rem;
-      font-weight: 800;
-      box-shadow: 0 0 0 2px #f4f1e8;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
     }
     .who-copy {
-      flex: 1 1 7.5rem;
+      flex: 1 1 auto;
       min-width: 0;
     }
     .win {
       display: inline-block;
-      margin: 0 0 0.12rem;
-      padding: 0.04rem 0.35rem;
+      margin: 0 0 0.08rem;
+      padding: 0.02rem 0.32rem 0.04rem;
+      border-radius: 3px;
       background: var(--orange);
       color: #fff;
-      font-size: 0.58rem;
+      font-size: 0.55rem;
       font-weight: 800;
       letter-spacing: 0.14em;
+      line-height: 1.3;
     }
     .who {
       margin: 0;
       color: #111;
       font-family: "M PLUS 1p", "Hiragino Sans", sans-serif;
-      font-size: 1.15rem;
+      font-size: 1.02rem;
       font-weight: 800;
-      line-height: 1.15;
+      line-height: 1.12;
     }
     .uma {
-      margin: 0.1rem 0 0;
-      color: #444;
-      font-size: 0.78rem;
+      margin: 0.06rem 0 0;
+      color: #555;
+      font-size: 0.72rem;
       font-weight: 700;
+      line-height: 1.2;
     }
     .facts {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      align-content: center;
-      column-gap: 0.6rem;
-      row-gap: 0.2rem;
-      flex: 1 1 8.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex: 0 0 38%;
       min-width: 0;
-      margin: 0;
-      padding: 0 0 0 0.6rem;
-      border-left: 1px solid #d4ccb4;
+      margin: 0.2rem 0;
+      padding: 0 0 0 0.7rem;
+      border-left: 1px solid #d4b56a;
       list-style: none;
-      color: #333;
-      font-size: 0.78rem;
-      font-weight: 700;
-      line-height: 1.35;
+      color: #222;
+      line-height: 1.28;
     }
-    .facts li {
-      margin: 0;
-      overflow-wrap: anywhere;
+    .facts li { margin: 0; overflow-wrap: anywhere; }
+    .facts .event {
+      font-size: 0.86rem;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+    .facts .course,
+    .facts .cond {
+      margin-top: 0.1rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #333;
+      letter-spacing: 0.04em;
     }
   </style>
 </head>
 <body>
   <div class="stage">
     <p class="note">
-      号外プレビュー。トレーナー帯は一段。左が人物、右が開催4値（ラベルなし）。
+      号外プレビュー。トレーナー帯は参考画像寄せ。右は3行（開催／コース／天候｜頭数）。
     </p>
     <article class="paper">
       <header class="masthead">月刊トゥインクル　号外</header>
@@ -288,7 +287,13 @@
         <div class="who-row">
           <div class="face">
             <img src="trainer-icon.png" alt="">
-            <span class="no">1</span>
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <path fill="none" stroke="#d4b56a" stroke-width="2.2" stroke-linecap="round"
+                d="M10 38c2 10 12 18 22 18s20-8 22-18"/>
+              <path fill="none" stroke="#c9a227" stroke-width="1.6" stroke-linecap="round"
+                d="M12 36c-4-8 1-18 8-20M52 36c4-8-1-18-8-20"/>
+              <path fill="#d4b56a" d="M30 54h4l-2 6z"/>
+            </svg>
           </div>
           <div class="who-copy">
             <span class="win">優勝</span>
@@ -296,10 +301,9 @@
             <p class="uma">スペシャルウィーク　逃げ</p>
           </div>
           <ul class="facts">
-            <li>プレビュー杯</li>
-            <li>東京 2400m（芝）</li>
-            <li>晴・良</li>
-            <li>8頭</li>
+            <li class="event">プレビュー杯</li>
+            <li class="course">東京　芝2400m</li>
+            <li class="cond">晴・良　｜　18頭</li>
           </ul>
         </div>
       </section>
