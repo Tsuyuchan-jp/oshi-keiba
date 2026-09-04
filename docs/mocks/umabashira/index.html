@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ウマ柱モック — 案A / 案B</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #f3efe4;
+      --ink: #1a1814;
+      --rule: #2a2722;
+      --muted: #6a6458;
+      --mark: #c41218;
+      --hb: #163a8a;
+      --hb-bg: #dbe6fb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
+      background: #2a3038;
+      color: #e8eaed;
+    }
+    .stage { padding: 1rem 1.1rem 3rem; }
+    .note {
+      color: #9aa4b0;
+      font-size: 0.8rem;
+      line-height: 1.55;
+      max-width: 52rem;
+      margin: 0 0 0.85rem;
+    }
+    h1 { font-size: 1.05rem; font-weight: 800; margin: 0 0 0.4rem; }
+    h2 {
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      margin: 1.4rem 0 0.45rem;
+      color: #c9d0d8;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0 0 1rem;
+    }
+    .toolbar button {
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border: 0;
+      border-radius: 3px;
+      padding: 0.28rem 0.7rem;
+      background: #3d4650;
+      color: #e8eaed;
+      cursor: pointer;
+    }
+    .toolbar button.on { background: #e8eaed; color: #1a1814; }
+
+    .sheet-wrap {
+      overflow-x: auto;
+      background: #1d2228;
+      padding: 0.7rem;
+      border-radius: 4px;
+    }
+    .paper {
+      min-width: max-content;
+      background: var(--paper);
+      color: var(--ink);
+      border: 2px solid var(--rule);
+    }
+    .mast {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 1rem;
+      align-items: baseline;
+      padding: 0.32rem 0.45rem;
+      border-bottom: 2px solid var(--rule);
+      font-weight: 800;
+      font-size: 0.78rem;
+    }
+    .mast .meta { font-weight: 600; font-size: 0.7rem; color: #3c382f; }
+    .mast .keys { font-weight: 400; font-size: 0.62rem; color: var(--muted); margin-left: auto; }
+
+    .grid {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 4.55rem;
+    }
+    .stub { width: 2.15rem; grid-auto-columns: 2.15rem; }
+    .col {
+      border-left: 1px solid var(--rule);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .stub .col { border-left: 0; background: #e7e1d3; }
+    .cell {
+      border-bottom: 1px solid #c8c0ae;
+      padding: 0.18rem 0.16rem;
+      text-align: center;
+    }
+    .stub .cell {
+      font-size: 0.52rem;
+      font-weight: 700;
+      writing-mode: vertical-rl;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .id-row {
+      display: flex;
+      align-items: stretch;
+      height: 1.7rem;
+      padding: 0;
+    }
+    .mark {
+      flex: 0 0 1.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--mark);
+      border-right: 1px solid #c8c0ae;
+    }
+    .num {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      line-height: 1;
+    }
+    .num b { font-size: 1.05rem; font-weight: 800; }
+    .style {
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+    }
+
+    .who { height: 5.4rem; padding: 0.15rem 0.1rem 0.2rem; }
+    .who-inner {
+      display: flex;
+      gap: 0.12rem;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+    }
+    .who img, .who .ph {
+      width: 2.05rem;
+      height: 2.05rem;
+      object-fit: contain;
+      background: #ddd6c6;
+      flex: none;
+    }
+    .who .ph { display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; }
+    .uma {
+      writing-mode: vertical-rl;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      height: 5rem;
+      line-height: 1.05;
+    }
+    .runner {
+      font-size: 0.58rem;
+      font-weight: 700;
+      line-height: 1.2;
+      min-height: 1.55rem;
+    }
+
+    .score-cell { min-height: 1.85rem; }
+    .score-cell .k { display: block; font-size: 0.5rem; color: var(--muted); font-weight: 600; }
+    .score-cell b { font-size: 1.05rem; font-weight: 800; color: var(--hb); }
+    .odds-cell { min-height: 1.7rem; }
+    .odds-cell .k { display: block; font-size: 0.5rem; color: var(--muted); font-weight: 600; }
+    .odds-cell b { font-size: 0.95rem; font-weight: 800; }
+
+    /* 案B: 印と評価点をHB箱にまとめる */
+    .hb {
+      min-height: 2.15rem;
+      background: var(--hb-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.15rem;
+      padding: 0.12rem;
+    }
+    .hb .mark { border: 0; flex: none; font-size: 1.15rem; }
+    .hb b { font-size: 1.12rem; font-weight: 800; color: var(--hb); }
+
+    .stats {
+      font-size: 0.58rem;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.28;
+      min-height: 4.1rem;
+      text-align: left;
+      padding-left: 0.22rem;
+    }
+    .stats span { display: flex; justify-content: space-between; padding-right: 0.12rem; }
+    .stats .lab { color: var(--muted); font-weight: 600; }
+    .empty { color: var(--muted); text-align: center; }
+
+    .apt {
+      font-size: 0.58rem;
+      font-weight: 700;
+      line-height: 1.3;
+      min-height: 2.35rem;
+    }
+    .apt .s { color: var(--mark); }
+
+    .sp { min-height: 2.35rem; }
+    .sp b { display: block; font-size: 1.12rem; font-weight: 800; line-height: 1.1; }
+    .sp small { display: block; font-size: 0.5rem; color: var(--muted); font-weight: 600; margin-top: 0.08rem; }
+
+    .stub .id-row, .stub .who { min-height: 1.7rem; }
+    .stub .who { height: 5.4rem; }
+    .stub .runner { min-height: 1.55rem; }
+    .stub .score-cell, .stub .odds-cell { min-height: 1.7rem; }
+    .stub .hb { min-height: 2.15rem; }
+    .stub .stats { min-height: 4.1rem; }
+    .stub .apt { min-height: 2.35rem; }
+    .stub .sp { min-height: 2.35rem; }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <h1>ウマ柱モック</h1>
+    <p class="note">スキル名は出さない。スキルパワーはパドックと同じく土台点（有効＋金2倍＋戦略）を大きく、有効・金の枚数を小さく置く。枠番色は使わない。頭数切替は密度確認用。</p>
+    <div class="toolbar" id="toolbar"></div>
+    <h2>案A — 印は列頭。評価点の下にオッズ</h2>
+    <p class="note">実紙の「番＋脚質 → 馬名 → 指数 → 印」を、印を一番上に出した読み。評価点とオッズは別セルで比較しやすい。</p>
+    <div class="sheet-wrap" id="a"></div>
+    <h2>案B — 印を評価点の箱へ。番は列頭</h2>
+    <p class="note">実紙の HB 指数＋印の並び。評価点が新聞の指数に見え、オッズは一段下の市場。</p>
+    <div class="sheet-wrap" id="b"></div>
+  </div>
+  <script>
+    /* モック用の仮データ。本番の差し込みとは別 */
+    const ALL = [
+      { n: 1, uma: "スペシャルウィーク", runner: "プレビュー太郎", style: "先", score: 128.4, odds: 3.8, sp: 28, eff: 16, gold: 5, stats: [1204, 980, 1120, 880, 1010], apt: ["芝S", "中S", "先A"], petit: "/images/umamusume/petit/petit_1001_000101_0010.png" },
+      { n: 2, uma: "サイレンススズカ", runner: "みほ", style: "逃", score: 121.0, odds: 5.2, sp: 24, eff: 14, gold: 4, stats: [1188, 860, 1040, 820, 990], apt: ["芝S", "中A", "逃S"], petit: "/images/umamusume/petit/petit_1002_000101_0010.png" },
+      { n: 3, uma: "トウカイテイオー", runner: "帝王くん", style: "先", score: 114.6, odds: 6.1, sp: 22, eff: 12, gold: 4, stats: [1160, 920, 1088, 900, 940], apt: ["芝S", "中S", "先S"], petit: "/images/umamusume/petit/petit_1003_100301_0010.png" },
+      { n: 4, uma: "メジロマックイーン", runner: "麦", style: "差", score: 109.2, odds: 7.4, sp: 21, eff: 13, gold: 3, stats: [1102, 1180, 1020, 860, 970], apt: ["芝A", "長S", "差A"], petit: "/images/umamusume/petit/petit_1013_101301_0010.png" },
+      { n: 5, uma: "オグリキャップ", runner: "笠松", style: "差", score: 104.8, odds: 8.9, sp: 20, eff: 11, gold: 4, stats: [1140, 900, 1110, 840, 920], apt: ["芝A", "マイルS", "差A"], petit: "/images/umamusume/petit/petit_1020_102001_0010.png" },
+      { n: 6, uma: "ゴールドシップ", runner: "しまさん", style: "追", score: 98.5, odds: 11.2, sp: 19, eff: 10, gold: 4, stats: [1088, 1040, 990, 910, 880], apt: ["芝A", "中A", "追S"], petit: "/images/umamusume/petit/petit_1035_103516_0010.png" },
+      { n: 7, uma: "ナリタブライアン", runner: "直置き花子", style: "先", score: 92.0, odds: 14.6, sp: null, eff: null, gold: null, stats: null, apt: null, petit: "/images/umamusume/petit/petit_1039_103901_0010.png" },
+      { n: 8, uma: "シンボリルドルフ", runner: "皇帝", style: "先", score: 88.4, odds: 16.8, sp: 17, eff: 9, gold: 3, stats: [1120, 1000, 1060, 950, 1020], apt: ["芝S", "中A", "先A"], petit: "/images/umamusume/petit/petit_1016_101601_0010.png" },
+      { n: 9, uma: "テイエムオペラオー", runner: "王様", style: "先", score: 81.1, odds: 22.4, sp: 16, eff: 10, gold: 2, stats: [1090, 960, 1010, 870, 930], apt: ["芝A", "中S", "先A"], petit: "/images/umamusume/petit/petit_1055_105501_0010.png" },
+      { n: 10, uma: "エルコンドルパサー", runner: "コンドル", style: "差", score: 76.3, odds: 28.0, sp: 15, eff: 8, gold: 3, stats: [1130, 840, 1070, 800, 910], apt: ["芝A", "マイルA", "差S"], petit: "/images/umamusume/petit/petit_1066_106601_0010.png" },
+      { n: 11, uma: "ヒシミラクル", runner: "ひし", style: "追", score: 70.2, odds: 36.5, sp: 14, eff: 9, gold: 2, stats: [1040, 1010, 980, 890, 860], apt: ["芝A", "中A", "追A"], petit: "/images/umamusume/petit/petit_1050_105001_0010.png" },
+      { n: 12, uma: "マチカネフクキタル", runner: "福来", style: "差", score: 64.8, odds: 48.2, sp: 12, eff: 7, gold: 2, stats: [1020, 880, 990, 820, 900], apt: ["芝A", "中A", "差A"], petit: "/images/umamusume/petit/petit_1022_102201_0010.png" },
+      { n: 13, uma: "セイウンスカイ", runner: "しょーじ", style: "逃", score: 61.0, odds: 55.0, sp: 13, eff: 8, gold: 2, stats: [1110, 820, 1000, 780, 870], apt: ["芝A", "中A", "逃S"], petit: "/images/umamusume/petit/petit_1027_000101_0010.png" },
+      { n: 14, uma: "アドマイヤベガ", runner: "ベガ", style: "差", score: 58.4, odds: 62.0, sp: 11, eff: 6, gold: 2, stats: [1070, 900, 1030, 810, 890], apt: ["芝A", "中A", "差A"], petit: "/images/umamusume/petit/petit_1083_108301_0010.png" },
+      { n: 15, uma: "ファインモーション", runner: "細", style: "先", score: 55.1, odds: 71.0, sp: 10, eff: 6, gold: 1, stats: [1050, 870, 980, 800, 940], apt: ["芝S", "マイルA", "先A"], petit: "/images/umamusume/petit/petit_1102_110201_0010.png" },
+      { n: 16, uma: "ダイワスカーレット", runner: "赤", style: "逃", score: 52.0, odds: 82.0, sp: 10, eff: 5, gold: 2, stats: [1140, 800, 1010, 770, 850], apt: ["芝A", "マイルS", "逃A"], petit: "/images/umamusume/petit/petit_1061_106101_0010.png" },
+      { n: 17, uma: "ウオッカ", runner: "ウォッカ", style: "先", score: 49.6, odds: 91.0, sp: 9, eff: 5, gold: 1, stats: [1160, 760, 1040, 740, 880], apt: ["芝A", "マイルS", "先A"], petit: "/images/umamusume/petit/petit_1032_000101_0010.png" },
+      { n: 18, uma: "ダイタクヘリオス", runner: "太陽", style: "逃", score: 44.2, odds: 120.0, sp: 8, eff: 4, gold: 1, stats: [1080, 740, 990, 720, 800], apt: ["芝A", "マイルA", "逃A"], petit: "/images/umamusume/petit/petit_9002_900201_0010.png" },
+    ];
+
+    function marksFor(horses) {
+      const order = horses.map((h, i) => i).sort((a, b) => {
+        if (horses[b].score !== horses[a].score) return horses[b].score - horses[a].score;
+        return horses[a].n - horses[b].n;
+      });
+      const table = ["◎", "○", "▲", "△", "△", "△"];
+      const out = Array(horses.length).fill("");
+      order.forEach((idx, rank) => { out[idx] = table[rank] || ""; });
+      return out;
+    }
+
+    const STAT_L = ["速", "スタ", "パ", "根", "賢"];
+
+    function statsHtml(h) {
+      if (!h.stats) return `<div class="cell stats empty">—</div>`;
+      return `<div class="cell stats">${h.stats.map((v, i) => `<span><span class="lab">${STAT_L[i]}</span>${v}</span>`).join("")}</div>`;
+    }
+    function aptHtml(h) {
+      if (!h.apt) return `<div class="cell apt empty">—</div>`;
+      return `<div class="cell apt">${h.apt.map((t) => t.endsWith("S") ? `<span class="s">${t}</span>` : t).join("<br>")}</div>`;
+    }
+    function spHtml(h) {
+      if (h.sp == null) return `<div class="cell sp empty">—</div>`;
+      return `<div class="cell sp"><b>${h.sp}</b><small>有効 ${h.eff}　金 ${h.gold}</small></div>`;
+    }
+    function face(h) {
+      const ch = h.uma.slice(0, 1);
+      return `<img src="${h.petit}" alt="" data-ph="${ch}" onerror="this.outerHTML='<div class=ph>'+this.dataset.ph+'</div>'">`;
+    }
+
+    function colA(h, mark) {
+      return `<div class="col">
+        <div class="cell id-row"><div class="mark">${mark || "　"}</div><div class="num"><b>${h.n}</b><span class="style">${h.style}</span></div></div>
+        <div class="cell who"><div class="who-inner">${face(h)}<span class="uma">${h.uma}</span></div></div>
+        <div class="cell runner">${h.runner}</div>
+        <div class="cell score-cell"><span class="k">評価点</span><b>${h.score.toFixed(1)}</b></div>
+        <div class="cell odds-cell"><span class="k">オッズ</span><b>${h.odds.toFixed(1)}</b></div>
+        ${statsHtml(h)}${aptHtml(h)}${spHtml(h)}
+      </div>`;
+    }
+    function colB(h, mark) {
+      return `<div class="col">
+        <div class="cell id-row"><div class="num" style="width:100%"><b>${h.n}</b><span class="style">${h.style}</span></div></div>
+        <div class="cell who"><div class="who-inner">${face(h)}<span class="uma">${h.uma}</span></div></div>
+        <div class="cell runner">${h.runner}</div>
+        <div class="cell hb"><span class="mark">${mark || "　"}</span><b>${h.score.toFixed(1)}</b></div>
+        <div class="cell odds-cell"><span class="k">オッズ</span><b>${h.odds.toFixed(1)}</b></div>
+        ${statsHtml(h)}${aptHtml(h)}${spHtml(h)}
+      </div>`;
+    }
+
+    function stubA() {
+      const cells = ["印・番・脚", "ウマ娘", "出走者", "評価点", "オッズ", "ステ", "適性", "SP"];
+      const cls = ["id-row", "who", "runner", "score-cell", "odds-cell", "stats", "apt", "sp"];
+      return `<div class="grid stub"><div class="col">${cells.map((t, i) => `<div class="cell ${cls[i]}">${t}</div>`).join("")}</div></div>`;
+    }
+    function stubB() {
+      const cells = ["番・脚", "ウマ娘", "出走者", "印・評価点", "オッズ", "ステ", "適性", "SP"];
+      const cls = ["id-row", "who", "runner", "hb", "odds-cell", "stats", "apt", "sp"];
+      return `<div class="grid stub"><div class="col">${cells.map((t, i) => `<div class="cell ${cls[i]}">${t}</div>`).join("")}</div></div>`;
+    }
+
+    function sheet(kind, horses) {
+      const marks = marksFor(horses);
+      const cols = horses.map((h, i) => kind === "a" ? colA(h, marks[i]) : colB(h, marks[i])).join("");
+      return `<div class="paper">
+        <div class="mast">
+          <span>第3回春の合同練習杯</span>
+          <span class="meta">東京　芝2400m　晴・良　｜　${horses.length}頭</span>
+          <span class="keys">◎本命 ○対抗 ▲単穴 △穴　／　SP=スキルパワー（有効・金の枚数）</span>
+        </div>
+        <div style="display:flex">
+          ${kind === "a" ? stubA() : stubB()}
+          <div class="grid">${cols}</div>
+        </div>
+      </div>`;
+    }
+
+    let count = 12;
+    function render() {
+      const horses = ALL.slice(0, count);
+      document.getElementById("a").innerHTML = sheet("a", horses);
+      document.getElementById("b").innerHTML = sheet("b", horses);
+      document.getElementById("toolbar").innerHTML = [8, 12, 18].map((n) =>
+        `<button type="button" class="${n === count ? "on" : ""}" data-n="${n}">${n}頭</button>`
+      ).join("");
+    }
+    document.getElementById("toolbar").addEventListener("click", (e) => {
+      const n = Number(e.target.dataset.n);
+      if (!n) return;
+      count = n;
+      render();
+    });
+    render();
+  </script>
+</body>
+</html>
