@@ -13,6 +13,7 @@
       --muted: #6a6458;
       --mark: #c41218;
       --hb: #163a8a;
+      --col-w: 3.32rem;
     }
     * { box-sizing: border-box; }
     body {
@@ -85,19 +86,20 @@
     .grid {
       display: grid;
       grid-auto-flow: column;
-      grid-auto-columns: 4.55rem;
+      grid-auto-columns: var(--col-w);
     }
-    .stub { width: 2.15rem; grid-auto-columns: 2.15rem; }
+    .stub { width: 2.05rem; grid-auto-columns: 2.05rem; }
     .col {
       border-left: 1px solid var(--rule);
       display: flex;
       flex-direction: column;
       min-height: 0;
+      width: var(--col-w);
     }
-    .stub .col { border-left: 0; background: #e7e1d3; }
+    .stub .col { border-left: 0; background: #e7e1d3; width: 2.05rem; }
     .cell {
       border-bottom: 1px solid #c8c0ae;
-      padding: 0.18rem 0.16rem;
+      padding: 0.14rem 0.08rem;
       text-align: center;
     }
     .stub .cell {
@@ -118,15 +120,16 @@
       padding: 0;
     }
     .mark {
-      flex: 0 0 1.15rem;
+      flex: 0 0 1.05rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.05rem;
+      font-size: 0.98rem;
       font-weight: 800;
       color: var(--mark);
       border-right: 1px solid #c8c0ae;
     }
+    .mark.none { color: #8d8678; font-weight: 600; }
     .num {
       flex: 1;
       display: flex;
@@ -146,35 +149,45 @@
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      gap: 0.14rem;
-      min-height: 4.55rem;
-      padding: 0.2rem 0.1rem 0.22rem;
+      gap: 0.16rem;
+      min-height: 9.1rem;
+      padding: 0.18rem 0.06rem 0.2rem;
     }
     .who img, .who .ph {
-      width: 2.2rem;
-      height: 2.2rem;
+      width: 1.95rem;
+      height: 1.95rem;
       object-fit: contain;
       background: #ddd6c6;
       flex: none;
     }
     .who .ph { display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; }
     .uma {
-      font-size: 0.62rem;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      font-size: 0.78rem;
       font-weight: 800;
-      letter-spacing: 0.02em;
-      line-height: 1.18;
-      word-break: break-all;
+      letter-spacing: 0.06em;
+      line-height: 1.05;
+      height: 6.85rem;
     }
     .runner {
-      font-size: 0.58rem;
+      font-size: 0.56rem;
       font-weight: 700;
-      line-height: 1.2;
-      min-height: 1.55rem;
+      line-height: 1.15;
+      min-height: 1.45rem;
+      white-space: nowrap;
+      overflow: hidden;
+      padding-left: 0.04rem;
+      padding-right: 0.04rem;
     }
 
-    .score-cell { min-height: 1.85rem; }
-    .score-cell .k { display: block; font-size: 0.5rem; color: var(--muted); font-weight: 600; }
-    .score-cell b { font-size: 1.05rem; font-weight: 800; color: var(--hb); }
+    .score-cell {
+      min-height: 1.55rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .score-cell b { font-size: 0.92rem; font-weight: 800; color: var(--hb); }
     .odds-cell {
       display: flex;
       flex-direction: column;
@@ -185,55 +198,62 @@
     }
     .odds-cell .k { display: block; font-size: 0.5rem; color: var(--muted); font-weight: 600; }
     .odds-cell .mk {
-      min-height: 1.2rem;
-      font-size: 1.12rem;
+      min-height: 1.15rem;
+      font-size: 1.05rem;
       font-weight: 800;
       color: var(--mark);
-      line-height: 1.2;
+      line-height: 1.15;
+    }
+    .odds-cell .mk.none {
+      color: #8d8678;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0;
     }
     .odds-cell b { font-size: 0.95rem; font-weight: 800; line-height: 1; }
 
     .stats {
-      font-size: 0.58rem;
+      font-size: 0.52rem;
       font-variant-numeric: tabular-nums;
       line-height: 1.28;
-      min-height: 4.1rem;
+      min-height: 3.85rem;
       text-align: left;
-      padding-left: 0.22rem;
+      padding-left: 0.12rem;
+      padding-right: 0.08rem;
     }
     .stats span { display: flex; justify-content: space-between; padding-right: 0.12rem; }
     .stats .lab { color: var(--muted); font-weight: 600; }
     .empty { color: var(--muted); text-align: center; }
 
     .apt {
-      font-size: 0.58rem;
+      font-size: 0.52rem;
       font-weight: 700;
-      line-height: 1.3;
-      min-height: 2.35rem;
+      line-height: 1.28;
+      min-height: 2.2rem;
     }
     .apt .s { color: var(--mark); }
 
     .sp { min-height: 2.35rem; }
     .sp b { display: block; font-size: 1.12rem; font-weight: 800; line-height: 1.1; }
-    .sp small { display: block; font-size: 0.5rem; color: var(--muted); font-weight: 600; margin-top: 0.08rem; }
+    .sp small { display: block; font-size: 0.46rem; color: var(--muted); font-weight: 600; margin-top: 0.06rem; line-height: 1.2; }
 
     .stub .id-row { min-height: 1.7rem; }
-    .stub .who { min-height: 4.55rem; height: auto; }
-    .stub .runner { min-height: 1.55rem; }
-    .stub .score-cell { min-height: 1.85rem; }
+    .stub .who { min-height: 9.1rem; height: auto; }
+    .stub .runner { min-height: 1.45rem; }
+    .stub .score-cell { min-height: 1.55rem; }
     .stub .odds-cell { min-height: 2.55rem; }
-    .stub .stats { min-height: 4.1rem; }
-    .stub .apt { min-height: 2.35rem; }
+    .stub .stats { min-height: 3.85rem; }
+    .stub .apt { min-height: 2.2rem; }
     .stub .sp { min-height: 2.35rem; }
   </style>
 </head>
 <body>
   <div class="stage">
     <h1>ウマ柱モック</h1>
-    <p class="note">スキル名は出さない。スキルパワーはパドックと同じく土台点（有効＋金2倍＋戦略）を大きく、有効・金の枚数を小さく置く。枠番色は使わない。頭数切替は密度確認用。ウマ娘は petit → 名前の縦並び。印は評価点の順位で付け、表示はオッズ欄（左右中央・縦並び）。</p>
+    <p class="note">スキル名は出さない。列幅は全頭同じで狭め。ウマ娘名は縦書き。印なしは横棒「─」。評価点セルに項目名は置かない。出走者は幅に合わせて字を小さくする。</p>
     <div class="toolbar" id="toolbar"></div>
     <h2>現行寄せ（案B）— 印はオッズ欄</h2>
-    <p class="note">列頭はウマ番と脚質。評価点は単独。オッズ欄の上段が印、下段が倍率。無印は印の高さを空けて倍率の位置を揃える。</p>
+    <p class="note">列頭はウマ番と脚質。評価点は数字だけ。オッズ欄の上段が印（無印は─）、下段が倍率。</p>
     <div class="sheet-wrap" id="b"></div>
     <h2>参考（案A）— 印は列頭</h2>
     <p class="note">見送り候補。ウマ娘の縦並びだけ現行に合わせ、印の位置の違いを見る用。</p>
@@ -242,7 +262,7 @@
   <script>
     /* モック用の仮データ。本番の差し込みとは別 */
     const ALL = [
-      { n: 1, uma: "スペシャルウィーク", runner: "プレビュー太郎", style: "先", score: 128.4, odds: 3.8, sp: 28, eff: 16, gold: 5, stats: [1204, 980, 1120, 880, 1010], apt: ["芝S", "中S", "先A"], petit: "/images/umamusume/petit/petit_1001_000101_0010.png" },
+      { n: 1, uma: "スペシャルウィーク", runner: "プレビュー太郎左衛門", style: "先", score: 128.4, odds: 3.8, sp: 28, eff: 16, gold: 5, stats: [1204, 980, 1120, 880, 1010], apt: ["芝S", "中S", "先A"], petit: "/images/umamusume/petit/petit_1001_000101_0010.png" },
       { n: 2, uma: "サイレンススズカ", runner: "みほ", style: "逃", score: 121.0, odds: 5.2, sp: 24, eff: 14, gold: 4, stats: [1188, 860, 1040, 820, 990], apt: ["芝S", "中A", "逃S"], petit: "/images/umamusume/petit/petit_1002_000101_0010.png" },
       { n: 3, uma: "トウカイテイオー", runner: "帝王くん", style: "先", score: 114.6, odds: 6.1, sp: 22, eff: 12, gold: 4, stats: [1160, 920, 1088, 900, 940], apt: ["芝S", "中S", "先S"], petit: "/images/umamusume/petit/petit_1003_100301_0010.png" },
       { n: 4, uma: "メジロマックイーン", runner: "麦", style: "差", score: 109.2, odds: 7.4, sp: 21, eff: 13, gold: 3, stats: [1102, 1180, 1020, 860, 970], apt: ["芝A", "長S", "差A"], petit: "/images/umamusume/petit/petit_1013_101301_0010.png" },
@@ -295,16 +315,21 @@
     function whoHtml(h) {
       return `<div class="cell who">${face(h)}<span class="uma">${h.uma}</span></div>`;
     }
+    function markHtml(mark) {
+      return mark
+        ? `<span class="mk">${mark}</span>`
+        : `<span class="mk none" aria-label="無印">─</span>`;
+    }
     function oddsHtml(h, mark, withMark) {
-      const mk = withMark ? `<span class="mk">${mark || "　"}</span>` : `<span class="k">オッズ</span>`;
+      const mk = withMark ? markHtml(mark) : `<span class="k">オッズ</span>`;
       return `<div class="cell odds-cell">${mk}<b>${h.odds.toFixed(1)}</b></div>`;
     }
     function colA(h, mark) {
       return `<div class="col">
-        <div class="cell id-row"><div class="mark">${mark || "　"}</div><div class="num"><b>${h.n}</b><span class="style">${h.style}</span></div></div>
+        <div class="cell id-row"><div class="mark${mark ? "" : " none"}">${mark || "─"}</div><div class="num"><b>${h.n}</b><span class="style">${h.style}</span></div></div>
         ${whoHtml(h)}
         <div class="cell runner">${h.runner}</div>
-        <div class="cell score-cell"><span class="k">評価点</span><b>${h.score.toFixed(1)}</b></div>
+        <div class="cell score-cell"><b>${h.score.toFixed(1)}</b></div>
         ${oddsHtml(h, mark, false)}
         ${statsHtml(h)}${aptHtml(h)}${spHtml(h)}
       </div>`;
@@ -314,7 +339,7 @@
         <div class="cell id-row"><div class="num" style="width:100%"><b>${h.n}</b><span class="style">${h.style}</span></div></div>
         ${whoHtml(h)}
         <div class="cell runner">${h.runner}</div>
-        <div class="cell score-cell"><span class="k">評価点</span><b>${h.score.toFixed(1)}</b></div>
+        <div class="cell score-cell"><b>${h.score.toFixed(1)}</b></div>
         ${oddsHtml(h, mark, true)}
         ${statsHtml(h)}${aptHtml(h)}${spHtml(h)}
       </div>`;
@@ -347,11 +372,23 @@
       </div>`;
     }
 
+    function fitRunners(root) {
+      root.querySelectorAll(".grid:not(.stub) .runner").forEach((el) => {
+        el.style.fontSize = "";
+        let px = parseFloat(getComputedStyle(el).fontSize);
+        while (el.scrollWidth > el.clientWidth + 0.5 && px > 7.5) {
+          px -= 0.4;
+          el.style.fontSize = `${px}px`;
+        }
+      });
+    }
     let count = 12;
     function render() {
       const horses = ALL.slice(0, count);
       document.getElementById("a").innerHTML = sheet("a", horses);
       document.getElementById("b").innerHTML = sheet("b", horses);
+      fitRunners(document.getElementById("a"));
+      fitRunners(document.getElementById("b"));
       document.getElementById("toolbar").innerHTML = [8, 12, 18].map((n) =>
         `<button type="button" class="${n === count ? "on" : ""}" data-n="${n}">${n}頭</button>`
       ).join("");
