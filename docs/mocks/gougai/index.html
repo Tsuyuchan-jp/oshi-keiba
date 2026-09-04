@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>号外プレビュー — 本文帯の比較</title>
-  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <title>号外プレビュー v2 — oshi-keiba</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@600;700&family=M+PLUS+1p:wght@400;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --green: #6fbf2a;
@@ -32,14 +32,6 @@
       line-height: 1.5;
       margin: 0 0 0.75rem;
     }
-    .variant-h {
-      color: #c9d4de;
-      font-size: 0.8rem;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      margin: 1.6rem 0 0.45rem;
-    }
-    .variant-h:first-of-type { margin-top: 0.4rem; }
 
     .paper {
       background: var(--paper);
@@ -146,117 +138,34 @@
       paint-order: stroke fill;
     }
 
-    /* ---- 本文（共通: 太字） ---- */
+    /*
+      本文: D（緑地＋白カード）から上辺ストライプを外したもの。
+      ジャギ対策: 見出し用の M PLUS 1p 800–900 を本文に使わない。
+      IBM Plex Sans JP 700、サブピクセルAA、縁取りなし。
+    */
     .article {
-      position: relative;
-      font-size: 0.86rem;
-      font-weight: 800;
-      line-height: 1.72;
-    }
-    .article p { margin: 0; }
-    .article .lead { color: var(--orange); font-weight: 900; }
-
-    /* A: マストヘッドと同系統の緑斜線＋左帯＋記者ラベル */
-    .article-a {
-      padding: 0.55rem 0.85rem 0.75rem 1.05rem;
-      background:
-        repeating-linear-gradient(-45deg,
-          rgba(111,191,42,.09) 0 7px,
-          transparent 7px 14px),
-        #f4faee;
-      border-left: 6px solid var(--green);
-    }
-    .article-a .kicker {
-      display: inline-block;
-      margin: 0 0 0.4rem;
-      padding: 0.12rem 0.55rem 0.14rem;
-      background: var(--green);
-      color: #fff;
-      font-size: 0.68rem;
-      letter-spacing: 0.12em;
-      clip-path: polygon(0 0, 100% 0, calc(100% - 0.45rem) 100%, 0 100%);
-    }
-
-    /* B: 競馬新聞（罫線・号外スタンプ・新聞紙色） */
-    .article-b {
-      display: grid;
-      grid-template-columns: 1.55rem 1fr;
-      gap: 0.45rem;
-      padding: 0.55rem 0.7rem 0.7rem;
-      background-color: #efe4c4;
-      background-image: repeating-linear-gradient(
-        0deg, transparent 0 3px, rgba(80,50,10,.05) 3px 4px
-      );
-      box-shadow:
-        inset 0 3px 0 #1a1a1a,
-        inset 0 5px 0 #efe4c4,
-        inset 0 7px 0 #1a1a1a,
-        inset 0 -3px 0 #1a1a1a;
-    }
-    .article-b .stamp {
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
-      justify-self: center;
-      align-self: start;
-      margin-top: 0.15rem;
-      padding: 0.25rem 0.12rem;
-      border: 2px solid #c41212;
-      color: #c41212;
-      font-size: 0.78rem;
-      font-weight: 900;
-      letter-spacing: 0.18em;
-      line-height: 1;
-    }
-    .article-b .byline {
-      display: block;
-      margin: 0 0 0.28rem;
-      color: #5a4a28;
-      font-size: 0.62rem;
-      font-weight: 800;
-      letter-spacing: 0.14em;
-    }
-
-    /* C: 本戦詳報（オレンジ破線枠＋見出し帯） */
-    .article-c {
-      margin: 0.35rem 0.4rem 0.4rem;
-      padding: 0;
-      background: #fff7ea;
-      border: 2px dashed var(--orange);
-    }
-    .article-c .kicker {
-      display: block;
-      margin: 0;
-      padding: 0.22rem 0.65rem;
-      background: linear-gradient(90deg, var(--orange), #ffb340);
-      color: #fff;
-      font-size: 0.72rem;
-      letter-spacing: 0.16em;
-      text-shadow: 0 1px 0 rgba(0,0,0,.15);
-    }
-    .article-c p { padding: 0.55rem 0.7rem 0.65rem; }
-
-    /* D: 誌面ボックス（緑橙の走路ストライプ＋白カード） */
-    .article-d {
       padding: 0.45rem 0.5rem 0.5rem;
       background: #e8f3ea;
     }
-    .article-d .inner {
-      padding: 0.55rem 0.65rem 0.6rem;
+    .article .inner {
+      margin: 0;
+      padding: 0.6rem 0.7rem 0.65rem;
       background: #fff;
       border: 2px solid #d7e6cc;
       box-shadow: 0 2px 0 rgba(74,154,24,.15);
+      color: #1a1a1a;
+      font-family: "IBM Plex Sans JP", "Hiragino Sans", "Noto Sans JP", sans-serif;
+      font-size: 0.92rem;
+      font-weight: 700;
+      line-height: 1.75;
+      letter-spacing: 0.02em;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: auto;
+      -moz-osx-font-smoothing: auto;
     }
-    .article-d .stripe {
-      display: block;
-      height: 6px;
-      margin: -0.55rem -0.65rem 0.5rem;
-      background: repeating-linear-gradient(
-        90deg,
-        var(--orange) 0 12px,
-        #fff 12px 18px,
-        var(--green) 18px 30px,
-        #fff 30px 36px
-      );
+    .article .lead {
+      color: var(--orange);
+      font-weight: 700;
     }
 
     .trainer {
@@ -298,14 +207,11 @@
 <body>
   <div class="stage">
     <p class="note">
-      本文帯の見た目比較（文言・太字は共通）。メインとトレーナー帯は同じ。採用は未定。
+      号外プレビュー。本文帯は D（上辺ストライプなし）。本文フォントは IBM Plex Sans JP 700。
     </p>
-    <div id="variants"></div>
-  </div>
-
-  <template id="paper-tpl">
     <article class="paper">
       <header class="masthead">月刊トゥインクル　号外</header>
+
       <div class="cover">
         <img class="cover-bg" src="../../../public/twinkle/frames/gogai_bg.png" alt="">
         <img class="cover-stand" src="stand-preview.png" alt="スペシャルウィーク">
@@ -318,7 +224,19 @@
           <span class="col-text">見事チャンピオンに</span>
         </div>
       </div>
-      <div class="article-slot"></div>
+
+      <div class="article">
+        <p class="inner">
+          <span class="lead">プレビュー杯</span>
+          本戦！並みいる猛者を退け勝ったのは
+          <span class="lead">スペシャルウィーク</span>！
+          <span class="lead">「プレビュー太郎」</span>
+          との信頼が生んだ最高の結末だ。
+          優勝に相応しい、素晴らしい走りを見せてくれた。
+          こんな走りを見られたことに、ただただ感謝したい。
+        </p>
+      </div>
+
       <section class="trainer" aria-label="1着トレーナー">
         <img class="trainer-bg" src="../../../public/twinkle/frames/zokan_page1_bg.png" alt="">
         <div class="trainer-inner">
@@ -331,51 +249,6 @@
         </div>
       </section>
     </article>
-  </template>
-
-  <script>
-    const bodyHtml = `
-      <span class="lead">プレビュー杯</span>
-      本戦！並みいる猛者を退け勝ったのは
-      <span class="lead">スペシャルウィーク</span>！
-      <span class="lead">「プレビュー太郎」</span>
-      との信頼が生んだ最高の結末だ。
-      優勝に相応しい、素晴らしい走りを見せてくれた。
-      こんな走りを見られたことに、ただただ感謝したい。
-    `;
-    const variants = [
-      {
-        id: "a",
-        title: "A. トゥインクル緑斜線",
-        html: `<div class="article article-a"><span class="kicker">優勝レポート</span><p>${bodyHtml}</p></div>`
-      },
-      {
-        id: "b",
-        title: "B. 競馬新聞・号外スタンプ",
-        html: `<div class="article article-b"><span class="stamp">号外</span><div><span class="byline">本紙・場内取材</span><p>${bodyHtml}</p></div></div>`
-      },
-      {
-        id: "c",
-        title: "C. 本戦詳報（オレンジ破線）",
-        html: `<div class="article article-c"><span class="kicker">本戦詳報</span><p>${bodyHtml}</p></div>`
-      },
-      {
-        id: "d",
-        title: "D. 走路ストライプ＋白カード",
-        html: `<div class="article article-d"><div class="inner"><span class="stripe" aria-hidden="true"></span><p>${bodyHtml}</p></div></div>`
-      }
-    ];
-    const root = document.getElementById("variants");
-    const tpl = document.getElementById("paper-tpl");
-    for (const v of variants) {
-      const h = document.createElement("h2");
-      h.className = "variant-h";
-      h.textContent = v.title;
-      root.appendChild(h);
-      const node = tpl.content.cloneNode(true);
-      node.querySelector(".article-slot").outerHTML = v.html;
-      root.appendChild(node);
-    }
-  </script>
+  </div>
 </body>
 </html>
