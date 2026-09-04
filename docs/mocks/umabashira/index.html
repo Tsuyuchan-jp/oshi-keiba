@@ -14,6 +14,7 @@
       --mark: #c41218;
       --hb: #163a8a;
       --col-w: 3.32rem;
+      --stub-w: 2.15rem;
     }
     * { box-sizing: border-box; }
     body {
@@ -83,40 +84,58 @@
     .mast .meta { font-weight: 600; font-size: 0.7rem; color: #3c382f; }
     .mast .keys { font-weight: 400; font-size: 0.62rem; color: var(--muted); margin-left: auto; }
 
-    .grid {
+    .board {
       display: grid;
-      grid-auto-flow: column;
-      grid-auto-columns: var(--col-w);
+      grid-template-columns: var(--stub-w) repeat(var(--n), var(--col-w));
+      grid-template-rows: repeat(8, auto);
     }
-    .stub { width: 2.05rem; grid-auto-columns: 2.05rem; }
     .col {
+      display: grid;
+      grid-template-rows: subgrid;
+      grid-row: 1 / span 8;
       border-left: 1px solid var(--rule);
-      display: flex;
-      flex-direction: column;
+      min-width: 0;
       min-height: 0;
-      width: var(--col-w);
     }
-    .stub .col { border-left: 0; background: #e7e1d3; width: 2.05rem; }
+    .stub-col {
+      border-left: 0;
+      background: #e7e1d3;
+    }
     .cell {
       border-bottom: 1px solid #c8c0ae;
       padding: 0.14rem 0.08rem;
       text-align: center;
+      min-width: 0;
     }
-    .stub .cell {
-      font-size: 0.52rem;
-      font-weight: 700;
-      writing-mode: vertical-rl;
-      letter-spacing: 0.08em;
+    .stub-cell {
       color: var(--muted);
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
+    }
+    /* 短い行は縦書きするとデータ行より高くなるので横書き＋小さめ */
+    .stub-h {
+      writing-mode: horizontal-tb;
+      font-size: 0.46rem;
+      line-height: 1.15;
+      letter-spacing: 0.02em;
+      padding: 0.06rem 0.05rem;
+      word-break: break-all;
+    }
+    /* 高い行だけ縦書き。行高はデータ側が決める */
+    .stub-v {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      font-size: 0.52rem;
+      letter-spacing: 0.08em;
     }
 
     .id-row {
       display: flex;
       align-items: stretch;
-      height: 2.25rem;
+      min-height: 2.25rem;
       padding: 0;
     }
     .mark {
@@ -248,15 +267,6 @@
     .sp b { display: block; font-size: 1.12rem; font-weight: 800; line-height: 1.1; }
     .sp small { display: block; font-size: 0.46rem; color: var(--muted); font-weight: 600; margin-top: 0.04rem; line-height: 1.2; }
     .sp small:first-of-type { margin-top: 0.08rem; }
-
-    .stub .id-row { min-height: 2.25rem; }
-    .stub .who { min-height: 11.1rem; height: auto; }
-    .stub .runner { min-height: 1.55rem; }
-    .stub .score-cell { min-height: 1.55rem; }
-    .stub .odds-cell { min-height: 2.55rem; }
-    .stub .stats { min-height: 3.85rem; }
-    .stub .apt { min-height: 2.2rem; }
-    .stub .sp { min-height: 3.15rem; }
   </style>
 </head>
 <body>
@@ -359,19 +369,19 @@
       </div>`;
     }
 
-    function stubA() {
-      const cells = ["印・番・脚", "ウマ娘", "トレーナー", "評価点", "オッズ", "ステ", "適性", "SP"];
+    function stubCol(labels) {
       const cls = ["id-row", "who", "runner", "score-cell", "odds-cell", "stats", "apt", "sp"];
-      return `<div class="grid stub"><div class="col">${cells.map((t, i) => `<div class="cell ${cls[i]}">${t}</div>`).join("")}</div></div>`;
+      /* ウマ娘・ステ・適性・SP だけ縦書き。他はデータ行より高くなるので横書き */
+      const vertical = new Set([1, 5, 6, 7]);
+      return `<div class="col stub-col">${labels.map((t, i) =>
+        `<div class="cell stub-cell ${cls[i]} ${vertical.has(i) ? "stub-v" : "stub-h"}">${t}</div>`
+      ).join("")}</div>`;
     }
-    function stubB() {
-      const cells = ["番・脚", "ウマ娘", "トレーナー", "評価点", "印・オッズ", "ステ", "適性", "SP"];
-      const cls = ["id-row", "who", "runner", "score-cell", "odds-cell", "stats", "apt", "sp"];
-      return `<div class="grid stub"><div class="col">${cells.map((t, i) => `<div class="cell ${cls[i]}">${t}</div>`).join("")}</div></div>`;
-    }
-
     function sheet(kind, horses) {
       const marks = marksFor(horses);
+      const stub = stubCol(kind === "a"
+        ? ["印・番・脚", "ウマ娘", "トレーナー", "評価点", "オッズ", "ステ", "適性", "SP"]
+        : ["番・脚", "ウマ娘", "トレーナー", "評価点", "印・オッズ", "ステ", "適性", "SP"]);
       const cols = horses.map((h, i) => kind === "a" ? colA(h, marks[i]) : colB(h, marks[i])).join("");
       return `<div class="paper">
         <div class="mast">
@@ -379,15 +389,12 @@
           <span class="meta">東京　芝2400m　晴・良　｜　${horses.length}頭</span>
           <span class="keys">◎本命 ○対抗 ▲単穴 △穴　／　SP＝点数・有効・白・金</span>
         </div>
-        <div style="display:flex">
-          ${kind === "a" ? stubA() : stubB()}
-          <div class="grid">${cols}</div>
-        </div>
+        <div class="board" style="--n:${horses.length}">${stub}${cols}</div>
       </div>`;
     }
 
     function fitRunners(root) {
-      root.querySelectorAll(".grid:not(.stub) .runner span").forEach((el) => {
+      root.querySelectorAll(".board .col:not(.stub-col) .runner span").forEach((el) => {
         el.style.fontSize = "";
         let px = parseFloat(getComputedStyle(el).fontSize);
         while (el.scrollWidth > el.clientWidth + 0.5 && px > 7.5) {
