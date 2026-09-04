@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>号外プレビュー v2 — oshi-keiba</title>
+  <title>号外プレビュー — トレーナー帯の比較</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@600;700&family=M+PLUS+1p:wght@400;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -20,7 +20,6 @@
       background: #2a3038;
       color: #1a1a1a;
     }
-
     .stage {
       max-width: 26rem;
       margin: 0 auto;
@@ -32,14 +31,20 @@
       line-height: 1.5;
       margin: 0 0 0.75rem;
     }
-
+    .variant-h {
+      color: #c9d4de;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      margin: 1.7rem 0 0.45rem;
+    }
+    .variant-h:first-of-type { margin-top: 0.35rem; }
     .paper {
       background: var(--paper);
       border-radius: 3px;
       overflow: hidden;
       box-shadow: 0 14px 48px rgba(0,0,0,.45);
     }
-
     .masthead {
       background:
         repeating-linear-gradient(-45deg,
@@ -54,7 +59,6 @@
       padding: 0.5rem 0.6rem;
       text-shadow: 0 1px 0 rgba(0,0,0,.18);
     }
-
     .cover {
       position: relative;
       --cover-h: 20rem;
@@ -66,9 +70,7 @@
     }
     .cover-bg {
       position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
+      top: 0; left: 0; bottom: 0;
       width: 85%;
       height: 100%;
       object-fit: cover;
@@ -76,9 +78,7 @@
     }
     .cover-blue {
       position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
+      top: 0; right: 0; bottom: 0;
       width: 15%;
       background: #4a22e1;
       z-index: 1;
@@ -95,9 +95,7 @@
     }
     .cover-titles {
       position: absolute;
-      right: 0;
-      top: 0;
-      bottom: 0;
+      right: 0; top: 0; bottom: 0;
       width: 36%;
       display: flex;
       flex-direction: row;
@@ -132,17 +130,10 @@
       font-weight: 900;
       font-size: calc(var(--cover-inner-h) / 9);
       line-height: 1;
-      letter-spacing: 0;
       color: #e31b23;
       -webkit-text-stroke: 0.07em #ffe44a;
       paint-order: stroke fill;
     }
-
-    /*
-      本文: D（緑地＋白カード）から上辺ストライプを外したもの。
-      ジャギ対策: 見出し用の M PLUS 1p 800–900 を本文に使わない。
-      IBM Plex Sans JP 700、サブピクセルAA、縁取りなし。
-    */
     .article {
       padding: 0.45rem 0.5rem 0.5rem;
       background: #e8f3ea;
@@ -154,175 +145,239 @@
       border: 2px solid #d7e6cc;
       box-shadow: 0 2px 0 rgba(74,154,24,.15);
       color: #1a1a1a;
-      font-family: "IBM Plex Sans JP", "Hiragino Sans", "Noto Sans JP", sans-serif;
+      font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
       font-size: 0.92rem;
       font-weight: 700;
       line-height: 1.75;
       letter-spacing: 0.02em;
       text-rendering: optimizeLegibility;
       -webkit-font-smoothing: auto;
-      -moz-osx-font-smoothing: auto;
     }
-    .article .lead {
-      color: var(--orange);
-      font-weight: 700;
+    .article .lead { color: var(--orange); font-weight: 700; }
+
+    /* ---- トレーナー帯 共通部品 ---- */
+    .face {
+      position: relative;
+      flex-shrink: 0;
+    }
+    .face img {
+      display: block;
+      width: 3.1rem;
+      height: 3.1rem;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #fff;
+      background: #111;
+    }
+    .face .no {
+      position: absolute;
+      right: -0.12rem;
+      bottom: -0.08rem;
+      display: grid;
+      place-items: center;
+      width: 1.1rem;
+      height: 1.1rem;
+      border-radius: 50%;
+      background: var(--green);
+      color: #fff;
+      font-size: 0.58rem;
+      font-weight: 800;
+      box-shadow: 0 0 0 2px #fff;
+    }
+    .who {
+      margin: 0;
+      font-family: "M PLUS 1p", "Hiragino Sans", sans-serif;
+      font-weight: 800;
+      line-height: 1.15;
+    }
+    .uma { margin: 0; font-weight: 700; }
+    .win {
+      display: inline-block;
+      padding: 0.04rem 0.32rem;
+      background: var(--orange);
+      color: #fff;
+      font-size: 0.55rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
     }
 
-    /* 左: 優勝者カード / 右: 開催スペック。写真の上でも読める白パネル */
-    .trainer {
+    /* A: メインと同じ芝。下だけグラデ。箱なし */
+    .tb-a {
       position: relative;
-      aspect-ratio: 8 / 3;
+      height: 5.2rem;
+      overflow: hidden;
+      font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
+    }
+    .tb-a .bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 78%;
+    }
+    .tb-a::after {
+      content: "";
+      position: absolute;
+      inset: 28% 0 0;
+      background: linear-gradient(transparent, rgba(8,22,14,.78));
+    }
+    .tb-a .row {
+      position: absolute;
+      z-index: 1;
+      left: 0.55rem;
+      right: 0.55rem;
+      bottom: 0.38rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #fff;
+      text-shadow: 0 1px 4px rgba(0,0,0,.55);
+    }
+    .tb-a .who { font-size: 1.05rem; }
+    .tb-a .uma { font-size: 0.68rem; opacity: .95; margin-top: 0.08rem; }
+    .tb-a .meta {
+      margin-left: auto;
+      text-align: right;
+      font-size: 0.62rem;
+      font-weight: 700;
+      line-height: 1.45;
+      letter-spacing: 0.02em;
+    }
+
+    /* B: 左にアーチ写真、右は番組表（写真は隠さない） */
+    .tb-b {
+      display: grid;
+      grid-template-columns: 40% 1fr;
+      height: 5.35rem;
+      overflow: hidden;
+      font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
+    }
+    .tb-b .shot {
+      position: relative;
       overflow: hidden;
     }
-    .trainer-bg {
+    .tb-b .shot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 68% 42%;
+    }
+    .tb-b .form {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.35rem 0.5rem;
+      background: #efe6c8;
+      background-image: repeating-linear-gradient(
+        0deg, transparent 0 11px, rgba(80,50,10,.06) 11px 12px
+      );
+    }
+    .tb-b .who { font-size: 0.98rem; color: #1a1408; }
+    .tb-b .uma { font-size: 0.66rem; color: #4a3c22; margin-top: 0.1rem; }
+    .tb-b .chips {
+      margin: 0.18rem 0 0;
+      color: #3a2e18;
+      font-size: 0.58rem;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    /* C: 増刊見出しの三帯。箱なしで帯の色に乗せる */
+    .tb-c {
+      position: relative;
+      height: 5.5rem;
+      overflow: hidden;
+      font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
+    }
+    .tb-c .bg {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       object-fit: fill;
     }
-    .trainer-inner {
+    .tb-c .row {
       position: relative;
       z-index: 1;
       height: 100%;
-      display: grid;
-      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-      gap: 0.45rem;
-      align-items: stretch;
-      padding: 0.5rem 0.5rem;
-      font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
-    }
-    .trainer-panel {
       display: flex;
       align-items: center;
-      gap: 0.55rem;
-      min-width: 0;
-      padding: 0.45rem 0.55rem;
-      background: rgba(255,255,255,.86);
-      border: 1px solid rgba(255,255,255,.95);
-      box-shadow: 0 2px 10px rgba(20,40,20,.18);
+      gap: 0.5rem;
+      padding: 0 1.7rem 0 0.55rem;
     }
-    .id-face {
-      position: relative;
-      flex-shrink: 0;
-    }
-    .id-face img {
-      display: block;
-      width: 3.35rem;
-      height: 3.35rem;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid #fff;
-      background: #111;
-      box-shadow: 0 1px 5px rgba(0,0,0,.22);
-    }
-    .id-face .no {
-      position: absolute;
-      right: -0.15rem;
-      bottom: -0.1rem;
-      display: grid;
-      place-items: center;
-      width: 1.2rem;
-      height: 1.2rem;
-      border-radius: 50%;
-      background: var(--green);
-      color: #fff;
-      font-size: 0.62rem;
-      font-weight: 800;
-      box-shadow: 0 0 0 2px #fff;
-    }
-    .id-copy { min-width: 0; }
-    .id-copy .win {
-      display: inline-block;
-      margin: 0 0 0.12rem;
-      padding: 0.05rem 0.4rem 0.07rem;
-      background: var(--orange);
-      color: #fff;
-      font-size: 0.58rem;
-      font-weight: 800;
-      letter-spacing: 0.14em;
-    }
-    .id-copy .who {
-      margin: 0 0 0.12rem;
-      color: #122;
-      font-family: "M PLUS 1p", "Hiragino Sans", sans-serif;
-      font-size: 1.05rem;
-      font-weight: 800;
-      line-height: 1.15;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .id-copy .uma {
-      margin: 0;
-      color: #334;
-      font-size: 0.7rem;
+    .tb-c .who { font-size: 1.02rem; color: #1a2430; }
+    .tb-c .uma { font-size: 0.66rem; color: #2a3844; margin-top: 0.08rem; }
+    .tb-c .meta {
+      margin-left: auto;
+      text-align: right;
+      color: #1a2430;
+      font-size: 0.6rem;
       font-weight: 700;
-      line-height: 1.35;
+      line-height: 1.4;
     }
-    .id-copy .style {
-      display: inline-block;
-      margin-left: 0.25rem;
-      padding: 0.02rem 0.32rem;
-      border-radius: 2px;
-      background: #e8f3ea;
-      color: var(--green-dark);
-      font-size: 0.62rem;
-      font-weight: 800;
-      letter-spacing: 0.06em;
+
+    /* D: イラストなし。新聞の欄外1段 */
+    .tb-d {
+      font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
+      background: #f4f1e8;
+      border-top: 3px solid #1a1a1a;
     }
-    .specs {
+    .tb-d .rule {
+      height: 5px;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--orange) 0 10px,
+        #fff 10px 14px,
+        var(--green) 14px 24px,
+        #fff 24px 28px
+      );
+    }
+    .tb-d .row {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.4rem 0.55rem 0.45rem;
+    }
+    .tb-d .face img { border-color: #1a1a1a; }
+    .tb-d .who { font-size: 1rem; color: #111; }
+    .tb-d .uma { font-size: 0.66rem; color: #333; margin-top: 0.06rem; }
+    .tb-d .meta {
+      margin-left: auto;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.28rem 0.35rem;
-      margin: 0;
-      padding: 0.4rem 0.5rem;
-      background: rgba(255,255,255,.86);
-      border: 1px solid rgba(255,255,255,.95);
-      border-left: 4px solid var(--green);
-      box-shadow: 0 2px 10px rgba(20,40,20,.18);
-    }
-    .specs div { min-width: 0; }
-    .specs dt {
-      margin: 0;
-      color: #5a7260;
-      font-size: 0.55rem;
+      grid-template-columns: auto auto;
+      gap: 0.12rem 0.7rem;
+      font-size: 0.62rem;
       font-weight: 700;
-      letter-spacing: 0.1em;
-    }
-    .specs dd {
-      margin: 0.06rem 0 0;
-      color: #122;
-      font-size: 0.72rem;
-      font-weight: 800;
       line-height: 1.25;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      color: #222;
     }
+    .tb-d .meta span { color: #6a6a6a; font-size: 0.52rem; letter-spacing: 0.08em; }
   </style>
 </head>
 <body>
   <div class="stage">
     <p class="note">
-      号外プレビュー。トレーナー帯は優勝者カード＋開催スペック（レギュ由来）。単勝・人気は出さない。
+      トレーナー帯をゼロから4案。高さは内容に合わせ短くした。白パネルで写真を塞がない。本文より上は共通。
     </p>
+    <div id="variants"></div>
+  </div>
+
+  <template id="paper-tpl">
     <article class="paper">
       <header class="masthead">月刊トゥインクル　号外</header>
-
       <div class="cover">
         <img class="cover-bg" src="../../../public/twinkle/frames/gogai_bg.png" alt="">
         <img class="cover-stand" src="stand-preview.png" alt="スペシャルウィーク">
         <div class="cover-blue" aria-hidden="true"></div>
         <div class="cover-titles">
           <div class="sub-img-wrap">
-            <img src="../../../public/twinkle/subtitles/324.png" alt="鮮やかな勝利！">
+            <img src="../../../public/twinkle/subtitles/324.png" alt="">
           </div>
           <span class="col-text">スペシャルウィーク</span>
           <span class="col-text">見事チャンピオンに</span>
         </div>
       </div>
-
       <div class="article">
         <p class="inner">
           <span class="lead">プレビュー杯</span>
@@ -334,42 +389,100 @@
           こんな走りを見られたことに、ただただ感謝したい。
         </p>
       </div>
-
-      <section class="trainer" aria-label="優勝者と開催条件">
-        <img class="trainer-bg" src="../../../public/twinkle/frames/zokan_page1_bg.png" alt="">
-        <div class="trainer-inner">
-          <div class="trainer-panel">
-            <div class="id-face">
-              <img src="trainer-icon.png" alt="">
-              <span class="no">1</span>
-            </div>
-            <div class="id-copy">
-              <span class="win">優勝</span>
-              <p class="who">プレビュー太郎</p>
-              <p class="uma">スペシャルウィーク<span class="style">逃げ</span></p>
-            </div>
-          </div>
-          <dl class="specs">
-            <div>
-              <dt>開催</dt>
-              <dd>プレビュー杯</dd>
-            </div>
-            <div>
-              <dt>コース</dt>
-              <dd>東京 2400m（芝）</dd>
-            </div>
-            <div>
-              <dt>天候・バ場</dt>
-              <dd>晴・良</dd>
-            </div>
-            <div>
-              <dt>頭数</dt>
-              <dd>8頭</dd>
-            </div>
-          </dl>
-        </div>
-      </section>
+      <div class="band-slot"></div>
     </article>
-  </div>
+  </template>
+
+  <script>
+    const face = `
+      <div class="face">
+        <img src="trainer-icon.png" alt="">
+        <span class="no">1</span>
+      </div>`;
+    const variants = [
+      {
+        title: "A. 芝キャプション（メイン背景の続き）",
+        html: `
+          <section class="tb-a" aria-label="優勝者と開催条件">
+            <img class="bg" src="../../../public/twinkle/frames/gogai_bg.png" alt="">
+            <div class="row">
+              ${face}
+              <div>
+                <span class="win">優勝</span>
+                <p class="who">プレビュー太郎</p>
+                <p class="uma">スペシャルウィーク　逃げ</p>
+              </div>
+              <p class="meta">プレビュー杯<br>東京 2400m（芝）<br>晴・良　8頭</p>
+            </div>
+          </section>`
+      },
+      {
+        title: "B. 左アーチ写真＋右番組表",
+        html: `
+          <section class="tb-b" aria-label="優勝者と開催条件">
+            <div class="shot">
+              <img src="../../../public/twinkle/frames/zokan_page1_bg.png" alt="">
+            </div>
+            <div class="form">
+              ${face}
+              <div>
+                <span class="win">優勝</span>
+                <p class="who">プレビュー太郎</p>
+                <p class="uma">スペシャルウィーク　逃げ</p>
+                <p class="chips">プレビュー杯　／　東京 2400m（芝）　／　晴・良　／　8頭</p>
+              </div>
+            </div>
+          </section>`
+      },
+      {
+        title: "C. 増刊の三帯（heading 画像）",
+        html: `
+          <section class="tb-c" aria-label="優勝者と開催条件">
+            <img class="bg" src="../../../public/twinkle/frames/zokan_page1_heading.png" alt="">
+            <div class="row">
+              ${face}
+              <div>
+                <span class="win">優勝</span>
+                <p class="who">プレビュー太郎</p>
+                <p class="uma">スペシャルウィーク　逃げ</p>
+              </div>
+              <p class="meta">プレビュー杯<br>東京 2400m（芝）<br>晴・良　8頭</p>
+            </div>
+          </section>`
+      },
+      {
+        title: "D. 新聞欄外（イラストなし・一段）",
+        html: `
+          <section class="tb-d" aria-label="優勝者と開催条件">
+            <div class="rule"></div>
+            <div class="row">
+              ${face}
+              <div>
+                <span class="win">優勝</span>
+                <p class="who">プレビュー太郎</p>
+                <p class="uma">スペシャルウィーク　逃げ</p>
+              </div>
+              <p class="meta">
+                <span>開催</span><b>プレビュー杯</b>
+                <span>コース</span><b>東京 2400m（芝）</b>
+                <span>天候・バ場</span><b>晴・良</b>
+                <span>頭数</span><b>8頭</b>
+              </p>
+            </div>
+          </section>`
+      }
+    ];
+    const root = document.getElementById("variants");
+    const tpl = document.getElementById("paper-tpl");
+    for (const v of variants) {
+      const h = document.createElement("h2");
+      h.className = "variant-h";
+      h.textContent = v.title;
+      root.appendChild(h);
+      const node = tpl.content.cloneNode(true);
+      node.querySelector(".band-slot").outerHTML = v.html;
+      root.appendChild(node);
+    }
+  </script>
 </body>
 </html>
