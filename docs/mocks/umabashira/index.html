@@ -116,7 +116,7 @@
     .id-row {
       display: flex;
       align-items: stretch;
-      height: 1.7rem;
+      height: 2.25rem;
       padding: 0;
     }
     .mark {
@@ -137,11 +137,17 @@
       justify-content: center;
       line-height: 1;
     }
-    .num b { font-size: 1.05rem; font-weight: 800; }
+    .num b { font-size: 1.02rem; font-weight: 800; }
     .style {
-      font-size: 0.58rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
+      display: inline-block;
+      margin-top: 0.12rem;
+      font-size: 0.64rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      line-height: 1.05;
+      background: #ece4d2;
+      border: 1px solid #b9b09c;
+      padding: 0.07rem 0.08rem 0.05rem;
     }
 
     .who {
@@ -150,7 +156,6 @@
       align-items: center;
       justify-content: flex-start;
       gap: 0.16rem;
-      min-height: 9.1rem;
       padding: 0.18rem 0.06rem 0.2rem;
     }
     .who img, .who .ph {
@@ -166,19 +171,25 @@
       text-orientation: mixed;
       font-size: 0.78rem;
       font-weight: 800;
-      letter-spacing: 0.06em;
-      line-height: 1.05;
-      height: 6.85rem;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      height: calc(9em + 8 * 0.08em + 0.85rem);
     }
     .runner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 0.56rem;
       font-weight: 700;
       line-height: 1.15;
-      min-height: 1.45rem;
-      white-space: nowrap;
-      overflow: hidden;
+      min-height: 1.55rem;
       padding-left: 0.04rem;
       padding-right: 0.04rem;
+    }
+    .runner span {
+      white-space: nowrap;
+      overflow: hidden;
+      max-width: 100%;
     }
 
     .score-cell {
@@ -233,27 +244,28 @@
     }
     .apt .s { color: var(--mark); }
 
-    .sp { min-height: 2.35rem; }
+    .sp { min-height: 3.15rem; }
     .sp b { display: block; font-size: 1.12rem; font-weight: 800; line-height: 1.1; }
-    .sp small { display: block; font-size: 0.46rem; color: var(--muted); font-weight: 600; margin-top: 0.06rem; line-height: 1.2; }
+    .sp small { display: block; font-size: 0.46rem; color: var(--muted); font-weight: 600; margin-top: 0.04rem; line-height: 1.2; }
+    .sp small:first-of-type { margin-top: 0.08rem; }
 
-    .stub .id-row { min-height: 1.7rem; }
-    .stub .who { min-height: 9.1rem; height: auto; }
-    .stub .runner { min-height: 1.45rem; }
+    .stub .id-row { min-height: 2.25rem; }
+    .stub .who { min-height: 11.1rem; height: auto; }
+    .stub .runner { min-height: 1.55rem; }
     .stub .score-cell { min-height: 1.55rem; }
     .stub .odds-cell { min-height: 2.55rem; }
     .stub .stats { min-height: 3.85rem; }
     .stub .apt { min-height: 2.2rem; }
-    .stub .sp { min-height: 2.35rem; }
+    .stub .sp { min-height: 3.15rem; }
   </style>
 </head>
 <body>
   <div class="stage">
     <h1>ウマ柱モック</h1>
-    <p class="note">スキル名は出さない。列幅は全頭同じで狭め。ウマ娘名は縦書き。印なしは横棒「─」。評価点セルに項目名は置かない。出走者は幅に合わせて字を小さくする。</p>
+    <p class="note">スキル名は出さない。列幅は全頭同じで狭め。ウマ娘名は縦書きで9文字分の高さを確保。印なしは横棒「─」。評価点セルに項目名は置かない。トレーナーは幅に合わせて字を小さくし、枠の中央に置く。</p>
     <div class="toolbar" id="toolbar"></div>
     <h2>現行寄せ（案B）— 印はオッズ欄</h2>
-    <p class="note">列頭はウマ番と脚質。評価点は数字だけ。オッズ欄の上段が印（無印は─）、下段が倍率。</p>
+    <p class="note">列頭はウマ番と脚質（逃げ／先行／差し／追込）。評価点は数字だけ。オッズ欄の上段が印（無印は─）、下段が倍率。SPは4行（点数・有効・白・金）。</p>
     <div class="sheet-wrap" id="b"></div>
     <h2>参考（案A）— 印は列頭</h2>
     <p class="note">見送り候補。ウマ娘の縦並びだけ現行に合わせ、印の位置の違いを見る用。</p>
@@ -293,6 +305,7 @@
       return out;
     }
 
+    const STYLE_JA = { 逃: "逃げ", 先: "先行", 差: "差し", 追: "追込" };
     const STAT_L = ["速", "スタ", "パ", "根", "賢"];
 
     function statsHtml(h) {
@@ -305,7 +318,8 @@
     }
     function spHtml(h) {
       if (h.sp == null) return `<div class="cell sp empty">—</div>`;
-      return `<div class="cell sp"><b>${h.sp}</b><small>有効 ${h.eff}　金 ${h.gold}</small></div>`;
+      const white = Math.max(0, (h.eff ?? 0) - (h.gold ?? 0));
+      return `<div class="cell sp"><b>${h.sp}</b><small>有効</small><small>白${white}</small><small>金${h.gold}</small></div>`;
     }
     function face(h) {
       const ch = h.uma.slice(0, 1);
@@ -326,9 +340,9 @@
     }
     function colA(h, mark) {
       return `<div class="col">
-        <div class="cell id-row"><div class="mark${mark ? "" : " none"}">${mark || "─"}</div><div class="num"><b>${h.n}</b><span class="style">${h.style}</span></div></div>
+        <div class="cell id-row"><div class="mark${mark ? "" : " none"}">${mark || "─"}</div><div class="num"><b>${h.n}</b><span class="style">${STYLE_JA[h.style] || h.style}</span></div></div>
         ${whoHtml(h)}
-        <div class="cell runner">${h.runner}</div>
+        <div class="cell runner"><span>${h.runner}</span></div>
         <div class="cell score-cell"><b>${h.score.toFixed(1)}</b></div>
         ${oddsHtml(h, mark, false)}
         ${statsHtml(h)}${aptHtml(h)}${spHtml(h)}
@@ -336,9 +350,9 @@
     }
     function colB(h, mark) {
       return `<div class="col">
-        <div class="cell id-row"><div class="num" style="width:100%"><b>${h.n}</b><span class="style">${h.style}</span></div></div>
+        <div class="cell id-row"><div class="num" style="width:100%"><b>${h.n}</b><span class="style">${STYLE_JA[h.style] || h.style}</span></div></div>
         ${whoHtml(h)}
-        <div class="cell runner">${h.runner}</div>
+        <div class="cell runner"><span>${h.runner}</span></div>
         <div class="cell score-cell"><b>${h.score.toFixed(1)}</b></div>
         ${oddsHtml(h, mark, true)}
         ${statsHtml(h)}${aptHtml(h)}${spHtml(h)}
@@ -346,12 +360,12 @@
     }
 
     function stubA() {
-      const cells = ["印・番・脚", "ウマ娘", "出走者", "評価点", "オッズ", "ステ", "適性", "SP"];
+      const cells = ["印・番・脚", "ウマ娘", "トレーナー", "評価点", "オッズ", "ステ", "適性", "SP"];
       const cls = ["id-row", "who", "runner", "score-cell", "odds-cell", "stats", "apt", "sp"];
       return `<div class="grid stub"><div class="col">${cells.map((t, i) => `<div class="cell ${cls[i]}">${t}</div>`).join("")}</div></div>`;
     }
     function stubB() {
-      const cells = ["番・脚", "ウマ娘", "出走者", "評価点", "印・オッズ", "ステ", "適性", "SP"];
+      const cells = ["番・脚", "ウマ娘", "トレーナー", "評価点", "印・オッズ", "ステ", "適性", "SP"];
       const cls = ["id-row", "who", "runner", "score-cell", "odds-cell", "stats", "apt", "sp"];
       return `<div class="grid stub"><div class="col">${cells.map((t, i) => `<div class="cell ${cls[i]}">${t}</div>`).join("")}</div></div>`;
     }
@@ -363,7 +377,7 @@
         <div class="mast">
           <span>第3回春の合同練習杯</span>
           <span class="meta">東京　芝2400m　晴・良　｜　${horses.length}頭</span>
-          <span class="keys">◎本命 ○対抗 ▲単穴 △穴　／　SP=スキルパワー（有効・金の枚数）</span>
+          <span class="keys">◎本命 ○対抗 ▲単穴 △穴　／　SP＝点数・有効・白・金</span>
         </div>
         <div style="display:flex">
           ${kind === "a" ? stubA() : stubB()}
@@ -373,7 +387,7 @@
     }
 
     function fitRunners(root) {
-      root.querySelectorAll(".grid:not(.stub) .runner").forEach((el) => {
+      root.querySelectorAll(".grid:not(.stub) .runner span").forEach((el) => {
         el.style.fontSize = "";
         let px = parseFloat(getComputedStyle(el).fontSize);
         while (el.scrollWidth > el.clientWidth + 0.5 && px > 7.5) {
