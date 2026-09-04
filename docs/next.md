@@ -4,6 +4,7 @@
 
 ## 次にやること
 
+- ウマ柱: 掲載項目の確定（データ洗い出し済み。レイアウトは次）— [umabashira.md](umabashira.md)
 - 号外の管理タブ実装（見た目はモック確定。差し込み・プレビュー・PNG）— [gougai.md](gougai.md)・[モック](mocks/gougai/index.html)
 
 ## そのあと
