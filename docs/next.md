@@ -21,6 +21,7 @@
 
 ## アーカイブ
 
+- ウマ柱の和文上寄り補正（適性 flex・脚質／トレーナー translateY）と左列ラベル — [umabashira.md](umabashira.md)
 - ウマ柱のスキルは名前を出さずスキルパワー（有効・金の枚数）。レイアウト仮決めとモック2案 — [umabashira.md](umabashira.md)・[モック](mocks/umabashira/index.html)
 - ウマ柱の掲載方針（コミュニティ公開画像。評価点と印を出す。投票機能はファンツールに出さない）— [umabashira.md](umabashira.md)
 - P1-08 管理操作の誤操作防止と開始条件を強化（開始前確認モーダル、サーバー側の開始条件、スタミナ勝負の明示選択、メンバー利用停止の再認証。実機確認OK）— [playbook.md](playbook.md)

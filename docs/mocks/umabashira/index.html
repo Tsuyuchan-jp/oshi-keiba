@@ -124,12 +124,25 @@
       padding: 0.06rem 0.05rem;
       word-break: break-all;
     }
-    /* 高い行だけ縦書き。行高はデータ側が決める */
-    .stub-v {
+    .stub-col .runner.stub-h {
+      word-break: normal;
+      white-space: nowrap;
+      font-size: 0.5rem;
+      letter-spacing: 0;
+    }
+    .stub-split {
+      flex-direction: column;
+      gap: 0.02rem;
+      line-height: 1.1;
+      word-break: normal;
+    }
+    /* 縦書きは内側。セルに writing-mode を付けると vertical-rl で右に寄る */
+    .stub-v > span {
       writing-mode: vertical-rl;
       text-orientation: mixed;
       font-size: 0.52rem;
       letter-spacing: 0.08em;
+      line-height: 1;
     }
 
     .id-row {
@@ -163,10 +176,11 @@
       font-size: 0.64rem;
       font-weight: 800;
       letter-spacing: 0.04em;
-      line-height: 1.05;
+      line-height: 1;
       background: #ece4d2;
       border: 1px solid #b9b09c;
-      padding: 0.07rem 0.08rem 0.05rem;
+      padding: 0.06rem 0.08rem;
+      transform: translateY(0.06em);
     }
 
     .who {
@@ -209,6 +223,7 @@
       white-space: nowrap;
       overflow: hidden;
       max-width: 100%;
+      transform: translateY(0.06em);
     }
 
     .score-cell {
@@ -256,9 +271,14 @@
     .empty { color: var(--muted); text-align: center; }
 
     .apt {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.04rem;
       font-size: 0.52rem;
       font-weight: 700;
-      line-height: 1.28;
+      line-height: 1.2;
       min-height: 2.2rem;
     }
     .apt .s { color: var(--mark); }
@@ -324,7 +344,7 @@
     }
     function aptHtml(h) {
       if (!h.apt) return `<div class="cell apt empty">—</div>`;
-      return `<div class="cell apt">${h.apt.map((t) => t.endsWith("S") ? `<span class="s">${t}</span>` : t).join("<br>")}</div>`;
+      return `<div class="cell apt">${h.apt.map((t) => t.endsWith("S") ? `<span class="s">${t}</span>` : `<span>${t}</span>`).join("")}</div>`;
     }
     function spHtml(h) {
       if (h.sp == null) return `<div class="cell sp empty">—</div>`;
@@ -369,19 +389,40 @@
       </div>`;
     }
 
-    function stubCol(labels) {
+    function stubCol(kind) {
       const cls = ["id-row", "who", "runner", "score-cell", "odds-cell", "stats", "apt", "sp"];
-      /* ウマ娘・ステ・適性・SP だけ縦書き。他はデータ行より高くなるので横書き */
-      const vertical = new Set([1, 5, 6, 7]);
-      return `<div class="col stub-col">${labels.map((t, i) =>
-        `<div class="cell stub-cell ${cls[i]} ${vertical.has(i) ? "stub-v" : "stub-h"}">${t}</div>`
-      ).join("")}</div>`;
+      const rows = kind === "a"
+        ? [
+            { t: "印・番・脚", v: true },
+            { t: "ウマ娘", v: true },
+            { t: "トレーナー", v: false },
+            { t: "評価点", v: false },
+            { t: "オッズ", v: false },
+            { t: "ステ", v: true },
+            { t: "適性", v: true },
+            { t: "SP", v: true },
+          ]
+        : [
+            { t: "番・脚", v: true },
+            { t: "ウマ娘", v: true },
+            { t: "トレーナー", v: false },
+            { t: "評価点", v: false },
+            { t: "印/オッズ", v: false, split: true },
+            { t: "ステ", v: true },
+            { t: "適性", v: true },
+            { t: "SP", v: true },
+          ];
+      return `<div class="col stub-col">${rows.map((row, i) => {
+        const mode = row.v ? "stub-v" : "stub-h";
+        const extra = row.split ? " stub-split" : "";
+        const inner = row.split
+          ? row.t.split("/").map((p) => `<span>${p}</span>`).join("")
+          : row.v ? `<span>${row.t}</span>` : row.t;
+        return `<div class="cell stub-cell ${cls[i]} ${mode}${extra}">${inner}</div>`;
+      }).join("")}</div>`;
     }
     function sheet(kind, horses) {
       const marks = marksFor(horses);
-      const stub = stubCol(kind === "a"
-        ? ["印・番・脚", "ウマ娘", "トレーナー", "評価点", "オッズ", "ステ", "適性", "SP"]
-        : ["番・脚", "ウマ娘", "トレーナー", "評価点", "印・オッズ", "ステ", "適性", "SP"]);
       const cols = horses.map((h, i) => kind === "a" ? colA(h, marks[i]) : colB(h, marks[i])).join("");
       return `<div class="paper">
         <div class="mast">
@@ -389,19 +430,21 @@
           <span class="meta">東京　芝2400m　晴・良　｜　${horses.length}頭</span>
           <span class="keys">◎本命 ○対抗 ▲単穴 △穴　／　SP＝点数・有効・白・金</span>
         </div>
-        <div class="board" style="--n:${horses.length}">${stub}${cols}</div>
+        <div class="board" style="--n:${horses.length}">${stubCol(kind)}${cols}</div>
       </div>`;
     }
 
+    function fitWidth(el, minPx) {
+      el.style.fontSize = "";
+      let px = parseFloat(getComputedStyle(el).fontSize);
+      while (el.scrollWidth > el.clientWidth + 0.5 && px > minPx) {
+        px -= 0.4;
+        el.style.fontSize = `${px}px`;
+      }
+    }
     function fitRunners(root) {
-      root.querySelectorAll(".board .col:not(.stub-col) .runner span").forEach((el) => {
-        el.style.fontSize = "";
-        let px = parseFloat(getComputedStyle(el).fontSize);
-        while (el.scrollWidth > el.clientWidth + 0.5 && px > 7.5) {
-          px -= 0.4;
-          el.style.fontSize = `${px}px`;
-        }
-      });
+      root.querySelectorAll(".board .col:not(.stub-col) .runner span").forEach((el) => fitWidth(el, 7.5));
+      root.querySelectorAll(".board .stub-col .runner").forEach((el) => fitWidth(el, 7));
     }
     let count = 12;
     function render() {
