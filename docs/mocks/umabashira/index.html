@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ウマ柱モック — 本番控え</title>
+  <title>ウマ柱モック — 枠色けばけば案</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --paper: #f3efe4;
+      --paper: #f7f3e8;
       --ink: #1a1814;
-      --rule: #2a2722;
+      --rule: #1a1814;
       --muted: #6a6458;
       --mark: #c41218;
       --hb: #163a8a;
@@ -78,9 +78,9 @@
     .mast {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.35rem 1rem;
+      gap: 0.12rem 0.85rem;
       align-items: baseline;
-      padding: 0.32rem 0.45rem;
+      padding: 0.18rem 0.28rem 0.16rem;
       border-bottom: 2px solid var(--rule);
       font-weight: 800;
       font-size: 0.78rem;
@@ -89,8 +89,9 @@
       box-sizing: border-box;
     }
     .mast .title, .mast .meta { flex: none; white-space: nowrap; }
-    .mast .meta { font-weight: 600; font-size: 0.7rem; color: #3c382f; }
-    .mast .keys { min-width: 0; font-weight: 400; font-size: 0.62rem; color: var(--muted); margin-left: auto; }
+    .mast .title { font-size: 0.92rem; letter-spacing: 0.04em; }
+    .mast .meta { font-weight: 700; font-size: 0.62rem; color: #3c382f; }
+    .mast .keys { min-width: 0; font-weight: 400; font-size: 0.5rem; color: var(--muted); margin-left: auto; }
 
     .board {
       display: grid;
@@ -101,18 +102,18 @@
       display: grid;
       grid-template-rows: subgrid;
       grid-row: 1 / span 8;
-      border-left: 1px solid var(--rule);
+      border-left: 2px solid var(--rule);
       min-width: var(--col-w);
       min-height: 0;
     }
     .stub-col {
       border-left: 0;
-      background: #e7e1d3;
+      background: #e4ddd0;
       min-width: var(--stub-w);
     }
     .cell {
-      border-bottom: 1px solid #c8c0ae;
-      padding: 0.14rem 0.08rem;
+      border-bottom: 1px solid #9e9686;
+      padding: 0.08rem 0.04rem;
       text-align: center;
       min-width: 0;
     }
@@ -156,20 +157,20 @@
 
     .id-row {
       display: flex;
+      flex-direction: column;
       align-items: stretch;
-      min-height: 2.25rem;
+      min-height: 0;
       padding: 0;
     }
-    .num {
-      flex: 1;
+    .waku-box {
       display: flex;
-      flex-direction: column;
+      align-items: center;
       justify-content: center;
+      min-height: 1.42rem;
       line-height: 1;
-      text-align: center;
     }
-    .num b {
-      font-size: 1.02rem;
+    .waku-box b {
+      font-size: 1.08rem;
       font-weight: 800;
       transform: translateY(0.06em);
     }
@@ -177,24 +178,44 @@
       display: block;
       width: 100%;
       box-sizing: border-box;
-      margin-top: 0.12rem;
-      font-size: 0.64rem;
+      font-size: 0.58rem;
       font-weight: 800;
       letter-spacing: 0.04em;
       line-height: 1;
-      background: #ece4d2;
-      border: 1px solid #b9b09c;
-      padding: 0.06rem 0.08rem;
+      border-top: 1px solid #9e9686;
+      padding: 0.07rem 0.04rem 0.08rem;
     }
     .style > span { display: inline-block; transform: translateY(0.06em); }
+    .style-逃 { background: #f3c4c4; color: #7a1010; }
+    .style-先 { background: #f3d9b0; color: #7a3e08; }
+    .style-差 { background: #c9d6ee; color: #1a3366; }
+    .style-追 { background: #c9e4cf; color: #145228; }
+
+    /* 枠色（見た目専用。JRA割当） */
+    .waku-box.w1 { background: #fff; color: #1a1814; box-shadow: inset 0 0 0 1px #1a1814; }
+    .waku-box.w2 { background: #111; color: #fff; }
+    .waku-box.w3 { background: #d01218; color: #fff; }
+    .waku-box.w4 { background: #1a4aa8; color: #fff; }
+    .waku-box.w5 { background: #f0d000; color: #1a1814; }
+    .waku-box.w6 { background: #1a8a3a; color: #fff; }
+    .waku-box.w7 { background: #e87810; color: #1a1814; }
+    .waku-box.w8 { background: #f090b0; color: #1a1814; }
+    .col.tint-w1 { background: #fff; }
+    .col.tint-w2 { background: #eceae6; }
+    .col.tint-w3 { background: #f8e8e6; }
+    .col.tint-w4 { background: #e7edf6; }
+    .col.tint-w5 { background: #f7f1c8; }
+    .col.tint-w6 { background: #e6f1e8; }
+    .col.tint-w7 { background: #f7ead8; }
+    .col.tint-w8 { background: #f6e4ec; }
 
     .who {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      gap: 0.16rem;
-      padding: 0.18rem 0.06rem 0.2rem;
+      gap: 0.1rem;
+      padding: 0.1rem 0.04rem 0.12rem;
     }
     .stub-col .who {
       justify-content: center;
@@ -242,7 +263,7 @@
       font-size: 0.56rem;
       font-weight: 700;
       line-height: 1.15;
-      min-height: 1.55rem;
+      min-height: 1.4rem;
       padding-left: 0.04rem;
       padding-right: 0.04rem;
     }
@@ -254,51 +275,68 @@
     }
 
     .score-cell {
-      min-height: 1.55rem;
+      min-height: 1.4rem;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 0.06rem 0.02rem;
+      background: var(--hb);
     }
-    .score-cell b { font-size: 0.92rem; font-weight: 800; color: var(--hb); }
+    .score-cell b { font-size: 0.9rem; font-weight: 800; color: #fff; }
+    .stub-col .score-cell { background: #e4ddd0; }
     .odds-cell {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 0.08rem;
-      min-height: 2.55rem;
+      gap: 0.04rem;
+      min-height: 2.4rem;
+      padding: 0.08rem 0.02rem;
     }
     .odds-cell .k { display: block; font-size: 0.5rem; color: var(--muted); font-weight: 600; }
     .odds-cell .mk {
-      min-height: 1.15rem;
-      font-size: 1.05rem;
+      min-height: 1.1rem;
+      font-size: 1.08rem;
       font-weight: 800;
       color: var(--mark);
       line-height: 1.15;
+      padding: 0 0.16rem;
+    }
+    .odds-cell .mk.hon {
+      background: #f4c8c8;
+      box-shadow: inset 0 0 0 1px #c41218;
     }
     .odds-cell .mk.none {
       color: #8d8678;
       font-size: 0.95rem;
       font-weight: 600;
       letter-spacing: 0;
+      background: transparent;
+      box-shadow: none;
     }
-    .odds-cell b { font-size: 0.95rem; font-weight: 800; line-height: 1; }
+    .odds-cell b { font-size: 0.92rem; font-weight: 800; line-height: 1; }
 
     .stats {
-      font-size: 0.52rem;
+      font-size: 0.48rem;
       font-variant-numeric: tabular-nums;
-      line-height: 1.28;
+      line-height: 1.18;
       text-align: left;
-      padding: 0.14rem 0.12rem 0.14rem 0.12rem;
+      padding: 0.04rem 0.08rem 0.04rem 0.08rem;
     }
     .stats.empty {
-      min-height: 1.55rem;
+      min-height: 1.4rem;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    .stats span { display: flex; justify-content: space-between; padding-right: 0.12rem; }
-    .stats .lab { color: var(--muted); font-weight: 600; }
+    .stats span {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.02rem 0.06rem 0.02rem 0;
+      border-bottom: 1px dotted #b7ae9c;
+    }
+    .stats span:last-child { border-bottom: 0; }
+    .stats .lab { color: var(--muted); font-weight: 600; font-size: 0.42rem; }
     .empty { color: var(--muted); text-align: center; }
 
     .apt {
@@ -306,27 +344,32 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 0.04rem;
-      font-size: 0.52rem;
+      gap: 0.02rem;
+      font-size: 0.5rem;
       font-weight: 700;
-      line-height: 1.2;
-      min-height: 2.2rem;
+      line-height: 1.15;
+      min-height: 2rem;
+      padding: 0.06rem 0.02rem;
     }
-    .apt .s { color: var(--mark); }
+    .apt .s {
+      color: var(--mark);
+      background: #f8d4d4;
+      padding: 0 0.12rem;
+    }
 
-    .sp { min-height: 3.15rem; }
-    .sp b { display: block; font-size: 1.12rem; font-weight: 800; line-height: 1.1; }
-    .sp small { display: block; font-size: 0.46rem; color: var(--muted); font-weight: 600; margin-top: 0.04rem; line-height: 1.2; }
-    .sp small:first-of-type { margin-top: 0.08rem; }
+    .sp { min-height: 2.95rem; padding: 0.08rem 0.02rem; }
+    .sp b { display: block; font-size: 1.08rem; font-weight: 800; line-height: 1.05; }
+    .sp small { display: block; font-size: 0.42rem; color: #4a453c; font-weight: 600; margin-top: 0.02rem; line-height: 1.15; }
+    .sp small:first-of-type { margin-top: 0.06rem; }
   </style>
 </head>
 <body>
   <div class="stage">
     <h1>ウマ柱モック</h1>
-    <p class="note">正は本番 <code>/admin/umabashira</code>。この HTML はその控え。案A（印を列頭）は出さない。出走登録中も参考オッズを出す。開催名・コースは折らない。紙面は <code>content-box</code>、列幅は全頭同じ。ウマ番・脚質の字下げは <code>translateY(0.06em)</code>。伸ばし棒は縦書き＋ <code>translateX(-0.07em)</code>。印なしは「─」。評価点セルに項目名は置かない。トレーナーは幅に合わせて字を小さくする。petit は <code>public/images/umamusume/petit/</code>。サイズは <code>.who img</code>（1.95rem 角、背景色なし）。</p>
+    <p class="note">見た目案（本番未適用）。ウマ番を JRA 枠色で塗る（保存しない）。評価点は紺地白字。列に薄い枠色地。脚質は控えめな帯色。petit に背景は付けない。頭数切替で枠の塊を確認。</p>
     <div class="toolbar" id="toolbar"></div>
-    <h2>紙面（本番と同じ）</h2>
-    <p class="note">列頭はウマ番と脚質。印はオッズ欄の上段、下段が倍率。SPは4行（点数・有効・白・金）。適性の距離は短／マ／中／長。</p>
+    <h2>紙面（けばけば案）</h2>
+    <p class="note">列頭は枠色箱のウマ番＋脚質。印はオッズ欄の上段（本命は赤地）。SPは4行。適性Sは赤地。</p>
     <div class="sheet-wrap" id="b"></div>
   </div>
   <script>
@@ -352,6 +395,25 @@
       { n: 17, uma: "ウオッカ", runner: "ウォッカ", style: "先", score: 49.6, odds: 91.0, sp: 9, eff: 5, gold: 1, stats: [1160, 760, 1040, 740, 880], apt: ["芝A", "マS", "先A"], petit: "petit_1032_103201_0010.png" },
       { n: 18, uma: "ダイタクヘリオス", runner: "太陽", style: "逃", score: 44.2, odds: 120.0, sp: 8, eff: 4, gold: 1, stats: [1080, 740, 990, 720, 800], apt: ["芝A", "マA", "逃A"], petit: "petit_9002_900201_0010.png" },
     ];
+
+    /* ウマ番と頭数から JRA 枠番（1〜8）。見た目専用 */
+    function wakuOf(umaban, n) {
+      if (n <= 8) return umaban;
+      const per = [1, 1, 1, 1, 1, 1, 1, 1];
+      let remain = Math.min(n, 16) - 8;
+      for (let f = 7; f >= 0 && remain > 0; f--) {
+        per[f] += 1;
+        remain -= 1;
+      }
+      if (n >= 17) per[6] += 1;
+      if (n >= 18) per[7] += 1;
+      let horse = 1;
+      for (let f = 0; f < 8; f++) {
+        if (umaban < horse + per[f]) return f + 1;
+        horse += per[f];
+      }
+      return 8;
+    }
 
     function marksFor(horses) {
       const order = horses.map((h, i) => i).sort((a, b) => {
@@ -395,16 +457,20 @@
       return `<div class="cell who">${face(h)}<span class="uma" aria-label="${h.uma}">${umaChars(h.uma)}</span></div>`;
     }
     function markHtml(mark) {
-      return mark
-        ? `<span class="mk">${mark}</span>`
-        : `<span class="mk none" aria-label="無印">─</span>`;
+      if (!mark || mark === "─") return `<span class="mk none" aria-label="無印">─</span>`;
+      const hon = mark === "◎" ? " hon" : "";
+      return `<span class="mk${hon}">${mark}</span>`;
     }
     function oddsHtml(h, mark) {
       return `<div class="cell odds-cell">${markHtml(mark)}<b>${h.odds.toFixed(1)}</b></div>`;
     }
-    function col(h, mark) {
-      return `<div class="col">
-        <div class="cell id-row"><div class="num" style="width:100%"><b>${h.n}</b><span class="style"><span>${STYLE_JA[h.style] || h.style}</span></span></div></div>
+    function col(h, mark, nHead) {
+      const w = wakuOf(h.n, nHead);
+      return `<div class="col tint-w${w}">
+        <div class="cell id-row">
+          <div class="waku-box w${w}"><b>${h.n}</b></div>
+          <span class="style style-${h.style}"><span>${STYLE_JA[h.style] || h.style}</span></span>
+        </div>
         ${whoHtml(h)}
         <div class="cell runner"><span>${h.runner}</span></div>
         <div class="cell score-cell"><b>${h.score.toFixed(1)}</b></div>
@@ -436,12 +502,13 @@
     }
     function sheet(horses) {
       const marks = marksFor(horses);
-      const cols = horses.map((h, i) => col(h, marks[i])).join("");
+      const nHead = horses.length;
+      const cols = horses.map((h, i) => col(h, marks[i], nHead)).join("");
       return `<div class="paper">
         <div class="mast">
           <span class="title">お試しイベントレース</span>
           <span class="meta">中山　芝2000m　春・晴・良　｜　${horses.length}頭</span>
-          <span class="keys">◎本命 ○対抗 ▲単穴 △穴　／　SP＝点数・有効・白・金</span>
+          <span class="keys">◎本命 ○対抗 ▲単穴 △穴　／　SP＝点数・有効・白・金　／　枠色は見た目のみ</span>
         </div>
         <div class="board" style="--n:${horses.length}">${stubCol()}${cols}</div>
       </div>`;
