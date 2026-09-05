@@ -15,7 +15,7 @@ twinkle-magazine/
   layout.json               … 増刊号／号外の組み立て方
   manifest.json             … 抽出した画像の一覧とサイズ
   frames/                   … 紙面背景
-    gogai_bg.png            … 号外
+    gogai_bg.png            … 号外（配信用に `gogai_cover_bg.png` の別名コピーも使用）
     zokan_page1_heading.png … 増刊1面の舞台絵（アーチ）
     zokan_page1_bg.png      … 増刊1面ぼかし
     zokan_page2_bg.png      … 増刊2面
