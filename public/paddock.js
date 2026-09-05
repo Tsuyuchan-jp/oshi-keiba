@@ -4,6 +4,7 @@
   const labels = { chaser: "追込", betweener: "差し", leader: "先行", runner: "逃げ" };
   const patterns = { 1: [1], 2: [1, 1], 3: [1, 1, 1], 4: [2, 2], 5: [2, 1, 2], 6: [2, 2, 2], 7: [3, 2, 2], 8: [3, 2, 3], 9: [3, 3, 3], 10: [4, 3, 3], 11: [4, 3, 4], 12: [4, 4, 4] };
   const groups = document.querySelector("#horse-groups");
+  const paddockNav = document.querySelector(".paddock-nav");
   const detail = document.querySelector("#detail");
   const statCaps = { speed: 2300, stamina: 1800, power: 1700, guts: 1700, wisdom: 1800 };
   let backdrop;
@@ -22,7 +23,9 @@
   const fitMobileHeight = () => {
     if (!matchMedia("(max-width:700px)").matches) return;
     const stageHeight = groups.closest(".race-view")?.getBoundingClientRect().height || window.innerHeight;
-    const top = Math.min(190, Math.max(175, stageHeight * 0.27 - 30));
+    const naturalTop = Math.min(190, Math.max(175, stageHeight * 0.27 - 30));
+    const navBottom = paddockNav?.getBoundingClientRect().bottom ?? 0;
+    const top = Math.max(naturalTop, Math.ceil(navBottom + 12));
     const bottom = Math.min(72, Math.max(18, stageHeight * 0.06)) + 30;
     const density = groups.dataset.mobileDensity || "normal";
     const limits = density === "roomy"
