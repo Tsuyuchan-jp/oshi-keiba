@@ -1,13 +1,15 @@
 /* 最終スマホモックの競馬場レイアウト。PC版のパドック表示には適用しない。 */
 .paddock-stage {
   display: block;
-  min-height: 100svh;
+  height: 100svh;
+  min-height: 0;
+  overflow: hidden;
   background: #80d5ff url('/images/paddock/racecourse-side-stage-mobile-v2.png') center -52px / auto calc(100% + 72px) no-repeat;
 }
 
 .race-view {
   height: 100svh;
-  min-height: 650px;
+  min-height: 0;
 }
 
 .scoreboard {
@@ -49,7 +51,7 @@
   --horse-image-height: 89px;
   --horse-box-height: 96px;
   --horse-number-offset: min(42px, 11vw);
-  inset: max(27%, 220px) 2% 11%;
+  inset: var(--groups-top, max(27%, 220px)) 2% var(--groups-bottom, 11%);
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -85,8 +87,8 @@
 
 .horse-row { min-height: 0; transform: translateX(var(--row-shift, 0)); }
 .horse { width: var(--horse-width, 84px); height: var(--horse-box-height); }
-.horse-row .horse:not(:only-child):nth-child(odd) { --horse-row-bob: -25px; }
-.horse-row .horse:not(:only-child):nth-child(even) { --horse-row-bob: 25px; }
+.horse-row .horse:not(:only-child):nth-child(odd) { --horse-row-bob: calc(0px - var(--horse-bob-distance, 25px)); }
+.horse-row .horse:not(:only-child):nth-child(even) { --horse-row-bob: var(--horse-bob-distance, 25px); }
 .horse-row .horse { transform: translateY(var(--horse-row-bob, 0)); }
 .horse-row .horse:hover,
 .horse-row .horse:focus-visible,
@@ -125,4 +127,17 @@
   background: transparent;
   text-align: center;
   font-size: 10px;
+}
+
+.detail {
+  overscroll-behavior: contain;
+}
+
+.detail__summary {
+  cursor: grab;
+  touch-action: none;
+}
+
+.detail.is-dragging {
+  transition: none;
 }
