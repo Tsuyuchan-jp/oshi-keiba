@@ -8,6 +8,7 @@
   const statCaps = { speed: 2300, stamina: 1800, power: 1700, guts: 1700, wisdom: 1800 };
   let backdrop;
   let shotDialog;
+  let swipeToCloseEnabled = false;
   const esc = (v) => String(v ?? "").replace(/[&<>\"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const rowsFor = (horses, mobile = false) => {
     const p = mobile
@@ -43,9 +44,45 @@
   };
   const close = () => {
     detail.className = "detail";
+    detail.style.removeProperty("transform");
     document.querySelectorAll(".horse").forEach((x) => x.classList.remove("selected"));
     backdrop?.remove();
     backdrop = null;
+  };
+  const enableSwipeToClose = () => {
+    if (swipeToCloseEnabled || !matchMedia("(max-width:700px)").matches) return;
+    swipeToCloseEnabled = true;
+    let gesture = null;
+    const reset = () => {
+      detail.classList.remove("is-dragging");
+      detail.style.removeProperty("transform");
+      gesture = null;
+    };
+    detail.addEventListener("pointerdown", (event) => {
+      if (!event.isPrimary || event.button > 0) return;
+      const fromHandle = event.target instanceof Element && event.target.closest(".detail__summary");
+      if (!fromHandle && detail.scrollTop > 0) return;
+      gesture = { x: event.clientX, y: event.clientY, dragging: false };
+      detail.setPointerCapture?.(event.pointerId);
+    });
+    detail.addEventListener("pointermove", (event) => {
+      if (!gesture) return;
+      const x = event.clientX - gesture.x;
+      const y = event.clientY - gesture.y;
+      if (y <= 0 || Math.abs(y) <= Math.abs(x)) return;
+      gesture.dragging = true;
+      detail.classList.add("is-dragging");
+      detail.style.transform = `translateY(${Math.min(y, detail.clientHeight)}px)`;
+      event.preventDefault();
+    });
+    const finish = (event) => {
+      if (!gesture) return;
+      const distance = event.clientY - gesture.y;
+      if (gesture.dragging && distance > Math.min(96, detail.clientHeight * 0.2)) close();
+      else reset();
+    };
+    detail.addEventListener("pointerup", finish);
+    detail.addEventListener("pointercancel", reset);
   };
   const openShot = (url, name) => {
     if (!shotDialog) {
@@ -95,9 +132,10 @@
     const comment = esc(h.comment || "意気込みコメントは未登録です");
     const shot = h.shotUrl ? '<button type="button" class="shot-action">育成スクリーンショットを見る</button>' : "";
     detail.className = "detail open";
-    detail.innerHTML = `<div class="detail__summary"><small>タップで詳細を閉じる</small></div><div class="detail__heading"><span>${esc(h.styleLabel)}</span>　<span>${h.number}番</span></div><div class="profile">${h.detailImageUrl ? `<img src="${esc(h.detailImageUrl)}" alt="${esc(h.umaName)}">` : ""}<div class="profile-text"><h2>${esc(h.umaName)}</h2><p class="profile-trainer"><span>トレーナー</span><b>${esc(h.trainerName)}</b></p><strong>${odds(h.odds)}</strong></div></div><div class="trainer-comment">${icon}<blockquote>${comment}</blockquote></div><section class="skill"><div><span>スキルパワー</span><b>${h.skillPower ?? "—"}</b></div><small>有効 ${h.skillSummary?.effective ?? 0}　金相当 ${h.skillSummary?.goldLike ?? 0}　戦略 +${h.skillSummary?.strategic ?? 0}</small></section><section class="status"><h3>基礎能力</h3>${stats(h)}${aptitudeBadges(h.aptitudes)}</section><div class="actions">${shot}<a class="candidate" href="/bet?candidate=${encodeURIComponent(h.id)}">このウマ娘を投票候補にする →</a></div>`;
+    detail.innerHTML = `<div class="detail__summary"><small>下にスワイプして閉じる</small></div><div class="detail__heading"><span>${esc(h.styleLabel)}</span>　<span>${h.number}番</span></div><div class="profile">${h.detailImageUrl ? `<img src="${esc(h.detailImageUrl)}" alt="${esc(h.umaName)}">` : ""}<div class="profile-text"><h2>${esc(h.umaName)}</h2><p class="profile-trainer"><span>トレーナー</span><b>${esc(h.trainerName)}</b></p><strong>${odds(h.odds)}</strong></div></div><div class="trainer-comment">${icon}<blockquote>${comment}</blockquote></div><section class="skill"><div><span>スキルパワー</span><b>${h.skillPower ?? "—"}</b></div><small>有効 ${h.skillSummary?.effective ?? 0}　金相当 ${h.skillSummary?.goldLike ?? 0}　戦略 +${h.skillSummary?.strategic ?? 0}</small></section><section class="status"><h3>基礎能力</h3>${stats(h)}${aptitudeBadges(h.aptitudes)}</section><div class="actions">${shot}<a class="candidate" href="/bet?candidate=${encodeURIComponent(h.id)}">このウマ娘を投票候補にする →</a></div>`;
     detail.querySelector(".shot-action")?.addEventListener("click", () => openShot(h.shotUrl, h.umaName));
     if (matchMedia("(max-width:700px)").matches) {
+      enableSwipeToClose();
       backdrop = document.createElement("button");
       backdrop.className = "detail-backdrop";
       backdrop.ariaLabel = "詳細を閉じる";
