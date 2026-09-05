@@ -386,7 +386,6 @@ export function adminGougaiPage(board: Board): { body: string; scripts: string }
             </label>
             <button type="button" class="admin-action admin-action--secondary" id="gougai-photo-reset" disabled>テンプレートに戻す</button>
           </div>
-          <p class="gougai-photo-note">画像を使う間も、縦書きと右の青枠は表示します。</p>
           <div class="gougai-photo-controls" id="gougai-photo-controls" hidden>
             <div class="gougai-photo-editor" id="gougai-photo-editor"><img id="gougai-photo-editor-image" alt=""></div>
             <label>拡大・縮小

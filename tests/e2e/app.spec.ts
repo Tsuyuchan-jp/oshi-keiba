@@ -73,6 +73,7 @@ test("管理者は号外の背景と立ち絵を画像へ差し替え、テン�
   await page.getByLabel("仮パスワード").fill("e2e-admin-password");
   await page.getByRole("button", { name: "管理画面へ" }).click();
   await page.goto("/admin/gougai");
+  await expect(page.locator("#gougai-photo-controls")).toBeHidden();
 
   await page.locator("#gougai-photo-input").setInputFiles({
     name: "cover.png",

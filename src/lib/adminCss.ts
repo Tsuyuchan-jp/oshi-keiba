@@ -1314,6 +1314,7 @@ body.gougai-page .gougai-desk .work {
 .gougai-photo-select input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .gougai-photo-note { margin: .1rem 0 0; color: var(--admin-muted); font-size: .74rem; font-weight: 600; line-height: 1.45; }
 .gougai-photo-controls { display: grid; gap: .4rem; margin-top: .45rem; }
+.gougai-photo-controls[hidden] { display: none; }
 .gougai-photo-editor {
   position: relative; width: 100%; aspect-ratio: 13 / 10; overflow: hidden;
   border: 1px solid var(--admin-line-strong); border-radius: 5px; background: #e7edf2; cursor: grab; touch-action: none;
