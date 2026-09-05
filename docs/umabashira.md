@@ -2,7 +2,7 @@
 
 管理者が生成し、コミュニティ内へ配る出走全頭の縦1列紙面。号外（[gougai.md](gougai.md)）とは別物。アプリのメンバー画面（場内・パドック・窓口）には埋め込まない。配るのは書き出した画像。
 
-**いまの段階:** 管理タブ `/admin/umabashira` でプレビューと PNG / WebP 書き出しまで。見た目の正は [モック](mocks/umabashira/index.html) **上段（案B寄せ）**。petit の img に背景色は付けない。
+**いまの段階:** 管理タブ `/admin/umabashira` でプレビューと PNG / WebP 書き出しまで。**一旦の正は本番タブ**（実機確認OK）。[モック](mocks/umabashira/index.html) 上段は本番に揃えた控え。下段の案Aは見送り。petit の img に背景色は付けない。
 
 ---
 
@@ -208,9 +208,9 @@
 
 ## レイアウト（確定）
 
-**見た目の正は [mocks/umabashira/index.html](mocks/umabashira/index.html) の上段だけ。** 下段の案A（印を列頭）は見送り。本番は上段を移植する。レイアウトを作り直さない。
+**見た目の正は本番 `/admin/umabashira` の紙面（`.umabashira-paper`）。** モック上段は同じ見た目の控え。下段の案A（印を列頭）は見送り。レイアウトを作り直さない。
 
-数値・フォント・`translateY(0.2em)` はモック CSS が正。
+数値・フォント・`translateY(0.2em)`・伸ばし棒の補正は本番 CSS（`adminCss.ts` の `.umabashira-paper`）が正。モックはそれに合わせる。
 
 - 向き: 横長1枚。列 = 出走1頭。号外の 26rem には収めない。紙面幅は列グリッドが決める（下限4頭分）。ヘッダは列幅に合わせて折り返し、文字列では広げない
 - 上: 開催名・場・芝ダ・距離・季節・天候・馬場・頭数。幅があるときは凡例を右。狭いときだけ折り返す
@@ -255,7 +255,7 @@
 
 号外に合わせる。管理者のみ。**ラベル「ウマ柱」、URL `/admin/umabashira`。** ナビは開催設定の下。
 
-左: 紙面プレビュー（モック上段と同じ。**左の行名は残す**）。右: 第1段は編集なしのプレースホルダ（手入力は後から）。ヒーローは他タブと同じ `page-hero`。右アクションに PNG / WebP を別ボタン。出力: プレビュー `.umabashira-paper` をクライアントで **PNG と WebP** に書き出す（`public/vendor/modern-screenshot.mjs`、`scale: 2`、フォントは `document.fonts.ready`）。サーバー焼きはしない。D1 に下書きを残さない。ファイル名は `YYYY-MM-DD-{開催名}-ウマ柱`（日付は JST）。
+左: 紙面プレビュー（**左の行名は残す**）。右: 第1段は編集なしのプレースホルダ（手入力は後から）。ヒーローは他タブと同じ `page-hero`。右アクションに PNG / WebP を別ボタン。出力: プレビュー `.umabashira-paper` をクライアントで **PNG と WebP** に書き出す（`public/vendor/modern-screenshot.mjs`、`scale: 2`、フォントは `document.fonts.ready`）。紙面幅は列グリッド（`width: max-content`、下限4頭分）。書き出しは `scrollWidth` / `scrollHeight`。サーバー焼きはしない。D1 に下書きを残さない。ファイル名は `YYYY-MM-DD-{開催名}-ウマ柱`（日付は JST）。
 
 紙面はメンバーの場内・パドック・窓口に出さない。
 

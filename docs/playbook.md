@@ -123,7 +123,7 @@
 - 出走の登録名はウマ娘名と出走者を分ける（OCR はウマ娘名へ。詳細は [ocr.md](ocr.md)）
 - 管理は 7 タブ（進行・出走登録・出走・台帳・オッズ・開催設定・ウマ柱）。OCR は `/admin/register`。読取成功の画像が登録時に R2 へ。出走タブでスクショ確認。[ocr.md](ocr.md)
 - 号外タブは未実装。note 用紙面の見た目の正は [gougai.md](gougai.md)（モック `.paper`）。メンバー画面には出さない
-- ウマ柱タブは `/admin/umabashira`（ラベル「ウマ柱」、ナビは開催設定の下）。見た目の正は [umabashira.md](umabashira.md)（モック上段・左列残す・petit に背景色なし）。メンバー画面には出さない。配るのは PNG と WebP
+- ウマ柱タブは `/admin/umabashira`（ラベル「ウマ柱」、ナビは開催設定の下）。一旦の正は本番タブ（実機確認OK）。仕様は [umabashira.md](umabashira.md)。メンバー画面には出さない。配るのは PNG と WebP
 - 管理の見た目はダッシュ（IBM Plex CDN）。逃げは開閉レール。着順は案3。内部計算はオッズのモーダル。スタミナ目標値は脚質別8項目を開催設定のモーダルで入力する。電光は移さない
 - **本番デプロイ**は [release.md](release.md) の手順を通す。R2 作成と D1 `--remote` を `deploy` の前にやり、公開直後の確認と障害時の判断も同手順に従う
 - **アプリ版**: 履歴と上げ方は [version.md](version.md)。数字の正本は `package.json`（画面は `v` 付き）

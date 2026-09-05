@@ -69,7 +69,7 @@ U-tools バ身と場内相対化（混ぜ B、スキル 3 : ステ 1、温存錨
 
 ## ウマ柱で見送り
 
-正は [umabashira.md](umabashira.md) と [モック上段](mocks/umabashira/index.html)。実装で戻さない。
+正は本番 `/admin/umabashira` と [umabashira.md](umabashira.md)。実装で戻さない。
 
 - 印を列頭に置く案A
 - スキル名、枠番色、過去走、評価点の式、人気順の数字
