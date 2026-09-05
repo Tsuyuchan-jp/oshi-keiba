@@ -64,6 +64,22 @@ function isAdminOnlyAsset(path: string): boolean {
     || path.startsWith("/images/umamusume/stand/");
 }
 
+const GOUGAI_BACKGROUND_PATH = "/twinkle/frames/gougai_bg.png";
+const GOUGAI_BACKGROUND_R2_KEY = "_app-assets/gougai_bg.png";
+
+async function adminOnlyAsset(request: Request, env: Env, path: string): Promise<Response> {
+  if (path === GOUGAI_BACKGROUND_PATH && env.SHOTS) {
+    const object = await env.SHOTS.get(GOUGAI_BACKGROUND_R2_KEY);
+    if (object) {
+      const headers = new Headers({ "Cache-Control": "private, max-age=3600" });
+      object.writeHttpMetadata(headers);
+      headers.set("ETag", object.httpEtag);
+      return new Response(object.body, { headers });
+    }
+  }
+  return env.ASSETS.fetch(request);
+}
+
 /** 確認用パス。name=password にするとブラウザがログイン情報を流し込む */
 function readAdminReauth(form: { get(name: string): string | File | null }): string {
   const a = form.get("admin_reauth");
@@ -151,7 +167,7 @@ export default {
         if (gate instanceof Response) {
           return new Response("Not Found", { status: 404 });
         }
-        return env.ASSETS.fetch(request);
+        return adminOnlyAsset(request, env, path);
       }
 
       const adminGet = await tryAdminGet(request, env, url, path);

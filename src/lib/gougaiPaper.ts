@@ -23,7 +23,7 @@ export function gougaiPaperHtml(sheet: GougaiSheet): string {
       <header class="masthead">${escapeHtml(sheet.masthead)}</header>
       <div class="cover">
         <div class="cover-photo" aria-hidden="true"><img id="gougai-photo" alt=""></div>
-        <img class="cover-bg" src="/twinkle/frames/gogai_cover_bg_v2.png" alt="">
+        <img class="cover-bg" src="/twinkle/frames/gougai_bg.png" alt="">
         ${standHtml(sheet)}
         <div class="cover-blue" aria-hidden="true"></div>
         <div class="cover-titles">

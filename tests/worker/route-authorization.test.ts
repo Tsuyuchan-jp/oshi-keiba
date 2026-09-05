@@ -1,3 +1,4 @@
+import { env } from "cloudflare:workers";
 import { describe, expect, test } from "vitest";
 import {
   insertUser,
@@ -82,6 +83,18 @@ describe("管理経路の権限", () => {
     const cookie = await signedCookie(userId, "member");
     const response = await workerFetch("/twinkle/frames/gougai_bg.png", {}, cookie);
     expect(response.status).toBe(404);
+  });
+
+  test("管理者にはR2の号外背景を返す", async () => {
+    const image = new Uint8Array([137, 80, 78, 71]);
+    await env.SHOTS.put("_app-assets/gougai_bg.png", image, {
+      httpMetadata: { contentType: "image/png" },
+    });
+    const { cookie } = await loginAdmin();
+    const response = await workerFetch("/twinkle/frames/gougai_bg.png", {}, cookie);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toBe("image/png");
+    expect(new Uint8Array(await response.arrayBuffer())).toEqual(image);
   });
 
   test.each(ADMIN_GET_PATHS)("未認証GET %sを管理ログインへ戻す", async (path) => {
