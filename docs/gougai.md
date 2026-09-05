@@ -2,7 +2,7 @@
 
 管理者が note 用に撮る、チャンミ号外のオマージュ紙面。メンバー画面には出さない。見た目はゲームに寄せ、中身の台詞・インタビューは寄せない。
 
-**いまの段階:** 第1段クローズ（ローカル実機確認OK。2026-09-05）。管理タブ `/admin/gougai`（左プレビュー・右編集・PNG / WebP）。見た目の正は [mocks/gougai/index.html](mocks/gougai/index.html) の `.paper`。本番のルートは `.gougai-paper`。同ファイル下の「正（生成画像）」「重ね」はトレーナー帯 CSS の照合用で、本番紙面には出さない。ゲーム素材は `public/twinkle/`（PNG は git 管理外。詳細は同フォルダの `NOTICE.txt`）。立ち絵は `public/images/umamusume/stand/`（PNG は git 管理外）。細かい修正は別指示で行う。
+**いまの段階:** 実装クローズ（ローカル実機確認OK。2026-09-05）。管理タブ `/admin/gougai`（左プレビュー・右編集・PNG / WebP）。見た目の正は [mocks/gougai/index.html](mocks/gougai/index.html) の `.paper`。本番のルートは `.gougai-paper`。同ファイル下の「正（生成画像）」「重ね」はトレーナー帯 CSS の照合用で、本番紙面には出さない。ゲーム素材は `public/twinkle/`（PNG は git 管理外。詳細は同フォルダの `NOTICE.txt`）。立ち絵は `public/images/umamusume/stand/`（PNG は git 管理外）。本チャットでの細かい修正も実機確認済み。
 
 実装はモックの HTML／CSS を移植し、プレースホルダを開催・1着のデータで埋める。レイアウトを作り直さない。
 
@@ -38,11 +38,11 @@
 |---|---|---|
 | 誌名 | 月刊つゅインクル　号外 | 初期同じ。変更した値を端末のデフォルトにする |
 | 立ち絵 | `docs/mocks/gougai/stand-preview.png` | 1着の `chara_stand_{chara}_{dress}`。欠け時は下のフォールバック |
-| 右列画像 | `public/twinkle/subtitles/324.png` | 初期 324。編集で subtitle 画像を選べる |
+| 右列画像 | `public/twinkle/subtitles/324.png` | 初期 324。編集のモーダルから subtitle 画像を選べる |
 | 中列（縦書き） | スペシャルウィーク | 選んだ CSV 行の `\n` より前（`<character_name>` は1着名） |
 | 左列（縦書き） | 見事チャンピオンに | 選んだ CSV 行の `\n` より後。初期は「見事チャンピオンに」 |
 | 本文オレンジ | プレビュー杯／スペシャルウィーク／「プレビュー太郎」 | 初期は開催名・ウマ娘名・「出走者名」。その後はフリー編集 |
-| アイコン | `docs/mocks/gougai/trainer-icon.png` | 1着の `trainer_icon_key`（R2） |
+| アイコン | `docs/mocks/gougai/trainer-icon.png` | 1着の `trainer_icon_key`（R2）。未登録時は白地に薄い「未登録」 |
 | 優勝バッジ | 優勝 | 固定 |
 | 出走者名 | プレビュー太郎 | 1着 `runner_name` |
 | ウマ娘名（帯） | スペシャルウィーク | 1着ウマ娘名 |
@@ -52,7 +52,7 @@
 
 自動で埋める: 1着のウマ娘・出走者・立ち絵／petit、アイコン、開催名・コース・天候・バ場・季節・頭数。
 
-人が直す: 誌名、縦書きの見出し（セレクト。id は出さない）、右列画像、本文（フリー編集＋部分オレンジ）。
+人が直す: 誌名、縦書きの見出し（セレクト。id は出さない）、右列画像、メインビュー画像、本文（フリー編集＋部分オレンジ）。
 
 ---
 
