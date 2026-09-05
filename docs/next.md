@@ -20,7 +20,7 @@
 
 ## アーカイブ
 
-- ウマ柱を出走登録中（setup）でも参考オッズを出す（紙面は開催前に使う）— [umabashira.md](umabashira.md)
+- ウマ柱を出走登録中（setup）でも参考オッズを出す（実機確認OK。現在の紙面を正とする）— [umabashira.md](umabashira.md)
 - ローカル進行タブの Undo 復旧列を `npm run dev` の vars で再表示（実機確認OK。`secrets.required` が `.dev.vars` のフラグを落としていた）
 - OCRが配列JSONを返したときの空確認画面を修正（実機確認OK。登録時の `r2_pending_deletions` 未適用はローカル migration で解消）— [ocr.md](ocr.md)
 - ウマ柱タブを一旦の正とした（実機確認OK。見た目の正は本番 `/admin/umabashira`。モック上段は控え）— [umabashira.md](umabashira.md)
