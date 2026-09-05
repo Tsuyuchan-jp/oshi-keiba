@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { overlayBySlogan, overlayColumns } from "./gougaiOverlay.ts";
+import { GOUGAI_DEFAULT_SLOGAN, overlayBySlogan, overlayColumns } from "./gougaiOverlay.ts";
 import { gougaiPaperHtml } from "./gougaiPaper.ts";
 import { charaStandUrl, defaultCharaStandUrl } from "./gougaiStand.ts";
-import { GOUGAI_DEFAULT_SUBTITLE } from "./gougaiSubtitles.ts";
-import { gougaiFacts, gougaiFileBase, gougaiView } from "./gougaiView.ts";
+import { GOUGAI_DEFAULT_SUBTITLE, gougaiSubtitleFiles, gougaiSubtitleUrl } from "./gougaiSubtitles.ts";
+import { gougaiBodyHtml, gougaiFacts, gougaiFileBase, gougaiView } from "./gougaiView.ts";
 import type { Board } from "./storeTypes.ts";
 
 const board = {
@@ -103,4 +103,39 @@ test("縦書きはウマ娘名を差し込み、紙面に stand を出す", () =
 test("既定衣装と同じ stand はフォールバックを持たない", () => {
   assert.equal(charaStandUrl(1001, 100101), "/images/umamusume/stand/chara_stand_1001_100101.png");
   assert.equal(defaultCharaStandUrl(1001, 100101), null);
+});
+
+test("取消済みの1着は優勝者として扱わない", () => {
+  const scratchedWinner = {
+    ...board,
+    horses: board.horses.map((entry, index) => ({
+      ...entry,
+      horse: {
+        ...entry.horse,
+        finish_place: index === 1 ? 1 : null,
+      },
+    })),
+  } as unknown as Board;
+  assert.equal(gougaiView(scratchedWinner).hasWinner, false);
+});
+
+test("号外のファイル名と本文へ外部入力を安全に差し込む", () => {
+  const now = new Date("2026-09-04T16:00:00Z");
+  assert.equal(gougaiFileBase("  春/秋:*?杯  ", now), "2026-09-05-春_秋___杯-号外");
+  assert.equal(gougaiFileBase("   ", now), "2026-09-05-開催-号外");
+  const body = gougaiBodyHtml("<開催>", "A&B", '"出走者"');
+  assert.match(body, /&lt;開催&gt;/);
+  assert.match(body, /A&amp;B/);
+  assert.match(body, /&quot;出走者&quot;/);
+  assert.doesNotMatch(body, /<開催>/);
+});
+
+test("未知の縦書きと不正なstand IDを既定値へ戻し、画像名からパス文字を除く", () => {
+  assert.equal(overlayBySlogan("存在しない").slogan, GOUGAI_DEFAULT_SLOGAN);
+  const subtitleUrl = gougaiSubtitleUrl("../../危険.png");
+  assert.equal(subtitleUrl, "/twinkle/subtitles/.....png");
+  assert.doesNotMatch(subtitleUrl, /\/\.\.\//);
+  assert.equal(gougaiSubtitleFiles().filter((file) => file === GOUGAI_DEFAULT_SUBTITLE).length, 1);
+  assert.equal(charaStandUrl("bad", -1), null);
+  assert.equal(defaultCharaStandUrl(null, 100101), null);
 });

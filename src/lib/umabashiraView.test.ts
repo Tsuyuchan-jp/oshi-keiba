@@ -70,7 +70,13 @@ test("ウマ柱は取消を列から外し、setup でも参考オッズを出�
   const sheet = umabashiraView(board);
   assert.equal(sheet.horses.length, 2);
   assert.equal(sheet.horses[0]!.umaName, "スペシャルウィーク");
+  assert.equal(sheet.horses[0]!.runnerName, "トレーナー I");
+  assert.equal(sheet.horses[0]!.styleLabel, "先行");
+  assert.equal(sheet.horses[0]!.petitUrl, "/images/umamusume/petit/petit_1001_100101_0010.png");
+  assert.equal(sheet.horses[0]!.strength, 128.4);
   assert.equal(sheet.horses[0]!.odds, 4.8);
+  assert.deepEqual(sheet.horses[0]!.stats, [1200, 950, 1100, 850, 1000]);
+  assert.deepEqual(sheet.horses[0]!.sp, { base: 2, effective: 2, white: 2, gold: 0 });
   assert.equal(sheet.horses[0]!.mark, "◎");
   assert.equal(sheet.horses[1]!.mark, "○");
   assert.equal(sheet.horses[1]!.stats, null);
@@ -106,6 +112,89 @@ test("コース行の欠けは —。ファイル名は日付と開催名", () =
     umabashiraFileBase("第3回春の合同練習杯", new Date("2026-09-04T16:00:00Z")),
     "2026-09-05-第3回春の合同練習杯-ウマ柱",
   );
+});
+
+test("ファイル名に使えない文字を置換し、空の開催名は既定名にする", () => {
+  const now = new Date("2026-09-04T16:00:00Z");
+  assert.equal(umabashiraFileBase("  春/秋:*?杯  ", now), "2026-09-05-春_秋___杯-ウマ柱");
+  assert.equal(umabashiraFileBase("   ", now), "2026-09-05-開催-ウマ柱");
+});
+
+test("計算不能な評価点と参考オッズは欠損として扱う", () => {
+  const invalid = {
+    ...board,
+    horses: board.horses.map((entry, index) => index === 0
+      ? {
+          ...entry,
+          referenceOdds: Number.NaN,
+          horse: { ...entry.horse, strength: Number.POSITIVE_INFINITY },
+        }
+      : entry),
+  } as unknown as Board;
+  const horse = umabashiraView(invalid).horses[0]!;
+  assert.equal(horse.strength, null);
+  assert.equal(horse.odds, null);
+  assert.equal(horse.mark, "─");
+});
+
+test("戦略例外スキルをウマ柱のSP点数へ反映する", () => {
+  const scoreInput = JSON.parse(String(board.horses[0]!.horse.score_input));
+  scoreInput.skillNames = ["コンセントレーション", "コーナー巧者○"];
+  scoreInput.skillIds = [200431, null];
+  const strategicBoard = {
+    ...board,
+    horses: board.horses.map((entry, index) => index === 0
+      ? { ...entry, horse: { ...entry.horse, score_input: JSON.stringify(scoreInput) } }
+      : entry),
+  } as unknown as Board;
+  const withoutStrategic = umabashiraView(strategicBoard).horses[0]!.sp!.base;
+  const withStrategic = umabashiraView(strategicBoard, [
+    { skillId: 200431, name: "コンセントレーション", points: 5, memo: "テスト" },
+  ]).horses[0]!.sp!.base;
+  assert.ok(withStrategic > withoutStrategic);
+});
+
+test("出走0頭と最大18頭でも列数を紙面へ渡せる", () => {
+  const emptySheet = umabashiraView({ ...board, horses: [] } as unknown as Board);
+  assert.equal(emptySheet.horses.length, 0);
+  assert.match(umabashiraPaperHtml(emptySheet), /style="--n:0"/);
+
+  const template = board.horses[0]!;
+  const fullBoard = {
+    ...board,
+    horses: Array.from({ length: 18 }, (_, index) => ({
+      ...template,
+      number: index + 1,
+      horse: {
+        ...template.horse,
+        id: `horse-${index + 1}`,
+        uma_name: `ウマ${index + 1}`,
+        strength: 100 - index,
+      },
+    })),
+  } as unknown as Board;
+  const fullHtml = umabashiraPaperHtml(umabashiraView(fullBoard));
+  assert.equal((fullHtml.match(/class="col tint-w/g) ?? []).length, 18);
+  assert.match(fullHtml, /style="--n:18"/);
+  assert.match(fullHtml, /class="waku-box w8"/);
+});
+
+test("紙面へ差し込む開催名・馬名・出走者名をHTMLとして解釈しない", () => {
+  const unsafe = {
+    ...board,
+    event: { ...board.event, title: "<開催&杯>" },
+    horses: board.horses.map((entry, index) => index === 0
+      ? {
+          ...entry,
+          horse: { ...entry.horse, uma_name: "<ウマ>", runner_name: "A&B" },
+        }
+      : entry),
+  } as unknown as Board;
+  const html = umabashiraPaperHtml(umabashiraView(unsafe));
+  assert.match(html, /&lt;開催&amp;杯&gt;/);
+  assert.match(html, /aria-label="&lt;ウマ&gt;"/);
+  assert.match(html, /A&amp;B/);
+  assert.doesNotMatch(html, /<開催|<ウマ>/);
 });
 
 test("紙面はウマ番から枠色箱を塗り、評価点とSPを内側 span にする", () => {

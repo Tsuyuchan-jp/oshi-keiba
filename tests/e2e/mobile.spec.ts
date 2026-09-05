@@ -28,3 +28,18 @@ test("モバイル幅でも入場・場内・窓口の主要操作が画面内�
   await expectNoHorizontalOverflow(page);
   expect(pageErrors).toEqual([]);
 });
+
+test("モバイル幅でもウマ柱管理画面はページ全体からはみ出さない", async ({ page }) => {
+  const pageErrors: Error[] = [];
+  page.on("pageerror", (error) => pageErrors.push(error));
+  await page.goto("/admin/login");
+  await page.getByLabel("仮パスワード").fill("e2e-admin-password");
+  await page.getByRole("button", { name: "管理画面へ" }).click();
+  await page.goto("/admin/umabashira");
+
+  await expect(page.locator("#umabashira-paper")).toBeVisible();
+  await expect(page.locator("#umabashira-png")).toBeVisible();
+  await expect(page.locator("#umabashira-webp")).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+  expect(pageErrors).toEqual([]);
+});
