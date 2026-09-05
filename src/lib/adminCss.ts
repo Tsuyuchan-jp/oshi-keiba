@@ -1281,7 +1281,7 @@ body.gougai-page .gougai-desk .work {
 .gougai-color-row { display: flex; flex-wrap: wrap; gap: .35rem; }
 .gougai-subs {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(2.25rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(1.7rem, 1fr));
   gap: .28rem;
   max-height: 9.5rem;
   overflow: auto;
