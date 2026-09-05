@@ -1299,8 +1299,8 @@ body.gougai-page .gougai-desk .work {
   border: 2px solid transparent;
   background: #000;
   cursor: pointer;
-  /* 一覧は紙面内の細い枠を再利用せず、読める大きさで選べる専用比率にする。 */
-  aspect-ratio: 1 / 3.2;
+  /* モック: 幅 1.55rem、高さ (20rem - 1.2rem) × 7/9。 */
+  aspect-ratio: .106 / 1;
   overflow: hidden;
 }
 .gougai-sub.on { border-color: #ffe44a; }

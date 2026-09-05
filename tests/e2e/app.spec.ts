@@ -82,7 +82,7 @@ test("管理者は号外の背景と立ち絵を画像へ差し替え、テン�
     width: el.getBoundingClientRect().width,
     height: el.getBoundingClientRect().height,
   }));
-  expect(subtitleSize.height / subtitleSize.width).toBeCloseTo(3.2, 1);
+  expect(subtitleSize.height / subtitleSize.width).toBeCloseTo(1 / .106, 1);
   const selectedSubtitle = page.locator(".gougai-sub").nth(1);
   const selectedFile = await selectedSubtitle.getAttribute("data-file");
   await selectedSubtitle.click();
