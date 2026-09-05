@@ -383,12 +383,15 @@
       margin: 0.04rem 0.08rem 0;
       padding: 0.04rem 0.04rem;
     }
-    /* 色箱は動かさず、字面だけ下げる（番・脚と同じ） */
+    /* 色箱は動かさず、字面だけ下げる */
     .score-cell b > span,
-    .sp b > span,
     .sp small > span {
       display: inline-block;
       transform: translateY(0.08em);
+    }
+    .sp b > span {
+      display: inline-block;
+      transform: translateY(0.16em);
     }
   </style>
 </head>
