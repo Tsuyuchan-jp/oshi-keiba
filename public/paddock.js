@@ -23,7 +23,7 @@
     if (!matchMedia("(max-width:700px)").matches) return;
     const stageHeight = groups.closest(".race-view")?.getBoundingClientRect().height || window.innerHeight;
     const top = Math.min(190, Math.max(175, stageHeight * 0.27 - 30));
-    const bottom = Math.min(72, Math.max(18, stageHeight * 0.06));
+    const bottom = Math.min(72, Math.max(18, stageHeight * 0.06)) + 30;
     const density = groups.dataset.mobileDensity || "normal";
     const limits = density === "roomy"
       ? { box: 112, image: 93 }
