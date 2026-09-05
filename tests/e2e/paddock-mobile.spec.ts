@@ -117,4 +117,27 @@ test("18 horses fit vertically without changing the mobile horizontal layout", a
     dispatch("touchend", 440);
   });
   await expect(detail).not.toHaveClass(/open/);
+
+  await page.waitForTimeout(450);
+  await page.locator(".detail__summary").tap();
+  await expect(detail).toHaveClass(/open/);
+  await page.locator(".detail__summary").tap();
+  await expect(detail).not.toHaveClass(/open/);
+
+  await detail.evaluate((element) => {
+    const target = element.querySelector(".detail__summary")!;
+    const dispatch = (type: "touchstart" | "touchmove" | "touchend", y: number) => {
+      const touch = new Touch({ identifier: 1, target, clientX: 160, clientY: y });
+      target.dispatchEvent(new TouchEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        touches: type === "touchend" ? [] : [touch],
+        changedTouches: [touch],
+      }));
+    };
+    dispatch("touchstart", 440);
+    dispatch("touchmove", 300);
+    dispatch("touchend", 300);
+  });
+  await expect(detail).toHaveClass(/open/);
 });

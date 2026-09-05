@@ -69,15 +69,31 @@
   const close = () => {
     detail.className = "detail";
     detail.style.removeProperty("transform");
+    detail.querySelector(".detail__summary small")?.replaceChildren("タップまたは上にスワイプして開く");
     document.querySelectorAll(".horse").forEach((x) => x.classList.remove("selected"));
     backdrop?.remove();
     backdrop = null;
+  };
+  const showBackdrop = () => {
+    if (backdrop || !matchMedia("(max-width:700px)").matches) return;
+    backdrop = document.createElement("button");
+    backdrop.className = "detail-backdrop";
+    backdrop.ariaLabel = "詳細を閉じる";
+    backdrop.addEventListener("click", close);
+    document.body.append(backdrop);
+  };
+  const reveal = () => {
+    detail.classList.add("open");
+    detail.style.removeProperty("transform");
+    detail.querySelector(".detail__summary small")?.replaceChildren("下にスワイプして閉じる");
+    showBackdrop();
   };
   const enableSwipeToClose = () => {
     if (swipeToCloseEnabled) return;
     swipeToCloseEnabled = true;
     let pointerGesture = null;
     let touchGesture = null;
+    let ignoreNextSummaryClick = false;
     const reset = () => {
       detail.classList.remove("is-dragging");
       detail.style.removeProperty("transform");
@@ -88,23 +104,40 @@
     const drag = (gesture, x, y) => {
       const deltaX = x - gesture.x;
       const deltaY = y - gesture.y;
-      if (deltaY <= 0 || Math.abs(deltaY) <= Math.abs(deltaX)) return false;
+      const closing = gesture.mode === "close";
+      if ((closing ? deltaY <= 0 : deltaY >= 0) || Math.abs(deltaY) <= Math.abs(deltaX)) return false;
       gesture.dragging = true;
       detail.classList.add("is-dragging");
-      detail.style.transform = `translateY(${Math.min(deltaY, detail.clientHeight)}px)`;
+      const translate = closing
+        ? Math.min(deltaY, detail.clientHeight)
+        : Math.max(0, detail.clientHeight - 61 + deltaY);
+      detail.style.transform = `translateY(${translate}px)`;
       return true;
     };
     const finish = (gesture, y) => {
       if (!gesture) return;
       const distance = y - gesture.y;
-      if (gesture.dragging && distance > Math.min(96, detail.clientHeight * 0.2)) close();
-      else reset();
+      const threshold = Math.min(96, detail.clientHeight * 0.2);
+      const completed = gesture.dragging && (gesture.mode === "close" ? distance > threshold : distance < -threshold);
+      if (completed) {
+        if (gesture.mode === "close") {
+          close();
+          reset();
+        }
+        else {
+          ignoreNextSummaryClick = true;
+          reveal();
+          reset();
+          setTimeout(() => { ignoreNextSummaryClick = false; }, 400);
+        }
+      } else reset();
     };
     detail.addEventListener("pointerdown", (event) => {
       if (!matchMedia("(max-width:700px)").matches || event.pointerType === "touch" || !event.isPrimary || event.button > 0) return;
       const fromHandle = startsGesture(event.target);
-      if (!fromHandle && detail.scrollTop > 0) return;
-      pointerGesture = { x: event.clientX, y: event.clientY, dragging: false };
+      const mode = detail.classList.contains("open") ? "close" : "open";
+      if (!fromHandle || (mode === "close" && detail.scrollTop > 0)) return;
+      pointerGesture = { x: event.clientX, y: event.clientY, mode, dragging: false };
       detail.setPointerCapture?.(event.pointerId);
     });
     detail.addEventListener("pointermove", (event) => {
@@ -115,13 +148,21 @@
     detail.addEventListener("touchstart", (event) => {
       if (!matchMedia("(max-width:700px)").matches || event.touches.length !== 1) return;
       const touch = event.touches[0];
-      touchGesture = { x: touch.clientX, y: touch.clientY, fromHandle: startsGesture(event.target), dragging: false };
+      touchGesture = {
+        x: touch.clientX,
+        y: touch.clientY,
+        mode: detail.classList.contains("open") ? "close" : "open",
+        fromHandle: startsGesture(event.target),
+        dragging: false,
+      };
     }, { passive: true });
     detail.addEventListener("touchmove", (event) => {
       if (!touchGesture || event.touches.length !== 1) return;
       const touch = event.touches[0];
-      const canClose = touchGesture.fromHandle || detail.scrollTop <= 1;
-      if (canClose && drag(touchGesture, touch.clientX, touch.clientY)) event.preventDefault();
+      const canDrag = touchGesture.mode === "open"
+        ? touchGesture.fromHandle
+        : touchGesture.fromHandle || detail.scrollTop <= 1;
+      if (canDrag && drag(touchGesture, touch.clientX, touch.clientY)) event.preventDefault();
     }, { passive: false });
     detail.addEventListener("touchend", (event) => {
       const touch = event.changedTouches[0];
@@ -129,6 +170,15 @@
       else reset();
     });
     detail.addEventListener("touchcancel", reset);
+    detail.addEventListener("click", (event) => {
+      if (!matchMedia("(max-width:700px)").matches || !startsGesture(event.target)) return;
+      if (ignoreNextSummaryClick) {
+        ignoreNextSummaryClick = false;
+        return;
+      }
+      if (detail.classList.contains("open")) close();
+      else reveal();
+    });
   };
   const openShot = (url, name) => {
     if (!shotDialog) {
@@ -182,12 +232,7 @@
     detail.querySelector(".shot-action")?.addEventListener("click", () => openShot(h.shotUrl, h.umaName));
     if (matchMedia("(max-width:700px)").matches) {
       enableSwipeToClose();
-      backdrop = document.createElement("button");
-      backdrop.className = "detail-backdrop";
-      backdrop.ariaLabel = "詳細を閉じる";
-      backdrop.addEventListener("click", close);
-      document.body.append(backdrop);
-      detail.querySelector(".detail__summary")?.addEventListener("click", close);
+      showBackdrop();
     }
   };
   const renderGroups = () => {
