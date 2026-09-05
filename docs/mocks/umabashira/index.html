@@ -222,8 +222,7 @@
       justify-content: flex-start;
       gap: 0.1rem;
       padding: 0.1rem 0.04rem 0.12rem;
-      /* 列境より弱く、通常の行罫よりだけ太い */
-      border-bottom: 2px solid #8a8374;
+      border-bottom: 2px solid var(--rule);
     }
     .stub-col .who {
       justify-content: center;
@@ -310,10 +309,6 @@
       line-height: 1.15;
       padding: 0 0.16rem;
     }
-    .odds-cell .mk.hon {
-      background: #f4c8c8;
-      box-shadow: inset 0 0 0 1px #c41218;
-    }
     .odds-cell .mk.none {
       color: #8d8678;
       font-size: 0.95rem;
@@ -371,19 +366,20 @@
       font-size: 1.08rem;
       font-weight: 800;
       line-height: 1.05;
-      background: #1a1814;
+      /* 墨の全幅帯は重いので、紺の数字箱にする */
+      background: #3d5a8a;
       color: #fff;
-      margin: -0.08rem -0.02rem 0;
-      padding: 0.14rem 0.04rem 0.12rem;
+      margin: 0 0.08rem;
+      padding: 0.08rem 0.04rem 0.06rem;
     }
     .sp small { display: block; font-size: 0.42rem; color: #4a453c; font-weight: 600; margin-top: 0.02rem; line-height: 1.15; }
     .sp small:first-of-type { margin-top: 0.08rem; }
     .sp small.gold {
-      background: #f0d000;
+      background: #ead56a;
       color: #1a1814;
       font-weight: 800;
-      margin: 0.04rem -0.02rem -0.08rem;
-      padding: 0.06rem 0.04rem;
+      margin: 0.04rem 0.08rem 0;
+      padding: 0.04rem 0.04rem;
     }
   </style>
 </head>
@@ -393,7 +389,7 @@
     <p class="note">見た目案（本番未適用）。ウマ番を JRA 枠色で塗る（保存しない）。評価点は紺地白字。列に薄い枠色地。脚質は控えめな帯色。petit に背景は付けない。頭数切替で枠の塊を確認。</p>
     <div class="toolbar" id="toolbar"></div>
     <h2>紙面（けばけば案）</h2>
-    <p class="note">列頭は枠色箱のウマ番＋脚質。ウマ娘行の下は太罫（茶系）。印はオッズ欄の上段（本命は印だけ赤地）。SP点数は黒地白字、金は黄地。</p>
+    <p class="note">列頭は枠色箱のウマ番＋脚質。ウマ娘行の下は太罫。印はオッズ欄の上段。SP点数は紺の数字箱、金は黄地。</p>
     <div class="sheet-wrap" id="b"></div>
   </div>
   <script>
@@ -482,8 +478,7 @@
     }
     function markHtml(mark) {
       if (!mark || mark === "─") return `<span class="mk none" aria-label="無印">─</span>`;
-      const hon = mark === "◎" ? " hon" : "";
-      return `<span class="mk${hon}">${mark}</span>`;
+      return `<span class="mk">${mark}</span>`;
     }
     function oddsHtml(h, mark) {
       return `<div class="cell odds-cell">${markHtml(mark)}<b>${h.odds.toFixed(1)}</b></div>`;
