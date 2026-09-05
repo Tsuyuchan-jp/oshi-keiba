@@ -1025,9 +1025,9 @@ body.umabashira-page .umabashira-desk .work {
   border-radius: 6px;
 }
 .umabashira-paper {
-  --paper: #f3efe4;
+  --paper: #f7f3e8;
   --ink: #1a1814;
-  --rule: #2a2722;
+  --rule: #1a1814;
   --muted: #6a6458;
   --mark: #c41218;
   --hb: #163a8a;
@@ -1045,14 +1045,15 @@ body.umabashira-page .umabashira-desk .work {
   font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
 }
 .umabashira-paper .mast {
-  display: flex; flex-wrap: wrap; gap: .35rem 1rem; align-items: baseline;
-  padding: .32rem .45rem; border-bottom: 2px solid var(--rule);
+  display: flex; flex-wrap: wrap; gap: .12rem .85rem; align-items: baseline;
+  padding: .18rem .28rem .16rem; border-bottom: 2px solid var(--rule);
   font-weight: 800; font-size: .78rem;
   width: 0; min-width: 100%; box-sizing: border-box;
 }
 .umabashira-paper .mast .title, .umabashira-paper .mast .meta { flex: none; white-space: nowrap; }
-.umabashira-paper .mast .keys { min-width: 0; font-weight: 400; font-size: .62rem; color: var(--muted); margin-left: auto; }
-.umabashira-paper .mast .meta { font-weight: 600; font-size: .7rem; color: #3c382f; }
+.umabashira-paper .mast .title { font-size: .92rem; letter-spacing: .04em; }
+.umabashira-paper .mast .keys { min-width: 0; font-weight: 400; font-size: .5rem; color: var(--muted); margin-left: auto; }
+.umabashira-paper .mast .meta { font-weight: 700; font-size: .62rem; color: #3c382f; }
 .umabashira-paper .board {
   display: grid;
   grid-template-columns: var(--stub-w) repeat(var(--n), var(--col-w));
@@ -1060,11 +1061,11 @@ body.umabashira-page .umabashira-desk .work {
 }
 .umabashira-paper .col {
   display: grid; grid-template-rows: subgrid; grid-row: 1 / span 8;
-  border-left: 1px solid var(--rule); min-width: var(--col-w); min-height: 0;
+  border-left: 2px solid var(--rule); min-width: var(--col-w); min-height: 0;
 }
-.umabashira-paper .stub-col { border-left: 0; background: #e7e1d3; min-width: var(--stub-w); }
+.umabashira-paper .stub-col { border-left: 0; background: #e4ddd0; min-width: var(--stub-w); }
 .umabashira-paper .cell {
-  border-bottom: 1px solid #c8c0ae; padding: .14rem .08rem; text-align: center; min-width: 0;
+  border-bottom: 1px solid #9e9686; padding: .08rem .04rem; text-align: center; min-width: 0;
 }
 .umabashira-paper .stub-cell {
   color: var(--muted); font-weight: 700; display: flex; align-items: center; justify-content: center; overflow: hidden;
@@ -1078,22 +1079,46 @@ body.umabashira-page .umabashira-desk .work {
 .umabashira-paper .stub-v > span {
   writing-mode: vertical-rl; text-orientation: mixed; font-size: .52rem; letter-spacing: .08em; line-height: 1;
 }
-.umabashira-paper .id-row { display: flex; align-items: stretch; min-height: 2.25rem; padding: 0; }
-.umabashira-paper .num {
-  flex: 1; display: flex; flex-direction: column; justify-content: center;
-  line-height: 1; text-align: center;
+/* データ列だけ縦積み。stub にも付けると vertical-rl が右に寄る */
+.umabashira-paper .col:not(.stub-col) .id-row {
+  display: flex; flex-direction: column; align-items: stretch; min-height: 0; padding: 0;
 }
-.umabashira-paper .num b { font-size: 1.02rem; font-weight: 800; transform: translateY(.06em); }
+.umabashira-paper .stub-col .id-row { flex-direction: row; align-items: center; justify-content: center; }
+.umabashira-paper .waku-box {
+  display: flex; align-items: center; justify-content: center; min-height: 1.42rem; line-height: 1;
+}
+.umabashira-paper .waku-box b { font-size: 1.08rem; font-weight: 800; transform: translateY(.06em); }
 .umabashira-paper .style {
   display: block; width: 100%; box-sizing: border-box;
-  margin-top: .12rem; font-size: .64rem; font-weight: 800;
-  letter-spacing: .04em; line-height: 1; background: #ece4d2; border: 1px solid #b9b09c;
-  padding: .06rem .08rem;
+  font-size: .58rem; font-weight: 800; letter-spacing: .04em; line-height: 1;
+  border-top: 1px solid #9e9686; padding: .07rem .04rem .08rem;
 }
 .umabashira-paper .style > span { display: inline-block; transform: translateY(.06em); }
+.umabashira-paper .style-逃 { background: #f3c4c4; color: #7a1010; }
+.umabashira-paper .style-先 { background: #f3d9b0; color: #7a3e08; }
+.umabashira-paper .style-差 { background: #c9d6ee; color: #1a3366; }
+.umabashira-paper .style-追 { background: #c9e4cf; color: #145228; }
+/* 枠色は紙面の見た目専用。白枠に内線を足すと16頭の1・2番だけ二重線になる */
+.umabashira-paper .waku-box.w1 { background: #fff; color: #1a1814; }
+.umabashira-paper .waku-box.w2 { background: #111; color: #fff; }
+.umabashira-paper .waku-box.w3 { background: #d01218; color: #fff; }
+.umabashira-paper .waku-box.w4 { background: #1a4aa8; color: #fff; }
+.umabashira-paper .waku-box.w5 { background: #f0d000; color: #1a1814; }
+.umabashira-paper .waku-box.w6 { background: #1a8a3a; color: #fff; }
+.umabashira-paper .waku-box.w7 { background: #e87810; color: #1a1814; }
+.umabashira-paper .waku-box.w8 { background: #f090b0; color: #1a1814; }
+.umabashira-paper .col.tint-w1 { background: #f3efe4; }
+.umabashira-paper .col.tint-w2 { background: #eceae6; }
+.umabashira-paper .col.tint-w3 { background: #f8e8e6; }
+.umabashira-paper .col.tint-w4 { background: #e7edf6; }
+.umabashira-paper .col.tint-w5 { background: #f7f1c8; }
+.umabashira-paper .col.tint-w6 { background: #e6f1e8; }
+.umabashira-paper .col.tint-w7 { background: #f7ead8; }
+.umabashira-paper .col.tint-w8 { background: #f6e4ec; }
 .umabashira-paper .who {
   display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-  gap: .16rem; padding: .18rem .06rem .2rem;
+  gap: .1rem; padding: .1rem .04rem .12rem;
+  border-bottom: 2px solid var(--rule);
 }
 .umabashira-paper .stub-col .who { justify-content: center; padding: .18rem .06rem; }
 .umabashira-paper .who img, .umabashira-paper .who .ph {
@@ -1118,42 +1143,68 @@ body.umabashira-page .umabashira-desk .work {
 }
 .umabashira-paper .runner {
   display: flex; align-items: center; justify-content: center;
-  font-size: .56rem; font-weight: 700; line-height: 1.15; min-height: 1.55rem;
+  font-size: .56rem; font-weight: 700; line-height: 1.15; min-height: 1.4rem;
   padding-left: .04rem; padding-right: .04rem;
 }
 .umabashira-paper .runner span {
   white-space: nowrap; overflow: hidden; max-width: 100%; transform: translateY(.2em);
 }
-.umabashira-paper .score-cell { min-height: 1.55rem; display: flex; align-items: center; justify-content: center; }
-.umabashira-paper .score-cell b { font-size: .92rem; font-weight: 800; color: var(--hb); }
+.umabashira-paper .score-cell {
+  min-height: 1.4rem; display: flex; align-items: center; justify-content: center;
+  padding: .06rem .02rem; background: var(--hb);
+}
+.umabashira-paper .score-cell b { font-size: .9rem; font-weight: 800; color: #fff; line-height: 1; }
+.umabashira-paper .stub-col .score-cell { background: #e4ddd0; }
 .umabashira-paper .odds-cell {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: .08rem; min-height: 2.55rem;
+  gap: .04rem; min-height: 2.4rem; padding: .08rem .02rem;
 }
 .umabashira-paper .odds-cell .mk {
-  min-height: 1.15rem; font-size: 1.05rem; font-weight: 800; color: var(--mark); line-height: 1.15;
+  min-height: 1.1rem; font-size: 1.08rem; font-weight: 800; color: var(--mark);
+  line-height: 1.15; padding: 0 .16rem;
 }
 .umabashira-paper .odds-cell .mk.none {
   color: #8d8678; font-size: .95rem; font-weight: 600; letter-spacing: 0;
+  background: transparent; box-shadow: none;
 }
-.umabashira-paper .odds-cell b { font-size: .95rem; font-weight: 800; line-height: 1; }
+.umabashira-paper .odds-cell b { font-size: .92rem; font-weight: 800; line-height: 1; }
 .umabashira-paper .stats {
-  font-size: .52rem; font-variant-numeric: tabular-nums; line-height: 1.28;
-  text-align: left; padding: .14rem .12rem;
+  font-size: .48rem; font-variant-numeric: tabular-nums; line-height: 1.18;
+  text-align: left; padding: .04rem .08rem;
 }
-.umabashira-paper .stats.empty { min-height: 1.55rem; display: flex; align-items: center; justify-content: center; }
-.umabashira-paper .stats span { display: flex; justify-content: space-between; padding-right: .12rem; }
-.umabashira-paper .stats .lab { color: var(--muted); font-weight: 600; }
+.umabashira-paper .stats.empty { min-height: 1.4rem; display: flex; align-items: center; justify-content: center; }
+.umabashira-paper .stats span {
+  display: flex; justify-content: space-between;
+  padding: .02rem .06rem .02rem 0; border-bottom: 1px dotted #b7ae9c;
+}
+.umabashira-paper .stats span:last-child { border-bottom: 0; }
+.umabashira-paper .stats .lab { color: var(--muted); font-weight: 600; font-size: .42rem; }
 .umabashira-paper .empty { color: var(--muted); text-align: center; }
 .umabashira-paper .apt {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: .04rem; font-size: .52rem; font-weight: 700; line-height: 1.2; min-height: 2.2rem;
+  gap: .02rem; font-size: .5rem; font-weight: 700; line-height: 1.15;
+  min-height: 2rem; padding: .06rem .02rem;
 }
-.umabashira-paper .apt .s { color: var(--mark); }
-.umabashira-paper .sp { min-height: 3.15rem; }
-.umabashira-paper .sp b { display: block; font-size: 1.12rem; font-weight: 800; line-height: 1.1; }
-.umabashira-paper .sp small { display: block; font-size: .46rem; color: var(--muted); font-weight: 600; margin-top: .04rem; line-height: 1.2; }
+.umabashira-paper .apt .s { color: var(--mark); background: #f8d4d4; padding: 0 .12rem; }
+.umabashira-paper .sp { min-height: 2.95rem; padding: .08rem .02rem; }
+.umabashira-paper .sp b {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.08rem; font-weight: 800; line-height: 1;
+  background: #3d5a8a; color: #fff; margin: 0 .08rem; padding: .08rem .04rem .06rem;
+}
+.umabashira-paper .sp small {
+  display: block; font-size: .42rem; color: #4a453c; font-weight: 600;
+  margin-top: .02rem; line-height: 1;
+}
 .umabashira-paper .sp small:first-of-type { margin-top: .08rem; }
+.umabashira-paper .sp small.gold {
+  background: #ead56a; color: #1a1814; font-weight: 800;
+  margin: .04rem .08rem 0; padding: .04rem;
+}
+.umabashira-paper .score-cell b > span,
+.umabashira-paper .sp small > span,
+.umabashira-paper .apt > span { display: inline-block; transform: translateY(.08em); }
+.umabashira-paper .sp b > span { display: inline-block; transform: translateY(.12em); }
 @media (max-width: 1199px) {
   body.settings-page .settings-top { grid-template-columns: 1fr; }
   .set-conds { grid-template-columns: 1fr; }

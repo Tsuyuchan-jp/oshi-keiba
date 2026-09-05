@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { umaNameCharsHtml } from "./umabashiraPaper.ts";
+import { umaNameCharsHtml, umabashiraPaperHtml } from "./umabashiraPaper.ts";
 import { umabashiraCourseLine, umabashiraFileBase, umabashiraView } from "./umabashiraView.ts";
 import type { Board } from "./storeTypes.ts";
 
@@ -106,4 +106,14 @@ test("コース行の欠けは —。ファイル名は日付と開催名", () =
     umabashiraFileBase("第3回春の合同練習杯", new Date("2026-09-04T16:00:00Z")),
     "2026-09-05-第3回春の合同練習杯-ウマ柱",
   );
+});
+
+test("紙面はウマ番から枠色箱を塗り、評価点とSPを内側 span にする", () => {
+  const html = umabashiraPaperHtml(umabashiraView(board));
+  assert.match(html, /class="col tint-w1"/);
+  assert.match(html, /class="waku-box w1"/);
+  assert.match(html, /class="style style-先"/);
+  assert.match(html, /score-cell"><b><span>128\.4<\/span>/);
+  assert.match(html, /small class="gold"><span>金/);
+  assert.match(html, /枠色は見た目のみ/);
 });

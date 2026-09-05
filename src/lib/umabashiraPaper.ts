@@ -1,10 +1,19 @@
 import { escapeHtml } from "./http.ts";
 import { MARK_NONE } from "./umabashiraMarks.ts";
 import type { UmabashiraHorseView, UmabashiraSheet } from "./umabashiraView.ts";
+import { wakuOf } from "./umabashiraWaku.ts";
 
 const STAT_LABELS = ["速", "スタ", "パ", "根", "賢"] as const;
 
 const CHOON = new Set(["ー", "ｰ"]);
+
+/** 脚質ラベル → 帯色用の短いキー。見た目専用 */
+const STYLE_TONE: Record<string, string> = {
+  逃げ: "逃",
+  先行: "先",
+  差し: "差",
+  追込: "追",
+};
 
 /** ウマ娘名を1文字ずつ。少ない字は9文字分の箱で字間が開く */
 export function umaNameCharsHtml(name: string): string {
@@ -42,7 +51,7 @@ function aptHtml(h: UmabashiraHorseView): string {
 
 function spHtml(h: UmabashiraHorseView): string {
   if (!h.sp) return dashCell("sp");
-  return `<div class="cell sp"><b>${h.sp.base}</b><small>有効</small><small>白${h.sp.white}</small><small>金${h.sp.gold}</small></div>`;
+  return `<div class="cell sp"><b><span>${h.sp.base}</span></b><small><span>有効</span></small><small><span>白${h.sp.white}</span></small><small class="gold"><span>金${h.sp.gold}</span></small></div>`;
 }
 
 function markHtml(mark: string): string {
@@ -58,13 +67,19 @@ function oddsHtml(h: UmabashiraHorseView): string {
 
 function strengthHtml(h: UmabashiraHorseView): string {
   const n = h.strength == null ? "—" : h.strength.toFixed(1);
-  return `<div class="cell score-cell"><b>${n}</b></div>`;
+  return `<div class="cell score-cell"><b><span>${n}</span></b></div>`;
 }
 
-function horseCol(h: UmabashiraHorseView): string {
+function horseCol(h: UmabashiraHorseView, nHead: number): string {
   const style = h.styleLabel ? escapeHtml(h.styleLabel) : "—";
-  return `<div class="col">
-        <div class="cell id-row"><div class="num" style="width:100%"><b>${h.number}</b><span class="style"><span>${style}</span></span></div></div>
+  const tone = h.styleLabel ? STYLE_TONE[h.styleLabel] ?? "" : "";
+  const styleClass = tone ? ` style-${tone}` : "";
+  const w = wakuOf(h.number, nHead);
+  return `<div class="col tint-w${w}">
+        <div class="cell id-row">
+          <div class="waku-box w${w}"><b>${h.number}</b></div>
+          <span class="style${styleClass}"><span>${style}</span></span>
+        </div>
         <div class="cell who">${faceHtml(h)}<span class="uma" aria-label="${escapeHtml(h.umaName)}">${umaNameCharsHtml(h.umaName)}</span></div>
         <div class="cell runner"><span>${escapeHtml(h.runnerName)}</span></div>
         ${strengthHtml(h)}
@@ -99,15 +114,15 @@ function stubCol(): string {
     .join("")}</div>`;
 }
 
-/** モック上段と同じ紙面。書き出し対象はルート要素。 */
+/** モックと同じ紙面。書き出し対象はルート要素。 */
 export function umabashiraPaperHtml(sheet: UmabashiraSheet): string {
   const n = sheet.horses.length;
-  const cols = sheet.horses.map(horseCol).join("");
+  const cols = sheet.horses.map((h) => horseCol(h, n)).join("");
   return `<div class="umabashira-paper" id="umabashira-paper" data-file-base="${escapeHtml(sheet.fileBase)}">
         <div class="mast">
           <span class="title">${escapeHtml(sheet.title)}</span>
           <span class="meta">${escapeHtml(sheet.courseLine)}</span>
-          <span class="keys">◎本命 ○対抗 ▲単穴 △穴　／　SP＝点数・有効・白・金</span>
+          <span class="keys">◎本命 ○対抗 ▲単穴 △穴　／　SP＝点数・有効・白・金　／　枠色は見た目のみ</span>
         </div>
         <div class="board" style="--n:${n}">${stubCol()}${cols}</div>
       </div>`;
