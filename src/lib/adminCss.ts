@@ -1083,14 +1083,14 @@ body.umabashira-page .umabashira-desk .work {
   flex: 1; display: flex; flex-direction: column; justify-content: center;
   line-height: 1; text-align: center;
 }
-.umabashira-paper .num b { font-size: 1.02rem; font-weight: 800; transform: translateY(.2em); }
+.umabashira-paper .num b { font-size: 1.02rem; font-weight: 800; transform: translateY(.06em); }
 .umabashira-paper .style {
   display: block; width: 100%; box-sizing: border-box;
   margin-top: .12rem; font-size: .64rem; font-weight: 800;
   letter-spacing: .04em; line-height: 1; background: #ece4d2; border: 1px solid #b9b09c;
   padding: .06rem .08rem;
 }
-.umabashira-paper .style > span { display: inline-block; transform: translateY(.2em); }
+.umabashira-paper .style > span { display: inline-block; transform: translateY(.06em); }
 .umabashira-paper .who {
   display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
   gap: .16rem; padding: .18rem .06rem .2rem;
