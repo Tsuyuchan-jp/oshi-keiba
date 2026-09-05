@@ -222,31 +222,12 @@
       justify-content: flex-start;
       gap: 0.1rem;
       padding: 0.1rem 0.04rem 0.12rem;
-      border-bottom: 2px solid var(--rule);
+      /* 列境より弱く、通常の行罫よりだけ太い */
+      border-bottom: 2px solid #8a8374;
     }
     .stub-col .who {
       justify-content: center;
       padding: 0.18rem 0.06rem;
-    }
-    .who-name {
-      display: flex;
-      flex-direction: row;
-      align-items: flex-start;
-      justify-content: center;
-      gap: 0.06rem;
-      min-width: 0;
-      width: 100%;
-    }
-    .waku-kana {
-      flex: none;
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
-      font-size: 0.4rem;
-      font-weight: 800;
-      line-height: 1;
-      letter-spacing: 0;
-      color: #4a453c;
-      margin-top: 0.08rem;
     }
     .who img, .who .ph {
       width: 1.95rem;
@@ -271,7 +252,6 @@
       font-size: 0.78rem;
       font-weight: 800;
       line-height: 1;
-      flex: none;
     }
     .uma > span { flex: none; line-height: 1; }
     .uma > span.choon {
@@ -320,10 +300,7 @@
       gap: 0.04rem;
       min-height: 2.4rem;
       padding: 0.08rem 0.02rem;
-      box-shadow: inset 0 0 0 1px #1a1814;
     }
-    .odds-cell.hon { background: #f4c8c8; }
-    .stub-col .odds-cell { box-shadow: none; }
     .odds-cell .k { display: block; font-size: 0.5rem; color: var(--muted); font-weight: 600; }
     .odds-cell .mk {
       min-height: 1.1rem;
@@ -332,6 +309,10 @@
       color: var(--mark);
       line-height: 1.15;
       padding: 0 0.16rem;
+    }
+    .odds-cell .mk.hon {
+      background: #f4c8c8;
+      box-shadow: inset 0 0 0 1px #c41218;
     }
     .odds-cell .mk.none {
       color: #8d8678;
@@ -412,7 +393,7 @@
     <p class="note">見た目案（本番未適用）。ウマ番を JRA 枠色で塗る（保存しない）。評価点は紺地白字。列に薄い枠色地。脚質は控えめな帯色。petit に背景は付けない。頭数切替で枠の塊を確認。</p>
     <div class="toolbar" id="toolbar"></div>
     <h2>紙面（けばけば案）</h2>
-    <p class="note">列頭は枠色箱のウマ番＋脚質。ウマ娘名の右に枠色1字。ウマ娘行の下は太罫。印／オッズは枠付き（本命はセル赤地）。SP点数は黒地白字、金は黄地。</p>
+    <p class="note">列頭は枠色箱のウマ番＋脚質。ウマ娘行の下は太罫（茶系）。印はオッズ欄の上段（本命は印だけ赤地）。SP点数は黒地白字、金は黄地。</p>
     <div class="sheet-wrap" id="b"></div>
   </div>
   <script>
@@ -471,7 +452,6 @@
 
     const STYLE_JA = { 逃: "逃げ", 先: "先行", 差: "差し", 追: "追込" };
     const STAT_L = ["速", "スタ", "パ", "根", "賢"];
-    const WAKU_KANA = ["", "白", "黒", "赤", "青", "黄", "緑", "橙", "桃"];
 
     function statsHtml(h) {
       if (!h.stats) return `<div class="cell stats empty">—</div>`;
@@ -497,17 +477,16 @@
         return `<span${choon ? ' class="choon"' : ""}>${c}</span>`;
       }).join("");
     }
-    function whoHtml(h, w) {
-      const kana = WAKU_KANA[w] || "";
-      return `<div class="cell who">${face(h)}<div class="who-name"><span class="uma" aria-label="${h.uma}">${umaChars(h.uma)}</span><span class="waku-kana">${kana}</span></div></div>`;
+    function whoHtml(h) {
+      return `<div class="cell who">${face(h)}<span class="uma" aria-label="${h.uma}">${umaChars(h.uma)}</span></div>`;
     }
     function markHtml(mark) {
       if (!mark || mark === "─") return `<span class="mk none" aria-label="無印">─</span>`;
-      return `<span class="mk">${mark}</span>`;
+      const hon = mark === "◎" ? " hon" : "";
+      return `<span class="mk${hon}">${mark}</span>`;
     }
     function oddsHtml(h, mark) {
-      const hon = mark === "◎" ? " hon" : "";
-      return `<div class="cell odds-cell${hon}">${markHtml(mark)}<b>${h.odds.toFixed(1)}</b></div>`;
+      return `<div class="cell odds-cell">${markHtml(mark)}<b>${h.odds.toFixed(1)}</b></div>`;
     }
     function col(h, mark, nHead) {
       const w = wakuOf(h.n, nHead);
@@ -516,7 +495,7 @@
           <div class="waku-box w${w}"><b>${h.n}</b></div>
           <span class="style style-${h.style}"><span>${STYLE_JA[h.style] || h.style}</span></span>
         </div>
-        ${whoHtml(h, w)}
+        ${whoHtml(h)}
         <div class="cell runner"><span>${h.runner}</span></div>
         <div class="cell score-cell"><b>${h.score.toFixed(1)}</b></div>
         ${oddsHtml(h, mark)}
