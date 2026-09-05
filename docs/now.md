@@ -1,6 +1,6 @@
 # いま
 
-最終更新: 2026-09-05
+最終更新: 2026-09-06
 
 動いている催しがプロダクトの本体。第1回（2026-08-23 メンバーシップエクストラLoH）は払い戻しまで完了。第2回は Neko長明さんが開催を決めた。作り直しはしない。
 
@@ -8,7 +8,7 @@
 入場 `/login`　場内 `/`　パドック `/paddock`　窓口 `/bet`　管理 `/admin`
 アプリ版は [version.md](version.md)（数字の正本は `package.json`）
 
-詳細は [playbook.md](playbook.md)。第2回までにやることは [next.md](next.md)。号外タブはクローズ相当の第1段（ローカル実機確認OK。`/admin/gougai`。左プレビュー・右編集・PNG / WebP。1着未入力はプレースホルダ）。見た目の正は [gougai.md](gougai.md) と [モック](mocks/gougai/index.html)。ウマ柱第1段はクローズ（ローカル実機確認OK）。正は本番タブ `/admin/umabashira`（枠色は見た目専用。ノイズは不透明度 0.1。出走登録中も参考オッズ。評価点・SP点数の色箱は PNG を正）。仕様は [umabashira.md](umabashira.md)。モックは同じ見た目の控え。出力は PNG と WebP。
+詳細は [playbook.md](playbook.md)。第2回までにやることは [next.md](next.md)。パドックのスマホ表示は実機確認OK（最大18頭を画面高へ収め、詳細カードはタップ／上スワイプで開き、下スワイプで閉じる）。号外タブはクローズ相当の第1段（ローカル実機確認OK。`/admin/gougai`。左プレビュー・右編集・PNG / WebP。1着未入力はプレースホルダ）。見た目の正は [gougai.md](gougai.md) と [モック](mocks/gougai/index.html)。ウマ柱第1段はクローズ（ローカル実機確認OK）。正は本番タブ `/admin/umabashira`（枠色は見た目専用。ノイズは不透明度 0.1。出走登録中も参考オッズ。評価点・SP点数の色箱は PNG を正）。仕様は [umabashira.md](umabashira.md)。モックは同じ見た目の控え。出力は PNG と WebP。
 
 ## 仮置き（第2回）
 
