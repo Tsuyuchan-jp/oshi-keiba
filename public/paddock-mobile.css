@@ -13,7 +13,7 @@
 }
 
 .scoreboard {
-  top: max(calc(env(safe-area-inset-top) + 8px), clamp(46px, calc(9svh - 10px), 72px));
+  top: max(calc(env(safe-area-inset-top) - 12px), clamp(26px, calc(9svh - 30px), 52px));
   width: min(84vw, 350px);
   min-width: 0;
   border-width: 4px;
@@ -32,7 +32,7 @@
 .scoreboard h1 { padding: 9px 8px 7px; font-size: 18px; }
 
 .paddock-nav {
-  top: clamp(166px, calc(23svh - 10px), 200px);
+  top: clamp(146px, calc(23svh - 30px), 180px);
   left: 50%;
   transform: translateX(-50%);
   gap: 6px;
