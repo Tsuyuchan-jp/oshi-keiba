@@ -155,12 +155,18 @@
       line-height: 1;
     }
 
-    .id-row {
+    /* データ列だけ縦積み。stub にも付けると vertical-rl が右に寄る */
+    .col:not(.stub-col) .id-row {
       display: flex;
       flex-direction: column;
       align-items: stretch;
       min-height: 0;
       padding: 0;
+    }
+    .stub-col .id-row {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
     }
     .waku-box {
       display: flex;
@@ -191,8 +197,8 @@
     .style-差 { background: #c9d6ee; color: #1a3366; }
     .style-追 { background: #c9e4cf; color: #145228; }
 
-    /* 枠色（見た目専用。JRA割当） */
-    .waku-box.w1 { background: #fff; color: #1a1814; box-shadow: inset 0 0 0 1px #1a1814; }
+    /* 枠色（見た目専用。JRA割当）。白枠に内線を足すと16頭の1・2番だけ二重線になる */
+    .waku-box.w1 { background: #fff; color: #1a1814; }
     .waku-box.w2 { background: #111; color: #fff; }
     .waku-box.w3 { background: #d01218; color: #fff; }
     .waku-box.w4 { background: #1a4aa8; color: #fff; }
@@ -200,7 +206,7 @@
     .waku-box.w6 { background: #1a8a3a; color: #fff; }
     .waku-box.w7 { background: #e87810; color: #1a1814; }
     .waku-box.w8 { background: #f090b0; color: #1a1814; }
-    .col.tint-w1 { background: #fff; }
+    .col.tint-w1 { background: #f3efe4; }
     .col.tint-w2 { background: #eceae6; }
     .col.tint-w3 { background: #f8e8e6; }
     .col.tint-w4 { background: #e7edf6; }
