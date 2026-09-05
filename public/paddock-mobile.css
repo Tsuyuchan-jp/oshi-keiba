@@ -13,7 +13,7 @@
 }
 
 .scoreboard {
-  top: max(calc(env(safe-area-inset-top) + 18px), clamp(56px, 9svh, 82px));
+  top: max(calc(env(safe-area-inset-top) + 8px), clamp(46px, calc(9svh - 10px), 72px));
   width: min(84vw, 350px);
   min-width: 0;
   border-width: 4px;
