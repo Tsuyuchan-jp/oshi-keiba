@@ -8,14 +8,11 @@
   const statCaps = { speed: 2300, stamina: 1800, power: 1700, guts: 1700, wisdom: 1800 };
   let backdrop;
   let shotDialog;
-  let mobileGroupCount = 1;
   let mobileRowCount = 1;
   let swipeToCloseEnabled = false;
   const esc = (v) => String(v ?? "").replace(/[&<>\"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  const rowsFor = (horses, mobile = false) => {
-    const p = mobile
-      ? Array.from({ length: Math.ceil(horses.length / 5) }, (_, index) => Math.min(5, horses.length - index * 5))
-      : patterns[horses.length] || [Math.ceil(horses.length / 3), Math.ceil(horses.length / 3), horses.length - Math.ceil(horses.length / 3) * 2].filter(Boolean);
+  const rowsFor = (horses) => {
+    const p = patterns[horses.length] || [Math.ceil(horses.length / 3), Math.ceil(horses.length / 3), horses.length - Math.ceil(horses.length / 3) * 2].filter(Boolean);
     let at = 0;
     return p.map((n) => horses.slice(at, at += n));
   };
@@ -30,16 +27,25 @@
       : density === "dense"
       ? { box: 94, image: 78 }
       : { box: 96, image: 89 };
-    const groupPadding = mobileGroupCount * 20;
-    const rowSlot = Math.max(1, (stageHeight - top - bottom - groupPadding) / Math.max(1, mobileRowCount));
-    const boxHeight = Math.max(48, Math.min(limits.box, Math.floor(rowSlot * 10) / 10));
-    const imageHeight = Math.max(43, Math.min(limits.image, boxHeight - 5));
-    const bobDistance = boxHeight >= limits.box ? 25 : Math.max(8, Math.min(25, boxHeight * 0.2));
+    const rowSlot = Math.max(1, (stageHeight - top - bottom) / Math.max(1, mobileRowCount));
+    const boxHeight = Math.max(36, Math.min(limits.box, Math.floor(rowSlot * 10) / 10));
+    const imageHeight = Math.max(30, Math.min(limits.image, boxHeight - 6));
+    const imageWidth = Math.max(36, Math.min(limits.image, imageHeight * 1.05));
+    const numberSize = Math.max(16, Math.min(23, Math.floor(boxHeight * 0.52)));
+    const bobDistance = boxHeight >= limits.box ? 25 : Math.max(3, Math.min(12, boxHeight * 0.14));
     groups.style.setProperty("--groups-top", `${top}px`);
     groups.style.setProperty("--groups-bottom", `${bottom}px`);
     groups.style.setProperty("--horse-box-height", `${boxHeight}px`);
     groups.style.setProperty("--horse-image-height", `${imageHeight}px`);
+    groups.style.setProperty("--horse-image-width", `${imageWidth}px`);
+    groups.style.setProperty("--horse-number-size", `${numberSize}px`);
     groups.style.setProperty("--horse-bob-distance", `${bobDistance}px`);
+    groups.querySelectorAll(".horse-row").forEach((row) => {
+      const count = row.children.length;
+      const availableWidth = groups.clientWidth * 0.84 / Math.max(1, count);
+      const width = Math.max(40, Math.min(84, availableWidth, imageWidth * 1.18));
+      row.style.setProperty("--horse-width", `${width}px`);
+    });
   };
   const odds = (value) => value == null || !Number.isFinite(Number(value)) ? "—" : `${Number(value).toFixed(1)}倍`;
   const aptitudeBadges = (aptitudes) => {
@@ -242,8 +248,7 @@
     groups.innerHTML = "";
     if (mobile) {
       groups.style.removeProperty("grid-template-columns");
-      const totalRows = displayGroups.reduce((total, { horses }) => total + rowsFor(horses, true).length, 0);
-      mobileGroupCount = Math.max(1, displayGroups.length);
+      const totalRows = displayGroups.reduce((total, { horses }) => total + rowsFor(horses).length, 0);
       mobileRowCount = Math.max(1, totalRows);
       groups.dataset.mobileDensity = totalRows <= 4 ? "roomy" : totalRows === 5 ? "normal" : "dense";
     } else {
@@ -258,16 +263,13 @@
       group.className = `horse-group ${style}`;
       group.innerHTML = `<div class="guide"><b>${labels[style]}</b></div><div class="group-rows"></div>`;
       const rows = group.querySelector(".group-rows");
-      const horseRows = rowsFor(horses, mobile);
+      const horseRows = rowsFor(horses);
       group.style.setProperty("--band-rows", String(horseRows.length));
       horseRows.forEach((row, index) => {
         const line = document.createElement("div");
         line.className = "horse-row";
         const offsetCounts = new Set([2, 4, 6, 9, 12]);
         line.style.setProperty("--row-shift", !mobile && offsetCounts.has(horses.length) ? `${index % 2 ? "8" : "-8"}%` : "0");
-        if (mobile) {
-          line.style.setProperty("--horse-width", row.length === 5 ? "min(64px, 17vw)" : row.length === 4 ? "min(76px, 20vw)" : "84px");
-        }
         row.forEach((h) => {
           const button = document.createElement("button");
           button.className = "horse";
