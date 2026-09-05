@@ -30,7 +30,7 @@
       : density === "dense"
       ? { box: 94, image: 78 }
       : { box: 96, image: 89 };
-    const groupPadding = mobileGroupCount * 20;
+    const groupPadding = Math.max(0, mobileGroupCount - 1) * 10;
     const rowSlot = Math.max(1, (stageHeight - top - bottom - groupPadding) / Math.max(1, mobileRowCount));
     const boxHeight = Math.max(48, Math.min(limits.box, Math.floor(rowSlot * 10) / 10));
     const imageHeight = Math.max(43, Math.min(limits.image, boxHeight - 5));
