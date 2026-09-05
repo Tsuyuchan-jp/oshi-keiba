@@ -125,5 +125,6 @@ export function umabashiraPaperHtml(sheet: UmabashiraSheet): string {
           <span class="keys">◎本命 ○対抗 ▲単穴 △穴　／　SP＝点数・有効・白・金　／　枠色は見た目のみ</span>
         </div>
         <div class="board" style="--n:${n}">${stubCol()}${cols}</div>
+        <div class="grain" aria-hidden="true"></div>
       </div>`;
 }

@@ -1035,6 +1035,7 @@ body.umabashira-page .umabashira-desk .work {
   --stub-w: 2.15rem;
   /* 幅は列グリッドが決める。枠は外側。下限は4頭分 */
   box-sizing: content-box;
+  position: relative;
   display: flex;
   flex-direction: column;
   width: max-content;
@@ -1043,6 +1044,16 @@ body.umabashira-page .umabashira-desk .work {
   color: var(--ink);
   border: 2px solid var(--rule);
   font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
+}
+.umabashira-paper .grain {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: .1;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
 }
 .umabashira-paper .mast {
   display: flex; flex-wrap: wrap; gap: .12rem .85rem; align-items: baseline;

@@ -115,5 +115,5 @@ test("紙面はウマ番から枠色箱を塗り、評価点とSPを内側 span 
   assert.match(html, /class="style style-先"/);
   assert.match(html, /score-cell"><b><span>128\.4<\/span>/);
   assert.match(html, /small class="gold"><span>金/);
-  assert.match(html, /枠色は見た目のみ/);
+  assert.match(html, /class="grain"/);
 });
