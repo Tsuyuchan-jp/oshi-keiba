@@ -2,7 +2,7 @@
 
 管理者が note 用に撮る、チャンミ号外のオマージュ紙面。メンバー画面には出さない。見た目はゲームに寄せ、中身の台詞・インタビューは寄せない。
 
-**いまの段階:** 管理タブ `/admin/gougai`（左プレビュー・右編集・PNG / WebP）。見た目の正は [mocks/gougai/index.html](mocks/gougai/index.html) の `.paper`。本番のルートは `.gougai-paper`。同ファイル下の「正（生成画像）」「重ね」はトレーナー帯 CSS の照合用で、本番紙面には出さない。ゲーム素材は `public/twinkle/`（PNG は git 管理外。詳細は同フォルダの `NOTICE.txt`）。立ち絵は `public/images/umamusume/stand/`（PNG は git 管理外）。
+**いまの段階:** 第1段クローズ（ローカル実機確認OK。2026-09-05）。管理タブ `/admin/gougai`（左プレビュー・右編集・PNG / WebP）。見た目の正は [mocks/gougai/index.html](mocks/gougai/index.html) の `.paper`。本番のルートは `.gougai-paper`。同ファイル下の「正（生成画像）」「重ね」はトレーナー帯 CSS の照合用で、本番紙面には出さない。ゲーム素材は `public/twinkle/`（PNG は git 管理外。詳細は同フォルダの `NOTICE.txt`）。立ち絵は `public/images/umamusume/stand/`（PNG は git 管理外）。細かい修正は別指示で行う。
 
 実装はモックの HTML／CSS を移植し、プレースホルダを開催・1着のデータで埋める。レイアウトを作り直さない。
 

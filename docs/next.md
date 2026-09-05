@@ -4,7 +4,7 @@
 
 ## 次にやること
 
-- 号外タブのローカル実機確認（プレビュー・編集・PNG/WebP）— [gougai.md](gougai.md)・[モック](mocks/gougai/index.html)
+なし（号外の細かい修正は次チャットの指示待ち。このリストには置かない）
 
 ## そのあと
 
@@ -20,6 +20,7 @@
 
 ## アーカイブ
 
+- 号外タブのローカル実機確認OK（プレビュー・編集・PNG/WebP）— [gougai.md](gougai.md)
 - ウマ柱 PNG で左列「印／オッズ」の「オッズ」だけ字折れするのを修正（`.stub-split` に nowrap。実機確認OK）— [umabashira.md](umabashira.md)
 - 号外の管理タブを追加（左プレビュー・右編集。誌名・縦書き・右列画像・本文。PNG/WebP。1着未入力はプレースホルダ。chara_stand はローカル stand/）— [gougai.md](gougai.md)
 - ウマ柱第1段をクローズ（ローカル実機確認OK。プレビュー・PNG/WebP。枠色は見た目専用。ノイズは不透明度 0.1。評価点・SP点数の色箱は PNG を正）— [umabashira.md](umabashira.md)
