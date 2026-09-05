@@ -289,7 +289,7 @@
       padding: 0.06rem 0.02rem;
       background: var(--hb);
     }
-    .score-cell b { font-size: 0.9rem; font-weight: 800; color: #fff; }
+    .score-cell b { font-size: 0.9rem; font-weight: 800; color: #fff; line-height: 1; }
     .stub-col .score-cell { background: #e4ddd0; }
     .odds-cell {
       display: flex;
@@ -384,6 +384,7 @@
       padding: 0.04rem 0.04rem;
     }
     /* 色箱は動かさず、字面だけ下げる（番・脚と同じ） */
+    .score-cell b > span,
     .sp b > span,
     .sp small > span {
       display: inline-block;
@@ -500,7 +501,7 @@
         </div>
         ${whoHtml(h)}
         <div class="cell runner"><span>${h.runner}</span></div>
-        <div class="cell score-cell"><b>${h.score.toFixed(1)}</b></div>
+        <div class="cell score-cell"><b><span>${h.score.toFixed(1)}</span></b></div>
         ${oddsHtml(h, mark)}
         ${statsHtml(h)}${aptHtml(h)}${spHtml(h)}
       </div>`;
