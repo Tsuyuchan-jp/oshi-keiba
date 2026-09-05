@@ -46,7 +46,7 @@ export function paddockPage(view: PaddockView): string {
           </div>
         </div>
       </div>
-      <h1>${escapeHtml(view.title)}　出走ウマ娘紹介</h1>
+      <h1>${escapeHtml(view.title)}</h1>
       <p>${escapeHtml(countText)}</p>
     </header>
     <nav class="paddock-nav" aria-label="パドックの移動">
