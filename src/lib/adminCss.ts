@@ -1279,13 +1279,16 @@ body.gougai-page .gougai-desk .work {
   font-weight: 600;
 }
 .gougai-color-row { display: flex; flex-wrap: wrap; gap: .35rem; }
+.gougai-sub-choice { display: flex; align-items: center; flex-wrap: wrap; gap: .45rem; }
+.gougai-sub-name { color: var(--admin-muted); font-size: .78rem; font-weight: 700; }
+.gougai-subs-modal { --admin-modal-max-width: 54rem; }
 .gougai-subs {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(1.7rem, 1fr));
-  gap: .28rem;
-  max-height: 9.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(4.25rem, 1fr));
+  gap: .65rem;
+  max-height: min(68dvh, 42rem);
   overflow: auto;
-  padding: .3rem;
+  padding: .75rem;
   border: 1px solid var(--admin-line-subtle);
   border-radius: 6px;
   background: #111;
@@ -1296,8 +1299,8 @@ body.gougai-page .gougai-desk .work {
   border: 2px solid transparent;
   background: #000;
   cursor: pointer;
-  /* モック: 幅 1.55rem、高さ (20rem - 1.2rem) × 7/9。 */
-  aspect-ratio: .106 / 1;
+  /* 一覧は紙面内の細い枠を再利用せず、読める大きさで選べる専用比率にする。 */
+  aspect-ratio: 1 / 3.2;
   overflow: hidden;
 }
 .gougai-sub.on { border-color: #ffe44a; }

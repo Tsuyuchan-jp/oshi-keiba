@@ -74,11 +74,20 @@ test("管理者は号外の背景と立ち絵を画像へ差し替え、テン�
   await page.getByRole("button", { name: "管理画面へ" }).click();
   await page.goto("/admin/gougai");
   await expect(page.locator("#gougai-photo-controls")).toBeHidden();
+  const subtitlesModal = page.locator("#gougai-subs-modal");
+  await expect(subtitlesModal).toBeHidden();
+  await page.getByRole("button", { name: "右列画像を選ぶ" }).click();
+  await expect(subtitlesModal).toBeVisible();
   const subtitleSize = await page.locator(".gougai-sub").first().evaluate((el) => ({
     width: el.getBoundingClientRect().width,
     height: el.getBoundingClientRect().height,
   }));
-  expect(subtitleSize.height / subtitleSize.width).toBeCloseTo(1 / .106, 1);
+  expect(subtitleSize.height / subtitleSize.width).toBeCloseTo(3.2, 1);
+  const selectedSubtitle = page.locator(".gougai-sub").nth(1);
+  const selectedFile = await selectedSubtitle.getAttribute("data-file");
+  await selectedSubtitle.click();
+  await expect(subtitlesModal).toBeHidden();
+  await expect(page.locator("#gougai-sub-name")).toHaveText(selectedFile || "");
 
   await page.locator("#gougai-photo-input").setInputFiles({
     name: "cover.png",

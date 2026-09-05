@@ -75,6 +75,8 @@ const masthead = paper?.querySelector(".masthead");
 const midCol = paper?.querySelector('[data-col="mid"]');
 const leftCol = paper?.querySelector('[data-col="left"]');
 const subImg = paper?.querySelector(".sub-img-wrap img");
+const subtitleName = document.getElementById("gougai-sub-name");
+const subtitlesModal = document.getElementById("gougai-subs-modal");
 const cover = paper?.querySelector(".cover");
 const photo = document.getElementById("gougai-photo");
 const photoInput = document.getElementById("gougai-photo-input");
@@ -112,6 +114,7 @@ function applySubtitle(file) {
   if (!subImg) return;
   subImg.src = "/twinkle/subtitles/" + file;
   subImg.dataset.file = file;
+  if (subtitleName) subtitleName.textContent = file;
   document.querySelectorAll(".gougai-sub").forEach((btn) => {
     btn.classList.toggle("on", btn.dataset.file === file);
   });
@@ -305,7 +308,10 @@ document.getElementById("gougai-subs")?.addEventListener("click", (ev) => {
   if (!btn?.dataset.file) return;
   applySubtitle(btn.dataset.file);
   store(KEYS.subtitle, btn.dataset.file);
+  subtitlesModal?.close();
 });
+document.getElementById("gougai-subs-open")?.addEventListener("click", () => subtitlesModal?.showModal());
+document.getElementById("gougai-subs-close")?.addEventListener("click", () => subtitlesModal?.close());
 photoInput?.addEventListener("change", () => applyPhoto(photoInput.files?.[0]));
 photoZoom?.addEventListener("input", () => {
   if (!photoState) return;
@@ -376,7 +382,10 @@ export function adminGougaiPage(board: Board): { body: string; scripts: string }
         </label>
         <div class="gougai-field">
           <span>右列画像</span>
-          <div class="gougai-subs" id="gougai-subs">${subtitlePicker(sheet.subtitleFile)}</div>
+          <div class="gougai-sub-choice">
+            <button type="button" class="admin-action admin-action--secondary" id="gougai-subs-open">右列画像を選ぶ</button>
+            <span class="gougai-sub-name" id="gougai-sub-name">${escapeHtml(sheet.subtitleFile)}</span>
+          </div>
         </div>
         <div class="gougai-field">
           <span>メインビュー画像</span>
@@ -403,6 +412,12 @@ export function adminGougaiPage(board: Board): { body: string; scripts: string }
           <div class="gougai-body" id="gougai-body" contenteditable="true" spellcheck="false">${sheet.bodyHtml}</div>
         </div>
       </section>
-    </div>`;
+    </div>
+    <dialog class="modal gougai-subs-modal" id="gougai-subs-modal" aria-labelledby="gougai-subs-title">
+      <button type="button" class="modal-close" id="gougai-subs-close" aria-label="閉じる">×</button>
+      <h2 id="gougai-subs-title" tabindex="-1">右列画像を選ぶ</h2>
+      <p class="note">紙面には、選んだ画像を縦方向へ 4/3 補正して配置します。</p>
+      <div class="gougai-subs" id="gougai-subs">${subtitlePicker(sheet.subtitleFile)}</div>
+    </dialog>`;
   return { body, scripts: exportScript(sheet.umaName) };
 }
