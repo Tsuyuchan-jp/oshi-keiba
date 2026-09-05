@@ -155,8 +155,10 @@
       flex-direction: column;
       gap: 0.02rem;
       line-height: 1.1;
-      word-break: normal;
+      word-break: keep-all;
+      letter-spacing: 0;
     }
+    .stub-split > span { white-space: nowrap; flex-shrink: 0; }
     /* 縦書きは内側。セルに writing-mode を付けると vertical-rl で右に寄る */
     .stub-v > span {
       writing-mode: vertical-rl;

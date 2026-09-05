@@ -1086,7 +1086,11 @@ body.umabashira-page .umabashira-desk .work {
   padding: .06rem .05rem; word-break: break-all;
 }
 .umabashira-paper .stub-col .runner.stub-h { word-break: normal; white-space: nowrap; font-size: .5rem; letter-spacing: 0; }
-.umabashira-paper .stub-split { flex-direction: column; gap: .02rem; line-height: 1.1; word-break: normal; }
+.umabashira-paper .stub-split {
+  flex-direction: column; gap: .02rem; line-height: 1.1;
+  word-break: keep-all; letter-spacing: 0;
+}
+.umabashira-paper .stub-split > span { white-space: nowrap; flex-shrink: 0; }
 .umabashira-paper .stub-v > span {
   writing-mode: vertical-rl; text-orientation: mixed; font-size: .52rem; letter-spacing: .08em; line-height: 1;
 }
