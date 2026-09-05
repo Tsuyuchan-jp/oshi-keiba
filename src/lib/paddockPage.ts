@@ -35,8 +35,8 @@ export function paddockPage(view: PaddockView): string {
         <div class="scoreboard__actions">
           <nav class="paddock-site-nav" aria-label="ページ移動">
             <a href="/">場内</a>
-            <a class="on" href="/paddock">パドック</a>
             <a href="/bet">窓口</a>
+            <a class="on" href="/paddock">パドック</a>
           </nav>
           <button type="button" class="paddock-more-btn" id="paddock-more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
           <div class="paddock-more-pop" id="paddock-more-pop">

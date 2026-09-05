@@ -479,8 +479,8 @@ export function venueBoardPage(opts: {
         </div>
         <nav class="chrome-nav site-nav" aria-label="ページ移動">
           <a class="on" href="/">場内</a>
-          <a href="/paddock">パドック</a>
           <a href="/bet">窓口</a>
+          <a href="/paddock">パドック</a>
         </nav>
         <div class="chrome-menu">
           <button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>

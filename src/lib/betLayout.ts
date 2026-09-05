@@ -67,8 +67,8 @@ function shellChrome(opts: { user: UserRow; board: Board }): string {
     <div class="chrome-state">${phasePill(status)}${metaNow}${metaClose}</div>
     <nav class="chrome-nav nav" aria-label="ページ移動">
       <a href="/">場内</a>
-      <a href="/paddock">パドック</a>
       <a class="on" href="/bet">窓口</a>
+      <a href="/paddock">パドック</a>
     </nav>
     <div class="chrome-menu">
       <button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
