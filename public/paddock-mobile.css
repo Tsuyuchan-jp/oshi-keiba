@@ -1,14 +1,20 @@
 /* 最終スマホモックの競馬場レイアウト。PC版のパドック表示には適用しない。 */
+body {
+  min-height: max(100dvh, 760px);
+  overflow-x: clip;
+  background: #80d5ff url('/images/paddock/racecourse-side-stage-mobile-v2.png') center top / cover no-repeat;
+}
+
 .paddock-stage {
   display: block;
-  min-height: max(100svh, 760px);
+  min-height: max(100dvh, 760px);
   overflow: visible;
-  background: #80d5ff url('/images/paddock/racecourse-side-stage-mobile-v2.png') center top / cover no-repeat;
+  background: none;
 }
 
 .race-view {
   height: auto;
-  min-height: max(100svh, 760px);
+  min-height: max(100dvh, 760px);
   overflow: visible;
 }
 
