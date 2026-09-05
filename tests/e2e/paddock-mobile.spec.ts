@@ -11,12 +11,19 @@ test("short mobile paddock keeps every horse reachable and closes detail by down
 
   await page.goto("/paddock");
   const stage = page.locator(".paddock-stage");
-  await expect(page.locator("body")).toHaveCSS("background-size", "cover");
+  await expect(page.locator("html")).toHaveCSS("background-size", "cover");
+  await expect(page.locator("html")).toHaveCSS("overflow-x", "hidden");
+  await expect(page.locator("body")).toHaveCSS("background-image", "none");
   await expect(stage).toHaveCSS("background-image", "none");
   await page.setViewportSize({ width: 402, height: 874 });
-  await expect(page.locator("body")).toHaveCSS("background-size", "cover");
+  await expect(page.locator("html")).toHaveCSS("background-size", "cover");
   const largeStageWidth = await stage.evaluate((element) => element.getBoundingClientRect().width);
   expect(largeStageWidth).toBe(402);
+  const largePageWidth = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+  }));
+  expect(largePageWidth.scrollWidth).toBe(largePageWidth.clientWidth);
   await page.setViewportSize({ width: 375, height: 664 });
   const horses = page.locator(".horse");
   await expect(horses).toHaveCount(3);
