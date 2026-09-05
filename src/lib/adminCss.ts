@@ -1108,10 +1108,11 @@ body.umabashira-page .umabashira-desk .work {
   font-size: .78rem; font-weight: 800; line-height: 1;
 }
 .umabashira-paper .uma > span { flex: none; line-height: 1; }
-/* flex 縦並びだと ー が横のままなので、1文字分の枠で縦に回す */
+/* 横書き用 ー を回さず、縦書きにして vert 字形で左右中央に乗せる */
 .umabashira-paper .uma > span.choon {
   display: flex; align-items: center; justify-content: center;
-  width: 1em; height: 1em; transform: rotate(90deg);
+  width: 1em; height: 1em;
+  writing-mode: vertical-rl; text-orientation: mixed;
 }
 .umabashira-paper .runner {
   display: flex; align-items: center; justify-content: center;
