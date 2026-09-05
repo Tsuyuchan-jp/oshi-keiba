@@ -234,6 +234,14 @@
       line-height: 1;
     }
     .uma > span { flex: none; line-height: 1; }
+    .uma > span.choon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1em;
+      height: 1em;
+      transform: rotate(90deg);
+    }
     .runner {
       display: flex;
       align-items: center;
@@ -388,7 +396,10 @@
     }
 
     function umaChars(name) {
-      return Array.from(name).map((c) => `<span>${c}</span>`).join("");
+      return Array.from(name).map((c) => {
+        const choon = c === "ー" || c === "ｰ";
+        return `<span${choon ? ' class="choon"' : ""}>${c}</span>`;
+      }).join("");
     }
     function whoHtml(h) {
       return `<div class="cell who">${face(h)}<span class="uma" aria-label="${h.uma}">${umaChars(h.uma)}</span></div>`;

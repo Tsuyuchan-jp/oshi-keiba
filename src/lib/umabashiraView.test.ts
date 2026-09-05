@@ -97,6 +97,7 @@ test("投票開始後は参考オッズを出し、適性はモック短縮", ()
 test("ウマ娘名は1文字ずつ包む", () => {
   assert.equal(umaNameCharsHtml("麦"), "<span>麦</span>");
   assert.equal(umaNameCharsHtml("スペ"), "<span>ス</span><span>ペ</span>");
+  assert.equal(umaNameCharsHtml("オー"), '<span>オ</span><span class="choon">ー</span>');
 });
 
 test("コース行の欠けは —。ファイル名は日付と開催名", () => {

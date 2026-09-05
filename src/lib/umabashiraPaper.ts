@@ -4,9 +4,16 @@ import type { UmabashiraHorseView, UmabashiraSheet } from "./umabashiraView.ts";
 
 const STAT_LABELS = ["速", "スタ", "パ", "根", "賢"] as const;
 
+const CHOON = new Set(["ー", "ｰ"]);
+
 /** ウマ娘名を1文字ずつ。少ない字は9文字分の箱で字間が開く */
 export function umaNameCharsHtml(name: string): string {
-  return Array.from(name).map((c) => `<span>${escapeHtml(c)}</span>`).join("");
+  return Array.from(name)
+    .map((c) => {
+      const cls = CHOON.has(c) ? ' class="choon"' : "";
+      return `<span${cls}>${escapeHtml(c)}</span>`;
+    })
+    .join("");
 }
 
 function dashCell(extraClass: string): string {
