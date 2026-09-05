@@ -806,7 +806,7 @@ export function ocrAdminScript(
       });
       // MIME 追加に備えてプレフィックスは汎用で落とす
       const b64 = String(dataUrl).replace(/^data:[^;]+;base64,/, "");
-      const instruction = "あなたはウマ娘の詳細ステータス画面を読む。JSONだけ返す。nameはウマ娘名（二つ名・ランクなし）。trainerNameはトレーナー名（出走者名）。トレーナー名の近くにある丸囲みの i はゲーム内の詳細ボタンなので、文字として読み取らず名前にも含めない。costumeNameは育成ウマ娘の角括弧内の衣装名。読めなければ空文字。statsはspeed stamina power guts wisdomの整数。aptitudesはturf dirt short mile medium long nige senkou sashi oikomiのS〜G。skillsは取得スキル名を最後まで。緑も金もデバフ（右回り×等）も落とさない。";
+      const instruction = "あなたはウマ娘の詳細ステータス画面を読む。JSONだけ返す。ルートはオブジェクト1つ。配列で包まない。nameはウマ娘名（二つ名・ランクなし）。trainerNameはトレーナー名（出走者名）。トレーナー名の近くにある丸囲みの i はゲーム内の詳細ボタンなので、文字として読み取らず名前にも含めない。costumeNameは育成ウマ娘の角括弧内の衣装名。読めなければ空文字。statsはspeed stamina power guts wisdomの整数。aptitudesはturf dirt short mile medium long nige senkou sashi oikomiのS〜G。skillsは取得スキル名を最後まで。緑も金もデバフ（右回り×等）も落とさない。";
       const payload = {
         system_instruction: { parts: { text: instruction } },
         contents: [{ parts: [
@@ -823,6 +823,8 @@ export function ocrAdminScript(
       if (!text) throw new Error("応答が空です");
       let raw;
       try { raw = JSON.parse(text); } catch { raw = cleanJson(text); }
+      if (Array.isArray(raw)) raw = raw[0];
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("JSONの形が違います");
       const uma = (raw.name || "").trim();
       const trainerName = (raw.trainerName || raw.runnerName || "").trim();
       const dressName = (raw.costumeName || raw.dressName || "").trim();

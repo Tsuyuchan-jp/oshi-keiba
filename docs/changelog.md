@@ -15,6 +15,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- OCRが1頭分を JSON 配列で返したとき、確認画面が空になる問題を修正
+
 ### Changed
 
 - 号外の見た目をモック `.paper` で確定（誌名「月刊つゅインクル　号外」。管理タブは未実装）— [gougai.md](gougai.md)
