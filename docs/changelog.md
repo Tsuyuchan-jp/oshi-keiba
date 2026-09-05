@@ -18,6 +18,7 @@
 ### Fixed
 
 - OCRが1頭分を JSON 配列で返したとき、確認画面が空になる問題を修正（実機確認OK）
+- ローカル進行タブで Undo 復旧列が出ない問題を修正（`secrets.required` が `.dev.vars` の `ALLOW_ADMIN_UNDO` を落としていた）
 
 ### Changed
 

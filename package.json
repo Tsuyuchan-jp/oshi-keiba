@@ -4,7 +4,7 @@
   "version": "0.4.0",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --local",
+    "dev": "wrangler dev --local --var ALLOW_ADMIN_UNDO:1 --var ALLOW_DEMO_RESET:1",
     "dev:setup": "wrangler d1 migrations apply oshi-keiba --local",
     "predeploy": "npm run verify && node -e \"console.log('\\n自動テスト完了。本番操作前に R2・Secrets・D1 migration を確認してください。詳細: docs/release.md\\n')\"",
     "deploy": "wrangler deploy",

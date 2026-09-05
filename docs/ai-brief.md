@@ -62,7 +62,7 @@
 - テスト: Node 組み込み test。`npm test`（odds / lifecycle / score / storeFlow など）
 - 版: `package.json` の `version` を画面に `v` 付き表示（`src/lib/version.ts`）
 
-ローカル: `npm run dev:setup` → `npm run dev`（`http://localhost:8787`）。デモ初期化は `.dev.vars` の `ALLOW_DEMO_RESET=1` のときだけ。本番には出さない。
+ローカル: `npm run dev:setup` → `npm run dev`（`http://localhost:8787`）。デモ初期化と Undo は `npm run dev` の `--var`（`ALLOW_DEMO_RESET=1` / `ALLOW_ADMIN_UNDO=1`）。`.dev.vars` は `secrets.required` のため認証4項目だけ。本番の vars は 0。
 
 主要コード入口: `src/index.ts`。store は Types / Read / Board / Members / Horses / Event / Race に分割し `store.ts` が barrel。公開 API は不変方針。
 

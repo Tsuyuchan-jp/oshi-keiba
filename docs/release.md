@@ -8,7 +8,7 @@
 
 - Cloudflare へログインできる。自動化する場合は、対象アカウントだけの短期・閲覧専用 API トークンを使う
 - Worker の Secrets に `ADMIN_PASSWORD`、`ADMIN_USER_ID`、`MEMBER_PASSWORD`、`SESSION_SECRET` がある。値は見ない
-- `ALLOW_DEMO_RESET` と `ALLOW_ADMIN_UNDO` は本番で設定しない
+- `ALLOW_DEMO_RESET` と `ALLOW_ADMIN_UNDO` は Secrets に置かない。`wrangler.jsonc` の vars 既定は `"0"`。ローカルだけ `npm run dev` が `"1"` を渡す
 - D1 の Time Travel が利用可能か、Cloudflare ダッシュボードまたは `npx wrangler d1 info oshi-keiba` で確認する
 - R2 バケット `oshi-keiba-shots` がある
 
