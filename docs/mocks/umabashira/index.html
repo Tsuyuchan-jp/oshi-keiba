@@ -281,26 +281,25 @@
       transform: translateY(0.2em);
     }
 
+    /* 紺はグリッドセル（subgrid直下）に置かない。番の .waku-box と同じ内側箱にする */
     .score-cell {
       min-height: 1.4rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       padding: 0.06rem 0.02rem;
-      background: var(--hb);
     }
-    .score-cell b {
+    .score-box {
       display: flex;
       align-items: center;
       justify-content: center;
+      width: 100%;
+      min-height: 1.28rem;
+      background: var(--hb);
+      color: #fff;
+    }
+    .score-box b {
       font-size: 0.9rem;
       font-weight: 800;
-      color: #fff;
       line-height: 1;
-    }
-    .score-cell b > span {
-      display: block;
-      transform: translateY(0.2em);
+      transform: translateY(0.08em);
     }
     .stub-col .score-cell { background: #e4ddd0; }
     .odds-cell {
@@ -512,7 +511,7 @@
         </div>
         ${whoHtml(h)}
         <div class="cell runner"><span>${h.runner}</span></div>
-        <div class="cell score-cell"><b><span>${h.score.toFixed(1)}</span></b></div>
+        <div class="cell score-cell"><span class="score-box"><b>${h.score.toFixed(1)}</b></span></div>
         ${oddsHtml(h, mark)}
         ${statsHtml(h)}${aptHtml(h)}${spHtml(h)}
       </div>`;
