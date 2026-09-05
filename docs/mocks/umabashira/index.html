@@ -289,7 +289,13 @@
       padding: 0.06rem 0.02rem;
       background: var(--hb);
     }
-    .score-cell b { font-size: 0.9rem; font-weight: 800; color: #fff; }
+    .score-cell b {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+      transform: translateY(0.06em);
+    }
     .stub-col .score-cell { background: #e4ddd0; }
     .odds-cell {
       display: flex;
@@ -365,14 +371,14 @@
       display: block;
       font-size: 1.08rem;
       font-weight: 800;
-      line-height: 1.05;
+      line-height: 1;
       /* 墨の全幅帯は重いので、紺の数字箱にする */
       background: #3d5a8a;
       color: #fff;
       margin: 0 0.08rem;
       padding: 0.08rem 0.04rem 0.06rem;
     }
-    .sp small { display: block; font-size: 0.42rem; color: #4a453c; font-weight: 600; margin-top: 0.02rem; line-height: 1.15; }
+    .sp small { display: block; font-size: 0.42rem; color: #4a453c; font-weight: 600; margin-top: 0.02rem; line-height: 1; }
     .sp small:first-of-type { margin-top: 0.08rem; }
     .sp small.gold {
       background: #ead56a;
@@ -380,6 +386,12 @@
       font-weight: 800;
       margin: 0.04rem 0.08rem 0;
       padding: 0.04rem 0.04rem;
+    }
+    /* 色箱は動かさず、字面だけ下げる（番・脚と同じ） */
+    .sp b > span,
+    .sp small > span {
+      display: inline-block;
+      transform: translateY(0.06em);
     }
   </style>
 </head>
@@ -460,7 +472,7 @@
     function spHtml(h) {
       if (h.sp == null) return `<div class="cell sp empty">—</div>`;
       const white = Math.max(0, (h.eff ?? 0) - (h.gold ?? 0));
-      return `<div class="cell sp"><b>${h.sp}</b><small>有効</small><small>白${white}</small><small class="gold">金${h.gold}</small></div>`;
+      return `<div class="cell sp"><b><span>${h.sp}</span></b><small><span>有効</span></small><small><span>白${white}</span></small><small class="gold"><span>金${h.gold}</span></small></div>`;
     }
     function face(h) {
       const ch = h.uma.slice(0, 1);
