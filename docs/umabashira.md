@@ -212,8 +212,9 @@
 
 数値・フォント・`translateY(0.2em)`・伸ばし棒の補正は本番 CSS（`adminCss.ts` の `.umabashira-paper`）が正。モックはそれに合わせる。
 
-- 向き: 横長1枚。列 = 出走1頭。号外の 26rem には収めない。紙面幅は列グリッドが決める（下限4頭分）。ヘッダは列幅に合わせて折り返し、文字列では広げない
-- 上: 開催名・場・芝ダ・距離・季節・天候・馬場・頭数。幅があるときは凡例を右。狭いときだけ折り返す
+- 向き: 横長1枚。列 = 出走1頭。号外の 26rem には収めない。紙面幅は列グリッドが決める（下限4頭分）。開催名・コース行は折らない。凡例だけ幅が足りないとき折り返す
+- 上: 開催名・場・芝ダ・距離・季節・天候・馬場・頭数。幅があるときは凡例を右
+- PNG / WebP は紙面の `offsetWidth` / `offsetHeight`（2px 外枠込み）。紙面は `box-sizing: content-box`
 - 枠番色は使わない。ウマ番は墨の数字。番・脚は左右中央。脚質の色枠は列幅いっぱい（モック `.style`）
 - ウマ娘行: **上 petit、下 ウマ娘名（縦並び）**。箱の高さは9文字分で固定。少ない字は `space-between` で字間を開く（10文字以上は想定しない）。字は折らない。伸ばし棒（ー）は1文字枠で `writing-mode: vertical-rl` にし、Plex の字面の右寄りを `translateX(-0.07em)` で光学補正する。モックの petit は `public/images/umamusume/petit/` の実ファイル（パドックモックと同じ相対パス）。サイズはモック `.who img`（1.95rem 角、`object-fit: contain`）。**img に背景色は付けない**（欠け時の頭文字 `.ph` だけベージュ）
 - 印: 評価点の順位。**オッズ欄の中**。上段が印、下段が倍率。左右中央。無印は `─`
@@ -255,7 +256,7 @@
 
 号外に合わせる。管理者のみ。**ラベル「ウマ柱」、URL `/admin/umabashira`。** ナビは開催設定の下。
 
-左: 紙面プレビュー（**左の行名は残す**）。右: 第1段は編集なしのプレースホルダ（手入力は後から）。ヒーローは他タブと同じ `page-hero`。右アクションに PNG / WebP を別ボタン。出力: プレビュー `.umabashira-paper` をクライアントで **PNG と WebP** に書き出す（`public/vendor/modern-screenshot.mjs`、`scale: 2`、フォントは `document.fonts.ready`）。紙面幅は列グリッド（`width: max-content`、下限4頭分）。書き出しは `scrollWidth` / `scrollHeight`。サーバー焼きはしない。D1 に下書きを残さない。ファイル名は `YYYY-MM-DD-{開催名}-ウマ柱`（日付は JST）。
+左: 紙面プレビュー（**左の行名は残す**）。右: 第1段は編集なしのプレースホルダ（手入力は後から）。ヒーローは他タブと同じ `page-hero`。右アクションに PNG / WebP を別ボタン。出力: プレビュー `.umabashira-paper` をクライアントで **PNG と WebP** に書き出す（`public/vendor/modern-screenshot.mjs`、`scale: 2`、フォントは `document.fonts.ready`）。紙面幅は列グリッド（`width: max-content`、`content-box`、下限4頭分）。書き出しは `offsetWidth` / `offsetHeight`。サーバー焼きはしない。D1 に下書きを残さない。ファイル名は `YYYY-MM-DD-{開催名}-ウマ柱`（日付は JST）。
 
 紙面はメンバーの場内・パドック・窓口に出さない。
 

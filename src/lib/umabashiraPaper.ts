@@ -105,7 +105,7 @@ export function umabashiraPaperHtml(sheet: UmabashiraSheet): string {
   const cols = sheet.horses.map(horseCol).join("");
   return `<div class="umabashira-paper" id="umabashira-paper" data-file-base="${escapeHtml(sheet.fileBase)}">
         <div class="mast">
-          <span>${escapeHtml(sheet.title)}</span>
+          <span class="title">${escapeHtml(sheet.title)}</span>
           <span class="meta">${escapeHtml(sheet.courseLine)}</span>
           <span class="keys">◎本命 ○対抗 ▲単穴 △穴　／　SP＝点数・有効・白・金</span>
         </div>

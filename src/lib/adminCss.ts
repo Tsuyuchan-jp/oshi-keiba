@@ -1033,7 +1033,8 @@ body.umabashira-page .umabashira-desk .work {
   --hb: #163a8a;
   --col-w: 3.32rem;
   --stub-w: 2.15rem;
-  /* 幅は列グリッドが決める。ヘッダ文字列では広げない。下限は4頭分 */
+  /* 幅は列グリッドが決める。枠は外側。下限は4頭分 */
+  box-sizing: content-box;
   display: flex;
   flex-direction: column;
   width: max-content;
@@ -1049,9 +1050,9 @@ body.umabashira-page .umabashira-desk .work {
   font-weight: 800; font-size: .78rem;
   width: 0; min-width: 100%; box-sizing: border-box;
 }
-.umabashira-paper .mast > span { min-width: 0; overflow-wrap: anywhere; }
+.umabashira-paper .mast .title, .umabashira-paper .mast .meta { flex: none; white-space: nowrap; }
+.umabashira-paper .mast .keys { min-width: 0; font-weight: 400; font-size: .62rem; color: var(--muted); margin-left: auto; }
 .umabashira-paper .mast .meta { font-weight: 600; font-size: .7rem; color: #3c382f; }
-.umabashira-paper .mast .keys { font-weight: 400; font-size: .62rem; color: var(--muted); margin-left: auto; }
 .umabashira-paper .board {
   display: grid;
   grid-template-columns: var(--stub-w) repeat(var(--n), var(--col-w));
@@ -1059,9 +1060,9 @@ body.umabashira-page .umabashira-desk .work {
 }
 .umabashira-paper .col {
   display: grid; grid-template-rows: subgrid; grid-row: 1 / span 8;
-  border-left: 1px solid var(--rule); min-width: 0; min-height: 0;
+  border-left: 1px solid var(--rule); min-width: var(--col-w); min-height: 0;
 }
-.umabashira-paper .stub-col { border-left: 0; background: #e7e1d3; }
+.umabashira-paper .stub-col { border-left: 0; background: #e7e1d3; min-width: var(--stub-w); }
 .umabashira-paper .cell {
   border-bottom: 1px solid #c8c0ae; padding: .14rem .08rem; text-align: center; min-width: 0;
 }

@@ -66,6 +66,7 @@
       border-radius: 4px;
     }
     .paper {
+      box-sizing: content-box;
       display: flex;
       flex-direction: column;
       width: max-content;
@@ -87,9 +88,9 @@
       min-width: 100%;
       box-sizing: border-box;
     }
-    .mast > span { min-width: 0; overflow-wrap: anywhere; }
+    .mast .title, .mast .meta { flex: none; white-space: nowrap; }
     .mast .meta { font-weight: 600; font-size: 0.7rem; color: #3c382f; }
-    .mast .keys { font-weight: 400; font-size: 0.62rem; color: var(--muted); margin-left: auto; }
+    .mast .keys { min-width: 0; font-weight: 400; font-size: 0.62rem; color: var(--muted); margin-left: auto; }
 
     .board {
       display: grid;
@@ -101,12 +102,13 @@
       grid-template-rows: subgrid;
       grid-row: 1 / span 8;
       border-left: 1px solid var(--rule);
-      min-width: 0;
+      min-width: var(--col-w);
       min-height: 0;
     }
     .stub-col {
       border-left: 0;
       background: #e7e1d3;
+      min-width: var(--stub-w);
     }
     .cell {
       border-bottom: 1px solid #c8c0ae;
@@ -473,7 +475,7 @@
       const cols = horses.map((h, i) => kind === "a" ? colA(h, marks[i]) : colB(h, marks[i])).join("");
       return `<div class="paper">
         <div class="mast">
-          <span>第3回春の合同練習杯</span>
+          <span class="title">第3回春の合同練習杯</span>
           <span class="meta">東京　芝2400m　春・晴・良　｜　${horses.length}頭</span>
           <span class="keys">◎本命 ○対抗 ▲単穴 △穴　／　SP＝点数・有効・白・金</span>
         </div>
