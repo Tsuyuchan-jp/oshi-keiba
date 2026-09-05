@@ -1201,10 +1201,15 @@ body.umabashira-page .umabashira-desk .work {
   background: #ead56a; color: #1a1814; font-weight: 800;
   margin: .04rem .08rem 0; padding: .04rem;
 }
-.umabashira-paper .score-cell b > span,
 .umabashira-paper .sp small > span,
 .umabashira-paper .apt > span { display: inline-block; transform: translateY(.08em); }
-.umabashira-paper .sp b > span { display: inline-block; transform: translateY(.12em); }
+/* PNG 書き出しは transform が下に寄ることがあるので、色箱内は top で下げる */
+.umabashira-paper .score-cell b > span,
+.umabashira-paper .sp b > span {
+  display: inline-block; position: relative;
+}
+.umabashira-paper .score-cell b > span { top: .08em; }
+.umabashira-paper .sp b > span { top: .12em; }
 @media (max-width: 1199px) {
   body.settings-page .settings-top { grid-template-columns: 1fr; }
   .set-conds { grid-template-columns: 1fr; }

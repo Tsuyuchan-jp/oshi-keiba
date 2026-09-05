@@ -383,17 +383,19 @@
       margin: 0.04rem 0.08rem 0;
       padding: 0.04rem 0.04rem;
     }
-    /* 色箱は動かさず、字面だけ下げる */
-    .score-cell b > span,
+    /* 色箱は動かさず、字面だけ下げる。PNG は transform が下に寄ることがあるので色箱内は top */
     .sp small > span,
     .apt > span {
       display: inline-block;
       transform: translateY(0.08em);
     }
+    .score-cell b > span,
     .sp b > span {
       display: inline-block;
-      transform: translateY(0.12em);
+      position: relative;
     }
+    .score-cell b > span { top: 0.08em; }
+    .sp b > span { top: 0.12em; }
   </style>
 </head>
 <body>
