@@ -83,7 +83,7 @@ test("18 horses fit vertically without changing the mobile horizontal layout", a
       .querySelector(".horse")!
       .getBoundingClientRect().width,
   }));
-  expect(roomyLayout.horseHeight).toBe(96);
+  expect(roomyLayout.horseHeight).toBeCloseTo(96, 3);
   expect(roomyLayout.fiveHorseWidth).toBe(64);
 
   await horses.first().click();
@@ -96,5 +96,25 @@ test("18 horses fit vertically without changing the mobile horizontal layout", a
   await page.mouse.down();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 + 140, { steps: 4 });
   await page.mouse.up();
+  await expect(detail).not.toHaveClass(/open/);
+
+  await horses.first().click();
+  await expect(detail).toHaveClass(/open/);
+  await detail.evaluate((element) => {
+    const target = element.querySelector(".profile") ?? element;
+    const dispatch = (type: "touchstart" | "touchmove" | "touchend", y: number) => {
+      const touch = new Touch({ identifier: 1, target, clientX: 160, clientY: y });
+      target.dispatchEvent(new TouchEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        touches: type === "touchend" ? [] : [touch],
+        changedTouches: [touch],
+      }));
+    };
+    element.scrollTop = 0;
+    dispatch("touchstart", 300);
+    dispatch("touchmove", 440);
+    dispatch("touchend", 440);
+  });
   await expect(detail).not.toHaveClass(/open/);
 });

@@ -76,37 +76,59 @@
   const enableSwipeToClose = () => {
     if (swipeToCloseEnabled) return;
     swipeToCloseEnabled = true;
-    let gesture = null;
+    let pointerGesture = null;
+    let touchGesture = null;
     const reset = () => {
       detail.classList.remove("is-dragging");
       detail.style.removeProperty("transform");
-      gesture = null;
+      pointerGesture = null;
+      touchGesture = null;
     };
-    detail.addEventListener("pointerdown", (event) => {
-      if (!matchMedia("(max-width:700px)").matches || !event.isPrimary || event.button > 0) return;
-      const fromHandle = event.target instanceof Element && event.target.closest(".detail__summary");
-      if (!fromHandle && detail.scrollTop > 0) return;
-      gesture = { x: event.clientX, y: event.clientY, dragging: false };
-      detail.setPointerCapture?.(event.pointerId);
-    });
-    detail.addEventListener("pointermove", (event) => {
-      if (!gesture) return;
-      const x = event.clientX - gesture.x;
-      const y = event.clientY - gesture.y;
-      if (y <= 0 || Math.abs(y) <= Math.abs(x)) return;
+    const startsGesture = (target) => target instanceof Element && target.closest(".detail__summary");
+    const drag = (gesture, x, y) => {
+      const deltaX = x - gesture.x;
+      const deltaY = y - gesture.y;
+      if (deltaY <= 0 || Math.abs(deltaY) <= Math.abs(deltaX)) return false;
       gesture.dragging = true;
       detail.classList.add("is-dragging");
-      detail.style.transform = `translateY(${Math.min(y, detail.clientHeight)}px)`;
-      event.preventDefault();
-    });
-    const finish = (event) => {
+      detail.style.transform = `translateY(${Math.min(deltaY, detail.clientHeight)}px)`;
+      return true;
+    };
+    const finish = (gesture, y) => {
       if (!gesture) return;
-      const distance = event.clientY - gesture.y;
+      const distance = y - gesture.y;
       if (gesture.dragging && distance > Math.min(96, detail.clientHeight * 0.2)) close();
       else reset();
     };
-    detail.addEventListener("pointerup", finish);
+    detail.addEventListener("pointerdown", (event) => {
+      if (!matchMedia("(max-width:700px)").matches || event.pointerType === "touch" || !event.isPrimary || event.button > 0) return;
+      const fromHandle = startsGesture(event.target);
+      if (!fromHandle && detail.scrollTop > 0) return;
+      pointerGesture = { x: event.clientX, y: event.clientY, dragging: false };
+      detail.setPointerCapture?.(event.pointerId);
+    });
+    detail.addEventListener("pointermove", (event) => {
+      if (pointerGesture && drag(pointerGesture, event.clientX, event.clientY)) event.preventDefault();
+    });
+    detail.addEventListener("pointerup", (event) => finish(pointerGesture, event.clientY));
     detail.addEventListener("pointercancel", reset);
+    detail.addEventListener("touchstart", (event) => {
+      if (!matchMedia("(max-width:700px)").matches || event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      touchGesture = { x: touch.clientX, y: touch.clientY, fromHandle: startsGesture(event.target), dragging: false };
+    }, { passive: true });
+    detail.addEventListener("touchmove", (event) => {
+      if (!touchGesture || event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      const canClose = touchGesture.fromHandle || detail.scrollTop <= 1;
+      if (canClose && drag(touchGesture, touch.clientX, touch.clientY)) event.preventDefault();
+    }, { passive: false });
+    detail.addEventListener("touchend", (event) => {
+      const touch = event.changedTouches[0];
+      if (touch) finish(touchGesture, touch.clientY);
+      else reset();
+    });
+    detail.addEventListener("touchcancel", reset);
   };
   const openShot = (url, name) => {
     if (!shotDialog) {
