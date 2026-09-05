@@ -290,11 +290,17 @@
       background: var(--hb);
     }
     .score-cell b {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 0.9rem;
       font-weight: 800;
       color: #fff;
       line-height: 1;
-      transform: translateY(0.08em);
+    }
+    .score-cell b > span {
+      display: block;
+      transform: translateY(0.2em);
     }
     .stub-col .score-cell { background: #e4ddd0; }
     .odds-cell {
@@ -506,7 +512,7 @@
         </div>
         ${whoHtml(h)}
         <div class="cell runner"><span>${h.runner}</span></div>
-        <div class="cell score-cell"><b>${h.score.toFixed(1)}</b></div>
+        <div class="cell score-cell"><b><span>${h.score.toFixed(1)}</span></b></div>
         ${oddsHtml(h, mark)}
         ${statsHtml(h)}${aptHtml(h)}${spHtml(h)}
       </div>`;
