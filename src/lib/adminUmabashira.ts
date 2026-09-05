@@ -69,6 +69,9 @@ async function exportPaper(type, ext) {
       type,
       scale: 2,
       quality: type === "image/webp" ? 0.92 : 1,
+      /* プレビュー枠の clientWidth ではなく紙面の実幅で焼く */
+      width: Math.ceil(paper.scrollWidth),
+      height: Math.ceil(paper.scrollHeight),
     });
     if (!blob) throw new Error("empty");
     downloadBlob(blob, base + "." + ext);

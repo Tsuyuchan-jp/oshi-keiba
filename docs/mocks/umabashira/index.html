@@ -66,7 +66,8 @@
       border-radius: 4px;
     }
     .paper {
-      min-width: max-content;
+      width: max-content;
+      min-width: calc(var(--stub-w) + 4 * var(--col-w));
       background: var(--paper);
       color: var(--ink);
       border: 2px solid var(--rule);
@@ -81,6 +82,7 @@
       font-weight: 800;
       font-size: 0.78rem;
     }
+    .mast > span { min-width: 0; }
     .mast .meta { font-weight: 600; font-size: 0.7rem; color: #3c382f; }
     .mast .keys { font-weight: 400; font-size: 0.62rem; color: var(--muted); margin-left: auto; }
 
@@ -166,8 +168,10 @@
       flex: 1;
       display: flex;
       flex-direction: column;
+      align-items: center;
       justify-content: center;
       line-height: 1;
+      text-align: center;
     }
     .num b {
       font-size: 1.02rem;
