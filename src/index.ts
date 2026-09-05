@@ -59,6 +59,11 @@ function demoResetAllowed(env: Env): boolean {
   return env.ALLOW_DEMO_RESET === "1";
 }
 
+function isAdminOnlyAsset(path: string): boolean {
+  return path.startsWith("/twinkle/")
+    || path.startsWith("/images/umamusume/stand/");
+}
+
 /** 確認用パス。name=password にするとブラウザがログイン情報を流し込む */
 function readAdminReauth(form: { get(name: string): string | File | null }): string {
   const a = form.get("admin_reauth");
@@ -135,6 +140,19 @@ export default {
       const url = new URL(request.url);
       const path = url.pathname;
       const method = request.method;
+
+      // ゲーム由来の号外素材は管理画面内だけで使う。Static Assets の
+      // worker-first 対象にし、URLを直接知っていても未認証では返さない。
+      if (isAdminOnlyAsset(path)) {
+        if (method !== "GET" && method !== "HEAD") {
+          return new Response("Method Not Allowed", { status: 405 });
+        }
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) {
+          return new Response("Not Found", { status: 404 });
+        }
+        return env.ASSETS.fetch(request);
+      }
 
       const adminGet = await tryAdminGet(request, env, url, path);
       if (adminGet) return adminGet;

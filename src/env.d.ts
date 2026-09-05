@@ -6,6 +6,7 @@ interface Env {
   MEMBER_PASSWORD: string;
   ALLOW_DEMO_RESET?: string;
   ALLOW_ADMIN_UNDO?: string;
+  ASSETS: Fetcher;
   SHOTS?: R2Bucket;
 }
 

@@ -18,7 +18,12 @@
   "workers_dev": true,
   // 場内背景（日中／夕方／ナイター）。Worker 未一致のパスだけ静的配信
   "assets": {
-    "directory": "./public"
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/twinkle/*",
+      "/images/umamusume/stand/*"
+    ]
   },
   "observability": {
     "enabled": true,

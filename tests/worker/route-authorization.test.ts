@@ -1,8 +1,10 @@
 import { describe, expect, test } from "vitest";
 import {
+  insertUser,
   loginAdmin,
   postForm,
   registerMember,
+  signedCookie,
   workerFetch,
 } from "./helpers";
 
@@ -66,6 +68,22 @@ describe("公開経路", () => {
 });
 
 describe("管理経路の権限", () => {
+  test.each([
+    "/twinkle/frames/gougai_bg.png",
+    "/twinkle/subtitles/000.png",
+    "/images/umamusume/stand/chara_stand_1001_100101.png",
+  ])("未認証GET %sでは号外素材を返さない", async (path) => {
+    const response = await workerFetch(path);
+    expect(response.status).toBe(404);
+  });
+
+  test("メンバーには号外素材を返さない", async () => {
+    const userId = await insertUser({ displayName: "素材閲覧メンバー" });
+    const cookie = await signedCookie(userId, "member");
+    const response = await workerFetch("/twinkle/frames/gougai_bg.png", {}, cookie);
+    expect(response.status).toBe(404);
+  });
+
   test.each(ADMIN_GET_PATHS)("未認証GET %sを管理ログインへ戻す", async (path) => {
     const response = await workerFetch(path);
     expect(response.status).toBe(303);
