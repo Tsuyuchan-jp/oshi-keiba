@@ -14,7 +14,11 @@ describe("号外タブ", () => {
     expect(html).toContain('id="gougai-webp"');
     expect(html).toContain('id="gougai-masthead"');
     expect(html).toContain('id="gougai-overlay"');
+    expect(html).toContain('id="gougai-photo-input"');
+    expect(html).toContain('id="gougai-photo-reset"');
+    expect(html).toContain('id="gougai-photo-editor"');
     expect(html).toContain('id="gougai-body"');
+    expect(html).toContain("未登録");
     expect(html).not.toContain("意気込み");
     expect(html).toContain("/vendor/modern-screenshot.mjs");
     expect(html).toContain("M+PLUS+1p");

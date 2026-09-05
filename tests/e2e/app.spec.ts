@@ -66,3 +66,35 @@ test("管理者が主要画面を巡回でき、メンバー画面ではプレ�
   await expect(page.locator("body")).toContainText("スペシャルウィーク");
   expect(pageErrors).toEqual([]);
 });
+
+test("管理者は号外の背景と立ち絵を画像へ差し替え、テンプレートへ戻せる", async ({ page }) => {
+  const pageErrors = collectPageErrors(page);
+  await page.goto("/admin/login");
+  await page.getByLabel("仮パスワード").fill("e2e-admin-password");
+  await page.getByRole("button", { name: "管理画面へ" }).click();
+  await page.goto("/admin/gougai");
+
+  await page.locator("#gougai-photo-input").setInputFiles({
+    name: "cover.png",
+    mimeType: "image/png",
+    buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64"),
+  });
+  const cover = page.locator(".gougai-paper .cover");
+  await expect(cover).toHaveClass(/has-custom-photo/);
+  await expect(page.locator(".gougai-paper .cover-titles")).toBeVisible();
+  await expect(page.locator(".gougai-paper .cover-blue")).toBeVisible();
+  await expect(page.locator("#gougai-photo-controls")).toBeVisible();
+
+  await page.getByRole("button", { name: "テンプレートに戻す" }).click();
+  await expect(cover).not.toHaveClass(/has-custom-photo/);
+
+  await page.locator("#gougai-photo-input").setInputFiles({
+    name: "cover.png",
+    mimeType: "image/png",
+    buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64"),
+  });
+  await expect(cover).toHaveClass(/has-custom-photo/);
+  await page.reload();
+  await expect(cover).not.toHaveClass(/has-custom-photo/);
+  expect(pageErrors).toEqual([]);
+});

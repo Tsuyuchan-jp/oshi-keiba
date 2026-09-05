@@ -13,7 +13,7 @@ function standHtml(sheet: GougaiSheet): string {
 }
 
 function iconHtml(sheet: GougaiSheet): string {
-  if (!sheet.trainerIconUrl) return `<span class="icon icon-ph" aria-hidden="true"></span>`;
+  if (!sheet.trainerIconUrl) return `<span class="icon icon-ph">未登録</span>`;
   return `<img class="icon" src="${escapeHtml(sheet.trainerIconUrl)}" alt="">`;
 }
 
@@ -22,6 +22,7 @@ export function gougaiPaperHtml(sheet: GougaiSheet): string {
   return `<article class="gougai-paper" id="gougai-paper" data-file-base="${escapeHtml(sheet.fileBase)}" data-has-winner="${sheet.hasWinner ? "1" : "0"}">
       <header class="masthead">${escapeHtml(sheet.masthead)}</header>
       <div class="cover">
+        <div class="cover-photo" aria-hidden="true"><img id="gougai-photo" alt=""></div>
         <img class="cover-bg" src="/twinkle/frames/gogai_bg.png" alt="">
         ${standHtml(sheet)}
         <div class="cover-blue" aria-hidden="true"></div>

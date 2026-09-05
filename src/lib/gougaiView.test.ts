@@ -74,6 +74,7 @@ test("1着が無いときはプレースホルダ", () => {
   assert.equal(sheet.umaName, "スペシャルウィーク");
   assert.equal(sheet.runnerName, "プレビュー太郎");
   assert.match(sheet.bodyHtml, /確認レース/);
+  assert.match(gougaiPaperHtml(sheet), /class="icon icon-ph">未登録/);
 });
 
 test("開催設定が無いコース行は —", () => {
@@ -93,6 +94,7 @@ test("縦書きはウマ娘名を差し込み、紙面に stand を出す", () =
   assert.equal(cols.left, "見事チャンピオンに");
   const html = gougaiPaperHtml(gougaiView(board));
   assert.match(html, /class="gougai-paper"/);
+  assert.match(html, /class="cover-photo"/);
   assert.match(html, /chara_stand_1001_100130\.png/);
   assert.match(html, /data-stand-fallback="\/images\/umamusume\/stand\/chara_stand_1001_100101\.png"/);
   assert.match(html, /月刊つゅインクル　号外/);

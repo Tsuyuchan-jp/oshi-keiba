@@ -1281,7 +1281,7 @@ body.gougai-page .gougai-desk .work {
 .gougai-color-row { display: flex; flex-wrap: wrap; gap: .35rem; }
 .gougai-subs {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(1.7rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(2.25rem, 1fr));
   gap: .28rem;
   max-height: 9.5rem;
   overflow: auto;
@@ -1296,18 +1296,32 @@ body.gougai-page .gougai-desk .work {
   border: 2px solid transparent;
   background: #000;
   cursor: pointer;
-  height: 4.2rem;
+  height: 5rem;
   overflow: hidden;
 }
 .gougai-sub.on { border-color: #ffe44a; }
 .gougai-sub img {
   display: block;
   width: 100%;
-  height: 140%;
+  /* 元画像は高さが 3/4 に圧縮されているため、一覧でも紙面と同じ比率に戻す。 */
+  height: calc(100% * 4 / 3);
   object-fit: fill;
   object-position: top center;
   mix-blend-mode: screen;
 }
+.gougai-photo-actions { display: flex; flex-wrap: wrap; gap: .35rem; }
+.gougai-photo-select { position: relative; cursor: pointer; }
+.gougai-photo-select input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.gougai-photo-note { margin: .1rem 0 0; color: var(--admin-muted); font-size: .74rem; font-weight: 600; line-height: 1.45; }
+.gougai-photo-controls { display: grid; gap: .4rem; margin-top: .45rem; }
+.gougai-photo-editor {
+  position: relative; width: 100%; aspect-ratio: 13 / 10; overflow: hidden;
+  border: 1px solid var(--admin-line-strong); border-radius: 5px; background: #e7edf2; cursor: grab; touch-action: none;
+}
+.gougai-photo-editor.is-dragging { cursor: grabbing; }
+.gougai-photo-editor img, .gougai-paper .cover-photo img { position: absolute; display: block; max-width: none; user-select: none; pointer-events: none; }
+.gougai-photo-controls label { display: grid; gap: .2rem; color: var(--admin-muted); font-size: .74rem; font-weight: 700; }
+.gougai-photo-controls input[type="range"] { width: 100%; }
 .gougai-body {
   min-height: 8.5rem;
   padding: .55rem .6rem;
@@ -1352,6 +1366,12 @@ body.gougai-page .gougai-desk .work:last-child { overflow: auto; }
   overflow: hidden;
   background: #bcd4e0;
 }
+.gougai-paper .cover-photo {
+  position: absolute; inset: 0; z-index: 0; overflow: hidden; display: none; background: #d6e0e6;
+}
+.gougai-paper .cover.has-custom-photo .cover-photo { display: block; }
+.gougai-paper .cover.has-custom-photo .cover-bg,
+.gougai-paper .cover.has-custom-photo .cover-stand { display: none; }
 .gougai-paper .cover-bg {
   position: absolute;
   top: 0; left: 0; bottom: 0;
@@ -1511,7 +1531,10 @@ body.gougai-page .gougai-desk .work:last-child { overflow: auto; }
   background: #111;
   transform: translate(-50%, -50%);
 }
-.gougai-paper .face .icon-ph { display: block; }
+.gougai-paper .face .icon-ph {
+  display: grid; place-items: center; padding: .1rem; background: #fff; color: #b5b5b5;
+  font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif; font-size: .42rem; font-weight: 700; line-height: 1; text-align: center;
+}
 .gougai-paper .who-copy {
   flex: 1 1 auto;
   min-width: 0;

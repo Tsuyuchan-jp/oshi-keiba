@@ -75,6 +75,16 @@ const masthead = paper?.querySelector(".masthead");
 const midCol = paper?.querySelector('[data-col="mid"]');
 const leftCol = paper?.querySelector('[data-col="left"]');
 const subImg = paper?.querySelector(".sub-img-wrap img");
+const cover = paper?.querySelector(".cover");
+const photo = document.getElementById("gougai-photo");
+const photoInput = document.getElementById("gougai-photo-input");
+const photoEditor = document.getElementById("gougai-photo-editor");
+const photoEditorImage = document.getElementById("gougai-photo-editor-image");
+const photoZoom = document.getElementById("gougai-photo-zoom");
+const photoReset = document.getElementById("gougai-photo-reset");
+const photoControls = document.getElementById("gougai-photo-controls");
+let photoUrl = "";
+let photoState = null;
 
 function setMsg(text, isError) {
   const el = document.getElementById("gougai-export-msg");
@@ -105,6 +115,81 @@ function applySubtitle(file) {
   document.querySelectorAll(".gougai-sub").forEach((btn) => {
     btn.classList.toggle("on", btn.dataset.file === file);
   });
+}
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+function imageLayout(stage) {
+  if (!photoState || !stage) return null;
+  const width = stage.clientWidth;
+  const height = stage.clientHeight;
+  if (!width || !height) return null;
+  const base = Math.max(width / photoState.width, height / photoState.height);
+  const imageWidth = photoState.width * base * photoState.zoom;
+  const imageHeight = photoState.height * base * photoState.zoom;
+  const left = clamp(width / 2 - photoState.focusX * imageWidth, width - imageWidth, 0);
+  const top = clamp(height / 2 - photoState.focusY * imageHeight, height - imageHeight, 0);
+  return { width, height, imageWidth, imageHeight, left, top };
+}
+function renderPhotoImage(image, stage) {
+  const layout = imageLayout(stage);
+  if (!image || !layout) return;
+  image.style.width = layout.imageWidth + "px";
+  image.style.height = layout.imageHeight + "px";
+  image.style.left = layout.left + "px";
+  image.style.top = layout.top + "px";
+}
+function renderPhoto() {
+  renderPhotoImage(photo, photo?.parentElement);
+  renderPhotoImage(photoEditorImage, photoEditor);
+}
+function clearPhoto() {
+  if (photoUrl) URL.revokeObjectURL(photoUrl);
+  photoUrl = "";
+  photoState = null;
+  if (photo) photo.removeAttribute("src");
+  if (photoEditorImage) photoEditorImage.removeAttribute("src");
+  if (photoInput) photoInput.value = "";
+  cover?.classList.remove("has-custom-photo");
+  photoControls?.setAttribute("hidden", "");
+  photoReset?.setAttribute("disabled", "");
+}
+function applyPhoto(file) {
+  if (!file || !file.type.startsWith("image/")) {
+    setMsg("画像ファイルを選んでください", true);
+    return;
+  }
+  if (photoUrl) URL.revokeObjectURL(photoUrl);
+  const nextPhotoUrl = URL.createObjectURL(file);
+  photoUrl = nextPhotoUrl;
+  const probe = new Image();
+  probe.onload = () => {
+    if (photoUrl !== nextPhotoUrl) return;
+    photoState = { width: probe.naturalWidth, height: probe.naturalHeight, zoom: 1, focusX: .5, focusY: .5 };
+    if (photo) photo.src = nextPhotoUrl;
+    if (photoEditorImage) photoEditorImage.src = nextPhotoUrl;
+    cover?.classList.add("has-custom-photo");
+    photoControls?.removeAttribute("hidden");
+    photoReset?.removeAttribute("disabled");
+    if (photoZoom) photoZoom.value = "1";
+    requestAnimationFrame(renderPhoto);
+    setMsg("メインビュー画像を反映しました", false);
+  };
+  probe.onerror = () => {
+    if (photoUrl !== nextPhotoUrl) return;
+    clearPhoto();
+    setMsg("この画像は読み込めません", true);
+  };
+  probe.src = nextPhotoUrl;
+}
+function movePhoto(dx, dy) {
+  const layout = imageLayout(photoEditor);
+  if (!photoState || !layout) return;
+  const left = clamp(layout.left + dx, layout.width - layout.imageWidth, 0);
+  const top = clamp(layout.top + dy, layout.height - layout.imageHeight, 0);
+  photoState.focusX = clamp((layout.width / 2 - left) / layout.imageWidth, 0, 1);
+  photoState.focusY = clamp((layout.height / 2 - top) / layout.imageHeight, 0, 1);
+  renderPhoto();
 }
 function sanitizeBody(html) {
   const wrap = document.createElement("div");
@@ -221,6 +306,36 @@ document.getElementById("gougai-subs")?.addEventListener("click", (ev) => {
   applySubtitle(btn.dataset.file);
   store(KEYS.subtitle, btn.dataset.file);
 });
+photoInput?.addEventListener("change", () => applyPhoto(photoInput.files?.[0]));
+photoZoom?.addEventListener("input", () => {
+  if (!photoState) return;
+  photoState.zoom = Number(photoZoom.value) || 1;
+  renderPhoto();
+});
+photoReset?.addEventListener("click", clearPhoto);
+let photoPointer = null;
+photoEditor?.addEventListener("pointerdown", (ev) => {
+  if (!photoState) return;
+  photoPointer = { id: ev.pointerId, x: ev.clientX, y: ev.clientY };
+  photoEditor.setPointerCapture(ev.pointerId);
+  photoEditor.classList.add("is-dragging");
+});
+photoEditor?.addEventListener("pointermove", (ev) => {
+  if (!photoPointer || photoPointer.id !== ev.pointerId) return;
+  movePhoto(ev.clientX - photoPointer.x, ev.clientY - photoPointer.y);
+  photoPointer.x = ev.clientX;
+  photoPointer.y = ev.clientY;
+});
+function endPhotoDrag(ev) {
+  if (!photoPointer || photoPointer.id !== ev.pointerId) return;
+  photoPointer = null;
+  photoEditor?.classList.remove("is-dragging");
+}
+photoEditor?.addEventListener("pointerup", endPhotoDrag);
+photoEditor?.addEventListener("pointercancel", endPhotoDrag);
+if (photoEditor && typeof ResizeObserver !== "undefined") {
+  new ResizeObserver(renderPhoto).observe(photoEditor);
+}
 bodyEdit?.addEventListener("input", syncBody);
 bodyEdit?.addEventListener("paste", (ev) => {
   ev.preventDefault();
@@ -262,6 +377,23 @@ export function adminGougaiPage(board: Board): { body: string; scripts: string }
         <div class="gougai-field">
           <span>右列画像</span>
           <div class="gougai-subs" id="gougai-subs">${subtitlePicker(sheet.subtitleFile)}</div>
+        </div>
+        <div class="gougai-field">
+          <span>メインビュー画像</span>
+          <div class="gougai-photo-actions">
+            <label class="admin-action admin-action--secondary gougai-photo-select">画像を選ぶ
+              <input id="gougai-photo-input" type="file" accept="image/png,image/jpeg,image/webp">
+            </label>
+            <button type="button" class="admin-action admin-action--secondary" id="gougai-photo-reset" disabled>テンプレートに戻す</button>
+          </div>
+          <p class="gougai-photo-note">画像を使う間も、縦書きと右の青枠は表示します。</p>
+          <div class="gougai-photo-controls" id="gougai-photo-controls" hidden>
+            <div class="gougai-photo-editor" id="gougai-photo-editor"><img id="gougai-photo-editor-image" alt=""></div>
+            <label>拡大・縮小
+              <input id="gougai-photo-zoom" type="range" min="1" max="3" value="1" step="0.01">
+            </label>
+            <p class="gougai-photo-note">画像をドラッグして切り抜き位置を調整できます。</p>
+          </div>
         </div>
         <div class="gougai-field">
           <span>本文</span>
