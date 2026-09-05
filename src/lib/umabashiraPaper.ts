@@ -52,7 +52,7 @@ function strengthHtml(h: UmabashiraHorseView): string {
 function horseCol(h: UmabashiraHorseView): string {
   const style = h.styleLabel ? escapeHtml(h.styleLabel) : "—";
   return `<div class="col">
-        <div class="cell id-row"><div class="num" style="width:100%"><b>${h.number}</b><span class="style">${style}</span></div></div>
+        <div class="cell id-row"><div class="num" style="width:100%"><b>${h.number}</b><span class="style"><span>${style}</span></span></div></div>
         <div class="cell who">${faceHtml(h)}<span class="uma">${escapeHtml(h.umaName)}</span></div>
         <div class="cell runner"><span>${escapeHtml(h.runnerName)}</span></div>
         ${strengthHtml(h)}

@@ -1087,8 +1087,9 @@ body.umabashira-page .umabashira-desk .work {
   display: block; width: 100%; box-sizing: border-box;
   margin-top: .12rem; font-size: .64rem; font-weight: 800;
   letter-spacing: .04em; line-height: 1; background: #ece4d2; border: 1px solid #b9b09c;
-  padding: .06rem .08rem; transform: translateY(.2em);
+  padding: .06rem .08rem;
 }
+.umabashira-paper .style > span { display: inline-block; transform: translateY(.2em); }
 .umabashira-paper .who {
   display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
   gap: .16rem; padding: .18rem .06rem .2rem;

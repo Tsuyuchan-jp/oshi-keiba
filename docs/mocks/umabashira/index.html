@@ -194,8 +194,8 @@
       background: #ece4d2;
       border: 1px solid #b9b09c;
       padding: 0.06rem 0.08rem;
-      transform: translateY(0.2em);
     }
+    .style > span { display: inline-block; transform: translateY(0.2em); }
 
     .who {
       display: flex;
@@ -399,7 +399,7 @@
     }
     function colA(h, mark) {
       return `<div class="col">
-        <div class="cell id-row"><div class="mark${mark ? "" : " none"}">${mark || "─"}</div><div class="num"><b>${h.n}</b><span class="style">${STYLE_JA[h.style] || h.style}</span></div></div>
+        <div class="cell id-row"><div class="mark${mark ? "" : " none"}">${mark || "─"}</div><div class="num"><b>${h.n}</b><span class="style"><span>${STYLE_JA[h.style] || h.style}</span></span></div></div>
         ${whoHtml(h)}
         <div class="cell runner"><span>${h.runner}</span></div>
         <div class="cell score-cell"><b>${h.score.toFixed(1)}</b></div>
@@ -409,7 +409,7 @@
     }
     function colB(h, mark) {
       return `<div class="col">
-        <div class="cell id-row"><div class="num" style="width:100%"><b>${h.n}</b><span class="style">${STYLE_JA[h.style] || h.style}</span></div></div>
+        <div class="cell id-row"><div class="num" style="width:100%"><b>${h.n}</b><span class="style"><span>${STYLE_JA[h.style] || h.style}</span></span></div></div>
         ${whoHtml(h)}
         <div class="cell runner"><span>${h.runner}</span></div>
         <div class="cell score-cell"><b>${h.score.toFixed(1)}</b></div>
