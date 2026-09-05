@@ -66,11 +66,11 @@ const board = {
   ],
 } as unknown as Board;
 
-test("ウマ柱は取消を列から外し、setup ではオッズを空にする", () => {
+test("ウマ柱は取消を列から外し、setup でも参考オッズを出す", () => {
   const sheet = umabashiraView(board);
   assert.equal(sheet.horses.length, 2);
   assert.equal(sheet.horses[0]!.umaName, "スペシャルウィーク");
-  assert.equal(sheet.horses[0]!.odds, null);
+  assert.equal(sheet.horses[0]!.odds, 4.8);
   assert.equal(sheet.horses[0]!.mark, "◎");
   assert.equal(sheet.horses[1]!.mark, "○");
   assert.equal(sheet.horses[1]!.stats, null);

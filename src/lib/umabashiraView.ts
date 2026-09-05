@@ -22,7 +22,7 @@ export type UmabashiraHorseView = {
   petitUrl: string | null;
   strength: number | null;
   mark: string;
-  /** setup・欠けは null → 紙面は ─ */
+  /** 欠け・計算不能は null → 紙面は ─。setup でも Seed 由来の参考オッズを出す */
   odds: number | null;
   stats: [number, number, number, number, number] | null;
   apt: UmabashiraAptLine[] | null;
@@ -123,7 +123,7 @@ export function umabashiraView(
       styleLabel: input?.styleKey ? pv.styleLabel : null,
       petitUrl: pv.detailImageUrl,
       strength: finiteOrNull(h.horse.strength),
-      odds: board.event.status === "setup" ? null : finiteOrNull(h.referenceOdds),
+      odds: finiteOrNull(h.referenceOdds),
       stats,
       apt: aptLines(pv),
       sp,
