@@ -20,6 +20,7 @@
 
 ## アーカイブ
 
+- OCRが配列JSONを返したときの空確認画面を修正（実機確認OK。登録時の `r2_pending_deletions` 未適用はローカル migration で解消）— [ocr.md](ocr.md)
 - ウマ柱タブを一旦の正とした（実機確認OK。見た目の正は本番 `/admin/umabashira`。モック上段は控え）— [umabashira.md](umabashira.md)
 - ウマ柱の管理タブ（モック上段移植・差し込み・プレビュー・PNG/WebP。ナビは開催設定の下）— [umabashira.md](umabashira.md)
 - ウマ柱実装前の未決を閉じた（左列残す・PNG+WebP・タブ「ウマ柱」`/admin/umabashira`）— [umabashira.md](umabashira.md)
