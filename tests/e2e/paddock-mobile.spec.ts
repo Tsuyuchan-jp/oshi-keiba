@@ -10,6 +10,13 @@ test("short mobile paddock keeps every horse reachable and closes detail by down
   await page.locator('button[name="mode"][value="register"]').click();
 
   await page.goto("/paddock");
+  const stage = page.locator(".paddock-stage");
+  await expect(stage).toHaveCSS("background-size", "cover");
+  await page.setViewportSize({ width: 402, height: 874 });
+  await expect(stage).toHaveCSS("background-size", "cover");
+  const largeStageWidth = await stage.evaluate((element) => element.getBoundingClientRect().width);
+  expect(largeStageWidth).toBe(402);
+  await page.setViewportSize({ width: 375, height: 664 });
   const horses = page.locator(".horse");
   await expect(horses).toHaveCount(3);
   const pageSize = await page.evaluate(() => ({

@@ -3,7 +3,7 @@
   display: block;
   min-height: max(100svh, 760px);
   overflow: visible;
-  background: #80d5ff url('/images/paddock/racecourse-side-stage-mobile-v2.png') center -52px / auto max(100svh, 832px) no-repeat;
+  background: #80d5ff url('/images/paddock/racecourse-side-stage-mobile-v2.png') center top / cover no-repeat;
 }
 
 .race-view {
