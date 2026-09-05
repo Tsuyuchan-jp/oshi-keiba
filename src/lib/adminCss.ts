@@ -1033,7 +1033,9 @@ body.umabashira-page .umabashira-desk .work {
   --hb: #163a8a;
   --col-w: 3.32rem;
   --stub-w: 2.15rem;
-  /* プレビュー枠に引き伸ばさない。下限は4頭分。5頭以上は列数に比例 */
+  /* 幅は列グリッドが決める。ヘッダ文字列では広げない。下限は4頭分 */
+  display: flex;
+  flex-direction: column;
   width: max-content;
   min-width: calc(var(--stub-w) + 4 * var(--col-w));
   background: var(--paper);
@@ -1045,8 +1047,9 @@ body.umabashira-page .umabashira-desk .work {
   display: flex; flex-wrap: wrap; gap: .35rem 1rem; align-items: baseline;
   padding: .32rem .45rem; border-bottom: 2px solid var(--rule);
   font-weight: 800; font-size: .78rem;
+  width: 0; min-width: 100%; box-sizing: border-box;
 }
-.umabashira-paper .mast > span { min-width: 0; }
+.umabashira-paper .mast > span { min-width: 0; overflow-wrap: anywhere; }
 .umabashira-paper .mast .meta { font-weight: 600; font-size: .7rem; color: #3c382f; }
 .umabashira-paper .mast .keys { font-weight: 400; font-size: .62rem; color: var(--muted); margin-left: auto; }
 .umabashira-paper .board {
@@ -1076,12 +1079,13 @@ body.umabashira-page .umabashira-desk .work {
 }
 .umabashira-paper .id-row { display: flex; align-items: stretch; min-height: 2.25rem; padding: 0; }
 .umabashira-paper .num {
-  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  flex: 1; display: flex; flex-direction: column; justify-content: center;
   line-height: 1; text-align: center;
 }
 .umabashira-paper .num b { font-size: 1.02rem; font-weight: 800; transform: translateY(.2em); }
 .umabashira-paper .style {
-  display: inline-block; margin-top: .12rem; font-size: .64rem; font-weight: 800;
+  display: block; width: 100%; box-sizing: border-box;
+  margin-top: .12rem; font-size: .64rem; font-weight: 800;
   letter-spacing: .04em; line-height: 1; background: #ece4d2; border: 1px solid #b9b09c;
   padding: .06rem .08rem; transform: translateY(.2em);
 }
