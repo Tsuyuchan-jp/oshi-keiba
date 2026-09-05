@@ -1,28 +1,13 @@
 /* 最終スマホモックの競馬場レイアウト。PC版のパドック表示には適用しない。 */
-html {
-  min-height: max(100lvh, 760px);
-  overflow-x: hidden;
-  background: #80d5ff url('/images/paddock/racecourse-side-stage-mobile-v2.png') center top / cover no-repeat;
-}
-
-body {
-  min-height: max(100lvh, 760px);
-  max-width: 100%;
-  overflow-x: hidden;
-  background: none;
-}
-
 .paddock-stage {
   display: block;
-  min-height: max(100lvh, 760px);
-  overflow: visible;
-  background: none;
+  min-height: 100svh;
+  background: #80d5ff url('/images/paddock/racecourse-side-stage-mobile-v2.png') center -52px / auto calc(100% + 72px) no-repeat;
 }
 
 .race-view {
-  height: auto;
-  min-height: max(100lvh, 760px);
-  overflow: visible;
+  height: 100svh;
+  min-height: 650px;
 }
 
 .scoreboard {
@@ -140,34 +125,4 @@ body {
   background: transparent;
   text-align: center;
   font-size: 10px;
-}
-
-@media (max-height: 700px) {
-  .horse-groups[data-mobile-density] {
-    --horse-image-width: min(74px, 20vw);
-    --horse-image-height: 78px;
-    --horse-box-height: 94px;
-    --horse-number-offset: min(37px, 10vw);
-  }
-}
-
-.detail {
-  overscroll-behavior: contain;
-}
-
-.detail__summary {
-  cursor: grab;
-  touch-action: none;
-}
-
-.detail.is-dragging {
-  transition: none;
-}
-
-@media (min-height: 761px) {
-  html,
-  body {
-    height: 100lvh;
-    overflow-y: clip;
-  }
 }
