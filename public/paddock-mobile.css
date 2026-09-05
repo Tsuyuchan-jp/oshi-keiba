@@ -7,7 +7,8 @@ html {
 
 body {
   min-height: max(100lvh, 760px);
-  overflow-x: clip;
+  max-width: 100%;
+  overflow-x: hidden;
   background: none;
 }
 
@@ -161,4 +162,12 @@ body {
 
 .detail.is-dragging {
   transition: none;
+}
+
+@media (min-height: 761px) {
+  html,
+  body {
+    height: 100lvh;
+    overflow-y: clip;
+  }
 }
