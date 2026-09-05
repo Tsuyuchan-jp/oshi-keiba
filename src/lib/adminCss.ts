@@ -1203,13 +1203,9 @@ body.umabashira-page .umabashira-desk .work {
 }
 .umabashira-paper .sp small > span,
 .umabashira-paper .apt > span { display: inline-block; transform: translateY(.08em); }
-/* PNG 書き出しは transform が下に寄ることがあるので、色箱内は top で下げる */
+/* PNG 優先。色箱内の transform は書き出しで下に寄るので量を 0 にする */
 .umabashira-paper .score-cell b > span,
-.umabashira-paper .sp b > span {
-  display: inline-block; position: relative;
-}
-.umabashira-paper .score-cell b > span { top: .08em; }
-.umabashira-paper .sp b > span { top: .12em; }
+.umabashira-paper .sp b > span { display: inline-block; transform: translateY(0); }
 @media (max-width: 1199px) {
   body.settings-page .settings-top { grid-template-columns: 1fr; }
   .set-conds { grid-template-columns: 1fr; }

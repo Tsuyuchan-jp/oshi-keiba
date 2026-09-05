@@ -389,13 +389,12 @@
       display: inline-block;
       transform: translateY(0.08em);
     }
+    /* PNG 優先。色箱内は書き出しで下に寄るので量を 0 にする */
     .score-cell b > span,
     .sp b > span {
       display: inline-block;
-      position: relative;
+      transform: translateY(0);
     }
-    .score-cell b > span { top: 0.08em; }
-    .sp b > span { top: 0.12em; }
   </style>
 </head>
 <body>
