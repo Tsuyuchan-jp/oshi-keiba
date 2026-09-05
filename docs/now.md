@@ -8,7 +8,7 @@
 入場 `/login`　場内 `/`　パドック `/paddock`　窓口 `/bet`　管理 `/admin`
 アプリ版は [version.md](version.md)（数字の正本は `package.json`）
 
-詳細は [playbook.md](playbook.md)。第2回までにやることは [next.md](next.md)。号外の見た目は [gougai.md](gougai.md) と [モック](mocks/gougai/index.html) で確定。管理タブは未実装。ウマ柱はコミュニティ公開用。正は本番タブ `/admin/umabashira` の現在の紙面（実機確認OK。出走登録中も参考オッズ）。仕様は [umabashira.md](umabashira.md)。モック上段は本番に揃えた控え。出力は PNG と WebP。
+詳細は [playbook.md](playbook.md)。第2回までにやることは [next.md](next.md)。号外の見た目は [gougai.md](gougai.md) と [モック](mocks/gougai/index.html) で確定。管理タブは未実装。ウマ柱はコミュニティ公開用。正は本番タブ `/admin/umabashira` の現在の紙面（実機確認OK。出走登録中も参考オッズ）。仕様は [umabashira.md](umabashira.md)。モックは本番に揃えた控え。出力は PNG と WebP。
 
 ## 仮置き（第2回）
 
