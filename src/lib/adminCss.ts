@@ -1108,11 +1108,12 @@ body.umabashira-page .umabashira-desk .work {
   font-size: .78rem; font-weight: 800; line-height: 1;
 }
 .umabashira-paper .uma > span { flex: none; line-height: 1; }
-/* 横書き用 ー を回さず、縦書きにして vert 字形で左右中央に乗せる */
+/* 縦用でも IBM Plex の ー は字面が右に寄るので、見た目の中央へ左へずらす */
 .umabashira-paper .uma > span.choon {
   display: flex; align-items: center; justify-content: center;
   width: 1em; height: 1em;
   writing-mode: vertical-rl; text-orientation: mixed;
+  transform: translateX(-0.07em);
 }
 .umabashira-paper .runner {
   display: flex; align-items: center; justify-content: center;
