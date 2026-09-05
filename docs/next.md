@@ -20,7 +20,7 @@
 
 ## アーカイブ
 
-- ウマ柱本番紙面に枠色けばけば案を適用（見た目専用。枠番は保存しない）— [umabashira.md](umabashira.md)
+- ウマ柱第1段をクローズ（ローカル実機確認OK。プレビュー・PNG/WebP。枠色は見た目専用。ノイズは不透明度 0.1。評価点・SP点数の色箱は PNG を正）— [umabashira.md](umabashira.md)
 - ウマ柱 PNG の開催名折り返し・右列の狭まり・外枠切れを修正（実機確認OK。ウマ番・脚質の字下げは 0.06em）— [umabashira.md](umabashira.md)
 - ウマ柱を出走登録中（setup）でも参考オッズを出す（実機確認OK。現在の紙面を正とする）— [umabashira.md](umabashira.md)
 - ローカル進行タブの Undo 復旧列を `npm run dev` の vars で再表示（実機確認OK。`secrets.required` が `.dev.vars` のフラグを落としていた）
