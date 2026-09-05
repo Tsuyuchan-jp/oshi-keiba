@@ -74,6 +74,11 @@ test("管理者は号外の背景と立ち絵を画像へ差し替え、テン�
   await page.getByRole("button", { name: "管理画面へ" }).click();
   await page.goto("/admin/gougai");
   await expect(page.locator("#gougai-photo-controls")).toBeHidden();
+  const subtitleSize = await page.locator(".gougai-sub").first().evaluate((el) => ({
+    width: el.getBoundingClientRect().width,
+    height: el.getBoundingClientRect().height,
+  }));
+  expect(subtitleSize.height / subtitleSize.width).toBeCloseTo(1 / .106, 1);
 
   await page.locator("#gougai-photo-input").setInputFiles({
     name: "cover.png",
