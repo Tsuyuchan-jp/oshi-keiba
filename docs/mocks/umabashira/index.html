@@ -67,6 +67,7 @@
     }
     .paper {
       box-sizing: content-box;
+      position: relative;
       display: flex;
       flex-direction: column;
       width: max-content;
@@ -74,6 +75,16 @@
       background: var(--paper);
       color: var(--ink);
       border: 2px solid var(--rule);
+    }
+    .grain {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      opacity: var(--grain, 0.1);
+      mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 160px 160px;
     }
     .mast {
       display: flex;
@@ -403,7 +414,7 @@
     <p class="note">正は本番 <code>/admin/umabashira</code>。この HTML はその控え。ウマ番を JRA 枠色で塗る（保存しない）。評価点は紺地白字。列に薄い枠色地。脚質は控えめな帯色。petit に背景は付けない。頭数切替で枠の塊を確認。</p>
     <div class="toolbar" id="toolbar"></div>
     <h2>紙面（けばけば案）</h2>
-    <p class="note">列頭は枠色箱のウマ番＋脚質。ウマ娘行の下は太罫。印はオッズ欄の上段。SP点数は紺の数字箱、金は黄地。</p>
+    <p class="note">列頭は枠色箱のウマ番＋脚質。ウマ娘行の下は太罫。印はオッズ欄の上段。SP点数は紺の数字箱、金は黄地。紙面全体にノイズ（multiply）。濃度は上のボタンで切替。</p>
     <div class="sheet-wrap" id="b"></div>
   </div>
   <script>
@@ -537,13 +548,14 @@
       const marks = marksFor(horses);
       const nHead = horses.length;
       const cols = horses.map((h, i) => col(h, marks[i], nHead)).join("");
-      return `<div class="paper">
+      return `<div class="paper" style="--grain:${grain}">
         <div class="mast">
           <span class="title">お試しイベントレース</span>
           <span class="meta">中山　芝2000m　春・晴・良　｜　${horses.length}頭</span>
           <span class="keys">◎本命 ○対抗 ▲単穴 △穴　／　SP＝点数・有効・白・金　／　枠色は見た目のみ</span>
         </div>
         <div class="board" style="--n:${horses.length}">${stubCol()}${cols}</div>
+        <div class="grain" aria-hidden="true"></div>
       </div>`;
     }
 
@@ -560,19 +572,36 @@
       root.querySelectorAll(".board .stub-col .runner").forEach((el) => fitWidth(el, 7));
     }
     let count = 16;
+    let grain = 0.1;
+    const GRAIN_OPTS = [
+      { v: 0, lab: "ノイズなし" },
+      { v: 0.07, lab: "薄" },
+      { v: 0.1, lab: "中" },
+      { v: 0.16, lab: "濃" },
+    ];
     function render() {
       const horses = ALL.slice(0, count);
       const wrap = document.getElementById("b");
       wrap.innerHTML = sheet(horses);
       fitRunners(wrap);
-      document.getElementById("toolbar").innerHTML = [8, 12, 16, 18].map((n) =>
-        `<button type="button" class="${n === count ? "on" : ""}" data-n="${n}">${n}頭</button>`
-      ).join("");
+      document.getElementById("toolbar").innerHTML = [
+        ...[8, 12, 16, 18].map((n) =>
+          `<button type="button" class="${n === count ? "on" : ""}" data-n="${n}">${n}頭</button>`
+        ),
+        ...GRAIN_OPTS.map((g) =>
+          `<button type="button" class="${g.v === grain ? "on" : ""}" data-g="${g.v}">${g.lab}</button>`
+        ),
+      ].join("");
     }
     document.getElementById("toolbar").addEventListener("click", (e) => {
       const n = Number(e.target.dataset.n);
-      if (!n) return;
-      count = n;
+      if (n) {
+        count = n;
+        render();
+        return;
+      }
+      if (!("g" in e.target.dataset)) return;
+      grain = Number(e.target.dataset.g);
       render();
     });
     render();
