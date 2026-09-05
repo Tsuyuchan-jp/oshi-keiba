@@ -4,6 +4,11 @@ import type { UmabashiraHorseView, UmabashiraSheet } from "./umabashiraView.ts";
 
 const STAT_LABELS = ["速", "スタ", "パ", "根", "賢"] as const;
 
+/** ウマ娘名を1文字ずつ。少ない字は9文字分の箱で字間が開く */
+export function umaNameCharsHtml(name: string): string {
+  return Array.from(name).map((c) => `<span>${escapeHtml(c)}</span>`).join("");
+}
+
 function dashCell(extraClass: string): string {
   return `<div class="cell ${extraClass} empty">—</div>`;
 }
@@ -53,7 +58,7 @@ function horseCol(h: UmabashiraHorseView): string {
   const style = h.styleLabel ? escapeHtml(h.styleLabel) : "—";
   return `<div class="col">
         <div class="cell id-row"><div class="num" style="width:100%"><b>${h.number}</b><span class="style"><span>${style}</span></span></div></div>
-        <div class="cell who">${faceHtml(h)}<span class="uma">${escapeHtml(h.umaName)}</span></div>
+        <div class="cell who">${faceHtml(h)}<span class="uma" aria-label="${escapeHtml(h.umaName)}">${umaNameCharsHtml(h.umaName)}</span></div>
         <div class="cell runner"><span>${escapeHtml(h.runnerName)}</span></div>
         ${strengthHtml(h)}
         ${oddsHtml(h)}

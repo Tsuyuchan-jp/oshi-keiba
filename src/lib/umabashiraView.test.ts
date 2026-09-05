@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { umaNameCharsHtml } from "./umabashiraPaper.ts";
 import { umabashiraCourseLine, umabashiraFileBase, umabashiraView } from "./umabashiraView.ts";
 import type { Board } from "./storeTypes.ts";
 
@@ -91,6 +92,11 @@ test("投票開始後は参考オッズを出し、適性はモック短縮", ()
     { text: "中S", highlight: true },
     { text: "先A", highlight: false },
   ]);
+});
+
+test("ウマ娘名は1文字ずつ包む", () => {
+  assert.equal(umaNameCharsHtml("麦"), "<span>麦</span>");
+  assert.equal(umaNameCharsHtml("スペ"), "<span>ス</span><span>ペ</span>");
 });
 
 test("コース行の欠けは —。ファイル名は日付と開催名", () => {

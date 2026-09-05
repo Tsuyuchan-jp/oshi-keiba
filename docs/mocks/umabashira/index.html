@@ -224,14 +224,16 @@
       background: #ddd6c6;
     }
     .uma {
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: calc(9em + 8 * 0.08em + 0.85rem);
       font-size: 0.78rem;
       font-weight: 800;
-      letter-spacing: 0.08em;
       line-height: 1;
-      height: calc(9em + 8 * 0.08em + 0.85rem);
     }
+    .uma > span { flex: none; line-height: 1; }
     .runner {
       display: flex;
       align-items: center;
@@ -385,8 +387,11 @@
       return `<img src="${PETIT_DIR}${h.petit}" alt="" data-ph="${ch}" onerror="this.outerHTML='<div class=ph>'+this.dataset.ph+'</div>'">`;
     }
 
+    function umaChars(name) {
+      return Array.from(name).map((c) => `<span>${c}</span>`).join("");
+    }
     function whoHtml(h) {
-      return `<div class="cell who">${face(h)}<span class="uma">${h.uma}</span></div>`;
+      return `<div class="cell who">${face(h)}<span class="uma" aria-label="${h.uma}">${umaChars(h.uma)}</span></div>`;
     }
     function markHtml(mark) {
       return mark

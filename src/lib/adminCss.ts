@@ -1103,9 +1103,11 @@ body.umabashira-page .umabashira-desk .work {
   font-size: .7rem; font-weight: 800; background: #ddd6c6;
 }
 .umabashira-paper .uma {
-  writing-mode: vertical-rl; text-orientation: mixed; font-size: .78rem; font-weight: 800;
-  letter-spacing: .08em; line-height: 1; height: calc(9em + 8 * .08em + .85rem);
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  height: calc(9em + 8 * .08em + .85rem);
+  font-size: .78rem; font-weight: 800; line-height: 1;
 }
+.umabashira-paper .uma > span { flex: none; line-height: 1; }
 .umabashira-paper .runner {
   display: flex; align-items: center; justify-content: center;
   font-size: .56rem; font-weight: 700; line-height: 1.15; min-height: 1.55rem;
