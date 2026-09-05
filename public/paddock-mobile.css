@@ -32,7 +32,7 @@
 .scoreboard h1 { padding: 9px 8px 7px; font-size: 18px; }
 
 .paddock-nav {
-  top: clamp(176px, 23svh, 210px);
+  top: clamp(166px, calc(23svh - 10px), 200px);
   left: 50%;
   transform: translateX(-50%);
   gap: 6px;
