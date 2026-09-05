@@ -1,0 +1,349 @@
+{
+  "overlays": [
+    {
+      "before": "<character_name>",
+      "after": "<bashin>で制す",
+      "slogan": "<bashin>で制す"
+    },
+    {
+      "before": "<character_name>",
+      "after": "見事な勝利！",
+      "slogan": "見事な勝利！"
+    },
+    {
+      "before": "<character_name>",
+      "after": "圧巻の走り！",
+      "slogan": "圧巻の走り！"
+    },
+    {
+      "before": "勝利をつかんだのは",
+      "after": "<character_name>",
+      "slogan": "勝利をつかんだのは"
+    },
+    {
+      "before": "<character_name>",
+      "after": "必然の勝利！",
+      "slogan": "必然の勝利！"
+    },
+    {
+      "before": "<character_name>",
+      "after": "に三女神がほほ笑む",
+      "slogan": "に三女神がほほ笑む"
+    },
+    {
+      "before": "<character_name>",
+      "after": "勝利をつかむ",
+      "slogan": "勝利をつかむ"
+    },
+    {
+      "before": "<character_name>",
+      "after": "大会の主役へ",
+      "slogan": "大会の主役へ"
+    },
+    {
+      "before": "<character_name>",
+      "after": "巧みな走りで魅せた",
+      "slogan": "巧みな走りで魅せた"
+    },
+    {
+      "before": "<character_name>",
+      "after": "鮮やかな勝利",
+      "slogan": "鮮やかな勝利"
+    },
+    {
+      "before": "<character_name>",
+      "after": "見事やってのけた！",
+      "slogan": "見事やってのけた！"
+    },
+    {
+      "before": "<character_name>",
+      "after": "最高の走りで勝利",
+      "slogan": "最高の走りで勝利"
+    },
+    {
+      "before": "１着を取ったのは",
+      "after": "<character_name>",
+      "slogan": "１着を取ったのは"
+    },
+    {
+      "before": "主役へ立候補！",
+      "after": "<character_name>",
+      "slogan": "主役へ立候補！"
+    },
+    {
+      "before": "見事な走りを見せた",
+      "after": "<character_name>",
+      "slogan": "見事な走りを見せた"
+    },
+    {
+      "before": "レースを制したのは",
+      "after": "<character_name>",
+      "slogan": "レースを制したのは"
+    },
+    {
+      "before": "底の知れないウマ娘",
+      "after": "<character_name>",
+      "slogan": "底の知れないウマ娘"
+    },
+    {
+      "before": "ただ者ではない",
+      "after": "<character_name>",
+      "slogan": "ただ者ではない"
+    },
+    {
+      "before": "大舞台でも強い！",
+      "after": "<character_name>",
+      "slogan": "大舞台でも強い！"
+    },
+    {
+      "before": "<character_name>",
+      "after": "接戦を制す！",
+      "slogan": "接戦を制す！"
+    },
+    {
+      "before": "<character_name>",
+      "after": "僅差だが確かな勝利",
+      "slogan": "僅差だが確かな勝利"
+    },
+    {
+      "before": "<character_name>",
+      "after": "紙一重の差で勝利",
+      "slogan": "紙一重の差で勝利"
+    },
+    {
+      "before": "競り勝ったのは",
+      "after": "<character_name>",
+      "slogan": "競り勝ったのは"
+    },
+    {
+      "before": "勝利を収めたのは",
+      "after": "<character_name>",
+      "slogan": "勝利を収めたのは"
+    },
+    {
+      "before": "激闘を制したのは",
+      "after": "<character_name>",
+      "slogan": "激闘を制したのは"
+    },
+    {
+      "before": "<character_name>",
+      "after": "完・全・勝・利！",
+      "slogan": "完・全・勝・利！"
+    },
+    {
+      "before": "誰も追いつけない",
+      "after": "<character_name>",
+      "slogan": "誰も追いつけない"
+    },
+    {
+      "before": "<character_name>",
+      "after": "他を寄せ付けず！",
+      "slogan": "他を寄せ付けず！"
+    },
+    {
+      "before": "このウマ娘",
+      "after": "底が知れない！",
+      "slogan": "底が知れない！"
+    },
+    {
+      "before": "<character_name>",
+      "after": "群を抜いた実力",
+      "slogan": "群を抜いた実力"
+    },
+    {
+      "before": "このウマ娘に勝てる",
+      "after": "相手などいるのか",
+      "slogan": "相手などいるのか"
+    },
+    {
+      "before": "<character_name>",
+      "after": "他の追随を許さず",
+      "slogan": "他の追随を許さず"
+    },
+    {
+      "before": "<character_name>",
+      "after": "まさに独擅場！",
+      "slogan": "まさに独擅場！"
+    },
+    {
+      "before": "けた外れの強さ",
+      "after": "<character_name>",
+      "slogan": "けた外れの強さ"
+    },
+    {
+      "before": "<character_name>",
+      "after": "一切の隙も見せず",
+      "slogan": "一切の隙も見せず"
+    },
+    {
+      "before": "<character_name>",
+      "after": "エース対決を制す！",
+      "slogan": "エース対決を制す！"
+    },
+    {
+      "before": "<character_name>",
+      "after": "貫録勝ち！",
+      "slogan": "貫録勝ち！"
+    },
+    {
+      "before": "<character_name>",
+      "after": "大一番を制す",
+      "slogan": "大一番を制す"
+    },
+    {
+      "before": "<character_name>",
+      "after": "満点の走りで勝利",
+      "slogan": "満点の走りで勝利"
+    },
+    {
+      "before": "ねじ伏せた",
+      "after": "<character_name>",
+      "slogan": "ねじ伏せた"
+    },
+    {
+      "before": "<character_name>",
+      "after": "レースを支配",
+      "slogan": "レースを支配"
+    },
+    {
+      "before": "実力を示したのは",
+      "after": "<character_name>",
+      "slogan": "実力を示したのは"
+    },
+    {
+      "before": "期待に応えた",
+      "after": "<character_name>",
+      "slogan": "期待に応えた"
+    },
+    {
+      "before": "<character_name>",
+      "after": "頂上決戦を制覇",
+      "slogan": "頂上決戦を制覇"
+    },
+    {
+      "before": "<character_name>",
+      "after": "優勝の栄誉に輝く",
+      "slogan": "優勝の栄誉に輝く"
+    },
+    {
+      "before": "<character_name>",
+      "after": "密着取材決定！",
+      "slogan": "密着取材決定！"
+    },
+    {
+      "before": "<character_name>",
+      "after": "優勝！",
+      "slogan": "優勝！"
+    },
+    {
+      "before": "<character_name>",
+      "after": "誰もが認める王者に",
+      "slogan": "誰もが認める王者に"
+    },
+    {
+      "before": "<character_name>",
+      "after": "頂点に立つ",
+      "slogan": "頂点に立つ"
+    },
+    {
+      "before": "<character_name>",
+      "after": "見事チャンピオンに",
+      "slogan": "見事チャンピオンに"
+    },
+    {
+      "before": "<character_name>",
+      "after": "歴史に名を残す",
+      "slogan": "歴史に名を残す"
+    },
+    {
+      "before": "<character_name>",
+      "after": "夢の頂へ",
+      "slogan": "夢の頂へ"
+    },
+    {
+      "before": "<character_name>",
+      "after": "有終の美を飾る",
+      "slogan": "有終の美を飾る"
+    },
+    {
+      "before": "<character_name>",
+      "after": "偉業を成し遂げる！",
+      "slogan": "偉業を成し遂げる！"
+    },
+    {
+      "before": "<character_name>",
+      "after": "堂々の優勝",
+      "slogan": "堂々の優勝"
+    },
+    {
+      "before": "<character_name>",
+      "after": "見事な優勝劇",
+      "slogan": "見事な優勝劇"
+    },
+    {
+      "before": "<character_name>",
+      "after": "悲願達成",
+      "slogan": "悲願達成"
+    },
+    {
+      "before": "<character_name>",
+      "after": "最速を証明",
+      "slogan": "最速を証明"
+    },
+    {
+      "before": "頂点に立ったのは",
+      "after": "<character_name>",
+      "slogan": "頂点に立ったのは"
+    },
+    {
+      "before": "ナンバーワンは",
+      "after": "<character_name>",
+      "slogan": "ナンバーワンは"
+    },
+    {
+      "before": "最強ウマ娘",
+      "after": "<character_name>",
+      "slogan": "最強ウマ娘"
+    },
+    {
+      "before": "夢を実現！",
+      "after": "<character_name>",
+      "slogan": "夢を実現！"
+    },
+    {
+      "before": "完全制覇！",
+      "after": "<character_name>",
+      "slogan": "完全制覇！"
+    },
+    {
+      "before": "大・大・大勝利",
+      "after": "<character_name>",
+      "slogan": "大・大・大勝利"
+    },
+    {
+      "before": "最高の結果を手に！",
+      "after": "<character_name>",
+      "slogan": "最高の結果を手に！"
+    },
+    {
+      "before": "頂点に君臨するは",
+      "after": "<character_name>",
+      "slogan": "頂点に君臨するは"
+    },
+    {
+      "before": "天下無双",
+      "after": "<character_name>",
+      "slogan": "天下無双"
+    },
+    {
+      "before": "天下無敵",
+      "after": "<character_name>",
+      "slogan": "天下無敵"
+    },
+    {
+      "before": "<character_name>",
+      "after": "歴史に名を刻んだ！",
+      "slogan": "歴史に名を刻んだ！"
+    }
+  ]
+}

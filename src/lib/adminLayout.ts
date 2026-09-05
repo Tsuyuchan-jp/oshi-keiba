@@ -13,6 +13,7 @@ export type AdminTab =
   | "odds"
   | "settings"
   | "umabashira"
+  | "gougai"
   | "login";
 
 const TABS: { id: Exclude<AdminTab, "login">; href: string; label: string }[] = [
@@ -23,6 +24,7 @@ const TABS: { id: Exclude<AdminTab, "login">; href: string; label: string }[] = 
   { id: "odds", href: "/admin/odds", label: "オッズ" },
   { id: "settings", href: "/admin/settings", label: "開催設定" },
   { id: "umabashira", href: "/admin/umabashira", label: "ウマ柱" },
+  { id: "gougai", href: "/admin/gougai", label: "号外" },
 ];
 
 export function layoutAdmin(opts: {
@@ -59,9 +61,11 @@ export function layoutAdmin(opts: {
             ? "register-page"
             : opts.tab === "umabashira"
               ? "umabashira-page"
-              : opts.tab === "progress"
-                ? "progress-page"
-                : "";
+              : opts.tab === "gougai"
+                ? "gougai-page"
+                : opts.tab === "progress"
+                  ? "progress-page"
+                  : "";
   const mainFlash = opts.tab === "settings" || opts.tab === "register" ? "" : flash;
   return `<!doctype html>
 <html lang="ja">
@@ -71,7 +75,7 @@ export function layoutAdmin(opts: {
   <title>${escapeHtml(opts.title)}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700;800${opts.tab === "gougai" ? "&family=M+PLUS+1p:wght@400;800;900" : ""}&display=swap" rel="stylesheet">
   <style>${ADMIN_CSS}</style>
 </head>
 <body class="${pageClass}" data-screen="admin" data-phase="${escapeHtml(opts.eventStatus ?? "")}">

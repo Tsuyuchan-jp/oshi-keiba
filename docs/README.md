@@ -30,7 +30,7 @@
 | [release.md](release.md) | 本番リリース前後の確認、障害時の復旧判断 |
 | [release-log.md](release-log.md) | 本番リリースの実施記録と復元基準 |
 | [rejected.md](rejected.md) | 見送った案と理由 |
-| [gougai.md](gougai.md) | 号外（note 用紙面）。見た目の正は mocks/gougai。管理タブは未実装 |
+| [gougai.md](gougai.md) | 号外（note 用紙面）。見た目の正は mocks/gougai。管理タブ `/admin/gougai` |
 | [umabashira.md](umabashira.md) | ウマ柱第1段クローズ。正は本番 `/admin/umabashira`。モックは控え。PNG / WebP |
 | [next.md](next.md) | 次に取り組む項目名と参照 |
 

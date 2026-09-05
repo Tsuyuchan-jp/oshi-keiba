@@ -4,7 +4,7 @@
 
 ## 次にやること
 
-- 号外の管理タブ実装（見た目はモック確定。差し込み・プレビュー・PNG）— [gougai.md](gougai.md)・[モック](mocks/gougai/index.html)
+- 号外タブのローカル実機確認（プレビュー・編集・PNG/WebP）— [gougai.md](gougai.md)・[モック](mocks/gougai/index.html)
 
 ## そのあと
 
@@ -20,6 +20,7 @@
 
 ## アーカイブ
 
+- 号外の管理タブを追加（左プレビュー・右編集。誌名・縦書き・右列画像・本文。PNG/WebP。1着未入力はプレースホルダ。chara_stand はローカル stand/）— [gougai.md](gougai.md)
 - ウマ柱第1段をクローズ（ローカル実機確認OK。プレビュー・PNG/WebP。枠色は見た目専用。ノイズは不透明度 0.1。評価点・SP点数の色箱は PNG を正）— [umabashira.md](umabashira.md)
 - ウマ柱 PNG の開催名折り返し・右列の狭まり・外枠切れを修正（実機確認OK。ウマ番・脚質の字下げは 0.06em）— [umabashira.md](umabashira.md)
 - ウマ柱を出走登録中（setup）でも参考オッズを出す（実機確認OK。現在の紙面を正とする）— [umabashira.md](umabashira.md)

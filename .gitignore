@@ -14,3 +14,4 @@ test-results/
 
 # Cygames著作物のゲーム内画像（個人利用・非公開。詳細は public/twinkle/NOTICE.txt）
 public/twinkle/**/*.png
+public/images/umamusume/stand/**/*.png

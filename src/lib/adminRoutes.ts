@@ -12,6 +12,7 @@ import {
   betRowHtml,
   recentBetsHtml,
 } from "./adminUi";
+import { adminGougaiPage } from "./adminGougai";
 import { adminUmabashiraPage } from "./adminUmabashira";
 import { loadStrategicSkillsBundle } from "./adminStrategicApi";
 import {
@@ -115,6 +116,7 @@ export async function tryAdminGet(
     "/admin/odds",
     "/admin/settings",
     "/admin/umabashira",
+    "/admin/gougai",
   ]);
   if (!pages.has(path)) return null;
 
@@ -249,6 +251,21 @@ export async function tryAdminGet(
       layoutAdmin({
         title: "ウマ柱",
         tab: "umabashira",
+        user: gate.user,
+        eventStatus: board.event.status,
+        flash: m,
+        body: page.body,
+        scripts: page.scripts,
+      }),
+    );
+  }
+
+  if (path === "/admin/gougai") {
+    const page = adminGougaiPage(board);
+    return html(
+      layoutAdmin({
+        title: "号外",
+        tab: "gougai",
         user: gate.user,
         eventStatus: board.event.status,
         flash: m,

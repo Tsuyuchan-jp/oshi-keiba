@@ -15,6 +15,10 @@
 
 ## Unreleased
 
+### Added
+
+- 号外の管理タブ（`/admin/gougai`。左プレビュー・右編集。PNG / WebP。1着未入力はプレースホルダ）
+
 ### Fixed
 
 - OCRが1頭分を JSON 配列で返したとき、確認画面が空になる問題を修正（実機確認OK）
