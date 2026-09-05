@@ -80,9 +80,8 @@
 
 .group-rows {
   height: 100%;
-  padding-top: 0;
   padding-left: 14%;
-  flex-direction: column-reverse;
+  flex-direction: column;
   justify-content: space-around;
 }
 
@@ -101,7 +100,7 @@
   margin-left: 50%;
   transform: translateX(-50%) scaleX(-1);
 }
-.horse__number { top: 2px; left: calc(50% - var(--horse-number-offset)); width: var(--horse-number-size, 23px); height: var(--horse-number-size, 23px); font-size: min(11px, calc(var(--horse-number-size, 23px) * .48)); }
+.horse__number { top: 2px; left: calc(50% - var(--horse-number-offset)); width: 23px; height: 23px; font-size: 11px; }
 .horse__name { display: none; max-width: 96px; margin: -4px auto 0; padding: 1px 5px; font-size: 9px; }
 .horse.selected .horse__name { display: block; }
 

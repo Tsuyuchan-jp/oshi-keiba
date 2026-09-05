@@ -48,7 +48,7 @@ async function expectNoPageScroll(page: Page): Promise<void> {
   expect(size.scrollHeight).toBe(size.clientHeight);
 }
 
-test("18 horses fit vertically using the desktop formation order", async ({ page }) => {
+test("18 horses fit vertically without changing the mobile horizontal layout", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 667 });
   await loginMember(page);
   await mockEighteenHorses(page);
@@ -59,28 +59,32 @@ test("18 horses fit vertically using the desktop formation order", async ({ page
   await expectNoPageScroll(page);
   const compactLayout = await page.evaluate(() => {
     const horseRects = Array.from(document.querySelectorAll(".horse")).map((horse) => horse.getBoundingClientRect());
-    const groups = Array.from(document.querySelectorAll(".horse-group"));
+    const fiveHorseRow = Array.from(document.querySelectorAll(".horse-row"))
+      .find((row) => row.children.length === 5)!;
     return {
       minTop: Math.min(...horseRects.map((rect) => rect.top)),
       maxBottom: Math.max(...horseRects.map((rect) => rect.bottom)),
       horseHeight: horseRects[0]!.height,
-      groupOrder: groups.map((group) => Array.from(group.classList).find((name) => ["runner", "leader", "betweener", "chaser"].includes(name))),
-      rowSizes: groups.map((group) => Array.from(group.querySelectorAll(".horse-row"), (row) => row.children.length)),
+      fiveHorseWidth: fiveHorseRow.querySelector(".horse")!.getBoundingClientRect().width,
       viewportHeight: innerHeight,
     };
   });
   expect(compactLayout.minTop).toBeGreaterThanOrEqual(0);
   expect(compactLayout.maxBottom).toBeLessThanOrEqual(compactLayout.viewportHeight);
   expect(compactLayout.horseHeight).toBeLessThan(96);
-  expect(compactLayout.groupOrder).toEqual(["runner", "leader", "betweener", "chaser"]);
-  expect(compactLayout.rowSizes).toEqual([[3, 3, 3], [2, 1, 2], [1, 1], [1, 1]]);
+  expect(compactLayout.fiveHorseWidth).toBeCloseTo(63.75, 1);
 
   await page.setViewportSize({ width: 390, height: 844 });
   await expectNoPageScroll(page);
-  const roomyLayout = await page.locator(".horse").first().evaluate(() => ({
+  const roomyLayout = await page.locator(".horse-row").filter({ has: page.locator(".horse") }).first().evaluate(() => ({
     horseHeight: document.querySelector(".horse")!.getBoundingClientRect().height,
+    fiveHorseWidth: Array.from(document.querySelectorAll(".horse-row"))
+      .find((row) => row.children.length === 5)!
+      .querySelector(".horse")!
+      .getBoundingClientRect().width,
   }));
-  expect(roomyLayout.horseHeight).toBeLessThanOrEqual(96);
+  expect(roomyLayout.horseHeight).toBeCloseTo(96, 3);
+  expect(roomyLayout.fiveHorseWidth).toBe(64);
 
   await horses.first().click();
   const detail = page.locator("#detail");
