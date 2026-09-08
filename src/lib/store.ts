@@ -38,6 +38,15 @@ export {
 export { buildBoard, loadBoard, numberByHorseId } from "./storeBoard";
 
 export {
+  captureAnalysisSnapshot,
+  captureCurrentIntervalSnapshot,
+  listAnalysisEvents,
+  listAnalysisSnapshots,
+  analysisExportZip,
+  analysisExportFilename,
+} from "./analysisLog";
+
+export {
   upsertUser,
   registerMember,
   loginMember,

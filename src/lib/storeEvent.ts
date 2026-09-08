@@ -9,6 +9,7 @@ import {
 } from "./bets";
 import { newId } from "./auth";
 import { DEFAULTS } from "./odds";
+import { captureAnalysisSnapshot } from "./analysisLog";
 import {
   parseScoreSetup,
   serializeScoreSetup,
@@ -118,7 +119,9 @@ export async function maybeAutoClose(
       )
       .bind(now, event.id)
       .run();
-    return (await getEventById(db, event.id))!;
+    const closed = (await getEventById(db, event.id))!;
+    await captureAnalysisSnapshot(db, closed.id, "close", now);
+    return closed;
   }
   return event;
 }

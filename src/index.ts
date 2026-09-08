@@ -34,6 +34,7 @@ import {
   updateParams,
   loadBoard,
   eventScoreSetup,
+  captureCurrentIntervalSnapshot,
 } from "./lib/store";
 import { applyAdminUndo, captureAdminUndo } from "./lib/undo";
 import { adminUndoAllowed } from "./lib/adminUndo";
@@ -724,5 +725,8 @@ export default {
         500,
       );
     }
+  },
+  async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+    ctx.waitUntil(captureCurrentIntervalSnapshot(env.DB));
   },
 };

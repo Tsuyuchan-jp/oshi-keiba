@@ -18,6 +18,7 @@ const EXPECTED_MIGRATIONS = [
   "0013_member_soft_delete.sql",
   "0014_admin_identity.sql",
   "0015_r2_pending_deletions.sql",
+  "0016_analysis_snapshots.sql",
 ];
 
 async function tableNames(db: D1Database): Promise<string[]> {
@@ -28,12 +29,14 @@ async function tableNames(db: D1Database): Promise<string[]> {
 }
 
 describe("D1マイグレーション", () => {
-  test("空のD1へ全15本を適用すると本番用スキーマと初期データが揃う", async () => {
+  test("空のD1へ全16本を適用すると本番用スキーマと初期データが揃う", async () => {
     expect(env.TEST_MIGRATIONS.map((migration) => migration.name)).toEqual(EXPECTED_MIGRATIONS);
     await applyD1Migrations(env.MIGRATION_DB, env.TEST_MIGRATIONS);
 
     expect(await tableNames(env.MIGRATION_DB)).toEqual(expect.arrayContaining([
       "admin_undo",
+      "analysis_snapshot_odds",
+      "analysis_snapshots",
       "bets",
       "events",
       "grants",

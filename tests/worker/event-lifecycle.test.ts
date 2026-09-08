@@ -28,6 +28,38 @@ async function eventState(eventId: string): Promise<EventState> {
 }
 
 describe("開催ライフサイクルのHTTP結合", () => {
+  test("分析ログは投票開始・投票ごとに板を保存し、管理者だけがCSV一式を出力できる", async () => {
+    const { cookie: adminCookie } = await loginAdmin();
+    const { eventId, horseIds } = await seedReadyRace();
+    expect(redirectMessage(await openRace(adminCookie)).error).toBe(false);
+
+    const opened = await env.DB.prepare(
+      "SELECT cause, tv, w FROM analysis_snapshots WHERE event_id = ? ORDER BY id",
+    ).bind(eventId).all<{ cause: string; tv: number; w: number }>();
+    expect(opened.results).toHaveLength(1);
+    expect(opened.results[0]).toMatchObject({ cause: "voting_open", tv: 0 });
+
+    const { cookie: memberCookie } = await registerMember("分析ログ会員");
+    expect(redirectMessage(await joinRace(memberCookie)).error).toBe(false);
+    expect(redirectMessage(await postForm("/bet", {
+      kind: "win", h1: horseIds[0]!, h2: "", h3: "", amount: "100", operation_id: crypto.randomUUID(),
+    }, memberCookie)).error).toBe(false);
+
+    const snapshots = await env.DB.prepare(
+      "SELECT cause, bettor_count, active_bet_count FROM analysis_snapshots WHERE event_id = ? ORDER BY id",
+    ).bind(eventId).all<{ cause: string; bettor_count: number; active_bet_count: number }>();
+    expect(snapshots.results).toHaveLength(2);
+    expect(snapshots.results[1]).toEqual({ cause: "bet", bettor_count: 1, active_bet_count: 1 });
+    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM analysis_snapshot_odds").first<{ n: number }>())?.n).toBeGreaterThan(0);
+
+    const page = await workerFetch(`/admin/analysis?event=${eventId}`, {}, adminCookie);
+    expect(page.status).toBe(200);
+    expect(await page.text()).toContain("CSV一式をダウンロード");
+    const exportRes = await workerFetch(`/admin/analysis/export?event=${eventId}`, {}, adminCookie);
+    expect(exportRes.headers.get("Content-Type")).toBe("application/zip");
+    expect(new Uint8Array(await exportRes.arrayBuffer()).slice(0, 2)).toEqual(new Uint8Array([0x50, 0x4b]));
+  });
+
   test("出走登録から全5賭式の購入・締切・着順・公開・次開催まで進める", async () => {
     const { cookie: adminCookie } = await loginAdmin();
     const { eventId } = await seedReadyRace({ horseCount: 0 });

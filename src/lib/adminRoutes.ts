@@ -4,6 +4,7 @@ import {
   adminHorsesPage,
   adminLedgerPage,
   adminLoginBody,
+  adminAnalysisPage,
   adminOddsPage,
   adminProgressPage,
   adminReauthField,
@@ -17,12 +18,17 @@ import { adminUmabashiraPage } from "./adminUmabashira";
 import { loadStrategicSkillsBundle } from "./adminStrategicApi";
 import {
   getUser,
+  getEventById,
   eventScoreSetup,
   listAllBets,
   listEventPayouts,
   listMembers,
   loadBoard,
   numberByHorseId,
+  listAnalysisEvents,
+  listAnalysisSnapshots,
+  analysisExportFilename,
+  analysisExportZip,
 } from "./store";
 import { getAdminUndoMeta } from "./undo";
 import { adminUndoAllowed } from "./adminUndo";
@@ -108,6 +114,23 @@ export async function tryAdminGet(
     return new Response(obj.body, { headers: { "Content-Type": obj.httpMetadata?.contentType || "image/jpeg", "Cache-Control": "private, max-age=300" } });
   }
 
+  if (path === "/admin/analysis/export") {
+    const gate = await requireAdmin(request, env);
+    if (gate instanceof Response) return gate;
+    const board = await loadBoard(env.DB);
+    const requestedId = url.searchParams.get("event");
+    const event = requestedId ? await getEventById(env.DB, requestedId) : board.event;
+    if (!event) return new Response("開催が見つかりません", { status: 404 });
+    const body = await analysisExportZip(env.DB, event.id);
+    return new Response(body, {
+      headers: {
+        "Content-Type": "application/zip",
+        "Content-Disposition": `attachment; filename="${analysisExportFilename(event)}"`,
+        "Cache-Control": "private, no-store",
+      },
+    });
+  }
+
   const pages = new Set([
     "/admin",
     "/admin/register",
@@ -115,6 +138,7 @@ export async function tryAdminGet(
     "/admin/ledger",
     "/admin/odds",
     "/admin/settings",
+    "/admin/analysis",
     "/admin/umabashira",
     "/admin/gougai",
   ]);
@@ -126,6 +150,23 @@ export async function tryAdminGet(
   const m = msg(url);
   const allowDemo = env.ALLOW_DEMO_RESET === "1";
   const allowUndo = adminUndoAllowed(env);
+
+  if (path === "/admin/analysis") {
+    const events = await listAnalysisEvents(env.DB);
+    const requestedId = url.searchParams.get("event");
+    const event = requestedId ? await getEventById(env.DB, requestedId) : board.event;
+    if (!event) return new Response("開催が見つかりません", { status: 404 });
+    const snapshots = await listAnalysisSnapshots(env.DB, event.id);
+    return html(
+      layoutAdmin({
+        title: "分析ログ",
+        tab: "analysis",
+        user: gate.user,
+        eventStatus: event.status,
+        body: adminAnalysisPage({ event, events, snapshots }),
+      }),
+    );
+  }
 
   if (path === "/admin") {
     const members = await listMembers(env.DB);

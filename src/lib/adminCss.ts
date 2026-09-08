@@ -114,6 +114,14 @@ button, select, input, textarea { font: inherit; }
 .page-hero-meta { color: var(--admin-muted); font-size: .85rem; }
 .page-hero-actions { margin-left: auto; }
 .page-hero-actions .hero-util { margin-left: 0; }
+.analysis-picker { display: flex; flex-wrap: wrap; align-items: end; gap: .55rem .7rem; }
+.analysis-picker label { display: grid; gap: .25rem; color: var(--admin-muted); font-size: .78rem; }
+.analysis-picker select { min-width: min(27rem, 72vw); max-width: 100%; }
+.analysis-kpis { margin-top: .85rem; }
+.analysis-kpis .kpi { min-width: 10rem; }
+.analysis-time, .analysis-param { font-size: .9rem !important; }
+.analysis-note { margin: .8rem 0 0; }
+.analysis-table td:first-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .work h2, .card h2 { font-size: 1.02rem; margin-bottom: .55rem; }
 .kpis {
   display: flex;

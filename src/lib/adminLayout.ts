@@ -12,6 +12,7 @@ export type AdminTab =
   | "ledger"
   | "odds"
   | "settings"
+  | "analysis"
   | "umabashira"
   | "gougai"
   | "login";
@@ -23,6 +24,7 @@ const TABS: { id: Exclude<AdminTab, "login">; href: string; label: string }[] = 
   { id: "ledger", href: "/admin/ledger", label: "台帳" },
   { id: "odds", href: "/admin/odds", label: "オッズ" },
   { id: "settings", href: "/admin/settings", label: "開催設定" },
+  { id: "analysis", href: "/admin/analysis", label: "分析ログ" },
   { id: "umabashira", href: "/admin/umabashira", label: "ウマ柱" },
   { id: "gougai", href: "/admin/gougai", label: "号外" },
 ];
@@ -59,6 +61,8 @@ export function layoutAdmin(opts: {
           ? "ledger-page"
           : opts.tab === "register"
             ? "register-page"
+            : opts.tab === "analysis"
+              ? "analysis-page"
             : opts.tab === "umabashira"
               ? "umabashira-page"
               : opts.tab === "gougai"

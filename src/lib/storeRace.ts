@@ -34,6 +34,7 @@ import {
 } from "./storeTypes";
 import { parseEnabledKinds } from "./bets";
 import { eventScoreSetup } from "./storeEvent";
+import { captureAnalysisSnapshot } from "./analysisLog";
 
 /** 投票開始前に満たすべき、画面と API で共通の条件。 */
 export function votingStartProblems(
@@ -92,6 +93,7 @@ export async function openVoting(
     )
     .bind(now, closesAtMs, event.id)
     .run();
+  await captureAnalysisSnapshot(db, event.id, "voting_open", now);
 }
 
 export async function forceClose(db: D1Database, event: EventRow): Promise<void> {
@@ -104,6 +106,7 @@ export async function forceClose(db: D1Database, event: EventRow): Promise<void>
     )
     .bind(now, event.id)
     .run();
+  await captureAnalysisSnapshot(db, event.id, "close", now);
 }
 
 export async function placeBet(
@@ -209,6 +212,7 @@ export async function placeBet(
   const completed = await findMemberOperation(db, operationId);
   if (!completed) throw new Error("残高が足りません");
   assertOperationMatches(completed, event.id, user.id, "bet", requestHash);
+  await captureAnalysisSnapshot(db, event.id, "bet", now);
   return { selection_key: sel.selection_key };
 }
 
@@ -265,6 +269,7 @@ export async function redoMyBets(
   const completed = await findMemberOperation(db, operationId);
   if (!completed) throw new Error("取り消す馬券がありません");
   assertOperationMatches(completed, event.id, user.id, "redo", requestHash);
+  await captureAnalysisSnapshot(db, event.id, "redo", now);
   return completed.result_amount;
 }
 
@@ -341,6 +346,7 @@ export async function scratchHorse(
     );
   }
   await db.batch(stmts);
+  await captureAnalysisSnapshot(db, event.id, "scratch");
   return bets.reduce((a, b) => a + b.amount, 0);
 }
 

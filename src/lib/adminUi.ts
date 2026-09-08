@@ -41,6 +41,7 @@ import {
   type BetKind,
 } from "./bets";
 import { parimutuelOdds } from "./odds";
+import { analysisCauseLabel, type AnalysisEventOption, type AnalysisSnapshotRow } from "./analysisLog";
 import { votingStartProblems } from "./storeRace";
 import {
   DEFAULT_SCORE_REQ,
@@ -1259,6 +1260,54 @@ export function adminOddsPage(board: Board): string {
         if (!inside) formulaDlg.close();
       });
     </script>`;
+}
+
+/** 開催後にAIへ渡すための、個人情報を含まない板の記録一覧。 */
+export function adminAnalysisPage(opts: {
+  event: EventRow;
+  events: AnalysisEventOption[];
+  snapshots: AnalysisSnapshotRow[];
+}): string {
+  const { event, events, snapshots } = opts;
+  const latest = snapshots[0] ?? null;
+  const selected = events
+    .map((item) => `<option value="${escapeHtml(item.id)}"${item.id === event.id ? " selected" : ""}>${escapeHtml(item.title || "（無題の開催）")} · ${escapeHtml(statusLabel(item.status))}</option>`)
+    .join("");
+  const exportHref = `/admin/analysis/export?event=${encodeURIComponent(event.id)}`;
+  const rows = snapshots.slice(0, 40).map((snapshot) => `<tr>
+      <td>${escapeHtml(toJstInput(snapshot.captured_at).replace("T", " "))}</td>
+      <td>${escapeHtml(analysisCauseLabel(snapshot.cause))}</td>
+      <td class="num">${formatPt(snapshot.tv)}</td>
+      <td class="num">${snapshot.w.toFixed(3)}</td>
+      <td class="num">${snapshot.bettor_count}</td>
+      <td class="num">${formatPt(snapshot.win_real_total)}</td>
+      <td class="num">${formatPt(snapshot.exotic_real_total)}</td>
+    </tr>`).join("");
+  return `${adminPageHero("分析ログ", event.status, {
+      meta: `<span class="page-hero-meta">投票中ボードの集計記録</span>`,
+      actions: snapshots.length
+        ? `<a class="admin-action admin-action--secondary" href="${escapeHtml(exportHref)}">CSV一式をダウンロード</a>`
+        : "",
+    })}
+    <section class="work analysis-summary">
+      <div class="work-head"><h2>対象の開催</h2></div>
+      <form method="get" action="/admin/analysis" class="analysis-picker">
+        <label>開催
+          <select name="event">${selected}</select>
+        </label>
+        <button class="admin-action admin-action--secondary" type="submit">表示</button>
+      </form>
+      <div class="kpis analysis-kpis">
+        <div class="kpi"><span class="k">記録件数</span><span class="v">${snapshots.length}</span></div>
+        <div class="kpi"><span class="k">最終記録</span><span class="v analysis-time">${latest ? escapeHtml(toJstInput(latest.captured_at).replace("T", " ")) : "—"}</span></div>
+        <div class="kpi"><span class="k">現在の設定 S / E / D</span><span class="v analysis-param">${formatPt(event.seed_pool_s)} / ${formatPt(event.pull_e)} / ${Math.round(event.takeout_d * 100)}%</span></div>
+      </div>
+      <p class="note analysis-note">投票開始時、投票・やり直し・出走取消時、5分ごと、締切時に自動記録します。CSVには個別の投票者名・残高を含めません。</p>
+    </section>
+    <section class="work analysis-list">
+      <div class="work-head"><h2>直近の記録</h2><span class="odds-meta">${snapshots.length > 40 ? `最新40件 / 全${snapshots.length}件` : `全${snapshots.length}件`}</span></div>
+      ${snapshots.length ? `<div class="table-scroll"><table class="plain analysis-table"><thead><tr><th>時刻（JST）</th><th>記録理由</th><th class="num">TV</th><th class="num">w</th><th class="num">投票者</th><th class="num">単勝実票</th><th class="num">連勝実票</th></tr></thead><tbody>${rows}</tbody></table></div>` : `<p class="note">まだ記録はありません。投票開始後に自動で記録されます。</p>`}
+    </section>`;
 }
 
 function oddsKindPanel(

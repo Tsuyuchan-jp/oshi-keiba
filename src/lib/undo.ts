@@ -16,6 +16,8 @@ type Snapshot = {
   bets: Record<string, unknown>[];
   payouts: Record<string, unknown>[];
   member_operations: Record<string, unknown>[];
+  analysis_snapshots: Record<string, unknown>[];
+  analysis_snapshot_odds: Record<string, unknown>[];
 };
 
 async function allRows(
@@ -27,7 +29,7 @@ async function allRows(
 }
 
 async function dumpSnapshot(db: D1Database): Promise<Snapshot> {
-  const [events, horses, users, grants, bets, payouts, member_operations] = await Promise.all([
+  const [events, horses, users, grants, bets, payouts, member_operations, analysis_snapshots, analysis_snapshot_odds] = await Promise.all([
     allRows(db, "SELECT * FROM events"),
     allRows(db, "SELECT * FROM horses"),
     allRows(db, "SELECT * FROM users"),
@@ -35,8 +37,10 @@ async function dumpSnapshot(db: D1Database): Promise<Snapshot> {
     allRows(db, "SELECT * FROM bets"),
     allRows(db, "SELECT * FROM payouts"),
     allRows(db, "SELECT * FROM member_operations"),
+    allRows(db, "SELECT * FROM analysis_snapshots"),
+    allRows(db, "SELECT * FROM analysis_snapshot_odds"),
   ]);
-  return { events, horses, users, grants, bets, payouts, member_operations };
+  return { events, horses, users, grants, bets, payouts, member_operations, analysis_snapshots, analysis_snapshot_odds };
 }
 
 function v(row: Record<string, unknown>, key: string): unknown {
@@ -198,6 +202,34 @@ function insertMemberOperations(db: D1Database, rows: Record<string, unknown>[])
   );
 }
 
+function insertAnalysisSnapshots(db: D1Database, rows: Record<string, unknown>[]) {
+  return rows.map((r) => db.prepare(
+    `INSERT INTO analysis_snapshots (
+      id, event_id, captured_at, cause, seed_pool_s, pull_e, takeout_d, w_time_floor, w_time_exp, lambda,
+      w_time, w_volume, w, win_real_total, exotic_real_total, tv,
+      joined_count, bettor_count, active_bet_count, live_horse_count
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).bind(
+    v(r, "id"), v(r, "event_id"), v(r, "captured_at"), v(r, "cause"),
+    v(r, "seed_pool_s"), v(r, "pull_e"), v(r, "takeout_d"), v(r, "w_time_floor"), v(r, "w_time_exp"), v(r, "lambda"),
+    v(r, "w_time"), v(r, "w_volume"), v(r, "w"), v(r, "win_real_total"), v(r, "exotic_real_total"), v(r, "tv"),
+    v(r, "joined_count"), v(r, "bettor_count"), v(r, "active_bet_count"), v(r, "live_horse_count"),
+  ));
+}
+
+function insertAnalysisOdds(db: D1Database, rows: Record<string, unknown>[]) {
+  return rows.map((r) => db.prepare(
+    `INSERT INTO analysis_snapshot_odds (
+      snapshot_id, kind, selection_key, selection_label, horse_1, horse_2, horse_3,
+      real, shown_odds, seed, imputed, display, is_scratched
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).bind(
+    v(r, "snapshot_id"), v(r, "kind"), v(r, "selection_key"), v(r, "selection_label"),
+    v(r, "horse_1"), v(r, "horse_2"), v(r, "horse_3"), v(r, "real"), v(r, "shown_odds"),
+    v(r, "seed"), v(r, "imputed"), v(r, "display"), v(r, "is_scratched"),
+  ));
+}
+
 /** 検証を通った管理操作の直前に呼ぶ。失敗した操作では呼ばないこと */
 export async function captureAdminUndo(
   db: D1Database,
@@ -259,6 +291,8 @@ export async function applyAdminUndo(db: D1Database): Promise<string> {
   }
 
   const stmts = [
+    db.prepare("DELETE FROM analysis_snapshot_odds"),
+    db.prepare("DELETE FROM analysis_snapshots"),
     db.prepare("DELETE FROM member_operations"),
     db.prepare("DELETE FROM payouts"),
     db.prepare("DELETE FROM bets"),
@@ -273,6 +307,8 @@ export async function applyAdminUndo(db: D1Database): Promise<string> {
     ...insertMemberOperations(db, snap.member_operations ?? []),
     ...insertBets(db, snap.bets),
     ...insertPayouts(db, snap.payouts),
+    ...insertAnalysisSnapshots(db, snap.analysis_snapshots ?? []),
+    ...insertAnalysisOdds(db, snap.analysis_snapshot_odds ?? []),
   ];
   for (let i = 0; i < stmts.length; i += 40) {
     await db.batch(stmts.slice(i, i + 40));
