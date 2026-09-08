@@ -29,7 +29,7 @@
 
 ### A-01: 表示名のみでログインする簡易認証
 
-- 現状: `docs/ai-brief.md` 等で、個人パスワードを持たない簡易運用として扱われている。
+- 現状: 当時の AI 向けブリーフ等で、個人パスワードを持たない簡易運用として扱われていた。
 - リスク: 他人の表示名を選べる利用者は、その人として投票できる。
 - 判断: 現時点では意図された運用設計として扱う。ただし、参加者の範囲が広がる場合は個別認証への移行を再検討する。
 
@@ -107,12 +107,12 @@
 ### P1-11: 本番リリース・復旧手順を実装と一致させる
 
 - 完了日: 2026-09-02
-- 実施内容: `docs/release.md` にデプロイ前・公開直後・障害時の手順を追加し、既存の案内を同ファイルへ統一した。`wrangler.jsonc` で `ADMIN_PASSWORD`・`MEMBER_PASSWORD`・`SESSION_SECRET` を必須 Secrets として宣言し、実際の deploy 時に不足を検出する構成にした。
+- 実施内容: `docs/operations/release.md` にデプロイ前・公開直後・障害時の手順を追加し、既存の案内を同ファイルへ統一した。`wrangler.jsonc` で `ADMIN_PASSWORD`・`MEMBER_PASSWORD`・`SESSION_SECRET` を必須 Secrets として宣言し、実際の deploy 時に不足を検出する構成にした。
 - 利用者の承認: あり（手順書、必須 Secrets の検査、型生成を承認）
 - コミット: `f2266d6`、`ae5d839`、`5af9f7d`
 - 検証結果: `npx wrangler deploy --dry-run`、`npx tsc --noEmit`、`npm test`（146件）成功。
 - 本番確認: 必須 Secrets 名3項目、D1 Time Travel、R2 バケット、Worker 版履歴を確認済み。確認用APIトークンは確認後に利用者が削除済み。
-- 残る注意点: 本番D1には `0010`〜`0014` の未適用 migration がある。次回リリースでは [release.md](release.md) に従い、Worker公開前に適用する。R2の不要画像はP2-13で扱う。
+- 残る注意点: 本番D1には `0010`〜`0014` の未適用 migration がある。次回リリースでは [release.md](../operations/release.md) に従い、Worker公開前に適用する。R2の不要画像はP2-13で扱う。
 
 
 ### P1-10: 戦略スキル更新と再計算を一貫して確定する

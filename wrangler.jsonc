@@ -47,7 +47,7 @@
       // 1. npx wrangler r2 bucket create oshi-keiba-shots（初回だけ）
       // 2. npx wrangler d1 migrations apply oshi-keiba --remote
       // 3. npm run deploy
-      // 詳細は docs/ocr.md の「デプロイ（忘れない）」
+      // 詳細は docs/specifications/ocr.md の「デプロイ（忘れない）」
       "bucket_name": "oshi-keiba-shots"
     }
   ]

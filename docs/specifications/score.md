@@ -2,9 +2,9 @@
 
 Seed の入力。メンバー画面には出さない。管理画面の項目名が Strength のままのことがある。
 
-ゴールは検定可能な真の勝率ではない。Neko長明さんが置いた強さの論理を、あとから直せる数字にする。作者独自のバ身混ぜは使わない（[rejected.md](rejected.md)、git 旧 `docs/04`〜`07`）。
+ゴールは検定可能な真の勝率ではない。Neko長明さんが置いた強さの論理を、あとから直せる数字にする。作者独自のバ身混ぜは使わない（[rejected.md](../reference/rejected.md)、git 旧 `docs/04`〜`07`）。
 
-OCR で読む材料は [ocr.md](ocr.md)。`Seed_i` への掛け方は [odds.md](odds.md)。式の Neko 確認は [next.md](next.md)。
+OCR で読む材料は [ocr.md](ocr.md)。`Seed_i` への掛け方は [odds.md](odds.md)。式の Neko 確認は [next.md](../next.md)。
 
 **実装はクローズ**（自動算出 → 評価点 → Seed、材料不足時は直置き）。コードは `src/lib/score.ts` の `computeScore`。式は作者側の読みで、**Neko長明さんの確定ではない**。確定したらこのファイルを書き直す。
 

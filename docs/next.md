@@ -13,47 +13,47 @@
 - 投票開始と部屋立ての前後
 - 連勝への Seed（参考のみ。確定は触らない）
 - メンバーシップ本認証、景品
-- 管理者ポイントの管理について相談。場の総スペ数を把握するため、投票したメンバーが失ったポイントと控除率 D で引かれたスペを管理者ポイントとして管理したい — [odds.md](odds.md)
+- 管理者ポイントの管理について相談。場の総スペ数を把握するため、投票したメンバーが失ったポイントと控除率 D で引かれたスペを管理者ポイントとして管理したい — [odds.md](specifications/odds.md)
 
 ---
 
 ## アーカイブ
 
-- 分析ログを実装クローズ（投票復旧・Undoとのログ連動を含め実機確認OK）。投票開始・投票・やり直し・取消・5分ごと・締切で板を保存し、管理の「分析ログ」からCSV一式（snapshots / odds / horses）をZIP出力。`formula_version=odds-v2` / `schema_version=analysis-log-v1` を保存し、ログ保存失敗は投票を妨げず管理画面へ件数を表示する — [analysis-log.md](analysis-log.md)
+- 分析ログを実装クローズ（投票復旧・Undoとのログ連動を含め実機確認OK）。投票開始・投票・やり直し・取消・5分ごと・締切で板を保存し、管理の「分析ログ」からCSV一式（snapshots / odds / horses）をZIP出力。`formula_version=odds-v2` / `schema_version=analysis-log-v1` を保存し、ログ保存失敗は投票を妨げず管理画面へ件数を表示する — [analysis-log.md](specifications/analysis-log.md)
 
-- パドックのスマホ表示を画面高へ適応（最大18頭を横幅維持で収める）。詳細カードは閉じた状態からタップ／上スワイプで開き、開いた状態から下スワイプで閉じる。実機確認OK — [playbook.md](playbook.md)
+- パドックのスマホ表示を画面高へ適応（最大18頭を横幅維持で収める）。詳細カードは閉じた状態からタップ／上スワイプで開き、開いた状態から下スワイプで閉じる。実機確認OK — [playbook.md](operations/playbook.md)
 
-- テスト追従をクローズ（ウマ柱・号外の PNG / WebP 書き出し、号外の保存・画像編集・本文編集、OCR 配列 JSON、モバイルのウマ柱表示。型検査・Node 179件・Worker 99件・E2E 8件、計286件成功）— [testing.md](testing.md)
-- 号外タブを実装クローズ（プレビュー・編集・PNG/WebP、右列画像のモーダル選択、メインビュー画像の切り抜き、未登録アイコン。実機確認OK）— [gougai.md](gougai.md)
-- ウマ柱 PNG で左列「印／オッズ」の「オッズ」だけ字折れするのを修正（`.stub-split` に nowrap。実機確認OK）— [umabashira.md](umabashira.md)
-- 号外の管理タブを追加（左プレビュー・右編集。誌名・縦書き・右列画像・本文。PNG/WebP。1着未入力はプレースホルダ。chara_stand はローカル stand/）— [gougai.md](gougai.md)
-- ウマ柱第1段をクローズ（ローカル実機確認OK。プレビュー・PNG/WebP。枠色は見た目専用。ノイズは不透明度 0.1。評価点・SP点数の色箱は PNG を正）— [umabashira.md](umabashira.md)
-- ウマ柱 PNG の開催名折り返し・右列の狭まり・外枠切れを修正（実機確認OK。ウマ番・脚質の字下げは 0.06em）— [umabashira.md](umabashira.md)
-- ウマ柱を出走登録中（setup）でも参考オッズを出す（実機確認OK。現在の紙面を正とする）— [umabashira.md](umabashira.md)
+- テスト追従をクローズ（ウマ柱・号外の PNG / WebP 書き出し、号外の保存・画像編集・本文編集、OCR 配列 JSON、モバイルのウマ柱表示。型検査・Node 179件・Worker 99件・E2E 8件、計286件成功）— [testing.md](operations/testing.md)
+- 号外タブを実装クローズ（プレビュー・編集・PNG/WebP、右列画像のモーダル選択、メインビュー画像の切り抜き、未登録アイコン。実機確認OK）— [gougai.md](features/gougai.md)
+- ウマ柱 PNG で左列「印／オッズ」の「オッズ」だけ字折れするのを修正（`.stub-split` に nowrap。実機確認OK）— [umabashira.md](features/umabashira.md)
+- 号外の管理タブを追加（左プレビュー・右編集。誌名・縦書き・右列画像・本文。PNG/WebP。1着未入力はプレースホルダ。chara_stand はローカル stand/）— [gougai.md](features/gougai.md)
+- ウマ柱第1段をクローズ（ローカル実機確認OK。プレビュー・PNG/WebP。枠色は見た目専用。ノイズは不透明度 0.1。評価点・SP点数の色箱は PNG を正）— [umabashira.md](features/umabashira.md)
+- ウマ柱 PNG の開催名折り返し・右列の狭まり・外枠切れを修正（実機確認OK。ウマ番・脚質の字下げは 0.06em）— [umabashira.md](features/umabashira.md)
+- ウマ柱を出走登録中（setup）でも参考オッズを出す（実機確認OK。現在の紙面を正とする）— [umabashira.md](features/umabashira.md)
 - ローカル進行タブの Undo 復旧列を `npm run dev` の vars で再表示（実機確認OK。`secrets.required` が `.dev.vars` のフラグを落としていた）
-- OCRが配列JSONを返したときの空確認画面を修正（実機確認OK。登録時の `r2_pending_deletions` 未適用はローカル migration で解消）— [ocr.md](ocr.md)
-- ウマ柱タブを一旦の正とした（実機確認OK。見た目の正は本番 `/admin/umabashira`。モック上段は控え）— [umabashira.md](umabashira.md)
-- ウマ柱の管理タブ（モック上段移植・差し込み・プレビュー・PNG/WebP。ナビは開催設定の下）— [umabashira.md](umabashira.md)
-- ウマ柱実装前の未決を閉じた（左列残す・PNG+WebP・タブ「ウマ柱」`/admin/umabashira`）— [umabashira.md](umabashira.md)
-- ウマ柱の見た目をモック上段で正とする（案B寄せ。案A列頭印は見送り）— [umabashira.md](umabashira.md)
-- ウマ柱のスキルは名前を出さずスキルパワー（有効・金の枚数）。レイアウト仮決めとモック2案 — [umabashira.md](umabashira.md)・[モック](mocks/umabashira/index.html)
-- ウマ柱の掲載方針（コミュニティ公開画像。評価点と印を出す。投票機能はファンツールに出さない）— [umabashira.md](umabashira.md)
-- P1-08 管理操作の誤操作防止と開始条件を強化（開始前確認モーダル、サーバー側の開始条件、スタミナ勝負の明示選択、メンバー利用停止の再認証。実機確認OK）— [playbook.md](playbook.md)
+- OCRが配列JSONを返したときの空確認画面を修正（実機確認OK。登録時の `r2_pending_deletions` 未適用はローカル migration で解消）— [ocr.md](specifications/ocr.md)
+- ウマ柱タブを一旦の正とした（実機確認OK。見た目の正は本番 `/admin/umabashira`。モック上段は控え）— [umabashira.md](features/umabashira.md)
+- ウマ柱の管理タブ（モック上段移植・差し込み・プレビュー・PNG/WebP。ナビは開催設定の下）— [umabashira.md](features/umabashira.md)
+- ウマ柱実装前の未決を閉じた（左列残す・PNG+WebP・タブ「ウマ柱」`/admin/umabashira`）— [umabashira.md](features/umabashira.md)
+- ウマ柱の見た目をモック上段で正とする（案B寄せ。案A列頭印は見送り）— [umabashira.md](features/umabashira.md)
+- ウマ柱のスキルは名前を出さずスキルパワー（有効・金の枚数）。レイアウト仮決めとモック2案 — [umabashira.md](features/umabashira.md)・[モック](mocks/umabashira/index.html)
+- ウマ柱の掲載方針（コミュニティ公開画像。評価点と印を出す。投票機能はファンツールに出さない）— [umabashira.md](features/umabashira.md)
+- P1-08 管理操作の誤操作防止と開始条件を強化（開始前確認モーダル、サーバー側の開始条件、スタミナ勝負の明示選択、メンバー利用停止の再認証。実機確認OK）— [playbook.md](operations/playbook.md)
 - 出走登録タブにウマ番編集を追加（ヒーロー右の一括編集モーダル。1〜出走頭数の重複なしで保存。枠番は扱わない）
-- パドックページを追加（脚質別の出走表示・詳細カード・育成スクリーンショット・投票候補の窓口引き継ぎ。窓口の金額操作は `+100 / +500 / +1,000 / 全額を入力 / リセット`、不足項目の案内、スマホ向け44pxタップ領域へ更新。ユーザー実機確認OK）— [playbook.md](playbook.md)
-- 出走登録の育成ウマ娘・衣装ID保存、`0010` デフォルメ画像の安全な共通解決、DMM版 `master.mdb` 由来の衣装カタログ／総合スキル辞書更新 — [ocr.md](ocr.md)
-- 相対評価点: U-toolsコース別キャラスペック（固有・進化スキルの有効バ身数、中央値R、倍率）を取得・評価点へ反映。開催設定・出走内訳・再計算一覧を表示。実機確認OK — [score.md](score.md)
+- パドックページを追加（脚質別の出走表示・詳細カード・育成スクリーンショット・投票候補の窓口引き継ぎ。窓口の金額操作は `+100 / +500 / +1,000 / 全額を入力 / リセット`、不足項目の案内、スマホ向け44pxタップ領域へ更新。ユーザー実機確認OK）— [playbook.md](operations/playbook.md)
+- 出走登録の育成ウマ娘・衣装ID保存、`0010` デフォルメ画像の安全な共通解決、DMM版 `master.mdb` 由来の衣装カタログ／総合スキル辞書更新 — [ocr.md](specifications/ocr.md)
+- 相対評価点: U-toolsコース別キャラスペック（固有・進化スキルの有効バ身数、中央値R、倍率）を取得・評価点へ反映。開催設定・出走内訳・再計算一覧を表示。実機確認OK — [score.md](specifications/score.md)
 - 型チェックの整備: `npx tsc --noEmit` が通るよう、TypeScript 設定・既存の重複 import・テスト用 Node 型を整理（`npm test` 109件も成功）
 - 脚質毎のスタミナ目標値入力機能（実機確認OK・クローズ）
-- 相対評価点: スキル点の重み `n` を試算・決定し、開催設定から調整できるようにする — [score.md](score.md)
+- 相対評価点: スキル点の重み `n` を試算・決定し、開催設定から調整できるようにする — [score.md](specifications/score.md)
 - 再計算確認モーダルの初期フォーカスを見出しへ移動し、管理画面のキーボード用フォーカス表示を統一
 - 出走の再計算確認を通常モーダルへ統一（背景暗転・外側クリック・Escape時の復帰を他の管理モーダルと揃える）
 - 管理画面の通常モーダルを共通化（中央配置・寸法・背景・下部操作を統一。スクショ全画面とメンバー画面は対象外）
 - 管理画面の非進行タブのヒーローと操作ボタンを共通化（出走登録・出走・台帳・オッズ・開催設定。進行タブは対象外）
 - 既存 CSS を整理しデザイントークン化（管理画面とメンバー画面の色を共通変数へ集約。本番CSSのみ、モックは対象外）
-- OCR / 評価点 UI 調整クローズ（読取確認5段・OCR読取時の直置き pill・自動算出ラベル・編集画面 pill 統一・出走登録タブ細部）— [ocr.md](ocr.md)・[score.md](score.md)
-- OCR: 戦略例外スキル（D1 正本・グローバル見送り・読取確認5段・ヒーローユーティリティ帯・モーダル管理・JSON export・S0 加算・U-tools 二重除外）— [score.md](score.md)
-- OCR: カタログ同名 multiple・ファジー遺産寄せ（継承／継承進化 id）・千錬＋編集距離≤1。skillBase はリスト外 inherit を数えない — [ocr.md](ocr.md)
+- OCR / 評価点 UI 調整クローズ（読取確認5段・OCR読取時の直置き pill・自動算出ラベル・編集画面 pill 統一・出走登録タブ細部）— [ocr.md](specifications/ocr.md)・[score.md](specifications/score.md)
+- OCR: 戦略例外スキル（D1 正本・グローバル見送り・読取確認5段・ヒーローユーティリティ帯・モーダル管理・JSON export・S0 加算・U-tools 二重除外）— [score.md](specifications/score.md)
+- OCR: カタログ同名 multiple・ファジー遺産寄せ（継承／継承進化 id）・千錬＋編集距離≤1。skillBase はリスト外 inherit を数えない — [ocr.md](specifications/ocr.md)
 - store 分割: Types / Read / Board / Members / Horses / Event / Race + `store.ts` barrel。公開 API 不変。`storeFlow` 79 パス — パス2クローズ
 - store 結合テスト: メモリ SQLite（D1 互換）で投票→締切→着順→公開・やりなおし・残高不変。`npm test` に `storeFlow` — 分割前の安全網
 - 整理パス2: setup 電光化・メンバーCSS共通化・旧 layout 退役・`memberRoutes` で index 分割（ユーザー実機 OK〜分割実装）
@@ -94,9 +94,9 @@
 - 入場デザイン仮置き・採用（静かな窓口トーン。⋯は枠内、PCは右下にも使い方／管理者。ログアウトなし）— [gate](mocks/gate/index.html)
 - 窓口デザイン仮置き（案A・マークカード・所持スペ帯・買うは下固定。ナビ名は窓口、見出しは発売所。⋯は場内・入場と揃える）— [quiet.html](mocks/bet-window/quiet.html)
 - 場内デザイン仮置き（アプリシェル＋場の背景イラスト＋LED電光。列は Grid。脚質列あり。本番未適用）— [layout-venue.html](mocks/venue-board/layout-venue.html)
-- OCR 受け入れ画像に WebP を追加（PNG / JPEG と共通の MIME 正規化・実機確認済み）— [ocr.md](ocr.md)
-- OCR・評価点まわり実装クローズ（細かい修正は後）。開催 `score_setup`・出走 `score_input`・ファジー ID 化・脚質 UI・`computeScore`→Strength→Seed・直置き逃げ・実機確認済み — [score.md](score.md)・[ocr.md](ocr.md)
-- 出走のステ・スキル id・適性・脚質を `computeScore` に渡し、管理画面の評価点へ（直置き併用）。OCR 脚質 UI（S1つ初期選択）とファジー ID 化も含む — [score.md](score.md)・[ocr.md](ocr.md)
-- U-tools 有効スキル id を開催保存時にスナップショット（コース×4脚質、ranked 全件、照合は id）— [score.md](score.md)
-- OCR（本戦のみ）クローズ — 1頭ずつ読取・名前流し・読取画像の R2 保存。一括枠なし。細かい調整と表示 UI は後 — [ocr.md](ocr.md)
+- OCR 受け入れ画像に WebP を追加（PNG / JPEG と共通の MIME 正規化・実機確認済み）— [ocr.md](specifications/ocr.md)
+- OCR・評価点まわり実装クローズ（細かい修正は後）。開催 `score_setup`・出走 `score_input`・ファジー ID 化・脚質 UI・`computeScore`→Strength→Seed・直置き逃げ・実機確認済み — [score.md](specifications/score.md)・[ocr.md](specifications/ocr.md)
+- 出走のステ・スキル id・適性・脚質を `computeScore` に渡し、管理画面の評価点へ（直置き併用）。OCR 脚質 UI（S1つ初期選択）とファジー ID 化も含む — [score.md](specifications/score.md)・[ocr.md](specifications/ocr.md)
+- U-tools 有効スキル id を開催保存時にスナップショット（コース×4脚質、ranked 全件、照合は id）— [score.md](specifications/score.md)
+- OCR（本戦のみ）クローズ — 1頭ずつ読取・名前流し・読取画像の R2 保存。一括枠なし。細かい調整と表示 UI は後 — [ocr.md](specifications/ocr.md)
 

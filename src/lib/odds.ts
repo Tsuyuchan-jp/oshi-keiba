@@ -1,5 +1,5 @@
 /**
- * 参考オッズと確定配当（docs/odds.md）
+ * 参考オッズと確定配当（docs/specifications/odds.md）
  *
  * 単勝投票中: Display = Seed×w + 単勝Real + Imputed（参考のみ）
  * 確定・連勝・払い: Real のみ。払いの約束①。不成立は特払い B。

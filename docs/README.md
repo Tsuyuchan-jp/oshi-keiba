@@ -7,32 +7,22 @@
 ## 読む順
 
 1. このファイル
-2. [now.md](now.md) — いまのフェーズ・仮置き・未決
-3. 触る作業だけ、下の該当ファイル。毎回全部は読まない
-4. 第2回までにやることは [next.md](next.md)（作業キュー。式の本文は置かない）
+2. [いま](now.md) — 現在のフェーズ・仮置き・未決
+3. [次に取り組むこと](next.md) — 作業キュー
+4. 作業に応じて、下の分類から必要な資料だけ読む
 
-本番に出すときは [testing.md](testing.md) で自動検証し、[release.md](release.md) の手順を使う。`npm run deploy` だけでは D1 migration と R2 作成が反映されず、復旧判断もできない。OCR 固有の補足は [ocr.md](ocr.md)。
+本番に出すときは [自動テスト](operations/testing.md) を実行してから、[本番リリースと復旧](operations/release.md) の手順を使う。`npm run deploy` だけでは D1 migration と R2 作成が反映されず、復旧判断もできない。
 
-## ファイル
+## 資料の分類
 
-| ファイル | 内容 |
-|---|---|
-| [now.md](now.md) | いまのフェーズ、開催の仮置き数字、未決 |
-| [product.md](product.md) | 何を作るか、役割、ガードレール、儀式 |
-| [odds.md](odds.md) | 投票・参考オッズ・確定配当・ポイント |
-| [analysis-log.md](analysis-log.md) | 分析ログの記録契約、CSV、式変更時の確認 |
-| [playbook.md](playbook.md) | 画面・当日オペ・入場パス |
-| [score.md](score.md) | 評価点の正本（式・保存）。読みの根拠は同ファイル後半 |
-| [ocr.md](ocr.md) | 本戦スクショの読み取り |
-| [ocr-aliases.md](ocr-aliases.md) | OCR スキル名の例外対応（誤読→正式名） |
-| [version.md](version.md) | 画面版の表示位置と版上げ手順 |
-| [changelog.md](changelog.md) | リリースごとの変更内容と SemVer の運用 |
-| [testing.md](testing.md) | デプロイ前の全自動テスト、対象範囲、失敗時の見方 |
-| [release.md](release.md) | 本番リリース前後の確認、障害時の復旧判断 |
-| [release-log.md](release-log.md) | 本番リリースの実施記録と復元基準 |
-| [rejected.md](rejected.md) | 見送った案と理由 |
-| [gougai.md](gougai.md) | 号外（note 用紙面）。見た目の正は mocks/gougai。管理タブ `/admin/gougai` |
-| [umabashira.md](umabashira.md) | ウマ柱第1段クローズ。正は本番 `/admin/umabashira`。モックは控え。PNG / WebP |
-| [next.md](next.md) | 次に取り組む項目名と参照 |
+| 分類 | ファイル | 内容 |
+|---|---|---|
+| 直下 | [now.md](now.md) / [next.md](next.md) / [product.md](product.md) | 現在地、次の作業、プロダクトの判断軸 |
+| 仕様 | [specifications/](specifications/) | [オッズ](specifications/odds.md)、[評価点](specifications/score.md)、[OCR](specifications/ocr.md)、[OCR例外](specifications/ocr-aliases.md)、[分析ログ](specifications/analysis-log.md) |
+| 運用 | [operations/](operations/) | [当日オペ](operations/playbook.md)、[テスト](operations/testing.md)、[リリースと復旧](operations/release.md)、[版上げ](operations/version.md) |
+| 機能別 | [features/](features/) | [号外](features/gougai.md)、[ウマ柱](features/umabashira.md) |
+| 履歴 | [history/](history/) | [変更履歴](history/changelog.md)、[本番リリース記録](history/release-log.md)、[デプロイ前レビュー記録](history/predeploy-fix-list.md) |
+| 参考 | [reference/](reference/) | [見送った案](reference/rejected.md) |
+| モック | [mocks/](mocks/) | 画面・紙面のモックと素材 |
 
 内部の点数は **評価点**。メンバー画面には出さない。

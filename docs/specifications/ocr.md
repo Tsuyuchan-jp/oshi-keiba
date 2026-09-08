@@ -30,7 +30,7 @@ node scripts/gen-skill-catalog.mjs --mdb D:\DMM\umamusumeDMM\Umamusume\umamusume
 
 本戦出走のステータス画面などから、評価点の材料を読む。予選はアプリに載せないので、OCR も本戦のみ。
 
-第2回向けに実装した。点の式は [score.md](score.md)（このファイルには置かない）。レース結果の動画・リプレイからの着順取得はしない（[rejected.md](rejected.md)）。
+第2回向けに実装した。点の式は [score.md](score.md)（このファイルには置かない）。レース結果の動画・リプレイからの着順取得はしない（[rejected.md](../reference/rejected.md)）。
 
 **機能はクローズ。** 読取・脚質選択・ファジー ID 化・材料保存・受け入れ形式（PNG / JPEG / WebP）・出走登録／編集の表示 UI まで。登録は 1 頭ずつ（一括貼り付け枠は置かない）。Gemini の読取精度そのものの改善は別途（キューには載せない）。
 
@@ -133,7 +133,7 @@ Workers のリクエストに 800KB を載せることは、このサイズで�
 
 ## デプロイ時の OCR 固有の補足
 
-本番リリース全体の確認・復旧手順は [release.md](release.md) を正とする。ローカルの `npm run deploy` だけでは、**D1 の新マイグレーションと R2 バケットは本番に乗らない**。スクショ保存を本番で使う前に、同手順の中でこの順を確認する:
+本番リリース全体の確認・復旧手順は [release.md](../operations/release.md) を正とする。ローカルの `npm run deploy` だけでは、**D1 の新マイグレーションと R2 バケットは本番に乗らない**。スクショ保存を本番で使う前に、同手順の中でこの順を確認する:
 
 1. `npx wrangler r2 bucket create oshi-keiba-shots`（初回だけ。既にあれば不要）
 2. `npx wrangler d1 migrations apply oshi-keiba --remote`（`0006_horse_uma_runner_shot` など未適用分）

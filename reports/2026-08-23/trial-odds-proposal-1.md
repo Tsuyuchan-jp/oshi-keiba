@@ -2,9 +2,9 @@
 
 最終更新: 2026-08-24
 
-**このファイルの役割:** 第2回本戦に向けた改善案1の正本（設定・式・同じ票での再生比較）。人間向け閲覧は [`trial-odds-proposal-1.html`](./trial-odds-proposal-1.html)。再生成は `node --experimental-strip-types scripts/trial-odds-proposal-1.ts`。
+**このファイルの役割:** 第2回本戦に向けた改善案1の正本（設定・式・同じ票での再生比較）。人間向け閲覧は [`trial-odds-proposal-1.html`](trial-odds-proposal-1.html)。再生成は `node --experimental-strip-types scripts/trial-odds-proposal-1.ts`。
 
-第1回の知見正本は [trial-odds-report.md](./trial-odds-report.md)。票・やりなおしはそこと同じ。再生は開場から締切までパラメータ固定。
+第1回の知見正本は [trial-odds-report.md](trial-odds-report.md)。票・やりなおしはそこと同じ。再生は開場から締切までパラメータ固定。
 
 ---
 
@@ -167,6 +167,6 @@ Seed を √Strength で圧縮し、山はさらに厚く残す。投票中の�
 
 | パス | 内容 |
 |---|---|
-| [trial-odds-report.md](./trial-odds-report.md) | 第1回再生の知見正本 |
-| [`trial-odds-proposal-1.html`](./trial-odds-proposal-1.html) | この案の閲覧用 |
+| [trial-odds-report.md](trial-odds-report.md) | 第1回再生の知見正本 |
+| [`trial-odds-proposal-1.html`](trial-odds-proposal-1.html) | この案の閲覧用 |
 | [`scripts/trial-odds-proposal-1.ts`](../../scripts/trial-odds-proposal-1.ts) | 生成スクリプト |

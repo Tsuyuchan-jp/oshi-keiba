@@ -2,7 +2,7 @@
 
 本番を更新する担当者向けの手順。秘密の**値**を記録・共有・コミットしない。確認するのは設定名と結果だけ。
 
-対象は Worker `oshi-keiba`、D1 `oshi-keiba`、R2 `oshi-keiba-shots`。アプリの版番号は `package.json`、変更内容は [changelog.md](changelog.md) を正とする。
+対象は Worker `oshi-keiba`、D1 `oshi-keiba`、R2 `oshi-keiba-shots`。アプリの版番号は `package.json`、変更内容は [changelog.md](../history/changelog.md) を正とする。
 
 ## 事前に一度だけ確認すること
 

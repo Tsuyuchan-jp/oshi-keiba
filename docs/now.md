@@ -6,9 +6,9 @@
 
 本番: https://oshi-keiba.tsuyuchan-jp.workers.dev/
 入場 `/login`　場内 `/`　パドック `/paddock`　窓口 `/bet`　管理 `/admin`
-アプリ版は [version.md](version.md)（数字の正本は `package.json`）
+アプリ版は [version.md](operations/version.md)（数字の正本は `package.json`）
 
-詳細は [playbook.md](playbook.md)。第2回までにやることは [next.md](next.md)。パドックのスマホ表示は実機確認OK（最大18頭を画面高へ収め、詳細カードはタップ／上スワイプで開き、下スワイプで閉じる）。号外タブはクローズ相当の第1段（ローカル実機確認OK。`/admin/gougai`。左プレビュー・右編集・PNG / WebP。1着未入力はプレースホルダ）。見た目の正は [gougai.md](gougai.md) と [モック](mocks/gougai/index.html)。ウマ柱第1段はクローズ（ローカル実機確認OK）。正は本番タブ `/admin/umabashira`（枠色は見た目専用。ノイズは不透明度 0.1。出走登録中も参考オッズ。評価点・SP点数の色箱は PNG を正）。仕様は [umabashira.md](umabashira.md)。モックは同じ見た目の控え。出力は PNG と WebP。
+詳細は [playbook.md](operations/playbook.md)。第2回までにやることは [next.md](next.md)。パドックのスマホ表示は実機確認OK（最大18頭を画面高へ収め、詳細カードはタップ／上スワイプで開き、下スワイプで閉じる）。号外タブはクローズ相当の第1段（ローカル実機確認OK。`/admin/gougai`。左プレビュー・右編集・PNG / WebP。1着未入力はプレースホルダ）。見た目の正は [gougai.md](features/gougai.md) と [モック](mocks/gougai/index.html)。ウマ柱第1段はクローズ（ローカル実機確認OK）。正は本番タブ `/admin/umabashira`（枠色は見た目専用。ノイズは不透明度 0.1。出走登録中も参考オッズ。評価点・SP点数の色箱は PNG を正）。仕様は [umabashira.md](features/umabashira.md)。モックは同じ見た目の控え。出力は PNG と WebP。
 
 ## 仮置き（第2回）
 
@@ -28,7 +28,7 @@
 
 開催は **1本ずつカレント**。公開済みの開催は残し、口座と残高は持ち越す。同時に投票できる開催は1つ。G は投票中に `/bet` で参加した人へ、その開催1回。入場だけでは配らない。デモ初期化は本番に出さない。
 
-式は [odds.md](odds.md)。OCR・評価点の自動算出、U-toolsキャラスペック補正、出走登録 UI は実装済み。材料が足りない頭は直置き。式の Neko 確定は未決（[score.md](score.md)）。
+式は [odds.md](specifications/odds.md)。OCR・評価点の自動算出、U-toolsキャラスペック補正、出走登録 UI は実装済み。材料が足りない頭は直置き。式の Neko 確定は未決（[score.md](specifications/score.md)）。
 
 アプリは **本戦だけ**。予選通過者の名簿を載せる。予選そのものはアプリに載せない。
 
@@ -43,4 +43,4 @@ G=3000、S=20000、E=25000、w時下限 0.5、λ なし（連勝は単勝参考�
 - 特払いのキャリーオーバーをコミュニティ向けに出すか（特払い率の変更は今は想定外）
 - 景品・ポイント消費の中身
 - 本番のメンバーシップ認証
-- 評価点の式の Neko 確定（[score.md](score.md)）
+- 評価点の式の Neko 確定（[score.md](specifications/score.md)）

@@ -2,7 +2,7 @@
 
 最終更新: 2026-08-25
 
-**このファイルの役割:** 次回オッズ式（Imputed を TV に入れる、F なし）の仮値比較。閲覧は [`trial-odds-proposal-2.html`](./trial-odds-proposal-2.html)。再生成は `node --experimental-strip-types scripts/trial-odds-proposal-2.ts`。
+**このファイルの役割:** 次回オッズ式（Imputed を TV に入れる、F なし）の仮値比較。閲覧は [`trial-odds-proposal-2.html`](trial-odds-proposal-2.html)。再生成は `node --experimental-strip-types scripts/trial-odds-proposal-2.ts`。
 
 票は第1回実票。次回の人数・持ち点は E の読みにだけ使う（14×3000＋15840＝57,840）。基準 S は **50000**（5000 は誤記のため差し替え）。
 

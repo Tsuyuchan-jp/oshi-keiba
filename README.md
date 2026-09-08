@@ -8,7 +8,7 @@ GitHub Pages は使いません。閉じた経路で URL を渡します。
 
 1. [docs/README.md](docs/README.md) — Docs の地図
 2. [docs/now.md](docs/now.md) — いまのフェーズ・仮置き
-3. 当日オペなら [docs/playbook.md](docs/playbook.md)
+3. 当日オペなら [docs/playbook.md](docs/operations/playbook.md)
 
 ## 運用上の絶対条件（要約）
 
@@ -28,7 +28,7 @@ npm run verify
 npm run dev
 ```
 
-`npm run verify` は型検査、単体テスト、D1・R2を含むWorker結合テスト、PC・モバイルの実ブラウザE2Eをまとめて実行します。詳しくは [デプロイ前の自動テスト](docs/testing.md) を参照してください。
+`npm run verify` は型検査、単体テスト、D1・R2を含むWorker結合テスト、PC・モバイルの実ブラウザE2Eをまとめて実行します。詳しくは [デプロイ前の自動テスト](docs/operations/testing.md) を参照してください。
 
 - 入室: http://localhost:8787/login （共有パスは `.dev.vars` を参照）
 - 場内: http://localhost:8787/

@@ -1,5 +1,5 @@
 /**
- * 賭式・買い目キー（docs/playbook.md）
+ * 賭式・買い目キー（docs/operations/playbook.md）
  * 当選キーは常に1つ。馬連・3連複は番号をソート。
  */
 
