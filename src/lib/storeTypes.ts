@@ -61,6 +61,27 @@ export type UserRow = {
   deleted_at: number | null;
 };
 
+export type EventSettlementRow = {
+  event_id: string;
+  event_title: string;
+  bet_total: number;
+  payout_total: number;
+  retained_amount: number;
+  settled_at: number;
+  source: "publish" | "backfill";
+};
+
+export type TreasuryDashboard = {
+  adminBalance: number;
+  memberBalanceTotal: number;
+  unsettledPoolTotal: number;
+  totalIssued: number;
+  currentBetTotal: number;
+  currentPayoutTotal: number;
+  currentRetainedAmount: number | null;
+  settlements: EventSettlementRow[];
+};
+
 export type BetRow = {
   id: string;
   event_id: string;

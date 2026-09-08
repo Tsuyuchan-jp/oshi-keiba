@@ -28,6 +28,7 @@ import {
   listAnalysisEvents,
   listAnalysisSnapshots,
   listAnalysisFailures,
+  loadTreasuryDashboard,
   analysisExportFilename,
   analysisExportZip,
 } from "./store";
@@ -261,6 +262,7 @@ export async function tryAdminGet(
     const members = await listMembers(env.DB);
     const allBets = await listAllBets(env.DB, board.event.id, betOrder);
     const payouts = await listEventPayouts(env.DB, board.event.id);
+    const treasury = await loadTreasuryDashboard(env.DB, board.event.id, env.ADMIN_USER_ID);
     const payByBet = new Map(payouts.map((p) => [p.bet_id, p]));
     const nums = numberByHorseId(board);
     const betRows = allBets.map((b) => betRowHtml(b, board, nums, payByBet)).join("");
@@ -271,7 +273,7 @@ export async function tryAdminGet(
         user: gate.user,
         eventStatus: board.event.status,
         flash: m,
-        body: adminLedgerPage({ board, members, betRows, betOrder }),
+        body: adminLedgerPage({ board, members, betRows, betOrder, treasury }),
       }),
     );
   }

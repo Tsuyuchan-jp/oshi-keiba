@@ -35,6 +35,7 @@ import {
 import { parseEnabledKinds } from "./bets";
 import { eventScoreSetup } from "./storeEvent";
 import { captureAnalysisSnapshotSafely, clearAnalysisLogForEvent } from "./analysisLog";
+import { SYSTEM_ADMIN_USER_ID } from "./storeTreasury";
 
 /** 投票開始前に満たすべき、画面と API で共通の条件。 */
 export function votingStartProblems(
@@ -384,6 +385,7 @@ export async function savePlaces(
 export async function publishResults(
   db: D1Database,
   event: EventRow,
+  adminUserId = SYSTEM_ADMIN_USER_ID,
 ): Promise<"published" | "already_published"> {
   // 呼び出し元が保持する event は古い可能性があるため、確定判断は必ずDBの値で行う。
   const current = await db
@@ -459,6 +461,34 @@ export async function publishResults(
   }
 
   stmts.push(
+    db.prepare(
+      `INSERT INTO event_settlements (
+         event_id, bet_total, payout_total, retained_amount, settled_at, source, credited_at
+       )
+       SELECT ?,
+         COALESCE((SELECT SUM(amount) FROM bets WHERE event_id = ?), 0),
+         COALESCE((SELECT SUM(amount) FROM payouts WHERE event_id = ?), 0),
+         COALESCE((SELECT SUM(amount) FROM bets WHERE event_id = ?), 0)
+           - COALESCE((SELECT SUM(amount) FROM payouts WHERE event_id = ?), 0),
+         ?, 'publish', NULL
+       WHERE ${payoutGuard}
+       ON CONFLICT(event_id) DO NOTHING`,
+    ).bind(current.id, current.id, current.id, current.id, current.id, now, current.id),
+    db.prepare(
+      `UPDATE users
+       SET balance = balance + COALESCE((
+         SELECT retained_amount FROM event_settlements
+         WHERE event_id = ? AND credited_at IS NULL
+       ), 0)
+       WHERE id = ? AND role = 'admin' AND ${payoutGuard}`,
+    ).bind(current.id, adminUserId, current.id),
+    db.prepare(
+      `UPDATE event_settlements
+       SET credited_at = ?
+       WHERE event_id = ? AND credited_at IS NULL
+         AND EXISTS (SELECT 1 FROM users WHERE id = ? AND role = 'admin')
+         AND ${payoutGuard}`,
+    ).bind(now, current.id, adminUserId, current.id),
     db
       .prepare("UPDATE events SET status = 'published', published_at = ?, payouts_applied = 1 WHERE id = ? AND status = 'closed' AND payouts_applied = 0")
       .bind(now, current.id),

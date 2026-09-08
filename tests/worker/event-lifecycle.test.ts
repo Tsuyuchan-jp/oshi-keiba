@@ -200,6 +200,14 @@ describe("開催ライフサイクルのHTTP結合", () => {
 
     const published = await eventState(eventId);
     expect(published).toMatchObject({ status: "published", payouts_applied: 1 });
+    const settlement = await env.DB.prepare(
+      "SELECT bet_total, payout_total, retained_amount, source FROM event_settlements WHERE event_id = ?",
+    ).bind(eventId).first<{ bet_total: number; payout_total: number; retained_amount: number; source: string }>();
+    expect(settlement).toMatchObject({ bet_total: 500, source: "publish" });
+    expect(settlement?.retained_amount).toBe(500 - (settlement?.payout_total ?? 0));
+    expect((await env.DB.prepare(
+      "SELECT balance FROM users WHERE role = 'admin'",
+    ).first<{ balance: number }>())?.balance).toBe(settlement?.retained_amount);
     const paidBets = await env.DB.prepare(
       `SELECT b.kind AS bet_kind
        FROM payouts p JOIN bets b ON b.id = p.bet_id
@@ -218,6 +226,14 @@ describe("開催ライフサイクルのHTTP結合", () => {
     expect(republished.message).toContain("すでに公開");
     expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM payouts WHERE event_id = ?")
       .bind(eventId).first<{ n: number }>())?.n).toBe(5);
+    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM event_settlements WHERE event_id = ?")
+      .bind(eventId).first<{ n: number }>())?.n).toBe(1);
+
+    const ledger = await workerFetch("/admin/ledger", {}, adminCookie);
+    const ledgerHtml = await ledger.text();
+    expect(ledgerHtml).toContain("場の管理スペ残高");
+    expect(ledgerHtml).toContain("総発行スペ");
+    expect(ledgerHtml).toContain("開催別の精算");
 
     expect(redirectMessage(await postForm("/admin/next-event", {}, adminCookie)).error).toBe(false);
     expect((await eventState(eventId)).is_current).toBe(0);

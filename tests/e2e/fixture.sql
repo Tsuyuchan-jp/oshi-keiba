@@ -1,3 +1,4 @@
+DELETE FROM event_settlements;
 DELETE FROM member_operations;
 DELETE FROM payouts;
 DELETE FROM bets;
@@ -5,6 +6,7 @@ DELETE FROM grants;
 DELETE FROM horses;
 DELETE FROM events;
 DELETE FROM users WHERE role = 'member';
+UPDATE users SET balance = 0 WHERE role = 'admin';
 
 INSERT INTO events (
   id, title, status, grant_g, bet_unit, seed_pool_s, pull_e, takeout_d,

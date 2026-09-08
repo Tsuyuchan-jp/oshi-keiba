@@ -238,6 +238,7 @@ export async function discardCurrentSetup(
 export async function resetDemo(db: D1Database): Promise<void> {
   await captureAdminUndo(db, "デモ初期化");
   await db.batch([
+    db.prepare("DELETE FROM event_settlements"),
     db.prepare("DELETE FROM member_operations"),
     db.prepare("DELETE FROM payouts"),
     db.prepare("DELETE FROM bets"),

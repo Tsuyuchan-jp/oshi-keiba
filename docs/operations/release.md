@@ -71,6 +71,8 @@ Time Travel が使える D1 は、直近の状態へ復元できる。保持期�
 
 3. migration 一覧で未適用があるときだけ、適用する。`0014` を含む場合は、**Worker の公開より先に**この操作を完了させる
 
+   `0018_event_settlements.sql` は、既に公開済みの開催（第1回を含む）について `全投票額 − 全払戻・返還額` を開催別に記録し、その合計を管理者固定アカウントへ一度だけ加算する。適用前に Time Travel のブックマークを必ず控え、適用後は管理の「台帳」で開催別精算と管理スペ残高を確認する。
+
    ```powershell
    npx wrangler d1 migrations apply oshi-keiba --remote
    ```

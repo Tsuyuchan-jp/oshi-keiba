@@ -652,7 +652,7 @@ export default {
         if (gate instanceof Response) return gate;
         try {
           const board = await loadBoard(env.DB);
-          const result = await publishResults(env.DB, board.event);
+          const result = await publishResults(env.DB, board.event, env.ADMIN_USER_ID);
           return bounce("/admin", result === "published" ? "公開し、払戻しました" : "すでに公開・払戻済みです");
         } catch (err) {
           return bounce("/admin", err instanceof Error ? err.message : "失敗", true);

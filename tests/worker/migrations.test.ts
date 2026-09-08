@@ -20,6 +20,7 @@ const EXPECTED_MIGRATIONS = [
   "0015_r2_pending_deletions.sql",
   "0016_analysis_snapshots.sql",
   "0017_analysis_log_versions.sql",
+  "0018_event_settlements.sql",
 ];
 
 async function tableNames(db: D1Database): Promise<string[]> {
@@ -30,7 +31,7 @@ async function tableNames(db: D1Database): Promise<string[]> {
 }
 
 describe("D1マイグレーション", () => {
-  test("空のD1へ全17本を適用すると本番用スキーマと初期データが揃う", async () => {
+  test("空のD1へ全18本を適用すると本番用スキーマと初期データが揃う", async () => {
     expect(env.TEST_MIGRATIONS.map((migration) => migration.name)).toEqual(EXPECTED_MIGRATIONS);
     await applyD1Migrations(env.MIGRATION_DB, env.TEST_MIGRATIONS);
 
@@ -41,6 +42,7 @@ describe("D1マイグレーション", () => {
       "analysis_log_failures",
       "bets",
       "events",
+      "event_settlements",
       "grants",
       "horses",
       "member_operations",
@@ -78,9 +80,10 @@ describe("D1マイグレーション", () => {
     await db.prepare(
       `INSERT INTO events (
         id, title, status, grant_g, bet_unit, seed_pool_s, pull_e, takeout_d,
-        w_time_floor, w_time_exp, created_at, payouts_applied
-      ) VALUES ('legacy-event', '旧開催', 'closed', 3000, 100, 500, 1000, .2, .1, 1.5, ?, 0)`,
-    ).bind(now).run();
+        w_time_floor, w_time_exp, created_at, payouts_applied,
+        published_at
+      ) VALUES ('legacy-event', '旧開催', 'published', 3000, 100, 500, 1000, .2, .1, 1.5, ?, 1, ?)`,
+    ).bind(now, now).run();
     await db.prepare(
       "INSERT INTO users (id, display_name, role, balance, created_at) VALUES ('legacy-user', '旧会員', 'member', 2500, ?)",
     ).bind(now).run();
@@ -93,6 +96,10 @@ describe("D1マイグレーション", () => {
       `INSERT INTO bets (
         id, event_id, user_id, horse_id, amount, refunded, created_at
       ) VALUES ('legacy-bet', 'legacy-event', 'legacy-user', 'legacy-horse', 500, 0, ?)`,
+    ).bind(now).run();
+    await db.prepare(
+      `INSERT INTO payouts (id, event_id, user_id, bet_id, amount, kind, created_at)
+       VALUES ('legacy-payout', 'legacy-event', 'legacy-user', 'legacy-bet', 400, 'win', ?)`,
     ).bind(now).run();
 
     await applyD1Migrations(db, env.TEST_MIGRATIONS.slice(1, 5));
@@ -131,6 +138,18 @@ describe("D1マイグレーション", () => {
     expect((await db.prepare(
       "SELECT COUNT(*) AS n FROM users WHERE role = 'admin'",
     ).first<{ n: number }>())?.n).toBe(1);
+    expect(await db.prepare(
+      `SELECT bet_total, payout_total, retained_amount, source
+       FROM event_settlements WHERE event_id = 'legacy-event'`,
+    ).first()).toEqual({
+      bet_total: 500,
+      payout_total: 400,
+      retained_amount: 100,
+      source: "backfill",
+    });
+    expect((await db.prepare(
+      "SELECT balance FROM users WHERE role = 'admin'",
+    ).first<{ balance: number }>())?.balance).toBe(100);
     expect(await db.prepare("PRAGMA foreign_key_check").all()).toMatchObject({
       results: [],
     });

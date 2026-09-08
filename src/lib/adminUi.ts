@@ -4,7 +4,7 @@ import { parseHorseScoreInput, STYLE_OPTIONS, type HorseScoreInput } from "./hor
 import { findUmaDress, umaDressCatalogJsonForPage } from "./umaDress";
 import { scoreFromHorse } from "./scoreFromHorse";
 import { eventScoreSetup, numberByHorseId } from "./store";
-import type { Board, EventRow, HorseBoard, UserRow, BetRow } from "./store";
+import type { Board, EventRow, HorseBoard, UserRow, BetRow, TreasuryDashboard } from "./store";
 import type { UndoMeta } from "./undo";
 import { effectiveIdsFromScoreSetup } from "./scoreSetup";
 import greenJson from "../data/green-skills.json" with { type: "json" };
@@ -1122,20 +1122,54 @@ export function adminLedgerPage(opts: {
   members: UserRow[];
   betRows: string;
   betOrder: "new" | "name";
+  treasury: TreasuryDashboard;
 }): string {
   const memberRows = opts.members
     .map((u) => `<tr><td>${escapeHtml(u.display_name)}</td><td class="num">${formatPt(u.balance)}</td></tr>`)
     .join("");
+  const settlementRows = opts.treasury.settlements.map((row) => {
+    const settled = new Date(row.settled_at).toLocaleString("ja-JP", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    return `<tr><td>${escapeHtml(row.event_title)}</td><td>${escapeHtml(settled)}</td><td class="num">${formatPt(row.bet_total)}</td><td class="num">${formatPt(row.payout_total)}</td><td class="num treasury-retained">${formatPt(row.retained_amount)}</td></tr>`;
+  }).join("");
+  const currentRetained = opts.treasury.currentRetainedAmount == null
+    ? "未確定"
+    : formatPt(opts.treasury.currentRetainedAmount);
   return `${adminPageHero("台帳", opts.board.event.status)}
     <div class="ledger-desk">
-      <section class="work">
-        <div class="work-head"><h2>残高</h2>
-          <button type="button" class="ledger-del" id="member-del-open">メンバー削除</button></div>
-        <div class="table-scroll">
-          <table class="plain"><thead><tr><th>名前</th><th class="num">残高</th></tr></thead>
-            <tbody>${memberRows || `<tr><td colspan="2" class="muted">まだいません</td></tr>`}</tbody></table>
-        </div>
-      </section>
+      <div class="ledger-side">
+        <section class="work ledger-treasury">
+          <div class="work-head"><div><h2>場の会計</h2><p class="ledger-caption">メンバーへ戻らなかったスペを開催公開時に確定</p></div></div>
+          <div class="treasury-kpis">
+            <div class="kpi treasury-primary"><span class="k">場の管理スペ残高</span><span class="v">${formatPt(opts.treasury.adminBalance)}</span></div>
+            <div class="kpi"><span class="k">総発行スペ</span><span class="v">${formatPt(opts.treasury.totalIssued)}</span></div>
+            <div class="kpi"><span class="k">メンバー所持合計</span><span class="v">${formatPt(opts.treasury.memberBalanceTotal)}</span></div>
+            <div class="kpi"><span class="k">未精算プール</span><span class="v">${formatPt(opts.treasury.unsettledPoolTotal)}</span></div>
+          </div>
+          <div class="treasury-current" aria-label="現在の開催の会計">
+            <span><small>今回の投票</small><strong>${formatPt(opts.treasury.currentBetTotal)}</strong></span>
+            <span><small>払戻・返還</small><strong>${formatPt(opts.treasury.currentPayoutTotal)}</strong></span>
+            <span><small>場への移管</small><strong>${currentRetained}</strong></span>
+          </div>
+          <h3 class="settlement-heading">開催別の精算</h3>
+          <div class="table-scroll settlement-scroll">
+            <table class="plain settlement-table"><thead><tr><th>開催</th><th>公開日</th><th class="num">投票</th><th class="num">払戻・返還</th><th class="num">場へ</th></tr></thead>
+              <tbody>${settlementRows || `<tr><td colspan="5" class="muted">精算済みの開催はありません</td></tr>`}</tbody></table>
+          </div>
+        </section>
+        <section class="work ledger-members">
+          <div class="work-head"><h2>メンバー残高</h2>
+            <button type="button" class="ledger-del" id="member-del-open">メンバー削除</button></div>
+          <div class="table-scroll">
+            <table class="plain"><thead><tr><th>名前</th><th class="num">残高</th></tr></thead>
+              <tbody>${memberRows || `<tr><td colspan="2" class="muted">まだいません</td></tr>`}</tbody></table>
+          </div>
+        </section>
+      </div>
       <section class="work">
         <div class="work-head"><h2>全投票</h2>
           <p class="sort-links">

@@ -323,9 +323,13 @@ table.plain td { padding: .32rem .35rem; border-bottom: 1px solid var(--admin-su
 table.plain td.num, table.plain th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .ledger-desk {
   display: grid;
-  grid-template-columns: minmax(13rem, .72fr) minmax(0, 1.4fr);
+  grid-template-columns: minmax(27rem, .92fr) minmax(30rem, 1.25fr);
   gap: 1rem;
   align-items: start;
+}
+.ledger-side {
+  display: grid; grid-template-rows: minmax(19rem, 1.2fr) minmax(10rem, .8fr);
+  gap: 1rem; min-height: 0; height: 100%;
 }
 body.ledger-page { overflow: hidden; }
 body.ledger-page .dash { height: 100dvh; min-height: 0; overflow: hidden; }
@@ -341,6 +345,28 @@ body.ledger-page .ledger-desk .work {
   min-height: 0; height: 100%; display: flex; flex-direction: column;
   overflow: hidden; margin-bottom: 0;
 }
+body.ledger-page .ledger-side .work { height: auto; }
+.ledger-caption { margin: .1rem 0 0; color: var(--admin-muted); font-size: .72rem; }
+.treasury-kpis {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .42rem;
+  flex: 0 0 auto; margin-bottom: .5rem;
+}
+.treasury-kpis .kpi { min-width: 0; padding: .34rem .55rem; }
+.treasury-kpis .v { display: block; white-space: nowrap; font-size: .95rem; }
+.treasury-kpis .treasury-primary { background: #e8f0f8; border-color: #bdd0e4; }
+.treasury-kpis .treasury-primary .v { color: #1d4f8a; }
+.treasury-current {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .35rem;
+  flex: 0 0 auto; margin: 0 0 .5rem; padding: .4rem .5rem;
+  background: var(--admin-surface-muted); border: 1px solid var(--admin-line-subtle); border-radius: 7px;
+}
+.treasury-current span { min-width: 0; }
+.treasury-current small { display: block; color: var(--admin-muted); font-size: .65rem; }
+.treasury-current strong { display: block; white-space: nowrap; font-size: .78rem; font-variant-numeric: tabular-nums; }
+.settlement-heading { flex: 0 0 auto; margin: 0 0 .2rem; font-size: .78rem; color: var(--admin-muted); }
+.settlement-table { min-width: 35rem; }
+.settlement-table td:first-child { max-width: 12rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.treasury-retained { color: #1d4f8a; font-weight: 700; }
 .ledger-del {
   border: 1px solid var(--admin-line-strong); background: var(--admin-surface); color: inherit;
   --btn-pad-block: .28rem; padding-inline: .55rem; border-radius: 6px; cursor: pointer; font-size: .78rem;
@@ -1637,6 +1663,7 @@ body.gougai-page .gougai-desk .work:last-child { overflow: auto; }
     grid-template-rows: minmax(14rem, 1.15fr) minmax(11rem, 1fr) minmax(11rem, 1fr);
     grid-template-areas: "win win" "q e" "t f";
   }
+  body.ledger-page .ledger-desk { overflow-x: auto; }
 }
 @media (max-width: 900px) {
   .dash { grid-template-columns: 1fr; }
@@ -1670,11 +1697,25 @@ body.gougai-page .gougai-desk .work:last-child { overflow: auto; }
     display: flex; flex-direction: column; height: auto; flex: none;
   }
   body.odds-page .odds-desk .work { height: min(52vh, 20rem); }
-  body.ledger-page { overflow: auto; }
-  body.ledger-page .dash { height: auto; min-height: 100dvh; }
-  body.ledger-page .main { height: auto; overflow: visible; }
-  body.ledger-page .ledger-desk { flex: none; }
-  body.ledger-page .ledger-desk .work { height: min(70vh, 28rem); }
+  body.ledger-page { overflow: hidden; }
+  body.ledger-page .dash { height: 100dvh; min-height: 0; grid-template-rows: auto minmax(0, 1fr); }
+  body.ledger-page .side {
+    position: static; height: auto; max-height: none; align-self: stretch;
+    flex-flow: row nowrap; align-items: center; overflow-x: auto; overflow-y: hidden;
+    padding: .45rem .55rem; scrollbar-width: thin;
+  }
+  body.ledger-page .side .mark { width: auto; flex: 0 0 auto; padding: .35rem .55rem; white-space: nowrap; }
+  body.ledger-page .side > a { flex: 0 0 auto; white-space: nowrap; }
+  body.ledger-page .side .side-foot { display: flex; flex: 0 0 auto; margin: 0 0 0 auto; padding: 0; }
+  body.ledger-page .main { height: 100%; min-height: 0; overflow: hidden; padding: .7rem .7rem 1rem; }
+  body.ledger-page .hero { margin-bottom: .55rem; }
+  body.ledger-page .ledger-desk {
+    display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; height: 100%;
+    overflow-x: hidden; overflow-y: auto; gap: .65rem;
+  }
+  body.ledger-page .ledger-side { display: contents; }
+  body.ledger-page .ledger-desk .work { flex: 0 0 min(70dvh, 30rem); height: min(70dvh, 30rem); }
+  body.ledger-page .ledger-desk .ledger-treasury { flex-basis: min(78dvh, 34rem); height: min(78dvh, 34rem); }
   body.register-page { overflow: auto; }
   body.register-page .dash { height: auto; min-height: 100dvh; }
   body.register-page .main { height: auto; overflow: visible; }

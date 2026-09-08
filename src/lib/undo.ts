@@ -19,6 +19,7 @@ type Snapshot = {
   analysis_snapshots: Record<string, unknown>[];
   analysis_snapshot_odds: Record<string, unknown>[];
   analysis_log_failures?: Record<string, unknown>[];
+  event_settlements?: Record<string, unknown>[];
 };
 
 async function allRows(
@@ -30,7 +31,7 @@ async function allRows(
 }
 
 async function dumpSnapshot(db: D1Database): Promise<Snapshot> {
-  const [events, horses, users, grants, bets, payouts, member_operations, analysis_snapshots, analysis_snapshot_odds, analysis_log_failures] = await Promise.all([
+  const [events, horses, users, grants, bets, payouts, member_operations, analysis_snapshots, analysis_snapshot_odds, analysis_log_failures, event_settlements] = await Promise.all([
     allRows(db, "SELECT * FROM events"),
     allRows(db, "SELECT * FROM horses"),
     allRows(db, "SELECT * FROM users"),
@@ -41,8 +42,9 @@ async function dumpSnapshot(db: D1Database): Promise<Snapshot> {
     allRows(db, "SELECT * FROM analysis_snapshots"),
     allRows(db, "SELECT * FROM analysis_snapshot_odds"),
     allRows(db, "SELECT * FROM analysis_log_failures"),
+    allRows(db, "SELECT * FROM event_settlements"),
   ]);
-  return { events, horses, users, grants, bets, payouts, member_operations, analysis_snapshots, analysis_snapshot_odds, analysis_log_failures };
+  return { events, horses, users, grants, bets, payouts, member_operations, analysis_snapshots, analysis_snapshot_odds, analysis_log_failures, event_settlements };
 }
 
 function v(row: Record<string, unknown>, key: string): unknown {
@@ -240,6 +242,17 @@ function insertAnalysisFailures(db: D1Database, rows: Record<string, unknown>[])
   ).bind(v(r, "id"), v(r, "event_id"), v(r, "occurred_at"), v(r, "cause"), v(r, "message")));
 }
 
+function insertEventSettlements(db: D1Database, rows: Record<string, unknown>[]) {
+  return rows.map((r) => db.prepare(
+    `INSERT INTO event_settlements (
+      event_id, bet_total, payout_total, retained_amount, settled_at, source, credited_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  ).bind(
+    v(r, "event_id"), v(r, "bet_total"), v(r, "payout_total"), v(r, "retained_amount"),
+    v(r, "settled_at"), v(r, "source"), v(r, "credited_at"),
+  ));
+}
+
 /** 検証を通った管理操作の直前に呼ぶ。失敗した操作では呼ばないこと */
 export async function captureAdminUndo(
   db: D1Database,
@@ -302,7 +315,9 @@ export async function applyAdminUndo(db: D1Database): Promise<string> {
 
   // 0017 より前に作られたUndoデータには失敗履歴がないため、その場合は既存履歴を消さない。
   const restoreAnalysisFailures = Array.isArray(snap.analysis_log_failures);
+  const restoreEventSettlements = Array.isArray(snap.event_settlements);
   const stmts = [
+    db.prepare("DELETE FROM event_settlements"),
     ...(restoreAnalysisFailures ? [db.prepare("DELETE FROM analysis_log_failures")] : []),
     db.prepare("DELETE FROM analysis_snapshot_odds"),
     db.prepare("DELETE FROM analysis_snapshots"),
@@ -323,11 +338,16 @@ export async function applyAdminUndo(db: D1Database): Promise<string> {
     ...insertAnalysisSnapshots(db, snap.analysis_snapshots ?? []),
     ...insertAnalysisOdds(db, snap.analysis_snapshot_odds ?? []),
     ...(restoreAnalysisFailures ? insertAnalysisFailures(db, snap.analysis_log_failures!) : []),
+    ...(restoreEventSettlements ? insertEventSettlements(db, snap.event_settlements!) : []),
   ];
   for (let i = 0; i < stmts.length; i += 40) {
     await db.batch(stmts.slice(i, i + 40));
   }
   await db.prepare("DELETE FROM admin_undo").run();
+  await db.prepare(
+    `UPDATE users SET balance = COALESCE((SELECT SUM(retained_amount) FROM event_settlements), 0)
+     WHERE role = 'admin'`,
+  ).run();
   const cur = await db
     .prepare("SELECT id FROM events WHERE is_current = 1 LIMIT 1")
     .first();

@@ -17,6 +17,7 @@ import {
   listAllBets,
   listEventPayouts,
   listMembers,
+  loadTreasuryDashboard,
   listUserBets,
   loginMember,
   openVoting,
@@ -240,6 +241,21 @@ test("二人投票: 総付与と残高・控除の関係が崩れない", async 
   const grants = 2 * DEFAULTS.grantG;
   const poolLeft = aw + al - pay; // 控除と負け票の残り（当選者への払いを除く）
   assert.equal(ua.balance + ub.balance + poolLeft, grants);
+  const treasury = await loadTreasuryDashboard(
+    db,
+    event.id,
+    "9f0cdb75-82dd-4d4e-b7b7-97f7e1ea8c44",
+  );
+  assert.equal(treasury.adminBalance, poolLeft);
+  assert.equal(treasury.memberBalanceTotal, ua.balance + ub.balance);
+  assert.equal(treasury.unsettledPoolTotal, 0);
+  assert.equal(treasury.totalIssued, grants);
+  assert.deepEqual(treasury.settlements.map((x) => ({
+    bet: x.bet_total,
+    payout: x.payout_total,
+    retained: x.retained_amount,
+    source: x.source,
+  })), [{ bet: aw + al, payout: pay, retained: poolLeft, source: "publish" }]);
 });
 
 test("結果公開を同時に再送しても、払戻と残高加算は一度だけ", async () => {

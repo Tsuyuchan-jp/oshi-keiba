@@ -10,6 +10,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await env.DB.batch([
+    env.DB.prepare("DELETE FROM event_settlements"),
     env.DB.prepare("DELETE FROM analysis_log_failures"),
     env.DB.prepare("DELETE FROM member_operations"),
     env.DB.prepare("DELETE FROM payouts"),
@@ -20,6 +21,7 @@ beforeEach(async () => {
     env.DB.prepare("DELETE FROM admin_undo"),
     env.DB.prepare("DELETE FROM r2_pending_deletions"),
     env.DB.prepare("DELETE FROM users WHERE id <> ?").bind(ADMIN_USER_ID),
+    env.DB.prepare("UPDATE users SET balance = 0 WHERE id = ?").bind(ADMIN_USER_ID),
   ]);
   const objects = await env.SHOTS.list();
   if (objects.objects.length > 0) {

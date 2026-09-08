@@ -80,6 +80,14 @@ test("管理者が主要画面を巡回でき、メンバー画面ではプレ�
   ]) {
     await page.goto(path);
     await expect(page.locator("h1").first()).toBeVisible();
+    if (path === "/admin/ledger") {
+      await expect(page.getByText("場の管理スペ残高")).toBeVisible();
+      const viewport = await page.evaluate(() => ({
+        pageHeight: document.scrollingElement?.scrollHeight ?? 0,
+        viewportHeight: document.documentElement.clientHeight,
+      }));
+      expect(viewport.pageHeight).toBeLessThanOrEqual(viewport.viewportHeight + 1);
+    }
   }
 
   await page.goto("/bet");

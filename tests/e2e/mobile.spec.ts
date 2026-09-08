@@ -43,3 +43,24 @@ test("モバイル幅でもウマ柱管理画面はページ全体からはみ�
   await expectNoHorizontalOverflow(page);
   expect(pageErrors).toEqual([]);
 });
+
+test("モバイル幅の台帳はページを固定し、ダッシュボード内だけスクロールする", async ({ page }) => {
+  await page.goto("/admin/login");
+  await page.getByLabel("仮パスワード").fill("e2e-admin-password");
+  await page.getByRole("button", { name: "管理画面へ" }).click();
+  await page.goto("/admin/ledger");
+
+  await expect(page.getByText("場の管理スペ残高")).toBeVisible();
+  const metrics = await page.evaluate(() => {
+    const desk = document.querySelector<HTMLElement>(".ledger-desk");
+    return {
+      pageHeight: document.scrollingElement?.scrollHeight ?? 0,
+      viewportHeight: document.documentElement.clientHeight,
+      deskClientHeight: desk?.clientHeight ?? 0,
+      deskScrollHeight: desk?.scrollHeight ?? 0,
+    };
+  });
+  expect(metrics.pageHeight).toBeLessThanOrEqual(metrics.viewportHeight + 1);
+  expect(metrics.deskScrollHeight).toBeGreaterThan(metrics.deskClientHeight);
+  await expectNoHorizontalOverflow(page);
+});

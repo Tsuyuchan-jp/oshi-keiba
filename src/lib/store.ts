@@ -17,6 +17,8 @@ export type {
   Board,
   AddHorseOpts,
   UpdateHorseOpts,
+  EventSettlementRow,
+  TreasuryDashboard,
 } from "./storeTypes";
 
 export { MAX_SHOT_BYTES } from "./storeTypes";
@@ -36,6 +38,8 @@ export {
 } from "./storeRead";
 
 export { buildBoard, loadBoard, numberByHorseId } from "./storeBoard";
+
+export { loadTreasuryDashboard } from "./storeTreasury";
 
 export {
   captureAnalysisSnapshot,
