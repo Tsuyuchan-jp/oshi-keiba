@@ -19,9 +19,7 @@
 
 ## アーカイブ
 
-- 分析ログに `formula_version=odds-v2` / `schema_version=analysis-log-v1` を保存。ログ保存失敗は投票を妨げず管理画面へ件数を表示する — [analysis-log.md](analysis-log.md)
-
-- 投票中ボードの分析ログを追加。投票開始・投票・やり直し・取消・5分ごと・締切で板を保存し、管理の「分析ログ」からCSV一式（snapshots / odds / horses）をZIP出力できるようにした — [odds.md](odds.md)
+- 分析ログを実装クローズ（実機確認OK）。投票開始・投票・やり直し・取消・5分ごと・締切で板を保存し、管理の「分析ログ」からCSV一式（snapshots / odds / horses）をZIP出力。`formula_version=odds-v2` / `schema_version=analysis-log-v1` を保存し、ログ保存失敗は投票を妨げず管理画面へ件数を表示する — [analysis-log.md](analysis-log.md)
 
 - パドックのスマホ表示を画面高へ適応（最大18頭を横幅維持で収める）。詳細カードは閉じた状態からタップ／上スワイプで開き、開いた状態から下スワイプで閉じる。実機確認OK — [playbook.md](playbook.md)
 
