@@ -39,9 +39,11 @@ export { buildBoard, loadBoard, numberByHorseId } from "./storeBoard";
 
 export {
   captureAnalysisSnapshot,
+  captureAnalysisSnapshotSafely,
   captureCurrentIntervalSnapshot,
   listAnalysisEvents,
   listAnalysisSnapshots,
+  listAnalysisFailures,
   analysisExportZip,
   analysisExportFilename,
 } from "./analysisLog";

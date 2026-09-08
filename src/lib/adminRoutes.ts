@@ -27,6 +27,7 @@ import {
   numberByHorseId,
   listAnalysisEvents,
   listAnalysisSnapshots,
+  listAnalysisFailures,
   analysisExportFilename,
   analysisExportZip,
 } from "./store";
@@ -156,14 +157,17 @@ export async function tryAdminGet(
     const requestedId = url.searchParams.get("event");
     const event = requestedId ? await getEventById(env.DB, requestedId) : board.event;
     if (!event) return new Response("開催が見つかりません", { status: 404 });
-    const snapshots = await listAnalysisSnapshots(env.DB, event.id);
+    const [snapshots, failures] = await Promise.all([
+      listAnalysisSnapshots(env.DB, event.id),
+      listAnalysisFailures(env.DB, event.id),
+    ]);
     return html(
       layoutAdmin({
         title: "分析ログ",
         tab: "analysis",
         user: gate.user,
         eventStatus: event.status,
-        body: adminAnalysisPage({ event, events, snapshots }),
+        body: adminAnalysisPage({ event, events, snapshots, failures }),
       }),
     );
   }

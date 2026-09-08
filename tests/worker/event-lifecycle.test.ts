@@ -34,10 +34,10 @@ describe("開催ライフサイクルのHTTP結合", () => {
     expect(redirectMessage(await openRace(adminCookie)).error).toBe(false);
 
     const opened = await env.DB.prepare(
-      "SELECT cause, tv, w FROM analysis_snapshots WHERE event_id = ? ORDER BY id",
-    ).bind(eventId).all<{ cause: string; tv: number; w: number }>();
+      "SELECT cause, tv, w, formula_version, schema_version FROM analysis_snapshots WHERE event_id = ? ORDER BY id",
+    ).bind(eventId).all<{ cause: string; tv: number; w: number; formula_version: string; schema_version: string }>();
     expect(opened.results).toHaveLength(1);
-    expect(opened.results[0]).toMatchObject({ cause: "voting_open", tv: 0 });
+    expect(opened.results[0]).toMatchObject({ cause: "voting_open", tv: 0, formula_version: "odds-v2", schema_version: "analysis-log-v1" });
 
     const { cookie: memberCookie } = await registerMember("分析ログ会員");
     expect(redirectMessage(await joinRace(memberCookie)).error).toBe(false);
@@ -58,6 +58,29 @@ describe("開催ライフサイクルのHTTP結合", () => {
     const exportRes = await workerFetch(`/admin/analysis/export?event=${eventId}`, {}, adminCookie);
     expect(exportRes.headers.get("Content-Type")).toBe("application/zip");
     expect(new Uint8Array(await exportRes.arrayBuffer()).slice(0, 2)).toEqual(new Uint8Array([0x50, 0x4b]));
+  });
+
+  test("分析ログの保存に失敗しても投票は成立し、管理者向けに失敗を残す", async () => {
+    const { cookie: adminCookie } = await loginAdmin();
+    const { eventId, horseIds } = await seedReadyRace();
+    expect(redirectMessage(await openRace(adminCookie)).error).toBe(false);
+    const { cookie: memberCookie } = await registerMember("ログ失敗確認会員");
+    expect(redirectMessage(await joinRace(memberCookie)).error).toBe(false);
+    await env.DB.prepare(`CREATE TRIGGER fail_analysis_bet
+      BEFORE INSERT ON analysis_snapshots WHEN NEW.cause = 'bet'
+      BEGIN SELECT RAISE(FAIL, '分析ログ試験失敗'); END`).run();
+    try {
+      const bought = await postForm("/bet", {
+        kind: "win", h1: horseIds[0]!, h2: "", h3: "", amount: "100", operation_id: crypto.randomUUID(),
+      }, memberCookie);
+      expect(redirectMessage(bought)).toMatchObject({ error: false, message: "買いました" });
+      expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM bets WHERE event_id = ?").bind(eventId).first<{ n: number }>())?.n).toBe(1);
+      const failure = await env.DB.prepare("SELECT cause, message FROM analysis_log_failures WHERE event_id = ?").bind(eventId).first<{ cause: string; message: string }>();
+      expect(failure?.cause).toBe("bet");
+      expect(failure?.message).toContain("分析ログ試験失敗");
+    } finally {
+      await env.DB.prepare("DROP TRIGGER fail_analysis_bet").run();
+    }
   });
 
   test("出走登録から全5賭式の購入・締切・着順・公開・次開催まで進める", async () => {

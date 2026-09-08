@@ -9,6 +9,11 @@ import type { Board, EventRow, HorseRow } from "./storeTypes";
 
 export type AnalysisCause = "voting_open" | "bet" | "redo" | "scratch" | "interval" | "close";
 
+/** 式の意味を変えるときだけ上げる。値だけの変更では上げない。 */
+export const ANALYSIS_FORMULA_VERSION = "odds-v2";
+/** CSV列の意味・構造を変えるときだけ上げる。 */
+export const ANALYSIS_SCHEMA_VERSION = "analysis-log-v1";
+
 export type AnalysisSnapshotRow = {
   id: number;
   event_id: string;
@@ -20,6 +25,8 @@ export type AnalysisSnapshotRow = {
   w_time_floor: number;
   w_time_exp: number;
   lambda: number;
+  formula_version: string;
+  schema_version: string;
   w_time: number;
   w_volume: number;
   w: number;
@@ -49,6 +56,14 @@ type AnalysisOddsRow = {
 };
 
 export type AnalysisEventOption = Pick<EventRow, "id" | "title" | "status" | "created_at" | "is_current">;
+
+export type AnalysisFailureRow = {
+  id: number;
+  event_id: string | null;
+  occurred_at: number;
+  cause: AnalysisCause;
+  message: string;
+};
 
 export function analysisCauseLabel(cause: AnalysisCause): string {
   return ({
@@ -139,13 +154,13 @@ export async function captureAnalysisSnapshot(
   const board = buildBoard(event, horses, bets, now);
   const result = await db.prepare(
     `INSERT INTO analysis_snapshots (
-      event_id, captured_at, cause, seed_pool_s, pull_e, takeout_d, w_time_floor, w_time_exp, lambda,
+      event_id, captured_at, cause, seed_pool_s, pull_e, takeout_d, w_time_floor, w_time_exp, lambda, formula_version, schema_version,
       w_time, w_volume, w, win_real_total, exotic_real_total, tv,
       joined_count, bettor_count, active_bet_count, live_horse_count
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).bind(
     event.id, now, cause, event.seed_pool_s, event.pull_e, event.takeout_d,
-    event.w_time_floor, event.w_time_exp, IMPUTED_LAMBDA,
+    event.w_time_floor, event.w_time_exp, IMPUTED_LAMBDA, ANALYSIS_FORMULA_VERSION, ANALYSIS_SCHEMA_VERSION,
     board.wTime, board.wVolume, board.w, board.realTotal, board.exoticTotal, board.tv,
     counts.joined, counts.bettors, counts.activeBets, board.horses.filter((h) => !h.horse.scratched).length,
   ).run();
@@ -165,10 +180,33 @@ export async function captureAnalysisSnapshot(
   return snapshotId;
 }
 
+/** 分析ログの失敗は本体操作を失敗扱いにしない。D1も失敗時はWorkerログを最後の記録とする。 */
+export async function captureAnalysisSnapshotSafely(
+  db: D1Database,
+  eventId: string,
+  cause: AnalysisCause,
+  now = Date.now(),
+): Promise<number | null> {
+  try {
+    return await captureAnalysisSnapshot(db, eventId, cause, now);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("分析ログの保存に失敗しました:", { eventId, cause, message });
+    try {
+      await db.prepare(
+        "INSERT INTO analysis_log_failures (event_id, occurred_at, cause, message) VALUES (?, ?, ?, ?)",
+      ).bind(eventId, now, cause, message.slice(0, 500)).run();
+    } catch (recordError) {
+      console.error("分析ログ失敗の記録にも失敗しました:", recordError);
+    }
+    return null;
+  }
+}
+
 /** Cron では投票中だけを5分間隔で記録する。 */
 export async function captureCurrentIntervalSnapshot(db: D1Database, now = Date.now()): Promise<void> {
   const event = await db.prepare("SELECT id FROM events WHERE is_current = 1 LIMIT 1").first<{ id: string }>();
-  if (event) await captureAnalysisSnapshot(db, event.id, "interval", now);
+  if (event) await captureAnalysisSnapshotSafely(db, event.id, "interval", now);
 }
 
 export async function listAnalysisEvents(db: D1Database): Promise<AnalysisEventOption[]> {
@@ -182,6 +220,13 @@ export async function listAnalysisSnapshots(db: D1Database, eventId: string): Pr
   const { results } = await db.prepare(
     "SELECT * FROM analysis_snapshots WHERE event_id = ? ORDER BY captured_at DESC, id DESC",
   ).bind(eventId).all<AnalysisSnapshotRow>();
+  return results ?? [];
+}
+
+export async function listAnalysisFailures(db: D1Database, eventId: string): Promise<AnalysisFailureRow[]> {
+  const { results } = await db.prepare(
+    "SELECT * FROM analysis_log_failures WHERE event_id = ? ORDER BY occurred_at DESC, id DESC",
+  ).bind(eventId).all<AnalysisFailureRow>();
   return results ?? [];
 }
 
@@ -255,11 +300,12 @@ export async function analysisExportZip(db: D1Database, eventId: string): Promis
     db.prepare("SELECT * FROM analysis_snapshot_odds WHERE snapshot_id IN (SELECT id FROM analysis_snapshots WHERE event_id = ?) ORDER BY snapshot_id, kind, selection_key").bind(eventId).all<AnalysisOddsRow>(),
     listHorses(db, eventId),
   ]);
-  const snapshotColumns = ["snapshot_id", "captured_at_jst", "captured_at_ms", "trigger", "S", "E", "D", "w_time_floor", "w_time_exp", "lambda", "w_time", "w_volume", "w", "win_real_total", "exotic_real_total", "tv", "joined_count", "bettor_count", "active_bet_count", "live_horse_count"];
+  const snapshotColumns = ["snapshot_id", "captured_at_jst", "captured_at_ms", "trigger", "formula_version", "schema_version", "S", "E", "D", "w_time_floor", "w_time_exp", "lambda", "w_time", "w_volume", "w", "win_real_total", "exotic_real_total", "tv", "joined_count", "bettor_count", "active_bet_count", "live_horse_count"];
   const oddsColumns = ["snapshot_id", "kind", "selection_key", "selection_label", "horse_1_id", "horse_2_id", "horse_3_id", "real", "shown_odds", "seed", "imputed", "display", "is_scratched"];
   const horseColumns = ["event_id", "horse_id", "horse_number", "name", "strength", "seed_source", "is_scratched", "finish_place"];
   const snapshotCsv = csv(snapshots.map((s) => ({
     snapshot_id: s.id, captured_at_jst: jst(s.captured_at), captured_at_ms: s.captured_at, trigger: s.cause,
+    formula_version: s.formula_version, schema_version: s.schema_version,
     S: s.seed_pool_s, E: s.pull_e, D: s.takeout_d, w_time_floor: s.w_time_floor, w_time_exp: s.w_time_exp,
     lambda: s.lambda, w_time: s.w_time, w_volume: s.w_volume, w: s.w,
     win_real_total: s.win_real_total, exotic_real_total: s.exotic_real_total, tv: s.tv,

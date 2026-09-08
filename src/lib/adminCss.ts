@@ -121,6 +121,9 @@ button, select, input, textarea { font: inherit; }
 .analysis-kpis .kpi { min-width: 10rem; }
 .analysis-time, .analysis-param { font-size: .9rem !important; }
 .analysis-note { margin: .8rem 0 0; }
+.analysis-failure-kpi { border-color: #d8aaaa; background: #fff5f5; }
+.analysis-failure-kpi .v { color: var(--admin-danger); }
+.analysis-failure-note { margin: .65rem 0 0; color: #862b2b; font-size: .84rem; }
 .analysis-table td:first-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .work h2, .card h2 { font-size: 1.02rem; margin-bottom: .55rem; }
 .kpis {

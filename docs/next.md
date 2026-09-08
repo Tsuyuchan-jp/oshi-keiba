@@ -8,7 +8,6 @@
 
 ## そのあと
 
-- 分析ログへ `formula_version` / `schema_version` を追加し、保存失敗が投票成立を妨げないようにする — [analysis-log.md](analysis-log.md)
 - 票入り台帳の絞り込み実機 — [ledger.html](mocks/admin-dash/ledger.html)
 - 飛び入り時のアプリ扱い
 - 投票開始と部屋立ての前後
@@ -19,6 +18,8 @@
 ---
 
 ## アーカイブ
+
+- 分析ログに `formula_version=odds-v2` / `schema_version=analysis-log-v1` を保存。ログ保存失敗は投票を妨げず管理画面へ件数を表示する — [analysis-log.md](analysis-log.md)
 
 - 投票中ボードの分析ログを追加。投票開始・投票・やり直し・取消・5分ごと・締切で板を保存し、管理の「分析ログ」からCSV一式（snapshots / odds / horses）をZIP出力できるようにした — [odds.md](odds.md)
 

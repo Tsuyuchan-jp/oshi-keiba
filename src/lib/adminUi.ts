@@ -41,7 +41,7 @@ import {
   type BetKind,
 } from "./bets";
 import { parimutuelOdds } from "./odds";
-import { analysisCauseLabel, type AnalysisEventOption, type AnalysisSnapshotRow } from "./analysisLog";
+import { analysisCauseLabel, type AnalysisEventOption, type AnalysisFailureRow, type AnalysisSnapshotRow } from "./analysisLog";
 import { votingStartProblems } from "./storeRace";
 import {
   DEFAULT_SCORE_REQ,
@@ -1267,8 +1267,9 @@ export function adminAnalysisPage(opts: {
   event: EventRow;
   events: AnalysisEventOption[];
   snapshots: AnalysisSnapshotRow[];
+  failures: AnalysisFailureRow[];
 }): string {
-  const { event, events, snapshots } = opts;
+  const { event, events, snapshots, failures } = opts;
   const latest = snapshots[0] ?? null;
   const selected = events
     .map((item) => `<option value="${escapeHtml(item.id)}"${item.id === event.id ? " selected" : ""}>${escapeHtml(item.title || "（無題の開催）")} · ${escapeHtml(statusLabel(item.status))}</option>`)
@@ -1301,8 +1302,10 @@ export function adminAnalysisPage(opts: {
         <div class="kpi"><span class="k">記録件数</span><span class="v">${snapshots.length}</span></div>
         <div class="kpi"><span class="k">最終記録</span><span class="v analysis-time">${latest ? escapeHtml(toJstInput(latest.captured_at).replace("T", " ")) : "—"}</span></div>
         <div class="kpi"><span class="k">現在の設定 S / E / D</span><span class="v analysis-param">${formatPt(event.seed_pool_s)} / ${formatPt(event.pull_e)} / ${Math.round(event.takeout_d * 100)}%</span></div>
+        <div class="kpi${failures.length ? " analysis-failure-kpi" : ""}"><span class="k">ログ保存失敗</span><span class="v">${failures.length}</span></div>
       </div>
       <p class="note analysis-note">投票開始時、投票・やり直し・出走取消時、5分ごと、締切時に自動記録します。CSVには個別の投票者名・残高を含めません。</p>
+      ${failures.length ? `<p class="analysis-failure-note">ログ保存の失敗を ${failures.length} 件記録しています。投票自体は成立しています。最新: ${escapeHtml(toJstInput(failures[0]!.occurred_at).replace("T", " "))} JST（${escapeHtml(analysisCauseLabel(failures[0]!.cause))}）</p>` : ""}
     </section>
     <section class="work analysis-list">
       <div class="work-head"><h2>直近の記録</h2><span class="odds-meta">${snapshots.length > 40 ? `最新40件 / 全${snapshots.length}件` : `全${snapshots.length}件`}</span></div>
