@@ -44,6 +44,7 @@ export {
   listAnalysisEvents,
   listAnalysisSnapshots,
   listAnalysisFailures,
+  clearAnalysisLogForEvent,
   analysisExportZip,
   analysisExportFilename,
 } from "./analysisLog";

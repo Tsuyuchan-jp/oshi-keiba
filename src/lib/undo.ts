@@ -18,6 +18,7 @@ type Snapshot = {
   member_operations: Record<string, unknown>[];
   analysis_snapshots: Record<string, unknown>[];
   analysis_snapshot_odds: Record<string, unknown>[];
+  analysis_log_failures?: Record<string, unknown>[];
 };
 
 async function allRows(
@@ -29,7 +30,7 @@ async function allRows(
 }
 
 async function dumpSnapshot(db: D1Database): Promise<Snapshot> {
-  const [events, horses, users, grants, bets, payouts, member_operations, analysis_snapshots, analysis_snapshot_odds] = await Promise.all([
+  const [events, horses, users, grants, bets, payouts, member_operations, analysis_snapshots, analysis_snapshot_odds, analysis_log_failures] = await Promise.all([
     allRows(db, "SELECT * FROM events"),
     allRows(db, "SELECT * FROM horses"),
     allRows(db, "SELECT * FROM users"),
@@ -39,8 +40,9 @@ async function dumpSnapshot(db: D1Database): Promise<Snapshot> {
     allRows(db, "SELECT * FROM member_operations"),
     allRows(db, "SELECT * FROM analysis_snapshots"),
     allRows(db, "SELECT * FROM analysis_snapshot_odds"),
+    allRows(db, "SELECT * FROM analysis_log_failures"),
   ]);
-  return { events, horses, users, grants, bets, payouts, member_operations, analysis_snapshots, analysis_snapshot_odds };
+  return { events, horses, users, grants, bets, payouts, member_operations, analysis_snapshots, analysis_snapshot_odds, analysis_log_failures };
 }
 
 function v(row: Record<string, unknown>, key: string): unknown {
@@ -206,12 +208,14 @@ function insertAnalysisSnapshots(db: D1Database, rows: Record<string, unknown>[]
   return rows.map((r) => db.prepare(
     `INSERT INTO analysis_snapshots (
       id, event_id, captured_at, cause, seed_pool_s, pull_e, takeout_d, w_time_floor, w_time_exp, lambda,
+      formula_version, schema_version,
       w_time, w_volume, w, win_real_total, exotic_real_total, tv,
       joined_count, bettor_count, active_bet_count, live_horse_count
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).bind(
     v(r, "id"), v(r, "event_id"), v(r, "captured_at"), v(r, "cause"),
     v(r, "seed_pool_s"), v(r, "pull_e"), v(r, "takeout_d"), v(r, "w_time_floor"), v(r, "w_time_exp"), v(r, "lambda"),
+    v(r, "formula_version") ?? "odds-v2", v(r, "schema_version") ?? "analysis-log-v1",
     v(r, "w_time"), v(r, "w_volume"), v(r, "w"), v(r, "win_real_total"), v(r, "exotic_real_total"), v(r, "tv"),
     v(r, "joined_count"), v(r, "bettor_count"), v(r, "active_bet_count"), v(r, "live_horse_count"),
   ));
@@ -228,6 +232,12 @@ function insertAnalysisOdds(db: D1Database, rows: Record<string, unknown>[]) {
     v(r, "horse_1"), v(r, "horse_2"), v(r, "horse_3"), v(r, "real"), v(r, "shown_odds"),
     v(r, "seed"), v(r, "imputed"), v(r, "display"), v(r, "is_scratched"),
   ));
+}
+
+function insertAnalysisFailures(db: D1Database, rows: Record<string, unknown>[]) {
+  return rows.map((r) => db.prepare(
+    "INSERT INTO analysis_log_failures (id, event_id, occurred_at, cause, message) VALUES (?, ?, ?, ?, ?)",
+  ).bind(v(r, "id"), v(r, "event_id"), v(r, "occurred_at"), v(r, "cause"), v(r, "message")));
 }
 
 /** 検証を通った管理操作の直前に呼ぶ。失敗した操作では呼ばないこと */
@@ -290,7 +300,10 @@ export async function applyAdminUndo(db: D1Database): Promise<string> {
     throw new Error("巻き戻しデータが壊れています");
   }
 
+  // 0017 より前に作られたUndoデータには失敗履歴がないため、その場合は既存履歴を消さない。
+  const restoreAnalysisFailures = Array.isArray(snap.analysis_log_failures);
   const stmts = [
+    ...(restoreAnalysisFailures ? [db.prepare("DELETE FROM analysis_log_failures")] : []),
     db.prepare("DELETE FROM analysis_snapshot_odds"),
     db.prepare("DELETE FROM analysis_snapshots"),
     db.prepare("DELETE FROM member_operations"),
@@ -309,6 +322,7 @@ export async function applyAdminUndo(db: D1Database): Promise<string> {
     ...insertPayouts(db, snap.payouts),
     ...insertAnalysisSnapshots(db, snap.analysis_snapshots ?? []),
     ...insertAnalysisOdds(db, snap.analysis_snapshot_odds ?? []),
+    ...(restoreAnalysisFailures ? insertAnalysisFailures(db, snap.analysis_log_failures!) : []),
   ];
   for (let i = 0; i < stmts.length; i += 40) {
     await db.batch(stmts.slice(i, i + 40));

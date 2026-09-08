@@ -10,6 +10,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await env.DB.batch([
+    env.DB.prepare("DELETE FROM analysis_log_failures"),
     env.DB.prepare("DELETE FROM member_operations"),
     env.DB.prepare("DELETE FROM payouts"),
     env.DB.prepare("DELETE FROM bets"),

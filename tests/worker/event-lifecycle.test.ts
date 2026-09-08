@@ -1,5 +1,8 @@
 import { env } from "cloudflare:workers";
 import { describe, expect, test } from "vitest";
+import { loadBoard } from "../../src/lib/store";
+import { revertVotingToSetup } from "../../src/lib/storeRace";
+import { applyAdminUndo } from "../../src/lib/undo";
 import {
   joinRace,
   loginAdmin,
@@ -81,6 +84,34 @@ describe("開催ライフサイクルのHTTP結合", () => {
     } finally {
       await env.DB.prepare("DROP TRIGGER fail_analysis_bet").run();
     }
+  });
+
+  test("投票を登録へ戻すと分析ログを消し、Undoで投票とログをまとめて復元する", async () => {
+    const { cookie: adminCookie } = await loginAdmin();
+    const { eventId, horseIds } = await seedReadyRace();
+    expect(redirectMessage(await openRace(adminCookie)).error).toBe(false);
+    const { cookie: memberCookie } = await registerMember("復旧ログ確認会員");
+    expect(redirectMessage(await joinRace(memberCookie)).error).toBe(false);
+    expect(redirectMessage(await postForm("/bet", {
+      kind: "win", h1: horseIds[0]!, h2: "", h3: "", amount: "100", operation_id: crypto.randomUUID(),
+    }, memberCookie)).error).toBe(false);
+    await env.DB.prepare(
+      "INSERT INTO analysis_log_failures (event_id, occurred_at, cause, message) VALUES (?, ?, 'bet', '復旧試験用')",
+    ).bind(eventId, Date.now()).run();
+
+    await revertVotingToSetup(env.DB, (await loadBoard(env.DB)).event);
+    expect((await eventState(eventId)).status).toBe("setup");
+    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM analysis_snapshots WHERE event_id = ?").bind(eventId).first<{ n: number }>())?.n).toBe(0);
+    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM analysis_log_failures WHERE event_id = ?").bind(eventId).first<{ n: number }>())?.n).toBe(0);
+
+    expect(await applyAdminUndo(env.DB)).toBe("投票を取り消して登録に戻す");
+    expect((await eventState(eventId)).status).toBe("voting");
+    const restored = await env.DB.prepare(
+      "SELECT formula_version, schema_version FROM analysis_snapshots WHERE event_id = ? ORDER BY id",
+    ).bind(eventId).all<{ formula_version: string; schema_version: string }>();
+    expect(restored.results).toHaveLength(2);
+    expect(restored.results[0]).toMatchObject({ formula_version: "odds-v2", schema_version: "analysis-log-v1" });
+    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM analysis_log_failures WHERE event_id = ?").bind(eventId).first<{ n: number }>())?.n).toBe(1);
   });
 
   test("出走登録から全5賭式の購入・締切・着順・公開・次開催まで進める", async () => {

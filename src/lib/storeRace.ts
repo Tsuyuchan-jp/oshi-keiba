@@ -34,7 +34,7 @@ import {
 } from "./storeTypes";
 import { parseEnabledKinds } from "./bets";
 import { eventScoreSetup } from "./storeEvent";
-import { captureAnalysisSnapshotSafely } from "./analysisLog";
+import { captureAnalysisSnapshotSafely, clearAnalysisLogForEvent } from "./analysisLog";
 
 /** 投票開始前に満たすべき、画面と API で共通の条件。 */
 export function votingStartProblems(
@@ -533,4 +533,5 @@ export async function revertVotingToSetup(
     )
     .bind(event.id)
     .run();
+  await clearAnalysisLogForEvent(db, event.id);
 }

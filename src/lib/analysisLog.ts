@@ -230,6 +230,15 @@ export async function listAnalysisFailures(db: D1Database, eventId: string): Pro
   return results ?? [];
 }
 
+/** 投票を登録へ戻した開催の分析途中経過は、次の投票と混在させない。 */
+export async function clearAnalysisLogForEvent(db: D1Database, eventId: string): Promise<void> {
+  await db.batch([
+    db.prepare("DELETE FROM analysis_log_failures WHERE event_id = ?").bind(eventId),
+    // analysis_snapshot_odds は FK の ON DELETE CASCADE で同時に消える。
+    db.prepare("DELETE FROM analysis_snapshots WHERE event_id = ?").bind(eventId),
+  ]);
+}
+
 function csvCell(value: string | number | null | undefined): string {
   if (value == null) return "";
   const raw = String(value);

@@ -17,7 +17,7 @@
 
 ### Changed
 
-- 分析ログを実装クローズ（実機確認OK）。スナップショットとCSVに `formula_version=odds-v2` / `schema_version=analysis-log-v1` を保存し、ログ保存失敗は投票を妨げず管理画面で確認できるようにした
+- 分析ログを実装クローズ（実機確認OK）。スナップショットとCSVに `formula_version=odds-v2` / `schema_version=analysis-log-v1` を保存し、ログ保存失敗は投票を妨げず管理画面で確認できるようにした。ローカルの投票復旧・Undoではログも連動して削除／復元する
 
 ## 0.5.1 — 2026-09-06
 
