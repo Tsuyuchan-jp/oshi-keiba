@@ -8,6 +8,7 @@
 
 ## そのあと
 
+- 分析ログへ `formula_version` / `schema_version` を追加し、保存失敗が投票成立を妨げないようにする — [analysis-log.md](analysis-log.md)
 - 票入り台帳の絞り込み実機 — [ledger.html](mocks/admin-dash/ledger.html)
 - 飛び入り時のアプリ扱い
 - 投票開始と部屋立ての前後

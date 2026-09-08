@@ -15,6 +15,8 @@ reports/
 
 日付はレース／投票日（JST）。試運転（メンバーシップエクストラLoH）は [2026-08-23/](2026-08-23/)。
 
+分析ログを使う開催では、管理から出したCSV一式と、AIが生成した分析用 Markdown / HTML も同じ日付フォルダへ置く。分析の前提・CSV契約は [analysis-log.md](../docs/analysis-log.md) を正とする。
+
 HTML の再生成:
 
 - 第1回再生: `node --experimental-strip-types scripts/trial-odds-report.ts`
