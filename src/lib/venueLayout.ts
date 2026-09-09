@@ -280,7 +280,7 @@ function sheetHeadHtml(withPlace: boolean): string {
   return `<div class="sheet-row head" role="row">
     <span class="c-num" role="columnheader">#</span>
     <span class="c-name" role="columnheader">ウマ娘</span>
-    <span class="c-runner" role="columnheader">出走者</span>
+    <span class="c-runner" role="columnheader">トレーナー</span>
     <span class="c-style" role="columnheader">脚質</span>
     <span class="c-odds" role="columnheader">オッズ</span>
     ${place}

@@ -633,10 +633,11 @@ ${MEMBER_MOBILE_CHROME_CSS}
       var(--scene-landscape);
     background-position: center, center;
   }
-  /* PC: 横幅は従来。高さ上限と単勝表の字だけ上げる。モバイルの clamp 上限は触らない */
+  /* PC: 横幅は従来。高さ上限と単勝表の字、トレーナー列だけ広げる。モバイルの clamp 上限は触らない */
   .sheet {
     font-size: 1.1rem;
     --sheet-pad-y: .42rem;
+    --col-runner: 9rem;
     --col-odds: 7rem;
   }
   .sheet-row.head { font-size: .8rem; }

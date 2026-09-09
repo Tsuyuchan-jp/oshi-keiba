@@ -4,7 +4,7 @@
 
 ## 次にやること
 
-- PC場内の高さ・字スケール（横幅は従来どおり）のユーザー実機確認 — [playbook.md](operations/playbook.md)
+- PC場内の高さ・字スケール、トレーナー列幅と列頭のユーザー実機確認 — [playbook.md](operations/playbook.md)
 
 ## そのあと
 
