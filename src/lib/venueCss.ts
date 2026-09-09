@@ -633,10 +633,20 @@ ${MEMBER_MOBILE_CHROME_CSS}
       var(--scene-landscape);
     background-position: center, center;
   }
+  /* PC: 盤を画面に近づけ、単勝表の字を上げる。モバイルの clamp 上限は触らない */
+  .sheet {
+    font-size: 1.1rem;
+    --sheet-pad-y: .42rem;
+    --col-odds: 7rem;
+  }
+  .sheet-row.head { font-size: .8rem; }
+  .c-odds { font-size: 1.25rem; }
+  .sheet-row.head .c-odds,
+  .sheet-row.head .c-place { font-size: .8rem; }
   .scene .app-shell {
-    width: min(68rem, calc(100vw - 4rem));
+    width: min(88rem, calc(100vw - 3rem));
     height: auto;
-    max-height: min(36rem, calc(100dvh - 4rem));
+    max-height: calc(100dvh - 3rem);
     margin: 0;
     overflow: hidden;
   }
