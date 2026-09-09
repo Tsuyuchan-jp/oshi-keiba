@@ -456,7 +456,7 @@ export function betBuyPage(opts: {
         ${kindsNavHtml(opts.kind, opts.board.event.enabled_kinds, candidate?.id, opts.slot)}
         ${candidateBarHtml({ kind: opts.kind, candidate, slot: opts.slot })}
         <p class="hint" id="hint">${escapeHtml(slots.hint)}</p>
-        <div class="wells" id="wells"></div>
+        <div class="wells wells--${slots.labels.length}" id="wells"></div>
         <div class="board" id="board"></div>
         ${comboMiniHtml(opts.board, opts.kind)}
         <div class="tickets">
