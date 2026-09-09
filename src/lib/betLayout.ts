@@ -266,6 +266,10 @@ function markCardScript(opts: {
   const preview = ${opts.preview ? "true" : "false"};
   const horses = ${JSON.stringify(opts.horses)};
   const byNum = new Map(horses.map((h) => [h.number, h]));
+  const splitAt = Math.ceil(horses.length / 2);
+  const displayHorses = horses.slice(0, splitAt).flatMap((horse, index) =>
+    [horse, horses[splitAt + index]].filter(Boolean)
+  );
   let picks = labels.map(() => null);
   const candidate = horses.find((horse) => horse.id === ${JSON.stringify(opts.candidateHorseId ?? null)});
   const candidateNumber = candidate?.number ?? null;
@@ -339,7 +343,7 @@ function markCardScript(opts: {
         \${odds}
       </button>\`;
     }).join("");
-    board.innerHTML = horses.map((h) => {
+    board.innerHTML = displayHorses.map((h) => {
       const on = picks.includes(h.number);
       const od = h.odds == null || !Number.isFinite(h.odds) ? "—" : Number(h.odds).toFixed(1);
       return \`<button type="button" class="chip\${on ? " on" : ""}" data-n="\${h.number}" data-sel="\${h.id}" data-horse-id="\${h.id}">
