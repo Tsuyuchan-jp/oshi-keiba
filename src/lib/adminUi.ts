@@ -996,7 +996,9 @@ function pipeHtml(
   const costNames = staminaRate.costs.length
     ? staminaRate.costs.map((skill) => `${skill.name} −${fmtPercent(skill.rate)}`).join(" / ")
     : "なし";
-  const staLine = `実効スタミナ <b>${fmt3(b.effectiveStamina)}</b> → ${sMultLine(b.ratios.staminaMult, staminaFormula)}<br><span class="pipe-s-calc">回復: ${escapeHtml(recoveryNames)}　消費: ${escapeHtml(costNames)}</span>`;
+  const staLine = `<div class="pipe-stamina-result">×${fmt3(b.ratios.staminaMult)} ← 実効スタミナ <b>${fmt3(b.effectiveStamina)}</b></div>
+    <div class="pipe-s-calc pipe-stamina-formula">${escapeHtml(staminaFormula)}</div>
+    <div class="pipe-s-calc pipe-stamina-effects">回復: ${escapeHtml(recoveryNames)}　消費: ${escapeHtml(costNames)}</div>`;
   const stratPart =
     s.strategicPoints > 0 ? ` ＋ 戦略例外 ${s.strategicPoints}` : "";
   const specLine = cs.totalBab > 0 && cs.medianBab > 0

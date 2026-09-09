@@ -41,8 +41,11 @@ test("出走登録の材料に回復と自己消費の内訳を表示する", ()
   );
   assert.match(html, /回復スキル（合計 \+5\.5%）/);
   assert.match(html, /円弧のマエストロ/);
-  assert.match(html, /スタミナ消費スキル（有効・合計 −2%）/);
+  assert.match(html, /スタミナ消費スキル（有効スキルに含まれる・合計 −2%）/);
   assert.match(html, /勇往邁進/);
+  assert.ok(html.indexOf("スタミナ消費スキル") < html.indexOf("戦略例外スキル"));
+  const rejected = html.slice(html.indexOf("不採用スキル"), html.indexOf("OCR落ちスキル"));
+  assert.doesNotMatch(rejected, /円弧のマエストロ/);
 });
 
 test("OCR読取確認用のブラウザスクリプトを生成できる", () => {

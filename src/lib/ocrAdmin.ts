@@ -7,6 +7,7 @@ import { greenSkillByName } from "./greenSkills";
 import { skillCountsAsGoldLike, skillCountsInBase, TAMERAI_IDS } from "./score";
 import {
   staminaSkillBreakdown,
+  staminaSkillFor,
   staminaSkillsJsonForPage,
   type AppliedStaminaSkill,
 } from "./staminaSkills";
@@ -109,10 +110,15 @@ export function registerMaterialsHtml(
       !(id != null && strategicById.has(id)) &&
       skillCountsInBase(name, id, effectiveIds),
   );
+  // 純回復は回復欄だけに出す。U-tools の不採用候補と二重表示しない。
+  const rejected = parts.rejected.filter((skill) => {
+    const stamina = staminaSkillFor(skill.name, skill.id);
+    return !(stamina && stamina.recovery > 0 && !stamina.compoundRecovery);
+  });
   const goldLike = parts.effective.filter((h) =>
     skillCountsAsGoldLike(h.name, h.id),
   ).length;
-  const cand = strategicCandidates(parts.rejected, strategicById, dismissedIds);
+  const cand = strategicCandidates(rejected, strategicById, dismissedIds);
   const rejectedLink =
     canEditStrategic && cand.length
       ? ` <button type="button" class="linkish" data-strategic-rejected="${escapeHtml(JSON.stringify(cand))}">例外に追加…</button>`
@@ -139,16 +145,16 @@ export function registerMaterialsHtml(
     </div>
     <p class="set-k" style="margin-top:.85rem">有効スキル（総有効スキル数 ${parts.effective.length} / 金相当スキル数 ${goldLike}）</p>
     <div class="reg-chips">${skillChipsHtml(parts.effective, "なし")}</div>
+    <p class="set-k" style="margin-top:.85rem">スタミナ消費スキル（有効スキルに含まれる・合計 −${percentText(staminaEffects.staminaCostRate)}）</p>
+    <div class="reg-chips">${staminaSkillChipsHtml(staminaEffects.costs, "−")}</div>
     <p class="set-k" style="margin-top:.85rem">戦略例外スキル（合計 ${parts.strategicPoints} 点）</p>
     <div class="reg-chips">${strategicChipsHtml(parts.strategic, "なし")}</div>
     <p class="set-k" style="margin-top:.85rem">緑スキル</p>
     <div class="reg-chips">${skillChipsHtml(parts.greens, "なし")}</div>
     <p class="set-k" style="margin-top:.85rem">回復スキル（合計 +${percentText(staminaEffects.recoveryRate)}）</p>
     <div class="reg-chips">${staminaSkillChipsHtml(staminaEffects.recoveries, "+")}</div>
-    <p class="set-k" style="margin-top:.85rem">スタミナ消費スキル（有効・合計 −${percentText(staminaEffects.staminaCostRate)}）</p>
-    <div class="reg-chips">${staminaSkillChipsHtml(staminaEffects.costs, "−")}</div>
     <p class="set-k" style="margin-top:.85rem">不採用スキル${rejectedLink}</p>
-    <div class="reg-chips">${skillChipsHtml(parts.rejected, "なし")}</div>
+    <div class="reg-chips">${skillChipsHtml(rejected, "なし")}</div>
     <p class="set-k" style="margin-top:.85rem">OCR落ちスキル</p>
     <div class="reg-chips">${skillChipsHtml(skipped, "なし")}</div>`;
 }
@@ -582,6 +588,10 @@ export function ocrAdminScript(
       staminaCostRate: costs.reduce((sum, skill) => sum + skill.rate, 0),
     };
   }
+  function isPureRecovery(hit) {
+    const skill = STAMINA_BY_ID.get(hit.id) || STAMINA_BY_NAME.get(String(hit.name || "").trim());
+    return !!(skill && skill.recovery > 0 && !skill.compoundRecovery);
+  }
   function rejectedLinkHtml(rejected) {
     const sm = strategicMap();
     const cand = rejected.filter((h) => h.id != null && !sm.has(h.id) && !DISMISSED.has(h.id));
@@ -609,6 +619,7 @@ export function ocrAdminScript(
     const missHits = lastHits.filter((h) => !h.ok);
     const parts = partitionOkHits(okHits);
     const stamina = staminaEffects(okHits);
+    const rejected = parts.rejected.filter((hit) => !isPureRecovery(hit));
     const goldLike = parts.effective.filter((h) => {
       const n = String(h.name || "").trim();
       if (h.kind === "gold") return true;
@@ -618,7 +629,7 @@ export function ocrAdminScript(
       return false;
     }).length;
     const ocrMiss = missHits.map((h) => ({ name: h.input, kind: "unknown" }));
-    const rejLink = rejectedLinkHtml(parts.rejected);
+    const rejLink = rejectedLinkHtml(rejected);
     el.innerHTML =
       '<div class="reg-stats">' +
         '<div class="reg-stat"><span class="k">速</span><span class="v">' + esc(st.speed) + "</span></div>" +
@@ -637,16 +648,16 @@ export function ocrAdminScript(
       "</div>" +
       '<p class="set-k" style="margin-top:.85rem">有効スキル（総有効スキル数 ' + parts.effective.length + " / 金相当スキル数 " + goldLike + "）</p>" +
       '<div class="reg-chips">' + chipsHtml(parts.effective, "なし") + "</div>" +
+      '<p class="set-k" style="margin-top:.85rem">スタミナ消費スキル（有効スキルに含まれる・合計 −' + rateText(stamina.staminaCostRate) + "）</p>" +
+      '<div class="reg-chips">' + staminaChipsHtml(stamina.costs, "−") + "</div>" +
       '<p class="set-k" style="margin-top:.85rem">戦略例外スキル（合計 ' + parts.strategicPoints + " 点）</p>" +
       '<div class="reg-chips">' + strategicChipsHtml(parts.strategic) + "</div>" +
       '<p class="set-k" style="margin-top:.85rem">緑スキル</p>' +
       '<div class="reg-chips">' + chipsHtml(parts.greens, "なし") + "</div>" +
       '<p class="set-k" style="margin-top:.85rem">回復スキル（合計 +' + rateText(stamina.recoveryRate) + "）</p>" +
       '<div class="reg-chips">' + staminaChipsHtml(stamina.recoveries, "+") + "</div>" +
-      '<p class="set-k" style="margin-top:.85rem">スタミナ消費スキル（有効・合計 −' + rateText(stamina.staminaCostRate) + "）</p>" +
-      '<div class="reg-chips">' + staminaChipsHtml(stamina.costs, "−") + "</div>" +
       '<p class="set-k" style="margin-top:.85rem">不採用スキル' + rejLink + "</p>" +
-      '<div class="reg-chips">' + chipsHtml(parts.rejected, "なし") + "</div>" +
+      '<div class="reg-chips">' + chipsHtml(rejected, "なし") + "</div>" +
       '<p class="set-k" style="margin-top:.85rem">OCR落ちスキル</p>' +
       '<div class="reg-chips">' + chipsHtml(ocrMiss, "なし", "skip") + "</div>";
   }

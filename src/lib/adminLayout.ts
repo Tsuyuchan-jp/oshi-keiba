@@ -69,7 +69,9 @@ export function layoutAdmin(opts: {
                 ? "gougai-page"
                 : opts.tab === "progress"
                   ? "progress-page"
-                  : "";
+                  : opts.tab === "horses"
+                    ? "horses-page"
+                    : "";
   const mainFlash = opts.tab === "settings" || opts.tab === "register" ? "" : flash;
   return `<!doctype html>
 <html lang="ja">

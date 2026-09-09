@@ -394,6 +394,18 @@ body.ledger-page .filters select {
   gap: 1rem;
   align-items: start;
 }
+/* 出走: 名簿と計算内訳をダッシュボード内で独立してスクロールする。 */
+body.horses-page { overflow: hidden; }
+body.horses-page .dash { height: 100dvh; min-height: 0; overflow: hidden; }
+body.horses-page .main {
+  display: flex; flex-direction: column; min-height: 0; height: 100%; overflow: hidden;
+  padding: 1rem 1.25rem 2.4rem;
+}
+body.horses-page .horses-desk { flex: 1 1 auto; min-height: 0; align-items: stretch; }
+body.horses-page .horses-desk > .work { min-height: 0; margin-bottom: 0; overflow: auto; }
+body.horses-page .horses-desk .pipe {
+  min-height: 0; height: 100%; max-height: 100%; overflow: auto; position: static;
+}
 .reg-list { display: flex; flex-direction: column; gap: .2rem; }
 .reg-row {
   display: grid;
@@ -728,6 +740,9 @@ body.ledger-page .filters select {
 .pipe-eq { font-size: .78rem; color: #3d4550; margin: .15rem 0 0; font-variant-numeric: tabular-nums; word-break: break-word; }
 .pipe-r-calc, .pipe-s-calc { color: #8b939e; font-size: .82em; margin-left: .35rem; font-weight: 400; }
 .pipe-green { font-size: .85rem; line-height: 1.45; }
+.pipe-stamina-result { font-variant-numeric: tabular-nums; }
+.pipe-stamina-formula, .pipe-stamina-effects { display: block; margin: .18rem 0 0; line-height: 1.45; }
+.pipe-stamina-formula { margin-left: 0; }
 .shot-thumb {
   display: block; width: 10.6rem; height: 4.15rem; overflow: hidden; margin: 0; padding: 0;
   border: 1px solid var(--admin-line); border-radius: 6px; background: #1a1c1f; cursor: pointer; flex: 0 0 auto;
@@ -1734,6 +1749,12 @@ body.gougai-page .gougai-desk .work:last-child { overflow: auto; }
   body.register-page .main { height: auto; overflow: visible; }
   body.register-page .register-desk { display: flex; flex-direction: column; height: auto; flex: none; }
   body.register-page .register-desk .work { height: min(70vh, 28rem); }
+  body.horses-page { overflow: auto; }
+  body.horses-page .dash { height: auto; min-height: 100dvh; }
+  body.horses-page .main { height: auto; overflow: visible; }
+  body.horses-page .horses-desk { display: flex; flex-direction: column; height: auto; flex: none; }
+  body.horses-page .horses-desk > .work,
+  body.horses-page .horses-desk .pipe { width: 100%; height: auto; max-height: none; overflow: visible; }
   body.umabashira-page { overflow: auto; }
   body.umabashira-page .dash { height: auto; min-height: 100dvh; }
   body.umabashira-page .main { height: auto; overflow: visible; }
