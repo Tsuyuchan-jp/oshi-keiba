@@ -12,6 +12,7 @@
   let mobileGroupCount = 1;
   let mobileRowCount = 1;
   let swipeToCloseEnabled = false;
+  const trainerIconPreloads = [];
   const esc = (v) => String(v ?? "").replace(/[&<>\"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const rowsFor = (horses, mobile = false) => {
     const p = mobile
@@ -225,15 +226,29 @@
     image.alt = `${name}の育成スクリーンショット`;
     shotDialog.showModal();
   };
+  const preloadTrainerIcons = () => {
+    const urls = [...new Set(view.horses.map((horse) => horse.trainerIconUrl).filter(Boolean))];
+    urls.forEach((url) => {
+      const image = new Image();
+      image.decoding = "async";
+      image.fetchPriority = "low";
+      image.src = url;
+      trainerIconPreloads.push(image);
+    });
+  };
   const open = (h) => {
     document.querySelectorAll(".horse").forEach((x) => x.classList.toggle("selected", x.dataset.id === h.id));
-    const icon = h.trainerIconUrl ? `<img src="${esc(h.trainerIconUrl)}" alt="${esc(h.trainerName)}のアイコン">` : '<span class="trainer-placeholder">Trainer</span>';
+    const icon = h.trainerIconUrl
+      ? `<span class="trainer-icon"><span class="trainer-icon__placeholder" aria-hidden="true">…</span><img src="${esc(h.trainerIconUrl)}" alt="${esc(h.trainerName)}のアイコン" decoding="async"></span>`
+      : '<span class="trainer-placeholder">Trainer</span>';
     const trainer = `<div class="trainer-profile">${icon}<div><span>TRAINER</span><b>${esc(h.trainerName)}</b></div></div>`;
     const comment = h.comment ? `<blockquote>${esc(h.comment)}</blockquote>` : '<blockquote>意気込みコメントは未登録です</blockquote>';
     const trainerSection = view.commentsEnabled ? `${trainer}<div class="trainer-comment">${comment}</div>` : trainer;
     const shot = h.shotUrl ? '<button type="button" class="shot-action">育成スクリーンショットを見る</button>' : "";
     detail.className = "detail open";
     detail.innerHTML = `<div class="detail__summary"><small>下にスワイプして閉じる</small></div><div class="detail__heading"><span>${esc(h.styleLabel)}</span>　<span>${h.number}番</span></div><div class="profile">${h.detailImageUrl ? `<img src="${esc(h.detailImageUrl)}" alt="${esc(h.umaName)}">` : ""}<div class="profile-text"><h2>${esc(h.umaName)}</h2>${h.dressName ? `<p class="profile-dress">${esc(h.dressName)}</p>` : ""}<strong>${odds(h.odds)}</strong></div></div>${trainerSection}<section class="skill"><div><span>スキルパワー</span><b>${h.skillPower ?? "—"}</b></div><small>有効 ${h.skillSummary?.effective ?? 0}　金相当 ${h.skillSummary?.goldLike ?? 0}　戦略 +${h.skillSummary?.strategic ?? 0}</small></section><section class="status"><h3>基礎能力</h3>${stats(h)}${aptitudeBadges(h.aptitudes)}</section><div class="actions">${shot}<a class="candidate" href="/bet?candidate=${encodeURIComponent(h.id)}">このウマ娘を投票候補にする →</a></div>`;
+    const trainerImage = detail.querySelector(".trainer-icon img");
+    trainerImage?.addEventListener("load", () => trainerImage.classList.add("is-loaded"), { once: true });
     detail.querySelector(".shot-action")?.addEventListener("click", () => openShot(h.shotUrl, h.umaName));
     if (matchMedia("(max-width:700px)").matches) {
       enableSwipeToClose();
@@ -291,6 +306,7 @@
   detail.className = "detail detail--empty";
   detail.textContent = "ウマ娘を選ぶと、ここに詳細が表示されます";
   renderGroups();
+  preloadTrainerIcons();
   window.addEventListener("resize", fitMobileHeight);
   window.visualViewport?.addEventListener("resize", fitMobileHeight);
 })();
