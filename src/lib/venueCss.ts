@@ -721,6 +721,8 @@ ${MEMBER_MOBILE_GLASS_CSS}
   .scene[data-phase="published"] .sheet-wrap {
     overflow: visible;
   }
+  /* 全頭表の行が狭い画面で横に広がっても、枠の外へ罫線を描画しない */
+  .scene[data-phase="published"] .sheet-wrap { overflow-x: clip; }
   .scene[data-phase="published"] .board,
   .scene[data-phase="published"] .jumbo,
   .scene[data-phase="published"] .cols,
@@ -736,7 +738,7 @@ ${MEMBER_MOBILE_GLASS_CSS}
   .scene[data-phase="published"] .sheet-row {
     grid-template-columns:
       var(--col-num)
-      minmax(9em, 1fr)
+      minmax(0, 1fr)
       var(--col-runner)
       var(--col-odds)
       var(--col-place);
