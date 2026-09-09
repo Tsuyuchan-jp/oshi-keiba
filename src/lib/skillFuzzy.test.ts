@@ -4,6 +4,7 @@ import {
   diceCoefficient,
   editDistance,
   fuzzyMatchSkill,
+  resolveEditedSkills,
   resolveOcrSkills,
   applySenmanSkeleton,
   normalizeSkillLabel,
@@ -137,4 +138,12 @@ test("resolveOcrSkills は採用分だけ並べる", () => {
   assert.ok(skillNames.includes("千鍛万錬"));
   assert.equal(skillNames.length, skillIds.length);
   assert.ok(!skillNames.includes("@@@"));
+});
+
+test("resolveEditedSkills", () => {
+  const resolved = resolveEditedSkills(["地固め", "右回り○", "辞書にないスキル"]);
+  assert.deepEqual(resolved, {
+    skillNames: ["地固め", "右回り○", "辞書にないスキル"],
+    skillIds: [201601, 200012, null],
+  });
 });

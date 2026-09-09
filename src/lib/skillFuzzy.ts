@@ -278,6 +278,26 @@ export function resolveOcrSkills(rawSkills: ReadonlyArray<string>): {
   return { skillNames, skillIds, hits };
 }
 
+/**
+ * 出走編集で手入力されたスキルを、OCR と同じ辞書で ID 化する。
+ * 照合できない入力も表示・保存は残し、評価用 ID だけ null にする。
+ */
+export function resolveEditedSkills(rawSkills: ReadonlyArray<string>): {
+  skillNames: string[];
+  skillIds: (number | null)[];
+} {
+  const skillNames: string[] = [];
+  const skillIds: (number | null)[] = [];
+  for (const [index, raw] of rawSkills.entries()) {
+    const input = String(raw ?? "").trim();
+    if (!input) continue;
+    const hit = fuzzyMatchSkill(input, index === 0);
+    skillNames.push(hit.accepted ? hit.name : input);
+    skillIds.push(hit.accepted ? hit.id : null);
+  }
+  return { skillNames, skillIds };
+}
+
 export function catalogSkills(): readonly CatalogSkill[] {
   return SKILLS;
 }
