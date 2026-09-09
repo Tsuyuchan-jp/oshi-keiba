@@ -730,5 +730,16 @@ ${MEMBER_MOBILE_GLASS_CSS}
     min-height: 0;
   }
   .scene[data-phase="published"] .j-fin { width: 100%; }
+  /* 全頭: 脚質を外しオッズを縮めてウマ娘9文字分を確保。PC・投票中は触らない */
+  .scene[data-phase="published"] .sheet { --col-odds: 3.4rem; }
+  .scene[data-phase="published"] .c-style { display: none; }
+  .scene[data-phase="published"] .sheet-row {
+    grid-template-columns:
+      var(--col-num)
+      minmax(9em, 1fr)
+      var(--col-runner)
+      var(--col-odds)
+      var(--col-place);
+  }
 }
 `;
