@@ -18,6 +18,8 @@
 
 ## アーカイブ
 
+- スマホ窓口の選択操作を実装クローズ（必要頭数の選択後に購入欄を展開。三連系の選択枠は5rem固定、馬番一覧は前半を左列・後半を右列。実機確認OK）— [playbook.md](operations/playbook.md)
+
 - 場内結果公開の表示を実装クローズ（スマホはページスクロールでヘッダーも流す。確定着順はウマ娘名のみ。全頭の着は `1着` と金銀銅の電光アウトライン。特払いは列挙＋説明1回。スマホ全頭は脚質なしでウマ娘名9文字。実機確認OK）— [playbook.md](operations/playbook.md)・[layout-venue.html](mocks/venue-board/layout-venue.html)
 
 - PC場内の視認性を実装クローズ（盤幅は従来。字を上げる。列頭はトレーナー、PC列幅 9rem。2列は隙間のみで外枠なし。実機確認OK）— [playbook.md](operations/playbook.md)
