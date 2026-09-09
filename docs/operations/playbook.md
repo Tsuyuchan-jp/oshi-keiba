@@ -53,7 +53,7 @@
 
 紙面: 場内は電光（[layout-venue.html](../mocks/venue-board/layout-venue.html)。背景は日中／夕方／ナイターの生成画像、JST で切替。`?slot=` で固定可）。パドックは脚質別の出走表示と詳細カード（[stage.html](../mocks/paddock/stage.html)）。窓口・入場は quiet トーン（[quiet.html](../mocks/bet-window/quiet.html)・[gate](../mocks/gate/index.html)。背景はナイター）。枠番色・行タップで買う、はやらない。
 
-場内盤の面（採用）:
+場内盤の面（採用・実機確認OK。2026-09-09）:
 
 - `setup`: 電光盤。買うなし。「投票開始までお待ちください」。足元に控えめな「出走馬をパドックで見る」
 - `voting`: 変動あり。橙の「馬券を買う」と控えめな「パドックを見る」を並べる。着列なし
