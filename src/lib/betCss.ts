@@ -105,7 +105,6 @@ ${MEMBER_MOBILE_CHROME_CSS}
   border: 1px dashed var(--member-line-strong); background: var(--member-field-bg);
   padding: .35rem .4rem; text-align: left; cursor: pointer; color: var(--member-muted); font: inherit;
 }
-.wells--3 .well { height: 5rem; min-height: 5rem; }
 .well.fill { border-style: solid; border-color: var(--member-accent); color: var(--member-ink-bright); }
 .well .k { display: block; font-size: .65rem; color: var(--member-muted); margin-bottom: .1rem; }
 .well .v { font-weight: 700; font-size: .85rem; }
@@ -161,10 +160,6 @@ ${MEMBER_MOBILE_CHROME_CSS}
   padding: .55rem .7rem calc(.55rem + env(safe-area-inset-bottom));
   border-top: 1px solid var(--member-field-line); background: #0a0c0d;
 }
-.dock.is-compact { padding-top: .45rem; padding-bottom: calc(.45rem + env(safe-area-inset-bottom)); }
-.dock.is-compact .amt-box { gap: 0; }
-.dock.is-compact .amt-controls,
-.dock.is-compact .buy-guide { display: none; }
 .amt-box { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
 .amt-controls { display: flex; flex-direction: column; gap: 4px; }
 .amt-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
@@ -207,6 +202,13 @@ ${MEMBER_MOBILE_CHROME_CSS}
 @media (max-width: 360px) {
   .paddock-candidate { align-items: flex-start; }
   .paddock-candidate__body { align-items: flex-start; flex-direction: column; gap: .08rem; }
+}
+@media (max-width: 899px) {
+  .dock.is-compact { padding-top: .45rem; padding-bottom: calc(.45rem + env(safe-area-inset-bottom)); }
+  .dock.is-compact .amt-box { gap: 0; }
+  .dock.is-compact .amt-controls,
+  .dock.is-compact .buy-guide { display: none; }
+  .wells--3 .well { height: 5rem; min-height: 5rem; }
 }
 @media (min-width: 900px) {
   .app-shell { max-height: calc(100dvh - 3rem); }
