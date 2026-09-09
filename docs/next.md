@@ -18,6 +18,8 @@
 
 ## アーカイブ
 
+- スタミナ計算を実装クローズ（`master.mdb` 由来の回復率・自己スタミナ消費率を出走登録へ表示し、緑スキルと合わせた実効スタミナで目標値を判定。相手へのスタミナデバフは計算対象外。実機確認OK）— [score.md](specifications/score.md)・[ocr.md](specifications/ocr.md)
+
 - 場の会計を実装。結果公開時に `全投票額 − 全払戻・返還額` を管理者固定アカウントへ一度だけ移し、台帳に管理スペ残高・総発行スペ・未精算プール・全開催の精算履歴を表示。第1回を含む公開済み開催は migration で遡及精算する。PC・モバイルともページ全体を固定し、枠内スクロールを自動テストで確認 — [odds.md](specifications/odds.md)
 
 - 分析ログを実装クローズ（投票復旧・Undoとのログ連動を含め実機確認OK）。投票開始・投票・やり直し・取消・5分ごと・締切で板を保存し、管理の「分析ログ」からCSV一式（snapshots / odds / horses）をZIP出力。`formula_version=odds-v2` / `schema_version=analysis-log-v1` を保存し、ログ保存失敗は投票を妨げず管理画面へ件数を表示する — [analysis-log.md](specifications/analysis-log.md)
