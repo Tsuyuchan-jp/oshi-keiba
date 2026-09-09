@@ -633,7 +633,7 @@ ${MEMBER_MOBILE_CHROME_CSS}
       var(--scene-landscape);
     background-position: center, center;
   }
-  /* PC: 盤を画面に近づけ、単勝表の字を上げる。モバイルの clamp 上限は触らない */
+  /* PC: 横幅は従来。高さ上限と単勝表の字だけ上げる。モバイルの clamp 上限は触らない */
   .sheet {
     font-size: 1.1rem;
     --sheet-pad-y: .42rem;
@@ -644,7 +644,7 @@ ${MEMBER_MOBILE_CHROME_CSS}
   .sheet-row.head .c-odds,
   .sheet-row.head .c-place { font-size: .8rem; }
   .scene .app-shell {
-    width: min(88rem, calc(100vw - 3rem));
+    width: min(68rem, calc(100vw - 4rem));
     height: auto;
     max-height: calc(100dvh - 3rem);
     margin: 0;
