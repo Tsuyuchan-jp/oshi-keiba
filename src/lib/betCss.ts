@@ -159,6 +159,10 @@ ${MEMBER_MOBILE_CHROME_CSS}
   padding: .55rem .7rem calc(.55rem + env(safe-area-inset-bottom));
   border-top: 1px solid var(--member-field-line); background: #0a0c0d;
 }
+.dock.is-compact { padding-top: .45rem; padding-bottom: calc(.45rem + env(safe-area-inset-bottom)); }
+.dock.is-compact .amt-box { gap: 0; }
+.dock.is-compact .amt-controls,
+.dock.is-compact .buy-guide { display: none; }
 .amt-box { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
 .amt-controls { display: flex; flex-direction: column; gap: 4px; }
 .amt-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }

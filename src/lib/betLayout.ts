@@ -279,6 +279,7 @@ function markCardScript(opts: {
   const buy = document.getElementById("buy");
   const wells = document.getElementById("wells");
   const board = document.getElementById("board");
+  const dock = document.querySelector(".dock");
   const amtEl = document.getElementById("amt");
   const restEl = document.getElementById("rest");
   const hintEl = document.getElementById("hint");
@@ -324,6 +325,7 @@ function markCardScript(opts: {
   }
   function paint() {
     const used = new Set(picks.filter((x) => x != null));
+    dock?.classList.toggle("is-compact", picks.every((x) => x == null));
     wells.innerHTML = labels.map((name, i) => {
       const n = picks[i];
       const h = n != null ? byNum.get(n) : null;
@@ -463,7 +465,7 @@ export function betBuyPage(opts: {
           ${opts.redoHtml}
         </div>
       </div>
-      <div class="dock">
+      <div class="dock is-compact">
         <div class="amt-box">
           <div class="amt-show">金額 <b id="amt">0</b><span> スペ</span>
             <span class="rest">買うと残り <b id="rest">${bal}</b></span>
