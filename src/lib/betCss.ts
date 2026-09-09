@@ -105,7 +105,7 @@ ${MEMBER_MOBILE_CHROME_CSS}
   border: 1px dashed var(--member-line-strong); background: var(--member-field-bg);
   padding: .35rem .4rem; text-align: left; cursor: pointer; color: var(--member-muted); font: inherit;
 }
-.wells--3 .well { height: 4.2rem; min-height: 4.2rem; }
+.wells--3 .well { height: 5rem; min-height: 5rem; }
 .well.fill { border-style: solid; border-color: var(--member-accent); color: var(--member-ink-bright); }
 .well .k { display: block; font-size: .65rem; color: var(--member-muted); margin-bottom: .1rem; }
 .well .v { font-weight: 700; font-size: .85rem; }
