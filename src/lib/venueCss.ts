@@ -612,7 +612,7 @@ ${MEMBER_OVERLAY_CSS}
   --scene-landscape: url("/venue/night-16x9.png");
 }
 @media (max-width: 899px) {
-  .scene { height: 100dvh; }
+  .scene { height: 100dvh; min-height: 0; }
   .scene .app-shell {
     height: calc(100% - 28px);
     margin: 14px;
