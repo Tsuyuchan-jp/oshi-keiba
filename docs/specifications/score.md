@@ -109,7 +109,7 @@ S *= max(0, r賢≥1 ? 1+(r賢−1) : 1+(r賢−1)×6)
 - 要求パ・根・賢の初期表示は速2150・パ1600・根1200・賢1600（`DEFAULT_SCORE_REQ`）。全コース表は作らない（シナリオで目標が変わる。メンテが割に合わない）
 - 要求スタミナは脚質（逃げ・先行・差し・追込）ごとの掛かりなし／ありの8値。初期は空。スタミナ勝負の有無は開催フラグ。有志ツールの移植はしない
 
-出走は `horses.score_input`（ステ・適性・スキル名・id・脚質）。`scoreFromHorse` → Strength。OCR の id 化は [ocr.md](ocr.md)。脚質の初期選択も同ファイル。U-tools キーは 逃=runner / 先=leader / 差=betweener / 追=chaser。
+出走は `horses.score_input`（ステ・適性・スキル名・id・脚質）。`scoreFromHorse` → Strength。OCR と出走登録後の編集保存では、スキル名をカタログ照合して id 化する。辞書外のスキルは保存しても、有効スキル id との照合ができないため自動評価には入れない。OCR の id 化は [ocr.md](ocr.md)。脚質の初期選択も同ファイル。U-tools キーは 逃=runner / 先=leader / 差=betweener / 追=chaser。
 
 緑のマスタは `src/data/green-skills.json`。判定は `greenCondition.ts`（`@`=OR、`&`=AND）。開催条件＋頭の脚質で満たす緑だけ実数値に足す。人気・枠・抽選・同スキル頭数など手打ちに無いキーは不成立。OCR カタログの green（固有アイコン）とは別。枚数+1 は使わない。
 
