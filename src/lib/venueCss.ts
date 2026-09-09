@@ -224,10 +224,10 @@ ${MEMBER_OVERLAY_CSS}
 }
 .scene[data-phase="published"] .c-place { display: block; }
 .sheet-row.head .c-place { color: var(--led-dim); font-size: .68em; background: transparent; }
-/* 1〜3着は着セルだけ金・銀・銅。行左の縦線は使わない */
-.c-place.place-1 { background: rgba(224, 179, 74, .42); color: var(--member-white); }
-.c-place.place-2 { background: rgba(200, 208, 204, .34); color: var(--member-white); }
-.c-place.place-3 { background: rgba(196, 122, 58, .46); color: var(--member-white); }
+/* 1〜3着は不透明のメダル札。字は濃色。半透明だと暗い盤で濁る */
+.c-place.place-1 { background: #e0b34a; color: #140800; }
+.c-place.place-2 { background: #d4dce0; color: #140800; }
+.c-place.place-3 { background: #c47a3a; color: #140800; }
 @keyframes pulse-row {
   0% { background: var(--pulse); }
   100% { background: transparent; }
