@@ -212,6 +212,36 @@ test("パワー未達で大きく落ちる", () => {
   assert.ok(Math.abs(s.score - 0.6) < 1e-9);
 });
 
+test("スタミナへ純回復・有効な複合回復・自己消費を反映する", () => {
+  const base = {
+    skillNames: ["円弧のマエストロ", "鋼の意志", "勇往邁進"],
+    skillIds: [200351, 200441, 202151],
+    stats: { speed: 1200, stamina: 1000, power: 800, guts: 400, wisdom: 800 },
+    aptitudes: { distance: "A", surface: "A", style: "A" },
+    req: {
+      speedCap: 1200,
+      staminaNoTempt: 1060,
+      staminaWithTempt: 1080,
+      staminaRace: false,
+      power: 800,
+      guts: 400,
+      wisdom: 800,
+    },
+    greenCtx: {},
+  } as const;
+
+  const pureOnly = computeScore({ ...base, effectiveIds: new Set<number>() });
+  assert.equal(pureOnly.effectiveStamina, 1055);
+  assert.equal(pureOnly.ratios.staminaMult, 0.4);
+
+  const withEffective = computeScore({
+    ...base,
+    effectiveIds: new Set([200441, 202151]),
+  });
+  assert.ok(Math.abs(withEffective.effectiveStamina - 1090) < 1e-9);
+  assert.equal(withEffective.ratios.staminaMult, 1);
+});
+
 test("案B: スキル土台だけを累乗し、ステータス補正は残す", () => {
   const input = {
     skillNames: ["地固め"],

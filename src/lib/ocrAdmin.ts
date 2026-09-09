@@ -6,6 +6,11 @@ import { ALLOWED_SHOT_MIME } from "./shotMime";
 import { greenSkillByName } from "./greenSkills";
 import { skillCountsAsGoldLike, skillCountsInBase, TAMERAI_IDS } from "./score";
 import {
+  staminaSkillBreakdown,
+  staminaSkillsJsonForPage,
+  type AppliedStaminaSkill,
+} from "./staminaSkills";
+import {
   partitionSkills,
   strategicCandidates,
   strategicMapFromRows,
@@ -47,6 +52,22 @@ function skillChipsHtml(
     .join("");
 }
 
+function percentText(rate: number): string {
+  return `${(rate * 100).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1")}%`;
+}
+
+function staminaSkillChipsHtml(
+  items: readonly AppliedStaminaSkill[],
+  sign: "+" | "−",
+): string {
+  if (items.length === 0) return `<span class="reg-chip">なし</span>`;
+  return items
+    .map((item) =>
+      `<span class="reg-chip white">${escapeHtml(item.name)}<span class="reg-pts">${sign}${percentText(item.rate)}</span></span>`,
+    )
+    .join("");
+}
+
 function strategicChipsHtml(
   items: { name: string; kind: string; points: number }[],
   emptyLabel: string,
@@ -81,6 +102,13 @@ export function registerMaterialsHtml(
   }
   const strategicById = strategicMapFromRows(strategicSkills);
   const parts = partitionSkills(accepted, { effectiveIds, strategicById });
+  const staminaEffects = staminaSkillBreakdown(
+    input.skillNames,
+    input.skillIds,
+    (name, id) =>
+      !(id != null && strategicById.has(id)) &&
+      skillCountsInBase(name, id, effectiveIds),
+  );
   const goldLike = parts.effective.filter((h) =>
     skillCountsAsGoldLike(h.name, h.id),
   ).length;
@@ -115,6 +143,10 @@ export function registerMaterialsHtml(
     <div class="reg-chips">${strategicChipsHtml(parts.strategic, "なし")}</div>
     <p class="set-k" style="margin-top:.85rem">緑スキル</p>
     <div class="reg-chips">${skillChipsHtml(parts.greens, "なし")}</div>
+    <p class="set-k" style="margin-top:.85rem">回復スキル（合計 +${percentText(staminaEffects.recoveryRate)}）</p>
+    <div class="reg-chips">${staminaSkillChipsHtml(staminaEffects.recoveries, "+")}</div>
+    <p class="set-k" style="margin-top:.85rem">スタミナ消費スキル（有効・合計 −${percentText(staminaEffects.staminaCostRate)}）</p>
+    <div class="reg-chips">${staminaSkillChipsHtml(staminaEffects.costs, "−")}</div>
     <p class="set-k" style="margin-top:.85rem">不採用スキル${rejectedLink}</p>
     <div class="reg-chips">${skillChipsHtml(parts.rejected, "なし")}</div>
     <p class="set-k" style="margin-top:.85rem">OCR落ちスキル</p>
@@ -230,17 +262,22 @@ export function ocrAdminScript(
   canEditStrategic = true,
 ): string {
   const catalog = catalogJsonForPage();
+  const staminaSkills = staminaSkillsJsonForPage();
   const dressCatalog = umaDressCatalogJsonForPage();
   return `<script>
 (function () {
   const KEY_LS = ${JSON.stringify(KEY_LS)};
   const CATALOG = ${catalog};
+  const STAMINA_SKILLS = ${staminaSkills};
   const UMA_DRESSES = ${dressCatalog};
   const UMA_CHARACTERS = Array.from(new Map(UMA_DRESSES.map((row) => [row.charaId, row])).values());
   const CAN_AUTO = ${canAutoScore ? "true" : "false"};
   const CAN_EDIT_STRATEGIC = ${canEditStrategic ? "true" : "false"};
   const EFFECTIVE_BY_STYLE = ${JSON.stringify(effectiveByStyle)};
   const GREEN_NAMES = new Set(${JSON.stringify([...greenNames])});
+  const STAMINA_BY_ID = new Map((STAMINA_SKILLS.skills || []).map((s) => [s.id, s]));
+  const STAMINA_BY_NAME = new Map();
+  for (const s of (STAMINA_SKILLS.skills || [])) if (!STAMINA_BY_NAME.has(s.name)) STAMINA_BY_NAME.set(s.name, s);
   let STRATEGIC = ${JSON.stringify(strategicSkills)};
   let DISMISSED = new Set(${JSON.stringify([...dismissedIds])});
   const TAMERAI_IDS = new Set(${JSON.stringify([...TAMERAI_IDS])});
@@ -514,6 +551,37 @@ export function ocrAdminScript(
       '<span class="reg-chip strategic">' + esc(h.name) + '<span class="reg-pts">+' + esc(String(h.points)) + "</span></span>"
     ).join("");
   }
+  function rateText(rate) {
+    return (rate * 100).toFixed(2).replace(/\\.00$/, "").replace(/(\\.\\d)0$/, "$1") + "%";
+  }
+  function staminaChipsHtml(items, sign) {
+    if (!items.length) return '<span class="reg-chip">なし</span>';
+    return items.map((h) =>
+      '<span class="reg-chip white">' + esc(h.name) + '<span class="reg-pts">' + sign + rateText(h.rate) + "</span></span>"
+    ).join("");
+  }
+  function staminaEffects(okHits) {
+    const sm = strategicMap();
+    const recoveries = [];
+    const costs = [];
+    for (const hit of okHits) {
+      const skill = STAMINA_BY_ID.get(hit.id) || STAMINA_BY_NAME.get(String(hit.name || "").trim());
+      if (!skill) continue;
+      const effective = !(hit.id != null && sm.has(hit.id)) && countsInBase(hit.name, hit.id, hit.kind);
+      if (skill.recovery > 0 && (!skill.compoundRecovery || effective)) {
+        recoveries.push({ name: skill.name, rate: skill.recovery / 10000 });
+      }
+      if (skill.staminaCost > 0 && effective) {
+        costs.push({ name: skill.name, rate: skill.staminaCost / 10000 });
+      }
+    }
+    return {
+      recoveries,
+      costs,
+      recoveryRate: recoveries.reduce((sum, skill) => sum + skill.rate, 0),
+      staminaCostRate: costs.reduce((sum, skill) => sum + skill.rate, 0),
+    };
+  }
   function rejectedLinkHtml(rejected) {
     const sm = strategicMap();
     const cand = rejected.filter((h) => h.id != null && !sm.has(h.id) && !DISMISSED.has(h.id));
@@ -540,6 +608,7 @@ export function ocrAdminScript(
     const okHits = lastHits.filter((h) => h.ok);
     const missHits = lastHits.filter((h) => !h.ok);
     const parts = partitionOkHits(okHits);
+    const stamina = staminaEffects(okHits);
     const goldLike = parts.effective.filter((h) => {
       const n = String(h.name || "").trim();
       if (h.kind === "gold") return true;
@@ -572,6 +641,10 @@ export function ocrAdminScript(
       '<div class="reg-chips">' + strategicChipsHtml(parts.strategic) + "</div>" +
       '<p class="set-k" style="margin-top:.85rem">緑スキル</p>' +
       '<div class="reg-chips">' + chipsHtml(parts.greens, "なし") + "</div>" +
+      '<p class="set-k" style="margin-top:.85rem">回復スキル（合計 +' + rateText(stamina.recoveryRate) + "）</p>" +
+      '<div class="reg-chips">' + staminaChipsHtml(stamina.recoveries, "+") + "</div>" +
+      '<p class="set-k" style="margin-top:.85rem">スタミナ消費スキル（有効・合計 −' + rateText(stamina.staminaCostRate) + "）</p>" +
+      '<div class="reg-chips">' + staminaChipsHtml(stamina.costs, "−") + "</div>" +
       '<p class="set-k" style="margin-top:.85rem">不採用スキル' + rejLink + "</p>" +
       '<div class="reg-chips">' + chipsHtml(parts.rejected, "なし") + "</div>" +
       '<p class="set-k" style="margin-top:.85rem">OCR落ちスキル</p>' +

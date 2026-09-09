@@ -10,6 +10,10 @@ import {
   type GreenBonus,
 } from "./greenSkills.ts";
 import { classifySkill } from "./skillCatalog.ts";
+import {
+  staminaSkillBreakdown,
+  type StaminaSkillBreakdown,
+} from "./staminaSkills.ts";
 import type { GreenEvalContext } from "./greenCondition.ts";
 import type { CharacterSpec } from "./utoolsEffects.ts";
 
@@ -111,6 +115,10 @@ export type ScoreBreakdown = {
   green: GreenBonus;
   /** 条件成立した緑スキル（表示用） */
   appliedGreens: AppliedGreen[];
+  /** 回復と、有効スキルに含まれる自己スタミナ消費。 */
+  staminaSkills: StaminaSkillBreakdown;
+  /** 生値＋緑へ回復率・自己消費率を反映した、目標判定用スタミナ。 */
+  effectiveStamina: number;
   adjusted: HorseStats;
   /** 倍率に掛ける前の r（スタミナは離散のため無し） */
   rawRatios: {
@@ -318,6 +326,17 @@ export function computeScore(input: ScoreInput): ScoreBreakdown {
   const green = sumGreenBonusesByNames(input.skillNames, input.greenCtx);
   const appliedGreens = listAppliedGreensByNames(input.skillNames, input.greenCtx);
   const adjusted = adjustStats(input.stats, green, input.aptitudes);
+  const countedNames = new Set(skill.countedNames);
+  const staminaSkills = staminaSkillBreakdown(
+    input.skillNames,
+    input.skillIds,
+    (name, id) =>
+      !(id != null && input.strategicById?.has(id)) && countedNames.has(name),
+  );
+  const effectiveStamina = Math.max(
+    0,
+    Math.round(adjusted.stamina * (1 + staminaSkills.netRate) * 1000) / 1000,
+  );
   const req = input.req;
 
   const n = input.skillWeightN ?? 1;
@@ -339,7 +358,7 @@ export function computeScore(input: ScoreInput): ScoreBreakdown {
   const mSpeed = speedMult(rSpeed);
   score *= mSpeed;
 
-  const mSta = staminaMult(adjusted.stamina, req);
+  const mSta = staminaMult(effectiveStamina, req);
   score *= mSta;
 
   const rPower = req.power > 0 ? adjusted.power / req.power : 1;
@@ -361,6 +380,8 @@ export function computeScore(input: ScoreInput): ScoreBreakdown {
     skill,
     green,
     appliedGreens,
+    staminaSkills,
+    effectiveStamina,
     adjusted,
     rawRatios: {
       speed: rSpeed,

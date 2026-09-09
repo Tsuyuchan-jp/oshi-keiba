@@ -2,6 +2,7 @@ import { escapeHtml } from "./http";
 import { horseSheetParts } from "./horseName";
 import { parseHorseScoreInput, STYLE_OPTIONS, type HorseScoreInput } from "./horseScoreInput";
 import { findUmaDress, umaDressCatalogJsonForPage } from "./umaDress";
+import { staminaRequirementsForStyle } from "./score";
 import { scoreFromHorse } from "./scoreFromHorse";
 import { eventScoreSetup, numberByHorseId } from "./store";
 import type { Board, EventRow, HorseBoard, UserRow, BetRow, TreasuryDashboard } from "./store";
@@ -820,6 +821,10 @@ function fmt3(n: number): string {
   return n.toFixed(3);
 }
 
+function fmtPercent(rate: number): string {
+  return `${(rate * 100).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1")}%`;
+}
+
 function median(values: readonly number[]): number {
   const sorted = [...values].filter(Number.isFinite).sort((a, b) => a - b);
   if (!sorted.length) return 0;
@@ -921,7 +926,10 @@ function pipeHtml(
   const b = auto.breakdown;
   const s = b.skill;
   const cs = b.characterSpec;
-  const req = setup!.requirements;
+  const req = {
+    ...setup!.requirements,
+    ...staminaRequirementsForStyle(setup!.requirements, input!.styleKey!),
+  };
   const st = input!.stats;
   const gr = b.green;
   const apt = auto.aptitudes;
@@ -980,7 +988,15 @@ function pipeHtml(
       b.ratios.wisdom,
     ),
   );
-  const staLine = sMultLine(b.ratios.staminaMult, staminaExplain(b.adjusted.stamina, req));
+  const staminaRate = b.staminaSkills;
+  const staminaFormula = `（スタ${st.stamina}${gr.stamina ? `${gr.stamina > 0 ? "+" : "−"}緑${Math.abs(gr.stamina)}` : ""}）×（1+回復${fmtPercent(staminaRate.recoveryRate)}−消費${fmtPercent(staminaRate.staminaCostRate)}）=${fmt3(b.effectiveStamina)}　${staminaExplain(b.effectiveStamina, req)}（目標 ${req.staminaNoTempt}/${req.staminaWithTempt}）`;
+  const recoveryNames = staminaRate.recoveries.length
+    ? staminaRate.recoveries.map((skill) => `${skill.name} +${fmtPercent(skill.rate)}`).join(" / ")
+    : "なし";
+  const costNames = staminaRate.costs.length
+    ? staminaRate.costs.map((skill) => `${skill.name} −${fmtPercent(skill.rate)}`).join(" / ")
+    : "なし";
+  const staLine = `実効スタミナ <b>${fmt3(b.effectiveStamina)}</b> → ${sMultLine(b.ratios.staminaMult, staminaFormula)}<br><span class="pipe-s-calc">回復: ${escapeHtml(recoveryNames)}　消費: ${escapeHtml(costNames)}</span>`;
   const stratPart =
     s.strategicPoints > 0 ? ` ＋ 戦略例外 ${s.strategicPoints}` : "";
   const specLine = cs.totalBab > 0 && cs.medianBab > 0

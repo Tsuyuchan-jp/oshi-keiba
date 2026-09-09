@@ -26,7 +26,7 @@ node scripts/extract-uma-dress-catalog.mjs --mdb D:\DMM\umamusumeDMM\Umamusume\u
 node scripts/gen-skill-catalog.mjs --mdb D:\DMM\umamusumeDMM\Umamusume\umamusume_Data\Persistent\master\master.mdb
 ```
 
-前者はOCR照合用の育成ウマ娘・衣装カタログ、後者は総合スキル辞書を更新する。緑スキルの評価値は従来どおり `npm run extract:greens` で更新する。
+前者はOCR照合用の育成ウマ娘・衣装カタログ、後者は総合スキル辞書を更新する。緑スキルの評価値は `npm run extract:greens`、回復率と自己スタミナ消費率は `npm run extract:stamina-skills` で更新する。
 
 本戦出走のステータス画面などから、評価点の材料を読む。予選はアプリに載せないので、OCR も本戦のみ。
 
@@ -79,7 +79,7 @@ OCR とスクショ保存は **`/admin/register`**。出走タブ（`/admin/hors
 ### 出走登録の表示 UI
 
 - **モード**: `idle`（ドロップ）→ `read`（読取確認）／ `manual`（スクショなし直置き）。`idle` から「スクショなしで直置きする」でも `manual` へ
-- **読取確認の材料**（上から）: 有効スキル → 戦略例外 → 緑 → 不採用 → OCR落ち。ステ5値・適性はチップ。脚質別スタミナ目標値は開催設定で入力する
+- **読取確認の材料**（上から）: 有効スキル → 戦略例外 → 緑 → 回復 → スタミナ消費 → 不採用 → OCR落ち。回復は純回復をすべて、複合回復は有効スキルだけ表示する。自己消費も有効スキルだけ表示する。ステ5値・適性はチップ。脚質別スタミナ目標値は開催設定で入力する
 - **評価点行**: 自動算出が既定のときは「評価点 · 自動算出」ラベルだけ見せ、**評価点を直置き** pill（脚質 seg と同系）で手入力へ切替。pill ON で数値欄表示。`manual` モードは常に数値欄＋ pill
 - **編集**（`/admin/register?edit=`）: 直置き pill は新規と同型。不採用からの「例外に追加…」は新規読取確認だけ（編集では出さない）
 - **ヒーロー右**: 戦略例外件数・Gemini キー操作（キーはブラウザ local のみ）
@@ -101,6 +101,7 @@ OCR とスクショ保存は **`/admin/register`**。出走タブ（`/admin/hors
 | オブジェクトキー | `{eventId}/{horseId}` | 開催を残す前提。拡張子は Content-Type で持つ（png / jpeg / webp） |
 | スキル辞書 | `src/data/skill-catalog.json` | リポジトリ内。OCR の種別。実行時 fetch しない。更新はファイル差し替え＋コミット |
 | 緑の内部上昇 | `src/data/green-skills.json` | mdb `skill_category=0`。評価点用。`npm run extract:greens` |
+| 回復・自己消費 | `src/data/stamina-skills.json` | mdb `ability_type=9`。自分対象だけ。`npm run extract:stamina-skills` |
 
 キー入力の文言:
 
