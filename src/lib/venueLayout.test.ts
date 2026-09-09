@@ -4,6 +4,7 @@ import {
   formatVenueClosedHint,
   formatVenuePublishedHint,
   resolveVenueSlot,
+  venueFootHtml,
   venueHorseRowHtml,
   venuePayKindClass,
   venuePlaceRoman,
@@ -82,4 +83,46 @@ test("公開注は特払いだけ。ローマと払戻クラス", () => {
   assert.equal(venuePayKindClass("sanrenpuku"), "trio");
   assert.equal(venuePayKindClass("sanrentan"), "trif");
   assert.equal(venuePayKindClass("win"), "win");
+});
+
+test("場内足元のパドック導線は状態ごとに文言と買うボタンが分かれる", () => {
+  const setupFoot = venueFootHtml({
+    status: "setup",
+    ctaHref: "/bet",
+    closedHint: "",
+    publishedHint: "",
+  });
+  assert.match(setupFoot, /出走馬をパドックで見る/);
+  assert.doesNotMatch(setupFoot, /馬券を買う/);
+  assert.match(setupFoot, /投票開始までお待ちください/);
+
+  const votingFoot = venueFootHtml({
+    status: "voting",
+    ctaHref: "/login",
+    closedHint: "",
+    publishedHint: "",
+  });
+  assert.match(votingFoot, /パドックを見る/);
+  assert.doesNotMatch(votingFoot, /出走馬をパドックで見る/);
+  assert.match(votingFoot, /馬券を買う/);
+  assert.match(votingFoot, /href="\/login"/);
+
+  const closedFoot = venueFootHtml({
+    status: "closed",
+    ctaHref: "/bet",
+    closedHint: "着順はまだ出ません。",
+    publishedHint: "",
+  });
+  assert.match(closedFoot, /出走馬をパドックで見る/);
+  assert.doesNotMatch(closedFoot, /馬券を買う/);
+  assert.match(closedFoot, /着順はまだ出ません/);
+
+  const publishedFoot = venueFootHtml({
+    status: "published",
+    ctaHref: "/bet",
+    closedHint: "",
+    publishedHint: "",
+  });
+  assert.doesNotMatch(publishedFoot, /paddock-cta/);
+  assert.doesNotMatch(publishedFoot, /馬券を買う/);
 });
