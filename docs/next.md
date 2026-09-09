@@ -4,7 +4,7 @@
 
 ## 次にやること
 
-- PC場内2列の隙間分け（外枠なし）のユーザー実機確認 — [playbook.md](operations/playbook.md)
+なし（号外の細かい修正は次チャットの指示待ち。このリストには置かない）
 
 ## そのあと
 
@@ -18,7 +18,7 @@
 
 ## アーカイブ
 
-- PC場内の高さ・字スケールとトレーナー列を実装クローズ（盤幅は従来。列頭はトレーナー。PC列幅 9rem。実機確認OK）— [playbook.md](operations/playbook.md)
+- PC場内の視認性を実装クローズ（盤幅は従来。字を上げる。列頭はトレーナー、PC列幅 9rem。2列は隙間のみで外枠なし。実機確認OK）— [playbook.md](operations/playbook.md)
 
 - スマホの場内・窓口ヘッダーを実装クローズ（タイトル行と状態行を分離。投票中は場内でも締切時刻を出す。実機確認OK）— [playbook.md](operations/playbook.md)
 
