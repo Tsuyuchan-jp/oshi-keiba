@@ -36,6 +36,7 @@ test("パドック表示用データは出走中の馬だけを必要な表示�
   assert.equal(view.commentsEnabled, false);
   assert.equal(view.horses.length, 1);
   const horse = view.horses[0]!;
+  assert.equal(horse.dressName, "スペシャルドリーマー");
   assert.equal(horse.styleLabel, "先行");
   assert.equal(horse.odds, 4.8);
   assert.equal(horse.listImageUrl, "/images/umamusume/petit/petit_1001_100101_0011.png");

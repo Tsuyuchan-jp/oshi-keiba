@@ -10,7 +10,7 @@ import {
 import { staminaRequirementsForStyle } from "./score.ts";
 import type { StrategicSkillRow } from "./strategicSkills.ts";
 import type { Board, HorseBoard } from "./storeTypes.ts";
-import { resolvePetitImageUrl } from "./umaDress.ts";
+import { findUmaDressById, resolvePetitImageUrl } from "./umaDress.ts";
 import type { EffectStyleKey } from "./utoolsEffects.ts";
 
 export type PaddockStyle = EffectStyleKey | null;
@@ -19,6 +19,7 @@ export type PaddockHorseView = {
   id: string;
   number: number;
   umaName: string;
+  dressName: string | null;
   trainerName: string;
   odds: number | null;
   style: PaddockStyle;
@@ -111,10 +112,12 @@ export function paddockHorseView(
     ? staminaRequirementsForStyle(setup.requirements, style).staminaNoTempt
     : null;
   const images = imageUrls(horse);
+  const dressName = findUmaDressById(horse.horse.dress_id)?.dressName ?? null;
   return {
     id: horse.horse.id,
     number: horse.number,
     umaName: horse.horse.uma_name,
+    dressName,
     trainerName: horse.horse.runner_name,
     odds: horse.referenceOdds,
     style,
