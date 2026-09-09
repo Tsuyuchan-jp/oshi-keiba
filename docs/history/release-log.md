@@ -1,5 +1,29 @@
 # 本番リリース記録
 
+## v0.8.1 — 2026-09-09 19:50 JST
+
+- リリース対象コミット: `ea5dcbd`（出走編集スキル再照合を文書化）
+- 本番URL: `https://oshi-keiba.tsuyuchan-jp.workers.dev/`
+- リリース前Worker ID: `fb35bcb6-0acf-4841-b379-4554a9b28efd`
+- リリース後Worker ID: `1ae83de5-6a32-485f-be07-61d14db91c12`
+- リリース前D1ブックマーク: `00000262-00000000-000050e1-15fa747f7c36766ed2ddb5095e27003a`
+- 適用migration: なし（本番に未適用migrationなし）
+- Secrets: 必須4項目の設定を確認（値は未表示）
+
+### 事前検証
+
+- 型検査: 成功
+- Node単体テスト: 185件成功
+- Worker統合テスト: 107件成功
+- Playwright E2E: 10件成功
+- Wrangler dry-run: 成功。D1、R2、Assetsのbindingと本番用vars（`ALLOW_DEMO_RESET=0` / `ALLOW_ADMIN_UNDO=0`）を確認
+
+### 公開後確認
+
+- `/login`、`/`、`/admin/login`: HTTP 200
+- 未認証の`/bet` → `/login`、`/admin` → `/admin/login`: HTTP 303
+- `/login`で`v0.8.1`表示を確認
+
 秘密の値や認証情報は記録しない。復旧手順は [release.md](../operations/release.md) を参照する。
 
 ## v0.8.0 — 2026-09-09 19:07 JST
