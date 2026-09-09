@@ -2,6 +2,33 @@
 
 秘密の値や認証情報は記録しない。復旧手順は [release.md](../operations/release.md) を参照する。
 
+## v0.8.0 — 2026-09-09 19:07 JST
+
+- 担当者: Codex（ユーザー承認のもと実行）
+- リリース対象コミット: `3b95519`（v0.8.0のリリース準備を記録する）
+- 公開URL: `https://oshi-keiba.tsuyuchan-jp.workers.dev/`
+- リリース前Worker ID: `fb35bcb6-0acf-4841-b379-4554a9b28efd`
+- リリース後Worker ID: `941c85ea-9446-4bdd-a68e-c40e4a9cd2a2`
+- リリース前D1ブックマーク: `00000259-00000000-000050e1-9eab13d51d106db6a094e4809f91f70e`
+- 適用migration: なし（本番に未適用migrationなし）
+- Secrets: 必須4項目の名前を確認
+- 公開範囲: `workers_dev: true` の公開URLを確認。設定ファイルに Routes / Custom Domains の指定はなく、Wrangler CLIでは一覧取得に未対応のためDashboardでの目視確認は未実施
+
+### 自動確認
+
+- 型検査: 3構成成功
+- Node単体テスト: 184件成功
+- Worker結合テスト: 107件成功
+- Playwright E2E: 10件成功
+- Wrangler dry-run: 成功。D1、R2、Assets のbindingと本番用vars（`ALLOW_DEMO_RESET=0` / `ALLOW_ADMIN_UNDO=0`）を確認
+- 公開後: `/login`、`/`、`/admin/login` がHTTP 200、未認証の `/bet` は `/login` へHTTP 303、未認証の `/admin` は `/admin/login` へHTTP 303
+- 公開後: `/login` で `v0.8.0` 表示を確認
+
+### 補足
+
+- 回復スキルと有効な自己スタミナ消費スキルを、緑スキルを含む実効スタミナへ反映した。相手へのスタミナデバフは計算対象外
+- 認証情報を使う操作は行わず、管理者・メンバーのログイン後確認は実機確認済みとしてユーザーから承認を受けた
+
 ## v0.6.0 — 2026-09-08 20:54 JST
 
 - 担当者: Codex（ユーザー承認のもと実行）
