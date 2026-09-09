@@ -18,6 +18,8 @@
 
 ## アーカイブ
 
+- スマホの場内・窓口ヘッダーを実装クローズ（タイトル行と状態行を分離。投票中は場内でも締切時刻を出す。実機確認OK）— [playbook.md](operations/playbook.md)
+
 - 場内からパドックへの足元導線を実装クローズ（投票中は「パドックを見る」と「馬券を買う」を並べ、開催準備中と締切後は「出走馬をパドックで見る」。結果公開後の足元には出さない。既存ナビは残す。実機確認OK）— [paddock.md](features/paddock.md)・[playbook.md](operations/playbook.md)
 
 - スタミナ計算を実装クローズ（`master.mdb` 由来の回復率・自己スタミナ消費率を出走登録へ表示し、緑スキルと合わせた実効スタミナで目標値を判定。相手へのスタミナデバフは計算対象外。実機確認OK）— [score.md](specifications/score.md)・[ocr.md](specifications/ocr.md)
