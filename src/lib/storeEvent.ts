@@ -28,6 +28,7 @@ function normalizeEvent(row: EventRow): EventRow {
     ...row,
     enabled_kinds: serializeEnabledKinds(parseEnabledKinds(row.enabled_kinds)),
     is_current: Number(row.is_current) ? 1 : 0,
+    paddock_comments_enabled: Number(row.paddock_comments_enabled) ? 1 : 0,
     score_setup: serializeScoreSetup(setup),
   };
 }
@@ -140,6 +141,7 @@ export async function updateParams(
     title?: string;
     voting_closes_at?: number | null;
     enabled_kinds?: string;
+    paddock_comments_enabled?: number;
     /** 渡したら上書き。undefined なら触らない。null でクリア */
     score_setup?: EventScoreSetup | null;
   },
@@ -154,6 +156,9 @@ export async function updateParams(
     patch.score_setup === undefined
       ? event.score_setup
       : serializeScoreSetup(patch.score_setup);
+  const paddockCommentsEnabled = event.status === "setup" && patch.paddock_comments_enabled != null
+    ? (Number(patch.paddock_comments_enabled) ? 1 : 0)
+    : event.paddock_comments_enabled;
   const update = db
     .prepare(
       `UPDATE events SET
@@ -167,7 +172,8 @@ export async function updateParams(
         w_time_exp = ?,
         voting_closes_at = ?,
         enabled_kinds = ?,
-        score_setup = ?
+        score_setup = ?,
+        paddock_comments_enabled = ?
       WHERE id = ?`,
     )
     .bind(
@@ -184,6 +190,7 @@ export async function updateParams(
         : patch.voting_closes_at,
       kinds,
       scoreSetupJson,
+      paddockCommentsEnabled,
       event.id,
     )
     ;

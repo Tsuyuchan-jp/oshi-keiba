@@ -33,6 +33,7 @@ const board = {
 test("パドック表示用データは出走中の馬だけを必要な表示項目へ変換する", () => {
   const view = paddockView(board);
   assert.equal(view.title, "確認レース");
+  assert.equal(view.commentsEnabled, false);
   assert.equal(view.horses.length, 1);
   const horse = view.horses[0]!;
   assert.equal(horse.styleLabel, "先行");

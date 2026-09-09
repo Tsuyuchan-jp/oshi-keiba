@@ -266,9 +266,10 @@ export default {
                       ["win", ...OPTIONAL_BET_KINDS.filter((k) => form.get(`kind_${k}`))].join(
                         ",",
                       ),
-                    ),
                   ),
+                ),
                 score_setup: nextSetup,
+                paddock_comments_enabled: form.get("paddock_comments_enabled") ? 1 : 0,
               }
             : {
                 title: params.title,
@@ -334,7 +335,9 @@ export default {
           if (selectedDress && resolveUmaDress(umaName, selectedDress.dressName)?.dressId !== selectedDress.dressId) {
             throw new Error("選択中の衣装はウマ娘名と一致しません。衣装を選び直してください");
           }
-          const comment = String(fd.get("paddock_comment") ?? "").trim();
+          const comment = board.event.paddock_comments_enabled
+            ? String(fd.get("paddock_comment") ?? "").trim()
+            : "";
           if (comment.length > 40) throw new Error("意気込みコメントは40文字以内です");
           const trainerIcon = validateHorseShot(fd.get("trainer_icon"));
           const resolved = resolveStrength({
@@ -429,7 +432,9 @@ export default {
           if (selectedDress && resolveUmaDress(umaName, selectedDress.dressName)?.dressId !== selectedDress.dressId) {
             throw new Error("選択中の衣装はウマ娘名と一致しません。衣装を選び直してください");
           }
-          const comment = String(form.get("paddock_comment") ?? "").trim();
+          const comment = board.event.paddock_comments_enabled
+            ? String(form.get("paddock_comment") ?? "").trim()
+            : "";
           if (comment.length > 40) throw new Error("意気込みコメントは40文字以内です");
           const shot = validateHorseShot(form.get("shot"));
           const icon = validateHorseShot(form.get("trainer_icon"));
@@ -456,7 +461,7 @@ export default {
                 strength: resolved.strength, scoreInputJson: serializeHorseScoreInput(scoreInput),
                 seedSource: resolved.source, charaId: selectedDress?.charaId ?? null,
                 dressId: selectedDress?.dressId ?? null, keepScoreInput: false,
-                paddockComment: comment || null, trainerIconKey: iconKey, shotKey,
+                ...(board.event.paddock_comments_enabled ? { paddockComment: comment || null } : {}), trainerIconKey: iconKey, shotKey,
               },
             );
           } catch (err) {

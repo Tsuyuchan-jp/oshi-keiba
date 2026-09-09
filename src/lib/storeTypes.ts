@@ -29,6 +29,8 @@ export type EventRow = {
   is_current: number;
   /** 開催条件とステ目標値（JSON）。未設定は null */
   score_setup: string | null;
+  /** 1 のとき、出走者の意気込みコメントを登録・パドック表示する */
+  paddock_comments_enabled: number;
 };
 
 export type HorseRow = {

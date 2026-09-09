@@ -905,6 +905,15 @@ body.settings-page .settings-desk .work {
 .set-tog .st { font-size: .72rem; font-weight: 700; color: var(--admin-muted); }
 .set-tog.on .st { color: var(--admin-accent); }
 .set-tog:disabled, .set-togs.locked .set-tog { cursor: not-allowed; opacity: .72; }
+.set-feature-toggle { display: flex; align-items: center; justify-content: space-between; gap: .7rem; padding: .62rem .7rem; border: 1px solid var(--admin-line-strong); border-radius: 8px; background: var(--admin-surface); cursor: pointer; }
+.set-feature-toggle.on { border-color: var(--admin-accent); background: #e8f0fa; }
+.set-feature-toggle b, .set-feature-toggle small { display: block; }
+.set-feature-toggle b { font-size: .9rem; }
+.set-feature-toggle small { margin-top: .12rem; color: var(--admin-muted); font-size: .7rem; }
+.set-feature-toggle input { width: 1rem; height: 1rem; margin-left: auto; accent-color: var(--admin-accent); }
+.set-feature-toggle em { min-width: 3.5rem; color: var(--admin-muted); font-size: .72rem; font-style: normal; font-weight: 700; text-align: right; }
+.set-feature-toggle.on em { color: var(--admin-accent); }
+.set-feature-toggle.locked { cursor: not-allowed; opacity: .72; }
 .set-lock { margin: 0 0 .5rem; font-size: .78rem; color: #8a4b12; }
 .set-conds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .85rem 1.1rem; margin-top: .85rem; }
 .set-targets { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .45rem; margin-top: .75rem; }

@@ -45,6 +45,7 @@ export type PaddockHorseView = {
 export type PaddockView = {
   eventId: string;
   title: string;
+  commentsEnabled: boolean;
   race: {
     courseName: string;
     distance: number;
@@ -167,6 +168,7 @@ export function paddockView(
   return {
     eventId: board.event.id,
     title: board.event.title,
+    commentsEnabled: board.event.paddock_comments_enabled === 1,
     race: raceInfo(board),
     horses: board.horses
       .filter((horse) => horse.horse.scratched === 0)

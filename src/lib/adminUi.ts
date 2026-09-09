@@ -583,7 +583,7 @@ export function adminRegisterPage(
                   <p class="note" id="dress-help">ウマ娘名に対応する衣装だけを表示します</p>
                 </div>
                 <div class="edit-shot-picker"><span>スクリーンショット（選択時のみ差し替え）</span><input class="admin-offscreen" name="shot" id="edit-shot-file" type="file" accept="image/png,image/jpeg,image/webp"><label class="admin-action" for="edit-shot-file">画像を選択</label><span id="edit-shot-name" class="note">変更しない</span></div>
-                <label>意気込みコメント（40文字まで）<input name="paddock_comment" value="${escapeHtml(edit.horse.paddock_comment ?? "")}" maxlength="40"></label>
+                ${board.event.paddock_comments_enabled ? `<label>意気込みコメント（40文字まで）<input name="paddock_comment" value="${escapeHtml(edit.horse.paddock_comment ?? "")}" maxlength="40"></label>` : ""}
                 <div class="edit-shot-picker"><span>トレーナーアイコン（選択時のみ差し替え）</span><input class="admin-offscreen" name="trainer_icon" id="trainer-icon-file" type="file" accept="image/png,image/jpeg,image/webp"><label class="admin-action" for="trainer-icon-file">画像を選択</label><span id="trainer-icon-name" class="note">${edit.horse.trainer_icon_key ? "登録済み" : "未登録"}</span></div>
               </div>
               ${styleSeg(scoreIn?.styleKey)}
@@ -1446,6 +1446,12 @@ export function adminSettingsPage(
           .map((k) => BET_KIND_LABEL[k])
           .join("、"),
       )}。`;
+  const commentsEnabled = e.paddock_comments_enabled === 1;
+  const commentsToggle = `<label class="set-feature-toggle${commentsEnabled ? " on" : ""}${canKinds ? "" : " locked"}">
+    <span><b>意気込みコメント</b><small>出走登録とパドック詳細に表示</small></span>
+    <input type="checkbox" name="paddock_comments_enabled" value="1"${commentsEnabled ? " checked" : ""}${setupDisabled}>
+    <em>${commentsEnabled ? "使う" : "使わない"}</em>
+  </label>`;
   const kindTogs = [
     `<button type="button" class="set-tog on" disabled>単勝<span class="st">必須</span></button>
      <input type="hidden" name="kind_win" value="1">`,
@@ -1532,6 +1538,11 @@ export function adminSettingsPage(
           <p class="set-k">賭式</p>
           <p class="set-lock">${kindsNote}</p>
           <div class="set-togs${canKinds ? "" : " locked"}">${kindTogs}</div>
+        </section>
+        <section class="work">
+          <p class="set-k">パドック</p>
+          <p class="set-lock">${canKinds ? "開催ごとに切り替えられます。初期値は使わないです。" : "開始後は設定を変更できません。"}</p>
+          ${commentsToggle}
         </section>
       </div>
       <section class="work settings-mid">
@@ -1755,6 +1766,15 @@ export function adminSettingsPage(
         if (st) st.textContent = cb.checked ? "使う" : "使わない";
       });
     });
+    const commentsToggle = document.querySelector(".set-feature-toggle");
+    const commentsInput = commentsToggle?.querySelector('input[name="paddock_comments_enabled"]');
+    const syncCommentsToggle = () => {
+      if (!(commentsToggle instanceof HTMLElement) || !(commentsInput instanceof HTMLInputElement)) return;
+      commentsToggle.classList.toggle("on", commentsInput.checked);
+      const status = commentsToggle.querySelector("em");
+      if (status) status.textContent = commentsInput.checked ? "使う" : "使わない";
+    };
+    commentsInput?.addEventListener("change", syncCommentsToggle);
   </script>`;
   return { body, scripts: scripts + bindDlgScript() };
 }

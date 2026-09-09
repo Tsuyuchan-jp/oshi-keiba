@@ -122,7 +122,7 @@ export function registerMaterialsHtml(
 }
 
 export function horsesAdminBody(
-  _board: Board,
+  board: Board,
   canSetup: boolean,
   _scoreSetup: EventScoreSetup | null,
   _opts?: { embedded?: boolean },
@@ -193,7 +193,7 @@ export function horsesAdminBody(
                   <p class="note" id="dress-help">ウマ娘名に対応する衣装だけを表示します</p>
                 </div>
                 <div class="edit-shot-picker"><span>トレーナーアイコン</span><input class="admin-offscreen" name="trainer_icon" id="trainer-icon-file" type="file" accept="${SHOT_ACCEPT}"><label class="admin-action" for="trainer-icon-file">画像を選択</label><span id="trainer-icon-name" class="note">未登録</span></div>
-                <label>意気込みコメント（40文字まで）<input name="paddock_comment" maxlength="40"></label>
+                ${board.event.paddock_comments_enabled ? `<label>意気込みコメント（40文字まで）<input name="paddock_comment" maxlength="40"></label>` : ""}
               </div>
               <p class="set-k" style="margin-top:.85rem">出走脚質</p>
               <div class="set-seg" id="styles">${styleBtns}</div>
