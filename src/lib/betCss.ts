@@ -211,7 +211,7 @@ ${MEMBER_MOBILE_CHROME_CSS}
   .wells--3 .well { height: 5rem; min-height: 5rem; }
 }
 @media (min-width: 900px) {
-  .app-shell { max-height: calc(100dvh - 3rem); }
+  .app-shell { height: calc(100dvh - 3rem); max-height: calc(100dvh - 3rem); }
 }
 ${MEMBER_MOBILE_GLASS_CSS}
 `;
