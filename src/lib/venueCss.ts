@@ -517,6 +517,15 @@ ${MEMBER_OVERLAY_CSS}
   gap: .5rem;
   margin-top: .45rem;
 }
+.scene[data-phase="setup"] .foot .hint,
+.scene[data-phase="closed"] .foot .hint {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.scene[data-phase="setup"] .foot > .paddock-cta,
+.scene[data-phase="closed"] .foot > .paddock-cta {
+  flex: 0 0 auto;
+}
 .cols { display: flex; gap: 0; min-height: 0; flex: 1; }
 .cols .sheet-wrap { flex: 1; }
 .flash {
@@ -590,6 +599,14 @@ ${MEMBER_OVERLAY_CSS}
   .j-pay { flex: 1 1 auto; }
   .j-fin { flex: 1.15 1 auto; width: auto; max-width: 22rem; margin: 0 auto; min-height: 21rem; }
   .foot { display: block; }
+  .foot > .paddock-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: .45rem;
+    box-sizing: border-box;
+  }
   .foot-actions { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.25fr); }
   .cta {
     display: flex;
@@ -627,7 +644,9 @@ ${MEMBER_MOBILE_CHROME_CSS}
   }
   .foot { justify-content: flex-end; }
   .foot-actions .cta { min-width: 11rem; }
-  .scene:not([data-phase="voting"]) .foot { justify-content: flex-start; }
+  .scene[data-phase="setup"] .foot,
+  .scene[data-phase="closed"] .foot { justify-content: space-between; }
+  .scene[data-phase="published"] .foot { justify-content: flex-start; }
   .cta { min-width: 11rem; text-align: center; }
 }
 .scene[data-phase="closed"] .cta,
