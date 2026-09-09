@@ -1447,7 +1447,7 @@ export function adminSettingsPage(
           .join("、"),
       )}。`;
   const commentsEnabled = e.paddock_comments_enabled === 1;
-  const commentsToggle = `<label class="set-feature-toggle${commentsEnabled ? " on" : ""}${canKinds ? "" : " locked"}">
+  const commentsToggle = `<label class="set-feature-toggle set-feature-toggle--compact${commentsEnabled ? " on" : ""}${canKinds ? "" : " locked"}">
     <span><b>意気込みコメント</b><small>出走登録とパドック詳細に表示</small></span>
     <input type="checkbox" name="paddock_comments_enabled" value="1"${commentsEnabled ? " checked" : ""}${setupDisabled}>
     <em>${commentsEnabled ? "使う" : "使わない"}</em>
@@ -1533,16 +1533,12 @@ export function adminSettingsPage(
               <input name="bet_unit" type="number" min="1" step="1" value="${e.bet_unit}"${setupDisabled}>${canKinds ? "" : `<input type="hidden" name="bet_unit" value="${e.bet_unit}">`}
             </div>
           </div>
+          <div class="event-feature-row">${commentsToggle}</div>
         </section>
         <section class="work">
           <p class="set-k">賭式</p>
           <p class="set-lock">${kindsNote}</p>
           <div class="set-togs${canKinds ? "" : " locked"}">${kindTogs}</div>
-        </section>
-        <section class="work">
-          <p class="set-k">パドック</p>
-          <p class="set-lock">${canKinds ? "開催ごとに切り替えられます。初期値は使わないです。" : "開始後は設定を変更できません。"}</p>
-          ${commentsToggle}
         </section>
       </div>
       <section class="work settings-mid">

@@ -914,6 +914,9 @@ body.settings-page .settings-desk .work {
 .set-feature-toggle em { min-width: 3.5rem; color: var(--admin-muted); font-size: .72rem; font-style: normal; font-weight: 700; text-align: right; }
 .set-feature-toggle.on em { color: var(--admin-accent); }
 .set-feature-toggle.locked { cursor: not-allowed; opacity: .72; }
+.event-feature-row { margin-top: .65rem; }
+.set-feature-toggle--compact { width: fit-content; min-width: 17rem; padding: .45rem .6rem; }
+.set-feature-toggle--compact small { display: none; }
 .set-lock { margin: 0 0 .5rem; font-size: .78rem; color: #8a4b12; }
 .set-conds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .85rem 1.1rem; margin-top: .85rem; }
 .set-targets { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .45rem; margin-top: .75rem; }
@@ -1697,6 +1700,7 @@ body.gougai-page .gougai-desk .work:last-child { overflow: auto; }
   body.settings-page .settings-mid { flex: none; height: auto; }
   body.settings-page .settings-scroll { overflow: visible; }
   .set-row { grid-template-columns: 1fr; }
+  .set-feature-toggle--compact { width: 100%; }
   .set-targets, .set-metrics { grid-template-columns: 1fr 1fr; }
   .edit-stat-grid, .edit-apt-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   body.odds-page { overflow: auto; }
