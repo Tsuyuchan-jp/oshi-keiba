@@ -101,12 +101,17 @@ ${MEMBER_MOBILE_CHROME_CSS}
 .hint { margin: 0 0 .45rem; font-size: .75rem; color: var(--member-muted); }
 .wells { display: flex; gap: 6px; margin-bottom: .55rem; }
 .well {
-  flex: 1; min-height: 3.1rem; border: 1px dashed var(--member-line-strong); background: var(--member-field-bg);
+  flex: 1; height: 3.1rem; min-height: 0; overflow: hidden;
+  border: 1px dashed var(--member-line-strong); background: var(--member-field-bg);
   padding: .35rem .4rem; text-align: left; cursor: pointer; color: var(--member-muted); font: inherit;
 }
 .well.fill { border-style: solid; border-color: var(--member-accent); color: var(--member-ink-bright); }
 .well .k { display: block; font-size: .65rem; color: var(--member-muted); margin-bottom: .1rem; }
-.well .v { font-weight: 700; font-size: .85rem; }
+.well .v {
+  display: inline-block; max-width: calc(100% - 2.2rem); overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom;
+  font-weight: 700; font-size: .78rem;
+}
 .well .o { color: var(--member-action); font-size: .72rem; margin-left: .25rem; }
 .board { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
 .chip {
