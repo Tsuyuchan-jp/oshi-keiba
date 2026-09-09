@@ -219,15 +219,35 @@ ${MEMBER_OVERLAY_CSS}
   font-weight: 700;
   text-align: center;
   white-space: nowrap;
-  padding: .08rem 0;
+  padding: .06rem 0;
+  border: 1px solid transparent;
   border-radius: 2px;
+  background: none;
+  box-shadow: none;
 }
 .scene[data-phase="published"] .c-place { display: block; }
-.sheet-row.head .c-place { color: var(--led-dim); font-size: .68em; background: transparent; }
-/* 1〜3着は不透明のメダル札。字は濃色。半透明だと暗い盤で濁る */
-.c-place.place-1 { background: #e0b34a; color: #140800; }
-.c-place.place-2 { background: #d4dce0; color: #140800; }
-.c-place.place-3 { background: #c47a3a; color: #140800; }
+.sheet-row.head .c-place {
+  color: var(--led-dim);
+  font-size: .68em;
+  border-color: transparent;
+  text-shadow: none;
+}
+/* 1〜3着は電光アウトライン。塗りは置かない */
+.c-place.place-1 {
+  color: #f0c85a;
+  border-color: #e0b34a;
+  text-shadow: 0 0 8px rgba(224, 179, 74, .55);
+}
+.c-place.place-2 {
+  color: #e8eef2;
+  border-color: #c5d0d8;
+  text-shadow: 0 0 8px rgba(210, 220, 230, .4);
+}
+.c-place.place-3 {
+  color: #e09a58;
+  border-color: #c47a3a;
+  text-shadow: 0 0 8px rgba(196, 122, 58, .5);
+}
 @keyframes pulse-row {
   0% { background: var(--pulse); }
   100% { background: transparent; }
