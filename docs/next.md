@@ -26,7 +26,7 @@
 
 - 場内からパドックへの足元導線を実装クローズ（投票中は「パドックを見る」と「馬券を買う」を並べ、開催準備中と締切後は「出走馬をパドックで見る」。結果公開後の足元には出さない。既存ナビは残す。実機確認OK）— [paddock.md](features/paddock.md)・[playbook.md](operations/playbook.md)
 
-- スタミナ計算を実装クローズ（`master.mdb` 由来の回復率・自己スタミナ消費率を出走登録へ表示し、緑スキルと合わせた実効スタミナで目標値を判定。相手へのスタミナデバフは計算対象外。実機確認OK）— [score.md](specifications/score.md)・[ocr.md](specifications/ocr.md)
+- スタミナ計算を実装クローズ（`master.mdb` 由来の回復率・自己スタミナ消費率を出走登録へ表示し、緑スキルと合わせた実効スタミナで目標値を判定。相手へのスタミナデバフは計算対象外。パドック詳細では同じ値を「有効スタ」として整数表示し、出走馬内の最大有効スタに合わせてバーを縮尺。実機確認OK）— [score.md](specifications/score.md)・[ocr.md](specifications/ocr.md)・[paddock.md](features/paddock.md)
 
 - 場の会計を実装。結果公開時に `全投票額 − 全払戻・返還額` を管理者固定アカウントへ一度だけ移し、台帳に管理スペ残高・総発行スペ・未精算プール・全開催の精算履歴を表示。第1回を含む公開済み開催は migration で遡及精算する。PC・モバイルともページ全体を固定し、枠内スクロールを自動テストで確認 — [odds.md](specifications/odds.md)
 
