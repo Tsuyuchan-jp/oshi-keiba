@@ -4,6 +4,11 @@
  */
 import { appVersionLabel } from "./version.ts";
 
+/** 場内・窓口で同じ時刻帯のマークアップにする */
+export function chromeTimesHtml(metaNow: string, metaClose: string): string {
+  return `<div class="chrome-times">${metaNow}${metaClose}</div>`;
+}
+
 /** PC 枠外右下。バージョンは管理者リンクの直上 */
 export function memberOutLinks(): string {
   return `<nav class="out-links" aria-label="その他">

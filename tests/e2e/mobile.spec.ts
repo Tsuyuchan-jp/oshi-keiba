@@ -8,6 +8,26 @@ async function expectNoHorizontalOverflow(page: Page): Promise<void> {
   expect(metrics.content).toBeLessThanOrEqual(metrics.viewport + 1);
 }
 
+async function expectMemberChromeFits(page: Page): Promise<void> {
+  await expect(page.locator(".chrome-brand .brand")).toBeVisible();
+  await expect(page.locator("#meta-close")).toBeVisible();
+  const collision = await page.evaluate(() => {
+    const brand = document.querySelector(".chrome-brand")?.getBoundingClientRect();
+    const state = document.querySelector(".chrome-state")?.getBoundingClientRect();
+    const close = document.querySelector("#meta-close")?.getBoundingClientRect();
+    if (!brand || !state || !close) return true;
+    const overlap = !(
+      brand.right <= state.left ||
+      brand.left >= state.right ||
+      brand.bottom <= state.top ||
+      brand.top >= state.bottom
+    );
+    const closeHidden = close.width <= 0 || close.height <= 0;
+    return overlap || closeHidden;
+  });
+  expect(collision).toBe(false);
+}
+
 test("モバイル幅でも入場・場内・窓口の主要操作が画面内に収まる", async ({ page }) => {
   const pageErrors: Error[] = [];
   page.on("pageerror", (error) => pageErrors.push(error));
@@ -20,12 +40,14 @@ test("モバイル幅でも入場・場内・窓口の主要操作が画面内�
   await page.getByRole("button", { name: "初めて入場" }).click();
   await expect(page.getByText("E2E開催")).toBeVisible();
   await expectNoHorizontalOverflow(page);
+  await expectMemberChromeFits(page);
 
   await page.goto("/bet");
   await page.getByRole("button", { name: /E2E開催に参加/ }).click();
   await expect(page.locator('.chip[data-n="1"]')).toBeVisible();
   await expect(page.getByRole("button", { name: "買う" })).toBeVisible();
   await expectNoHorizontalOverflow(page);
+  await expectMemberChromeFits(page);
   expect(pageErrors).toEqual([]);
 });
 

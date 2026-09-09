@@ -24,7 +24,7 @@ import {
 } from "./ui.ts";
 import { BET_CSS } from "./betCss.ts";
 import { betKindSlots } from "./betBoard.ts";
-import { memberMoreScript, memberOutLinks } from "./memberShell.ts";
+import { chromeTimesHtml, memberMoreScript, memberOutLinks } from "./memberShell.ts";
 import { memberSceneSlotScript } from "./memberSceneSlot.ts";
 
 export { betKindSlots, type BetSlotSpec } from "./betBoard.ts";
@@ -64,7 +64,7 @@ function shellChrome(opts: { user: UserRow; board: Board }): string {
       <a class="brand" href="/">OSHI KEIBA</a>
       <div class="who">${escapeHtml(opts.user.display_name)}</div>
     </div>
-    <div class="chrome-state">${phasePill(status)}${metaNow}${metaClose}</div>
+    <div class="chrome-state">${phasePill(status)}${chromeTimesHtml(metaNow, metaClose)}</div>
     <nav class="chrome-nav nav" aria-label="ページ移動">
       <a href="/">場内</a>
       <a class="on" href="/bet">窓口</a>

@@ -42,7 +42,7 @@ import {
   type VenueSlot,
 } from "./venueBoard.ts";
 import { VENUE_CSS } from "./venueCss.ts";
-import { memberMoreScript, memberOutLinks } from "./memberShell.ts";
+import { chromeTimesHtml, memberMoreScript, memberOutLinks } from "./memberShell.ts";
 
 export type { VenueSlot };
 export { resolveVenueSlot } from "./venueBoard.ts";
@@ -474,8 +474,7 @@ export function venueBoardPage(opts: {
         </div>
         <div class="chrome-state led-meta">
           <span class="${pillClass}" id="phase-pill"><span class="dot"></span><span id="phase-label">${phaseLabel}</span></span>
-          ${metaNow}
-          ${metaClose}
+          ${chromeTimesHtml(metaNow, metaClose)}
         </div>
         <nav class="chrome-nav site-nav" aria-label="ページ移動">
           <a class="on" href="/">場内</a>

@@ -75,6 +75,7 @@ ${MEMBER_OVERLAY_CSS}
   line-height: 1;
 }
 .led-meta > span { display: inline-flex; align-items: center; }
+.led-meta .chrome-times { gap: .85rem; }
 .led-meta #meta-now,
 .led-meta #meta-close { gap: .25em; }
 .led-meta strong { color: var(--member-white); font-weight: 700; }
@@ -584,9 +585,6 @@ ${MEMBER_OVERLAY_CSS}
   --scene-landscape: url("/venue/night-16x9.png");
 }
 @media (max-width: 899px) {
-  @media (max-width: 380px) {
-    .venue-chrome #meta-close { display: none; }
-  }
   .scene { height: 100dvh; height: 100vh; }
   .scene .app-shell {
     height: calc(100% - 28px);

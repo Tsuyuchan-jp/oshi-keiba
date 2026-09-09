@@ -202,31 +202,53 @@ a { color: inherit; }
 }
 `;
 
-/** 場内・窓口で共有する、スマホ時の2段ヘッダー配置。 */
+/** 場内・窓口で共有するヘッダー。スマホはタイトル行と状態行を分ける。 */
 export const MEMBER_MOBILE_CHROME_CSS = `
+.member-chrome .chrome-times {
+  display: inline-flex;
+  align-items: center;
+  gap: .65rem;
+  min-width: 0;
+}
+.member-chrome .chrome-times > span {
+  display: inline-flex;
+  align-items: center;
+  gap: .25em;
+  white-space: nowrap;
+}
 @media (max-width: 899px) {
   .member-chrome {
     display: grid;
-    grid-template-columns: minmax(4.5rem, 1fr) minmax(0, 1fr) auto;
-    grid-template-areas: "brand state menu" "nav nav nav";
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand menu"
+      "state state"
+      "nav nav";
     align-items: start;
-    gap: .4rem .55rem;
+    column-gap: .55rem;
+    row-gap: .4rem;
   }
-  .member-chrome .chrome-brand { grid-area: brand; }
+  .member-chrome .chrome-brand { grid-area: brand; min-width: 0; }
   .member-chrome .chrome-state {
     grid-area: state;
     min-width: 0;
+    width: 100%;
     margin-left: 0;
-    justify-self: end;
+    justify-self: stretch;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: .85rem;
-    font-size: .82rem;
+    justify-content: space-between;
+    gap: .5rem .75rem;
+    font-size: .78rem;
     font-weight: 600;
     line-height: 1;
     font-variant-numeric: tabular-nums;
-    white-space: nowrap;
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+  .member-chrome .chrome-times {
+    justify-content: flex-end;
+    flex: 1 1 auto;
   }
   .member-chrome .chrome-nav {
     grid-area: nav;
@@ -243,5 +265,6 @@ export const MEMBER_MOBILE_CHROME_CSS = `
   }
   .member-chrome .chrome-nav a.on { border-bottom: 2px solid var(--member-accent); }
   .member-chrome .chrome-menu { grid-area: menu; }
+  .member-chrome #meta-close { display: inline-flex; }
 }
 `;
