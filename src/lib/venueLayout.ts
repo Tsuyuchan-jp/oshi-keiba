@@ -38,6 +38,7 @@ import {
   venuePayKindClass,
   venuePlaceRoman,
   venueStyleLabel,
+  venueFootHtml,
   type VenueSlot,
 } from "./venueBoard.ts";
 import { VENUE_CSS } from "./venueCss.ts";
@@ -444,13 +445,12 @@ export function venueBoardPage(opts: {
     ? (opts.ticketsHtml ??
       `<div class="tickets" id="tickets"><div class="tickets-h">自分の馬券</div><div class="t-row"><span class="lab">なし</span><span class="yen"></span><span class="res"></span></div></div>`)
     : "";
-  const foot = published
-    ? `<div class="foot"><span class="hint" id="phase-hint">${escapeHtml(venuePublishedHint(opts.board))}</span></div>`
-    : closed
-      ? `<div class="foot"><span class="hint" id="phase-hint">${escapeHtml(venueClosedHint(opts.board))}</span></div>`
-      : isSetup
-        ? `<div class="foot"><span class="hint" id="phase-hint">投票開始までお待ちください。</span></div>`
-        : `<div class="foot"><div class="foot-actions"><a class="paddock-cta" href="/paddock">パドックを見る</a><a class="cta" href="${ctaHref}">馬券を買う</a></div></div>`;
+  const foot = venueFootHtml({
+    status,
+    ctaHref,
+    closedHint: venueClosedHint(opts.board),
+    publishedHint: venuePublishedHint(opts.board),
+  });
   const head = sheetHeadHtml(published);
   return `<!doctype html>
 <html lang="ja">
