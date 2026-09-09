@@ -349,7 +349,7 @@ ${MEMBER_OVERLAY_CSS}
 .fin-rows { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-evenly; }
 .fin-row {
   display: grid;
-  grid-template-columns: 2.05rem 4.15rem minmax(0, 1fr);
+  grid-template-columns: 2.05rem 4.15rem auto minmax(0, 1fr);
   gap: .18rem .3rem;
   align-items: center;
   padding: .1rem 0;
@@ -382,9 +382,21 @@ ${MEMBER_OVERLAY_CSS}
   color: #ffd000;
   font-size: .95rem;
   font-weight: 700;
-  text-align: right;
+  text-align: left;
   white-space: nowrap;
   letter-spacing: .08em;
+}
+.fin-uma {
+  min-width: 0;
+  font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
+  font-size: .62rem;
+  font-weight: 400;
+  color: rgba(255, 208, 0, .62);
+  letter-spacing: .04em;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .fin-foot {
   flex: 0 0 auto;
@@ -452,7 +464,8 @@ ${MEMBER_OVERLAY_CSS}
   letter-spacing: .06em;
 }
 .scene[data-phase="published"][data-result="show"] .jumbo-hint { display: block; }
-.scene[data-phase="published"][data-result="show"] .foot .hint { display: none; }
+.jumbo-hint .jh-narrow { display: none; }
+.scene[data-phase="published"] .foot:not(:has(#phase-hint:not(:empty))) { display: none; }
 .tickets {
   display: none;
   flex: 0 0 auto;
@@ -617,6 +630,8 @@ ${MEMBER_OVERLAY_CSS}
   .board-head h1 { display: flex; flex-direction: column; align-items: flex-start; gap: .12rem; }
   .board-head-title,
   .board-head-detail { display: block; }
+  .jumbo-hint .jh-wide { display: none; }
+  .jumbo-hint .jh-narrow { display: inline; }
 }
 ${MEMBER_MOBILE_CHROME_CSS}
 @media (min-width: 900px) {
@@ -667,4 +682,39 @@ ${MEMBER_MOBILE_CHROME_CSS}
 .scene[data-phase="closed"] #meta-now,
 .scene[data-phase="published"] #meta-now { display: none; }
 ${MEMBER_MOBILE_GLASS_CSS}
+/* スマホ published: ページ全体をスクロール。ヘッダーも流す。枠内スクロールはしない */
+@media (max-width: 899px) {
+  html:has(body[data-phase="published"]),
+  body[data-phase="published"] {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .scene[data-phase="published"] {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+  .scene[data-phase="published"] .scene-bg { position: fixed; }
+  .scene[data-phase="published"] .app-shell {
+    height: auto;
+    min-height: calc(100dvh - 28px);
+    overflow: visible;
+  }
+  .scene[data-phase="published"] .board,
+  .scene[data-phase="published"] .j-panel,
+  .scene[data-phase="published"] .sheet-wrap {
+    overflow: visible;
+  }
+  .scene[data-phase="published"] .board,
+  .scene[data-phase="published"] .jumbo,
+  .scene[data-phase="published"] .cols,
+  .scene[data-phase="published"] .j-pay,
+  .scene[data-phase="published"] .j-fin {
+    flex: 0 0 auto;
+    min-height: 0;
+  }
+  .scene[data-phase="published"] .j-fin { width: 100%; }
+}
 `;

@@ -4,6 +4,7 @@ import {
   formatVenueClosedHint,
   formatVenuePublishedHint,
   resolveVenueSlot,
+  venueFinishRowHtml,
   venueFootHtml,
   venueHorseRowHtml,
   venuePayKindClass,
@@ -74,7 +75,11 @@ test("締切注は成立／特払い予定と着は出さない", () => {
 test("公開注は特払いだけ。ローマと払戻クラス", () => {
   assert.equal(
     formatVenuePublishedHint(["3連単"]),
-    "3連単は当たりの組み合わせに投票がなかったため、特払いです。この賭式に使ったスペの8割が戻ります。",
+    "3連単は特払いです。当たりに投票がなかったため、使ったスペの8割が戻ります。",
+  );
+  assert.equal(
+    formatVenuePublishedHint(["馬連", "馬単", "3連複", "3連単"]),
+    "馬連・馬単・3連複・3連単は特払いです。当たりに投票がなかったため、使ったスペの8割が戻ります。",
   );
   assert.equal(formatVenuePublishedHint([]), "");
   assert.equal(venuePlaceRoman(1), "I");
@@ -83,6 +88,18 @@ test("公開注は特払いだけ。ローマと払戻クラス", () => {
   assert.equal(venuePayKindClass("sanrenpuku"), "trio");
   assert.equal(venuePayKindClass("sanrentan"), "trif");
   assert.equal(venuePayKindClass("win"), "win");
+});
+
+test("確定盤の行は着の右にウマ娘名", () => {
+  const html = venueFinishRowHtml({
+    place: 1,
+    number: 7,
+    umaName: "サイレンススズカ",
+  });
+  assert.match(html, /class="fin-rk">I</);
+  assert.match(html, /class="fin-n">7</);
+  assert.match(html, /class="fin-place-lbl">1着</);
+  assert.match(html, /class="fin-uma"[^>]*>サイレンススズカ</);
 });
 
 test("場内足元のパドック導線は状態ごとに文言と買うボタンが分かれる", () => {

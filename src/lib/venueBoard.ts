@@ -84,14 +84,10 @@ export function formatVenueClosedHint(okLabels: string[], specialLabels: string[
   return parts.join("");
 }
 
-/** 公開後の特払い注。成立分は書かない */
+/** 公開後の特払い注。成立分は書かない。賭式名は列挙し説明は1回 */
 export function formatVenuePublishedHint(specialLabels: string[]): string {
-  return specialLabels
-    .map(
-      (l) =>
-        `${l}は当たりの組み合わせに投票がなかったため、特払いです。この賭式に使ったスペの8割が戻ります。`,
-    )
-    .join("");
+  if (!specialLabels.length) return "";
+  return `${specialLabels.join("・")}は特払いです。当たりに投票がなかったため、使ったスペの8割が戻ります。`;
 }
 
 const ROMAN = ["", "I", "II", "III", "IV", "V"] as const;
@@ -100,6 +96,17 @@ const ROMAN = ["", "I", "II", "III", "IV", "V"] as const;
 export function venuePlaceRoman(place: number): string {
   if (place < 1 || place > 5) return "";
   return ROMAN[place]!;
+}
+
+/** 確定盤の1行。着の右にウマ娘名（細字） */
+export function venueFinishRowHtml(opts: {
+  place: number;
+  number: number;
+  umaName: string;
+}): string {
+  const roman = venuePlaceRoman(opts.place);
+  const name = escapeHtml(opts.umaName);
+  return `<div class="fin-row"><span class="fin-rk">${roman}</span><span class="fin-n">${opts.number}</span><span class="fin-place-lbl">${opts.place}着</span><span class="fin-uma" title="${name}">${name}</span></div>`;
 }
 
 /** 払戻盤の賭式チップ用クラス（モックの trio / trif に合わせる） */

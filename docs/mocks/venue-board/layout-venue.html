@@ -401,7 +401,7 @@
     .fin-rows { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-evenly; }
     .fin-row {
       display: grid;
-      grid-template-columns: 2.05rem 4.15rem minmax(0, 1fr);
+      grid-template-columns: 2.05rem 4.15rem auto minmax(0, 1fr);
       gap: .18rem .3rem;
       align-items: center;
       padding: .1rem 0;
@@ -434,9 +434,21 @@
       color: #ffd000;
       font-size: .95rem;
       font-weight: 700;
-      text-align: right;
+      text-align: left;
       white-space: nowrap;
       letter-spacing: .08em;
+    }
+    .fin-uma {
+      min-width: 0;
+      font-family: "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
+      font-size: .62rem;
+      font-weight: 400;
+      color: rgba(255, 208, 0, .62);
+      letter-spacing: .04em;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .fin-foot {
       flex: 0 0 auto;
@@ -504,7 +516,8 @@
       letter-spacing: .06em;
     }
     .scene[data-phase="published"][data-result="show"] .jumbo-hint { display: block; }
-    .scene[data-phase="published"][data-result="show"] .foot .hint { display: none; }
+    .jumbo-hint .jh-narrow { display: none; }
+    .scene[data-phase="published"] .foot:not(:has(#phase-hint:not(:empty))) { display: none; }
     .tickets-h {
       font-size: .68rem;
       letter-spacing: .12em;
@@ -627,6 +640,8 @@
       .j-pay { flex: 1 1 auto; }
       .j-fin { flex: 1.15 1 auto; width: auto; max-width: 22rem; margin: 0 auto; min-height: 21rem; }
       .foot { display: block; }
+      .jumbo-hint .jh-wide { display: none; }
+      .jumbo-hint .jh-narrow { display: inline; }
       .cta {
         display: flex;
         justify-content: center;
@@ -674,9 +689,43 @@
       .cols .sheet-wrap { min-width: 0; }
       .mock-label { right: 9.5rem; }
     }
+    @media (max-width: 899px) {
+      html:has(body[data-phase="published"]),
+      body[data-phase="published"] {
+        height: auto;
+        min-height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+      .scene[data-phase="published"] {
+        height: auto;
+        min-height: 100dvh;
+        overflow: visible;
+      }
+      .scene[data-phase="published"] .scene-bg { position: fixed; }
+      .scene[data-phase="published"] .app-shell {
+        height: auto;
+        min-height: calc(100dvh - 28px);
+        overflow: visible;
+      }
+      .scene[data-phase="published"] .board,
+      .scene[data-phase="published"] .j-panel,
+      .scene[data-phase="published"] .sheet-wrap {
+        overflow: visible;
+      }
+      .scene[data-phase="published"] .board,
+      .scene[data-phase="published"] .jumbo,
+      .scene[data-phase="published"] .cols,
+      .scene[data-phase="published"] .j-pay,
+      .scene[data-phase="published"] .j-fin {
+        flex: 0 0 auto;
+        min-height: 0;
+      }
+      .scene[data-phase="published"] .j-fin { width: 100%; }
+    }
   </style>
 </head>
-<body>
+<body data-phase="voting">
   <div class="scene" data-slot="night" data-phase="voting" data-result="show">
     <div class="scene-bg" aria-hidden="true"></div>
     <div class="app-shell">
@@ -746,11 +795,11 @@
             </div>
             <div class="j-body">
               <div class="fin-rows">
-                <div class="fin-row"><span class="fin-rk">I</span><span class="fin-n">1</span><span class="fin-place-lbl">1着</span></div>
-                <div class="fin-row"><span class="fin-rk">II</span><span class="fin-n">16</span><span class="fin-place-lbl">2着</span></div>
-                <div class="fin-row"><span class="fin-rk">III</span><span class="fin-n">2</span><span class="fin-place-lbl">3着</span></div>
-                <div class="fin-row"><span class="fin-rk">IV</span><span class="fin-n">5</span><span class="fin-place-lbl">4着</span></div>
-                <div class="fin-row"><span class="fin-rk">V</span><span class="fin-n">9</span><span class="fin-place-lbl">5着</span></div>
+                <div class="fin-row"><span class="fin-rk">I</span><span class="fin-n">1</span><span class="fin-place-lbl">1着</span><span class="fin-uma">サイレンススズカ</span></div>
+                <div class="fin-row"><span class="fin-rk">II</span><span class="fin-n">16</span><span class="fin-place-lbl">2着</span><span class="fin-uma">シンボリルドルフ</span></div>
+                <div class="fin-row"><span class="fin-rk">III</span><span class="fin-n">2</span><span class="fin-place-lbl">3着</span><span class="fin-uma">スペシャルウィーク</span></div>
+                <div class="fin-row"><span class="fin-rk">IV</span><span class="fin-n">5</span><span class="fin-place-lbl">4着</span><span class="fin-uma">エルコンドルパサー</span></div>
+                <div class="fin-row"><span class="fin-rk">V</span><span class="fin-n">9</span><span class="fin-place-lbl">5着</span><span class="fin-uma">メジロマックイーン</span></div>
               </div>
               <!-- タイムは場内ビジョンの雰囲気用。開催データには無い -->
               <div class="fin-foot">
@@ -761,7 +810,7 @@
             </div>
           </article>
         </div>
-        <p class="jumbo-hint" id="jumbo-hint">左が払戻、右が確定盤。スワイプまたはタップで全頭</p>
+        <p class="jumbo-hint" id="jumbo-hint"><span class="jh-wide">左が払戻、右が確定盤。</span><span class="jh-narrow">上が払戻、下が確定盤。</span>スワイプまたはタップで全頭</p>
         <div class="cols">
           <div class="sheet-wrap">
             <div class="sheet" role="table" aria-label="単勝オッズ">
@@ -952,6 +1001,7 @@
     }
     function applyPhase() {
       scene.dataset.phase = phase;
+      document.body.dataset.phase = phase;
       const pill = document.getElementById("phase-pill");
       const label = document.getElementById("phase-label");
       const who = document.getElementById("who-line");
@@ -976,7 +1026,7 @@
         label.textContent = "結果公開";
         pill.classList.add("idle", "done");
         who.textContent = "neko · 13,120 スペ";
-        hint.textContent = "3連単は当たりの組み合わせに投票がなかったため、特払いです。この賭式に使ったスペの8割が戻ります。";
+        hint.textContent = "3連単は特払いです。当たりに投票がなかったため、使ったスペの8割が戻ります。";
         metaNow.style.display = "none";
         metaClose.innerHTML = "払戻済み";
         setResult("show");

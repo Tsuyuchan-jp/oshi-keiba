@@ -34,9 +34,9 @@ import {
 import {
   formatVenueClosedHint,
   formatVenuePublishedHint,
+  venueFinishRowHtml,
   venueHorseRowHtml,
   venuePayKindClass,
-  venuePlaceRoman,
   venueStyleLabel,
   venueFootHtml,
   type VenueSlot,
@@ -193,8 +193,11 @@ export function venueFinishBoardHtml(board: Board): string {
   const rows = top
     .map((h) => {
       const place = h.horse.finish_place!;
-      const roman = venuePlaceRoman(place);
-      return `<div class="fin-row"><span class="fin-rk">${roman}</span><span class="fin-n">${h.number}</span><span class="fin-place-lbl">${place}着</span></div>`;
+      return venueFinishRowHtml({
+        place,
+        number: h.number,
+        umaName: horseSheetParts(h.horse).umaName,
+      });
     })
     .join("");
   const setup = eventScoreSetup(board.event);
@@ -439,7 +442,7 @@ export function venueBoardPage(opts: {
         ${venuePayBoardHtml(opts.board)}
         ${venueFinishBoardHtml(opts.board)}
       </div>
-      <p class="jumbo-hint" id="jumbo-hint">左が払戻、右が確定盤。スワイプまたはタップで全頭</p>`
+      <p class="jumbo-hint" id="jumbo-hint"><span class="jh-wide">左が払戻、右が確定盤。</span><span class="jh-narrow">上が払戻、下が確定盤。</span>スワイプまたはタップで全頭</p>`
     : "";
   const tickets = published
     ? (opts.ticketsHtml ??
@@ -463,7 +466,7 @@ export function venueBoardPage(opts: {
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700;800&family=Chakra+Petch:wght@600;700&display=swap" rel="stylesheet">
   <style>${VENUE_CSS}</style>
 </head>
-<body>
+<body data-phase="${phaseAttr}">
   <div class="scene member-glass member-glass--venue" data-slot="${opts.slot}" data-phase="${phaseAttr}"${published ? ' data-result="show"' : ""}>
     <div class="scene-bg" aria-hidden="true"></div>
     <div class="app-shell">
