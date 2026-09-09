@@ -657,6 +657,15 @@ ${MEMBER_MOBILE_CHROME_CSS}
   .scene[data-phase="closed"] .foot { justify-content: space-between; }
   .scene[data-phase="published"] .foot { justify-content: flex-start; }
   .cta { min-width: 11rem; text-align: center; }
+  /* 2列は中央線ではなく、確定盤と同じ薄い枠の2枚の盤 */
+  .cols { gap: .85rem; }
+  .cols .sheet-wrap {
+    min-width: 0;
+    padding: .2rem .28rem .15rem;
+    background: #0a0a0a;
+    border: 1px solid #1c3030;
+  }
+  .cols .sheet-row.head { background: #0a0a0a; }
 }
 .scene[data-phase="closed"] .cta,
 .scene[data-phase="published"] .cta,

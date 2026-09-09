@@ -4,7 +4,7 @@
 
 ## 次にやること
 
-- PC場内の高さ・字スケール、トレーナー列幅と列頭のユーザー実機確認 — [playbook.md](operations/playbook.md)
+- PC場内2列のパネル分けのユーザー実機確認 — [playbook.md](operations/playbook.md)
 
 ## そのあと
 
@@ -17,6 +17,8 @@
 ---
 
 ## アーカイブ
+
+- PC場内の高さ・字スケールとトレーナー列を実装クローズ（盤幅は従来。列頭はトレーナー。PC列幅 9rem。実機確認OK）— [playbook.md](operations/playbook.md)
 
 - スマホの場内・窓口ヘッダーを実装クローズ（タイトル行と状態行を分離。投票中は場内でも締切時刻を出す。実機確認OK）— [playbook.md](operations/playbook.md)
 

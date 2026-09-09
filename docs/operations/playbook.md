@@ -51,7 +51,7 @@
 - 使い方・ログアウト・管理者は、枠内の「⋯」（ほか）。PCは枠外右下にも重ねてよい。スマホは⋯だけ。入場は未ログインなのでログアウトは出さない。場内・窓口・入場は本番適用
 - スマホの場内・窓口ヘッダーは3段（実機確認OK。2026-09-09）。1段目はアプリ名と⋯、2段目は開催状態（投票中は現在時刻・締切時刻を出す。場内でも省略しない）、3段目は「場内／窓口／パドック」の等幅タブ
 
-紙面: 場内は電光（[layout-venue.html](../mocks/venue-board/layout-venue.html)。背景は日中／夕方／ナイターの生成画像、JST で切替。`?slot=` で固定可）。PC（900px以上）の盤幅は従来どおり `min(68rem, 100vw - 4rem)`。高さ上限は `100dvh - 3rem`。単勝表は 1.1rem、列見出し 0.8rem、オッズ 1.25rem（20px）。スマホの字スケールは変えない。パドックは脚質別の出走表示と詳細カード（[stage.html](../mocks/paddock/stage.html)）。窓口・入場は quiet トーン（[quiet.html](../mocks/bet-window/quiet.html)・[gate](../mocks/gate/index.html)。背景はナイター）。枠番色・行タップで買う、はやらない。
+紙面: 場内は電光（[layout-venue.html](../mocks/venue-board/layout-venue.html)。背景は日中／夕方／ナイターの生成画像、JST で切替。`?slot=` で固定可）。PC（900px以上）の盤幅は従来どおり `min(68rem, 100vw - 4rem)`。高さ上限は `100dvh - 3rem`。単勝表は 1.1rem、列見出し 0.8rem、オッズ 1.25rem（20px）。2列のあいだは線ではなく隙間 `0.85rem` と、確定盤と同じ薄い枠の2枚の盤。スマホの字スケールは変えない。パドックは脚質別の出走表示と詳細カード（[stage.html](../mocks/paddock/stage.html)）。窓口・入場は quiet トーン（[quiet.html](../mocks/bet-window/quiet.html)・[gate](../mocks/gate/index.html)。背景はナイター）。枠番色・行タップで買う、はやらない。
 
 場内盤の面（採用・実機確認OK。2026-09-09）:
 
