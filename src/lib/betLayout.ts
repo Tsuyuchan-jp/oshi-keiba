@@ -325,7 +325,7 @@ function markCardScript(opts: {
   }
   function paint() {
     const used = new Set(picks.filter((x) => x != null));
-    dock?.classList.toggle("is-compact", picks.every((x) => x == null));
+    dock?.classList.toggle("is-compact", picks.some((x) => x == null));
     wells.innerHTML = labels.map((name, i) => {
       const n = picks[i];
       const h = n != null ? byNum.get(n) : null;
