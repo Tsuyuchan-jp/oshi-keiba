@@ -43,6 +43,7 @@ test("パドック表示用データは出走中の馬だけを必要な表示�
   assert.equal(horse.detailImageUrl, "/images/umamusume/petit/petit_1001_100101_0010.png");
   assert.equal(horse.skillPower, 2);
   assert.deepEqual(horse.stats, { speed: 1200, stamina: 950, power: 1100, guts: 850, wisdom: 1000 });
+  assert.equal(horse.effectiveStamina, 950);
   assert.equal(horse.comment, null);
   assert.equal(horse.shotUrl, "/paddock/shot/horse-1?v=shots%2Fevent-1%2Fhorse-1.png");
 });

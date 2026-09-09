@@ -52,8 +52,8 @@
   };
   const stats = (h) => {
     if (!h.stats) return "<p>能力データは未登録です</p>";
-    return [["スピード", "speed"], ["スタミナ", "stamina"], ["パワー", "power"], ["根性", "guts"], ["賢さ", "wisdom"]].map(([name, key]) => {
-      const value = Number(h.stats[key]);
+    return [["スピード", "speed"], ["有効スタ", "stamina"], ["パワー", "power"], ["根性", "guts"], ["賢さ", "wisdom"]].map(([name, key]) => {
+      const value = key === "stamina" ? Number(h.effectiveStamina) : Number(h.stats[key]);
       const cap = statCaps[key];
       const target = Number(h.statTargets?.[key]);
       const hasTarget = Number.isFinite(target) && target > 0 && cap > 0;

@@ -36,6 +36,8 @@ export type PaddockHorseView = {
   skillPower: number | null;
   skillSummary: { effective: number; goldLike: number; strategic: number } | null;
   stats: { speed: number; stamina: number; power: number; guts: number; wisdom: number } | null;
+  /** 出走タブと共通の、回復・自己消費を反映したスタミナ判定値。 */
+  effectiveStamina: number | null;
   aptitudes: {
     surface: { label: string; rank: string };
     distance: { label: string; rank: string };
@@ -149,6 +151,7 @@ export function paddockHorseView(
         }
       : null,
     stats: input?.stats ?? null,
+    effectiveStamina: scored?.breakdown.effectiveStamina ?? null,
     aptitudes: scored && setup
       ? (() => {
           const course = getScoreCourse(setup.conditions.courseKey);
