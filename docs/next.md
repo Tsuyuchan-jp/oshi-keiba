@@ -4,7 +4,7 @@
 
 ## 次にやること
 
-- PC場内2列のパネル分けのユーザー実機確認 — [playbook.md](operations/playbook.md)
+- PC場内2列の隙間分け（外枠なし）のユーザー実機確認 — [playbook.md](operations/playbook.md)
 
 ## そのあと
 
