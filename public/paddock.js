@@ -7,6 +7,10 @@
   const paddockNav = document.querySelector(".paddock-nav");
   const detail = document.querySelector("#detail");
   const statCaps = { speed: 2300, stamina: 1800, power: 1700, guts: 1700, wisdom: 1800 };
+  const effectiveStaminaCap = Math.max(1, ...view.horses.map((horse) => Math.max(
+    Number.isFinite(Number(horse.effectiveStamina)) ? Number(horse.effectiveStamina) : 0,
+    Number.isFinite(Number(horse.statTargets?.stamina)) ? Number(horse.statTargets.stamina) : 0,
+  )));
   let backdrop;
   let shotDialog;
   let mobileGroupCount = 1;
@@ -54,7 +58,7 @@
     if (!h.stats) return "<p>能力データは未登録です</p>";
     return [["スピード", "speed"], ["有効スタ", "stamina"], ["パワー", "power"], ["根性", "guts"], ["賢さ", "wisdom"]].map(([name, key]) => {
       const value = key === "stamina" ? Number(h.effectiveStamina) : Number(h.stats[key]);
-      const cap = statCaps[key];
+      const cap = key === "stamina" ? effectiveStaminaCap : statCaps[key];
       const target = Number(h.statTargets?.[key]);
       const hasTarget = Number.isFinite(target) && target > 0 && cap > 0;
       const width = !Number.isFinite(value) || !cap
@@ -67,7 +71,7 @@
         ? Math.min(80, value / target * 80)
         : Math.min(100, 80 + (value - target) / (cap - target) * 20);
       const marker = hasTarget ? '<i class="bar__target" aria-hidden="true"></i>' : "";
-      return `<div class="stat"><span>${name}</span><i class="bar">${marker}<i class="bar__value" style="width:${width}%"></i></i><b>${value}</b></div>`;
+      return `<div class="stat"><span>${name}</span><i class="bar">${marker}<i class="bar__value" style="width:${width}%"></i></i><b>${key === "stamina" ? Math.round(value) : value}</b></div>`;
     }).join("");
   };
   const close = () => {
