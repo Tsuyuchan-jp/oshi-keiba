@@ -108,3 +108,26 @@ export function venuePayKindClass(kind: string): string {
   if (kind === "sanrentan") return "trif";
   return kind;
 }
+
+function paddockCta(label: string): string {
+  return `<a class="paddock-cta" href="/paddock">${escapeHtml(label)}</a>`;
+}
+
+/** 場内足元。投票中は買うと並べ、準備中・締切後はパドックだけ。結果公開後は出さない */
+export function venueFootHtml(opts: {
+  status: "setup" | "voting" | "closed" | "published";
+  ctaHref: string;
+  closedHint: string;
+  publishedHint: string;
+}): string {
+  if (opts.status === "published") {
+    return `<div class="foot"><span class="hint" id="phase-hint">${escapeHtml(opts.publishedHint)}</span></div>`;
+  }
+  if (opts.status === "closed") {
+    return `<div class="foot"><span class="hint" id="phase-hint">${escapeHtml(opts.closedHint)}</span>${paddockCta("出走馬をパドックで見る")}</div>`;
+  }
+  if (opts.status === "setup") {
+    return `<div class="foot"><span class="hint" id="phase-hint">投票開始までお待ちください。</span>${paddockCta("出走馬をパドックで見る")}</div>`;
+  }
+  return `<div class="foot"><div class="foot-actions">${paddockCta("パドックを見る")}<a class="cta" href="${escapeHtml(opts.ctaHref)}">馬券を買う</a></div></div>`;
+}
