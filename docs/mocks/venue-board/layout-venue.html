@@ -163,7 +163,7 @@
       --sheet-pad-x: .35rem;
       font-size: clamp(.78rem, 1.8vw, .9rem);
     }
-    .scene[data-phase="published"] .sheet { --col-place: 1.85rem; }
+    .scene[data-phase="published"] .sheet { --col-place: 2.6rem; }
     .sheet-row {
       display: grid;
       grid-template-columns:
@@ -242,17 +242,19 @@
     .c-place {
       display: none;
       color: #fff;
-      font-family: "Chakra Petch", sans-serif;
+      font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif;
       font-variant-numeric: tabular-nums;
       font-weight: 700;
-      text-align: right;
+      text-align: center;
       white-space: nowrap;
+      padding: .08rem 0;
+      border-radius: 2px;
     }
     .scene[data-phase="published"] .c-place { display: block; }
-    .sheet-row.head .c-place { color: var(--led-dim); font-size: .68em; }
-    .sheet-row.place-1 { box-shadow: inset 3px 0 0 #e0b34a; }
-    .sheet-row.place-2 { box-shadow: inset 3px 0 0 #c8d0cc; }
-    .sheet-row.place-3 { box-shadow: inset 3px 0 0 #c47a3a; }
+    .sheet-row.head .c-place { color: var(--led-dim); font-size: .68em; background: transparent; }
+    .c-place.place-1 { background: rgba(224, 179, 74, .42); color: #fff; }
+    .c-place.place-2 { background: rgba(200, 208, 204, .34); color: #fff; }
+    .c-place.place-3 { background: rgba(196, 122, 58, .46); color: #fff; }
     .cta {
       background: var(--odds);
       color: #140800;
@@ -401,7 +403,7 @@
     .fin-rows { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-evenly; }
     .fin-row {
       display: grid;
-      grid-template-columns: 2.05rem 4.15rem auto minmax(0, 1fr);
+      grid-template-columns: 2.05rem 4.15rem minmax(0, 1fr);
       gap: .18rem .3rem;
       align-items: center;
       padding: .1rem 0;
@@ -428,15 +430,6 @@
       text-shadow: 0 0 12px rgba(255, 208, 0, .4);
       font-variant-numeric: tabular-nums;
       letter-spacing: .02em;
-    }
-    .fin-place-lbl {
-      font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif;
-      color: #ffd000;
-      font-size: .95rem;
-      font-weight: 700;
-      text-align: left;
-      white-space: nowrap;
-      letter-spacing: .08em;
     }
     .fin-uma {
       min-width: 0;
@@ -795,11 +788,11 @@
             </div>
             <div class="j-body">
               <div class="fin-rows">
-                <div class="fin-row"><span class="fin-rk">I</span><span class="fin-n">1</span><span class="fin-place-lbl">1着</span><span class="fin-uma">サイレンススズカ</span></div>
-                <div class="fin-row"><span class="fin-rk">II</span><span class="fin-n">16</span><span class="fin-place-lbl">2着</span><span class="fin-uma">シンボリルドルフ</span></div>
-                <div class="fin-row"><span class="fin-rk">III</span><span class="fin-n">2</span><span class="fin-place-lbl">3着</span><span class="fin-uma">スペシャルウィーク</span></div>
-                <div class="fin-row"><span class="fin-rk">IV</span><span class="fin-n">5</span><span class="fin-place-lbl">4着</span><span class="fin-uma">エルコンドルパサー</span></div>
-                <div class="fin-row"><span class="fin-rk">V</span><span class="fin-n">9</span><span class="fin-place-lbl">5着</span><span class="fin-uma">メジロマックイーン</span></div>
+                <div class="fin-row"><span class="fin-rk">I</span><span class="fin-n">1</span><span class="fin-uma">サイレンススズカ</span></div>
+                <div class="fin-row"><span class="fin-rk">II</span><span class="fin-n">16</span><span class="fin-uma">シンボリルドルフ</span></div>
+                <div class="fin-row"><span class="fin-rk">III</span><span class="fin-n">2</span><span class="fin-uma">スペシャルウィーク</span></div>
+                <div class="fin-row"><span class="fin-rk">IV</span><span class="fin-n">5</span><span class="fin-uma">エルコンドルパサー</span></div>
+                <div class="fin-row"><span class="fin-rk">V</span><span class="fin-n">9</span><span class="fin-uma">メジロマックイーン</span></div>
               </div>
               <!-- タイムは場内ビジョンの雰囲気用。開催データには無い -->
               <div class="fin-foot">
@@ -972,17 +965,18 @@
         const plc = places[n];
         row.className = "sheet-row";
         if (live && n === 3) row.classList.add("pulse");
-        if (showPlace && plc <= 3) row.classList.add("place-" + plc);
         row.setAttribute("role", "row");
         const delta = live && dir
           ? `<span class="delta ${dir}">${dir === "up" ? "↑" : "↓"}${d}</span>`
           : `<span class="delta"></span>`;
+        const placeClass = showPlace && plc <= 3 ? ` place-${plc}` : "";
+        const placeText = showPlace ? `${plc}着` : "";
         row.innerHTML = `<span class="c-num" role="cell">${n}</span>
           <span class="c-name" role="cell">${uma}</span>
           <span class="c-runner" role="cell">${runner}</span>
           <span class="c-style" role="cell">${style}</span>
           <span class="c-odds" role="cell">${delta}${odds}</span>
-          <span class="c-place" role="cell">${showPlace ? plc : ""}</span>`;
+          <span class="c-place${placeClass}" role="cell">${placeText}</span>`;
         el.appendChild(row);
       }
     }

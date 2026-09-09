@@ -38,7 +38,7 @@ test("行はモックの sheet-row。ライブ用の data-sel と odds-now を�
   assert.doesNotMatch(html, /Seed|評価点|控除/);
 });
 
-test("公開の着列は place-1 と c-place", () => {
+test("公開の着列は 1着 表記と着セルの place-1", () => {
   const html = venueHorseRowHtml({
     id: "h1",
     number: 1,
@@ -48,8 +48,23 @@ test("公開の着列は place-1 と c-place", () => {
     odds: 2.0,
     place: 1,
   });
-  assert.match(html, /place-1/);
-  assert.match(html, /class="c-place"[^>]*>1</);
+  assert.doesNotMatch(html, /sheet-row place-1/);
+  assert.match(html, /class="c-place place-1"/);
+  assert.match(html, /class="c-place place-1"[^>]*>1着</);
+});
+
+test("4着以降の着列は数字＋着で、表彰色クラスは付けない", () => {
+  const html = venueHorseRowHtml({
+    id: "h4",
+    number: 4,
+    umaName: "スズカ",
+    runnerName: "a",
+    styleLabel: "逃げ",
+    odds: 8.0,
+    place: 4,
+  });
+  assert.match(html, /class="c-place"[^>]*>4着</);
+  assert.doesNotMatch(html, /place-4/);
 });
 
 test("時間帯は JST。?slot= があれば固定", () => {
@@ -90,7 +105,7 @@ test("公開注は特払いだけ。ローマと払戻クラス", () => {
   assert.equal(venuePayKindClass("win"), "win");
 });
 
-test("確定盤の行は着の右にウマ娘名", () => {
+test("確定盤の行はウマ番の右にウマ娘名。着ラベルは出さない", () => {
   const html = venueFinishRowHtml({
     place: 1,
     number: 7,
@@ -98,7 +113,7 @@ test("確定盤の行は着の右にウマ娘名", () => {
   });
   assert.match(html, /class="fin-rk">I</);
   assert.match(html, /class="fin-n">7</);
-  assert.match(html, /class="fin-place-lbl">1着</);
+  assert.doesNotMatch(html, /1着|fin-place-lbl/);
   assert.match(html, /class="fin-uma"[^>]*>サイレンススズカ</);
 });
 

@@ -58,16 +58,15 @@ export function venueHorseRowHtml(opts: {
 }): string {
   const id = escapeHtml(opts.id);
   const place = opts.place != null ? opts.place : null;
-  const placeClass =
-    place != null && place >= 1 && place <= 3 ? ` place-${place}` : "";
-  const placeText = place != null ? String(place) : "";
-  return `<div class="sheet-row${placeClass}" role="row" data-sel="${id}" data-horse-id="${id}">
+  const podium = place != null && place >= 1 && place <= 3 ? ` place-${place}` : "";
+  const placeText = place != null ? `${place}着` : "";
+  return `<div class="sheet-row" role="row" data-sel="${id}" data-horse-id="${id}">
     <span class="c-num" role="cell">${opts.number}</span>
     <span class="c-name" role="cell" title="${escapeHtml(opts.umaName)}">${escapeHtml(opts.umaName)}</span>
     <span class="c-runner" role="cell" title="${escapeHtml(opts.runnerName)}">${escapeHtml(opts.runnerName)}</span>
     <span class="c-style" role="cell">${escapeHtml(opts.styleLabel)}</span>
     <span class="c-odds" role="cell"><span class="odds-now">${formatOdds(opts.odds)}</span></span>
-    <span class="c-place" role="cell">${placeText}</span>
+    <span class="c-place${podium}" role="cell">${placeText}</span>
   </div>`;
 }
 
@@ -98,7 +97,7 @@ export function venuePlaceRoman(place: number): string {
   return ROMAN[place]!;
 }
 
-/** 確定盤の1行。着の右にウマ娘名（細字） */
+/** 確定盤の1行。大きなウマ番の右にウマ娘名（細字） */
 export function venueFinishRowHtml(opts: {
   place: number;
   number: number;
@@ -106,7 +105,7 @@ export function venueFinishRowHtml(opts: {
 }): string {
   const roman = venuePlaceRoman(opts.place);
   const name = escapeHtml(opts.umaName);
-  return `<div class="fin-row"><span class="fin-rk">${roman}</span><span class="fin-n">${opts.number}</span><span class="fin-place-lbl">${opts.place}着</span><span class="fin-uma" title="${name}">${name}</span></div>`;
+  return `<div class="fin-row"><span class="fin-rk">${roman}</span><span class="fin-n">${opts.number}</span><span class="fin-uma" title="${name}">${name}</span></div>`;
 }
 
 /** 払戻盤の賭式チップ用クラス（モックの trio / trif に合わせる） */

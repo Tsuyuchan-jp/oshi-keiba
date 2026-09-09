@@ -145,7 +145,7 @@ ${MEMBER_OVERLAY_CSS}
   --sheet-pad-y: .32rem;
   font-size: clamp(.78rem, 1.8vw, .9rem);
 }
-.scene[data-phase="published"] .sheet { --col-place: 1.85rem; }
+.scene[data-phase="published"] .sheet { --col-place: 2.6rem; }
 .sheet-row {
   display: grid;
   grid-template-columns:
@@ -214,17 +214,20 @@ ${MEMBER_OVERLAY_CSS}
 .c-place {
   display: none;
   color: var(--member-white);
-  font-family: "Chakra Petch", sans-serif;
+  font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
-  text-align: right;
+  text-align: center;
   white-space: nowrap;
+  padding: .08rem 0;
+  border-radius: 2px;
 }
 .scene[data-phase="published"] .c-place { display: block; }
-.sheet-row.head .c-place { color: var(--led-dim); font-size: .68em; }
-.sheet-row.place-1 { box-shadow: inset 3px 0 0 var(--member-accent); }
-.sheet-row.place-2 { box-shadow: inset 3px 0 0 var(--member-ink-soft); }
-.sheet-row.place-3 { box-shadow: inset 3px 0 0 #c47a3a; }
+.sheet-row.head .c-place { color: var(--led-dim); font-size: .68em; background: transparent; }
+/* 1〜3着は着セルだけ金・銀・銅。行左の縦線は使わない */
+.c-place.place-1 { background: rgba(224, 179, 74, .42); color: var(--member-white); }
+.c-place.place-2 { background: rgba(200, 208, 204, .34); color: var(--member-white); }
+.c-place.place-3 { background: rgba(196, 122, 58, .46); color: var(--member-white); }
 @keyframes pulse-row {
   0% { background: var(--pulse); }
   100% { background: transparent; }
@@ -349,7 +352,7 @@ ${MEMBER_OVERLAY_CSS}
 .fin-rows { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-evenly; }
 .fin-row {
   display: grid;
-  grid-template-columns: 2.05rem 4.15rem auto minmax(0, 1fr);
+  grid-template-columns: 2.05rem 4.15rem minmax(0, 1fr);
   gap: .18rem .3rem;
   align-items: center;
   padding: .1rem 0;
@@ -376,15 +379,6 @@ ${MEMBER_OVERLAY_CSS}
   text-shadow: 0 0 12px rgba(255, 208, 0, .4);
   font-variant-numeric: tabular-nums;
   letter-spacing: .02em;
-}
-.fin-place-lbl {
-  font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif;
-  color: #ffd000;
-  font-size: .95rem;
-  font-weight: 700;
-  text-align: left;
-  white-space: nowrap;
-  letter-spacing: .08em;
 }
 .fin-uma {
   min-width: 0;
