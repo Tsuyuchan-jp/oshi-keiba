@@ -35,7 +35,7 @@ test("メンバー向けウマ柱は全画面モーダル用の紙面と操作�
   assert.match(html, /確認レース/);
   assert.match(html, /data-sel="horse-1"/);
   assert.match(html, /class="odds-now">2\.4/);
-  assert.match(html, /2本指で拡大・縮小/);
+  assert.match(html, /スマホは2本指、PCはホイール/);
   assert.match(html, /id="umabashira-zoom-reset"/);
 });
 
@@ -47,4 +47,6 @@ test("ウマ柱の拡大・移動スクリプトはブラウザで解釈でき�
   assert.match(source, /pointerdown/);
   assert.match(source, /pointermove/);
   assert.match(source, /Math\.hypot/);
+  assert.match(source, /addEventListener\("wheel"/);
+  assert.match(source, /paper\.style\.zoom/);
 });

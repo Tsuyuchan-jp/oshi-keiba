@@ -12,7 +12,7 @@ export function memberUmabashiraModalHtml(
     <header class="umabashira-modal-head">
       <div>
         <h2 id="umabashira-modal-title">ウマ柱</h2>
-        <p>2本指で拡大・縮小、拡大後は1本指で移動できます。</p>
+        <p>スマホは2本指、PCはホイールで拡大・縮小。拡大後はドラッグで移動できます。</p>
       </div>
       <div class="umabashira-modal-tools" aria-label="表示倍率">
         <button type="button" id="umabashira-zoom-out" aria-label="縮小">−</button>
@@ -59,7 +59,16 @@ export function memberUmabashiraScript(): string {
     const p = limits(x, y);
     x = p.x;
     y = p.y;
-    canvas.style.transform = "translate(" + x + "px," + y + "px) scale(" + scale + ")";
+    const paper = canvas.firstElementChild;
+    const desktop = window.matchMedia("(min-width: 900px)").matches;
+    if (desktop && paper && "zoom" in paper.style) {
+      // PC は transform で引き伸ばさず、文字を倍率ごとに描き直して鮮明に保つ。
+      paper.style.zoom = String(scale);
+      canvas.style.transform = "translate(" + x + "px," + y + "px)";
+    } else {
+      if (paper) paper.style.zoom = "";
+      canvas.style.transform = "translate(" + x + "px," + y + "px) scale(" + scale + ")";
+    }
   }
   function resetView() {
     const paper = canvas.firstElementChild;
@@ -110,6 +119,12 @@ export function memberUmabashiraScript(): string {
   document.getElementById("umabashira-zoom-reset")?.addEventListener("click", resetView);
   document.getElementById("umabashira-zoom-in")?.addEventListener("click", () => zoomTo(scale * 1.25, viewport.clientWidth / 2, viewport.clientHeight / 2));
   document.getElementById("umabashira-zoom-out")?.addEventListener("click", () => zoomTo(scale / 1.25, viewport.clientWidth / 2, viewport.clientHeight / 2));
+  viewport.addEventListener("wheel", (e) => {
+    if (!window.matchMedia("(min-width: 900px)").matches) return;
+    e.preventDefault();
+    const point = localPoint(e);
+    zoomTo(scale * (e.deltaY < 0 ? 1.12 : 1 / 1.12), point.x, point.y);
+  }, { passive: false });
 
   viewport.addEventListener("pointerdown", (e) => {
     const point = localPoint(e);

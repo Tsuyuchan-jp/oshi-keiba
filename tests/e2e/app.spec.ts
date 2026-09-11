@@ -44,6 +44,17 @@ test("メンバーが入場・参加し、画面操作で単勝を購入でき�
   await expect(page.locator(".board-head-title")).toHaveText("E2E開催");
   await expect(page.getByText("E2Eメンバー · 0 スペ")).toBeVisible();
 
+  await page.getByRole("button", { name: "ウマ柱を見る" }).click();
+  const umabashiraViewport = page.locator("#umabashira-viewport");
+  const umabashiraPaper = page.locator("#umabashira-modal .umabashira-paper");
+  await expect(umabashiraPaper).toBeVisible();
+  await expect(umabashiraViewport).toHaveCSS("user-select", "none");
+  const beforeWheelZoom = await umabashiraPaper.evaluate((element) => Number((element as HTMLElement).style.zoom));
+  await umabashiraViewport.hover();
+  await page.mouse.wheel(0, -300);
+  await expect.poll(async () => umabashiraPaper.evaluate((element) => Number((element as HTMLElement).style.zoom))).toBeGreaterThan(beforeWheelZoom);
+  await page.getByRole("button", { name: "閉じる" }).click();
+
   await page.goto("/bet");
   await expect(page.getByRole("heading", { name: "窓口" })).toBeVisible();
   await page.getByRole("button", { name: /E2E開催に参加/ }).click();

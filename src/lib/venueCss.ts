@@ -525,6 +525,7 @@ ${MEMBER_OVERLAY_CSS}
 .cta:hover { filter: brightness(1.08); }
 .foot-actions { display: flex; align-items: center; gap: .5rem; }
 .foot-voting { display: flex; align-items: center; gap: .5rem; }
+.foot-browse { display: flex; align-items: center; gap: .5rem; }
 .umabashira-cta {
   padding: .62rem 1rem;
   border: 1px solid var(--member-line-strong);
@@ -640,6 +641,7 @@ ${MEMBER_OVERLAY_CSS}
   .j-fin { flex: 1.15 1 auto; width: auto; max-width: 22rem; margin: 0 auto; min-height: 21rem; }
   .foot { display: block; }
   .foot-voting { display: grid; grid-template-columns: 1fr; gap: .45rem; }
+  .foot-browse { display: grid; grid-template-columns: 1fr; gap: .45rem; margin-top: .45rem; }
   .umabashira-cta { width: 100%; min-height: 2.55rem; }
   .foot > .paddock-cta {
     display: flex;
@@ -658,6 +660,7 @@ ${MEMBER_OVERLAY_CSS}
   }
   .foot-actions .cta { width: auto; }
   .foot-actions .paddock-cta { display: flex; align-items: center; justify-content: center; }
+  .foot-browse .paddock-cta { display: flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; }
   .board-head h1 { display: flex; flex-direction: column; align-items: flex-start; gap: .12rem; }
   .board-head-title,
   .board-head-detail { display: block; }
@@ -715,13 +718,14 @@ ${umabashiraPaperCss()}
   cursor: grab;
 }
 .umabashira-viewport:active { cursor: grabbing; }
+.umabashira-viewport,
+.umabashira-viewport * { user-select: none; -webkit-user-select: none; }
 .umabashira-canvas {
   position: absolute;
   top: 0;
   left: 0;
   width: max-content;
   transform-origin: 0 0;
-  will-change: transform;
 }
 @media (max-width: 899px) {
   .umabashira-modal {

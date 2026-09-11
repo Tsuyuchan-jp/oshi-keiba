@@ -123,10 +123,12 @@ test("場内足元のパドック導線は状態ごとに文言と買うボタ�
     ctaHref: "/bet",
     closedHint: "",
     publishedHint: "",
+    showUmabashira: true,
   });
   assert.match(setupFoot, /出走馬をパドックで見る/);
   assert.doesNotMatch(setupFoot, /馬券を買う/);
   assert.match(setupFoot, /投票開始までお待ちください/);
+  assert.match(setupFoot, /ウマ柱を見る/);
 
   const votingFoot = venueFootHtml({
     status: "voting",
@@ -147,10 +149,12 @@ test("場内足元のパドック導線は状態ごとに文言と買うボタ�
     ctaHref: "/bet",
     closedHint: "着順はまだ出ません。",
     publishedHint: "",
+    showUmabashira: true,
   });
   assert.match(closedFoot, /出走馬をパドックで見る/);
   assert.doesNotMatch(closedFoot, /馬券を買う/);
   assert.match(closedFoot, /着順はまだ出ません/);
+  assert.match(closedFoot, /ウマ柱を見る/);
 
   const publishedFoot = venueFootHtml({
     status: "published",

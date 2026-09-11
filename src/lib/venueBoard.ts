@@ -119,7 +119,13 @@ function paddockCta(label: string): string {
   return `<a class="paddock-cta" href="/paddock">${escapeHtml(label)}</a>`;
 }
 
-/** 場内足元。投票中は買うと並べ、準備中・締切後はパドックだけ。結果公開後は出さない */
+function umabashiraCta(show: boolean | undefined): string {
+  return show
+    ? `<button class="umabashira-cta" type="button" id="umabashira-open">ウマ柱を見る</button>`
+    : "";
+}
+
+/** 場内足元。パドック導線がある間はウマ柱も出す。結果公開後は出さない */
 export function venueFootHtml(opts: {
   status: "setup" | "voting" | "closed" | "published";
   ctaHref: string;
@@ -131,13 +137,10 @@ export function venueFootHtml(opts: {
     return `<div class="foot"><span class="hint" id="phase-hint">${escapeHtml(opts.publishedHint)}</span></div>`;
   }
   if (opts.status === "closed") {
-    return `<div class="foot"><span class="hint" id="phase-hint">${escapeHtml(opts.closedHint)}</span>${paddockCta("出走馬をパドックで見る")}</div>`;
+    return `<div class="foot"><span class="hint" id="phase-hint">${escapeHtml(opts.closedHint)}</span><div class="foot-browse">${umabashiraCta(opts.showUmabashira)}${paddockCta("出走馬をパドックで見る")}</div></div>`;
   }
   if (opts.status === "setup") {
-    return `<div class="foot"><span class="hint" id="phase-hint">投票開始までお待ちください。</span>${paddockCta("出走馬をパドックで見る")}</div>`;
+    return `<div class="foot"><span class="hint" id="phase-hint">投票開始までお待ちください。</span><div class="foot-browse">${umabashiraCta(opts.showUmabashira)}${paddockCta("出走馬をパドックで見る")}</div></div>`;
   }
-  const umabashira = opts.showUmabashira
-    ? `<button class="umabashira-cta" type="button" id="umabashira-open">ウマ柱を見る</button>`
-    : "";
-  return `<div class="foot"><div class="foot-voting">${umabashira}<div class="foot-actions">${paddockCta("パドックを見る")}<a class="cta" href="${escapeHtml(opts.ctaHref)}">馬券を買う</a></div></div></div>`;
+  return `<div class="foot"><div class="foot-voting">${umabashiraCta(opts.showUmabashira)}<div class="foot-actions">${paddockCta("パドックを見る")}<a class="cta" href="${escapeHtml(opts.ctaHref)}">馬券を買う</a></div></div></div>`;
 }
