@@ -37,6 +37,7 @@ test("メンバー向けウマ柱は全画面モーダル用の紙面と操作�
   assert.match(html, /class="odds-now">2\.4/);
   assert.match(html, /スマホは2本指、PCはホイール/);
   assert.match(html, /id="umabashira-zoom-reset"/);
+  assert.match(html, /tabindex="-1"/);
 });
 
 test("ウマ柱の拡大・移動スクリプトはブラウザで解釈できる", () => {
@@ -51,4 +52,6 @@ test("ウマ柱の拡大・移動スクリプトはブラウザで解釈でき�
   assert.match(source, /paper\.style\.zoom/);
   assert.match(source, /e\.target === modal/);
   assert.match(source, /\(viewportSize - contentSize\) \/ 2/);
+  assert.match(source, /viewport\.clientWidth \* 0\.92/);
+  assert.match(source, /modal\.focus\(\{ preventScroll: true \}\)/);
 });

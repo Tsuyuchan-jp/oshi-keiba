@@ -8,7 +8,7 @@ export function memberUmabashiraModalHtml(
   strategicSkills: readonly StrategicSkillRow[] = [],
 ): string {
   const paper = umabashiraPaperHtml(umabashiraView(board, strategicSkills));
-  return `<dialog class="umabashira-modal" id="umabashira-modal" aria-labelledby="umabashira-modal-title">
+  return `<dialog class="umabashira-modal" id="umabashira-modal" aria-labelledby="umabashira-modal-title" tabindex="-1">
     <header class="umabashira-modal-head">
       <div>
         <h2 id="umabashira-modal-title">ウマ柱</h2>
@@ -78,7 +78,13 @@ export function memberUmabashiraScript(): string {
   function resetView() {
     const paper = canvas.firstElementChild;
     if (!paper) return;
-    minScale = Math.min(1, viewport.clientWidth / paper.offsetWidth);
+    const desktop = window.matchMedia("(min-width: 900px)").matches;
+    minScale = desktop
+      ? Math.min(
+        viewport.clientWidth * 0.92 / paper.offsetWidth,
+        viewport.clientHeight * 0.92 / paper.offsetHeight,
+      )
+      : Math.min(1, viewport.clientWidth / paper.offsetWidth);
     scale = minScale;
     x = 0;
     y = 0;
@@ -118,6 +124,7 @@ export function memberUmabashiraScript(): string {
 
   open.addEventListener("click", () => {
     modal.showModal();
+    modal.focus({ preventScroll: true });
     requestAnimationFrame(resetView);
   });
   close?.addEventListener("click", () => modal.close());

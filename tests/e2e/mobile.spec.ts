@@ -54,6 +54,7 @@ test("モバイル幅でも入場・場内・窓口の主要操作が画面内�
   const modal = page.locator("#umabashira-modal");
   await expect(modal).toBeVisible();
   await expect(modal.locator(".umabashira-paper")).toBeVisible();
+  await expect.poll(() => page.evaluate(() => document.activeElement?.id)).not.toBe("umabashira-zoom-out");
   const modalSize = await modal.evaluate((element) => ({
     width: element.getBoundingClientRect().width,
     height: element.getBoundingClientRect().height,
@@ -62,6 +63,7 @@ test("モバイル幅でも入場・場内・窓口の主要操作が画面内�
   }));
   expect(modalSize.width).toBeGreaterThanOrEqual(modalSize.viewportWidth - 1);
   expect(modalSize.height).toBeGreaterThanOrEqual(modalSize.viewportHeight - 1);
+  await expect(page.locator("#umabashira-viewport")).toHaveCSS("background-image", /gradient/);
   const beforeZoom = await page.locator("#umabashira-canvas").evaluate((element) => getComputedStyle(element).transform);
   await page.getByRole("button", { name: "拡大" }).click();
   const afterZoom = await page.locator("#umabashira-canvas").evaluate((element) => getComputedStyle(element).transform);

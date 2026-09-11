@@ -61,6 +61,12 @@ test("メンバーが入場・参加し、画面操作で単勝を購入でき�
   expect(initialLayout.horizontal).toBeLessThanOrEqual(1);
   expect(initialLayout.vertical).toBeLessThanOrEqual(1);
   expect(initialLayout.background).not.toBe("none");
+  const initialFill = await page.evaluate(() => {
+    const viewport = document.querySelector("#umabashira-viewport")!.getBoundingClientRect();
+    const paper = document.querySelector("#umabashira-modal .umabashira-paper")!.getBoundingClientRect();
+    return Math.max(paper.width / viewport.width, paper.height / viewport.height);
+  });
+  expect(initialFill).toBeGreaterThan(0.85);
   const beforeWheelZoom = await umabashiraPaper.evaluate((element) => Number((element as HTMLElement).style.zoom));
   await umabashiraViewport.hover();
   await page.mouse.wheel(0, -300);
