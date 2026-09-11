@@ -1,5 +1,31 @@
 # 本番リリース記録
 
+## v0.8.3 — 2026-09-12 04:12 JST
+
+- リリース対象コミット: `061ea01`（メンバー向けウマ柱の実機確認完了、v0.8.3）
+- 本番URL: `https://oshi-keiba.tsuyuchan-jp.workers.dev/`
+- リリース前Worker ID: `bd6a00b3-81a2-4318-8717-3e5c699a20b1`
+- リリース後Worker ID: `0c237b3a-4f69-4f55-855d-e29eb6e43dec`
+- リリース前D1ブックマーク: `000004f9-00000000-000050e3-71b63ae0dcb17322857ba4574c8371f9`
+- 適用migration: なし（本番に未適用migrationなし）
+- Secrets: 必須4件（`ADMIN_PASSWORD` / `ADMIN_USER_ID` / `MEMBER_PASSWORD` / `SESSION_SECRET`）の名前のみ確認
+
+### 事前検証
+
+- 型検査: 成功
+- Worker統合テスト: 107件成功
+- Playwright E2E: 10件成功
+- Wrangler dry-run: 成功。D1 `oshi-keiba`、R2 `oshi-keiba-shots`、本番用vars `ALLOW_DEMO_RESET=0` / `ALLOW_ADMIN_UNDO=0` を確認
+
+### 公開後確認
+
+- `/login`、`/`、`/admin/login`: HTTP 200
+- 未認証の`/bet` → HTTP 303、`/admin` → HTTP 303
+- `/login` で `v0.8.3` の表示を確認
+- `wrangler deployments list` で新Worker IDが100%配信されていることを確認
+
+障害時はリリース前Worker IDへ戻し、必要時のみ上記D1ブックマークを使う。手順は [release.md](../operations/release.md) を参照する。
+
 ## v0.8.1 — 2026-09-09 19:50 JST
 
 - リリース対象コミット: `ea5dcbd`（出走編集スキル再照合を文書化）
