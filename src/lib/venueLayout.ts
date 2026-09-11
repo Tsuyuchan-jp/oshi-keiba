@@ -43,6 +43,8 @@ import {
 } from "./venueBoard.ts";
 import { VENUE_CSS } from "./venueCss.ts";
 import { chromeTimesHtml, memberMoreScript, memberOutLinks } from "./memberShell.ts";
+import { memberUmabashiraModalHtml, memberUmabashiraScript } from "./memberUmabashira.ts";
+import type { StrategicSkillRow } from "./strategicSkills.ts";
 
 export type { VenueSlot };
 export { resolveVenueSlot } from "./venueBoard.ts";
@@ -386,6 +388,8 @@ export function venueBoardPage(opts: {
   scripts?: string;
   /** published の自分の馬券。未ログインや無しは呼び出し側で空相当を渡す */
   ticketsHtml?: string;
+  strategicSkills?: readonly StrategicSkillRow[];
+  showUmabashira?: boolean;
 }): string {
   const status = opts.board.event.status;
   const isSetup = status === "setup";
@@ -453,7 +457,11 @@ export function venueBoardPage(opts: {
     ctaHref,
     closedHint: venueClosedHint(opts.board),
     publishedHint: venuePublishedHint(opts.board),
+    showUmabashira: opts.showUmabashira,
   });
+  const umabashira = opts.showUmabashira
+    ? memberUmabashiraModalHtml(opts.board, opts.strategicSkills)
+    : "";
   const head = sheetHeadHtml(published);
   return `<!doctype html>
 <html lang="ja">
@@ -524,8 +532,10 @@ export function venueBoardPage(opts: {
   </div>
   ${memberOutLinks()}
   ${howToModal()}
+  ${umabashira}
   ${memberMoreScript()}
   ${venueChromeScript(published)}
+  ${opts.showUmabashira ? memberUmabashiraScript() : ""}
   ${opts.scripts ?? ""}
 </body>
 </html>`;

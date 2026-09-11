@@ -38,9 +38,36 @@ test("モバイル幅でも入場・場内・窓口の主要操作が画面内�
   await page.getByLabel("表示名").fill("E2Eモバイル");
   await page.getByLabel("共有パス").fill("e2e-member-password");
   await page.getByRole("button", { name: "初めて入場" }).click();
-  await expect(page.getByText("E2E開催")).toBeVisible();
+  await expect(page.locator(".board-head-title")).toHaveText("E2E開催");
   await expectNoHorizontalOverflow(page);
   await expectMemberChromeFits(page);
+
+  const umabashiraButton = page.getByRole("button", { name: "ウマ柱を見る" });
+  await expect(umabashiraButton).toBeVisible();
+  const footOrder = await page.evaluate(() => {
+    const sheet = document.querySelector("#umabashira-open")?.getBoundingClientRect();
+    const actions = document.querySelector(".foot-actions")?.getBoundingClientRect();
+    return sheet && actions ? sheet.bottom <= actions.top + 1 : false;
+  });
+  expect(footOrder).toBe(true);
+  await umabashiraButton.click();
+  const modal = page.locator("#umabashira-modal");
+  await expect(modal).toBeVisible();
+  await expect(modal.locator(".umabashira-paper")).toBeVisible();
+  const modalSize = await modal.evaluate((element) => ({
+    width: element.getBoundingClientRect().width,
+    height: element.getBoundingClientRect().height,
+    viewportWidth: document.documentElement.clientWidth,
+    viewportHeight: document.documentElement.clientHeight,
+  }));
+  expect(modalSize.width).toBeGreaterThanOrEqual(modalSize.viewportWidth - 1);
+  expect(modalSize.height).toBeGreaterThanOrEqual(modalSize.viewportHeight - 1);
+  const beforeZoom = await page.locator("#umabashira-canvas").evaluate((element) => getComputedStyle(element).transform);
+  await page.getByRole("button", { name: "拡大" }).click();
+  const afterZoom = await page.locator("#umabashira-canvas").evaluate((element) => getComputedStyle(element).transform);
+  expect(afterZoom).not.toBe(beforeZoom);
+  await page.getByRole("button", { name: "閉じる" }).click();
+  await expect(modal).not.toBeVisible();
 
   await page.goto("/bet");
   await page.getByRole("button", { name: /E2E開催に参加/ }).click();

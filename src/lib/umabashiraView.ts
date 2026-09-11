@@ -14,6 +14,7 @@ export type UmabashiraAptLine = {
 };
 
 export type UmabashiraHorseView = {
+  id: string;
   number: number;
   umaName: string;
   runnerName: string;
@@ -117,6 +118,7 @@ export function umabashiraView(
           }
         : null;
     return {
+      id: h.horse.id,
       number: h.number,
       umaName: h.horse.uma_name,
       runnerName: h.horse.runner_name,

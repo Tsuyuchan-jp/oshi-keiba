@@ -45,7 +45,7 @@ Neko長明さんの掲示板回答に合わせる。
 1. 前日（土曜）21 時ごろ部屋立て。出走まで 24 時間
 2. 翌日、オートで登録締切・出走
 3. その時点からゲーム内で結果が見える
-4. 数時間後、note（予想 → スクショ付き実況 → 結果）。号外1枚は管理者が note 用に撮る。ウマ柱はレース前の話題用（[umabashira.md](features/umabashira.md)）。どちらもメンバー画面には出さない（[gougai.md](features/gougai.md)）
+4. 数時間後、note（予想 → スクショ付き実況 → 結果）。号外1枚は管理者が note 用に撮る。ウマ柱はレース前の話題用で、投票中は場内からメンバーも閲覧できる（[umabashira.md](features/umabashira.md)）。号外はメンバー画面には出さない（[gougai.md](features/gougai.md)）
 
 ### 馬券締切
 

@@ -41,7 +41,7 @@ async function expectDownload(page: Page, buttonId: string, extension: "png" | "
 test("メンバーが入場・参加し、画面操作で単勝を購入できる", async ({ page }) => {
   const pageErrors = collectPageErrors(page);
   await registerMember(page, "E2Eメンバー");
-  await expect(page.getByText("E2E開催")).toBeVisible();
+  await expect(page.locator(".board-head-title")).toHaveText("E2E開催");
   await expect(page.getByText("E2Eメンバー · 0 スペ")).toBeVisible();
 
   await page.goto("/bet");

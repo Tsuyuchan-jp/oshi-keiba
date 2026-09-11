@@ -62,7 +62,7 @@ function markHtml(mark: string): string {
 
 function oddsHtml(h: UmabashiraHorseView): string {
   const odds = h.odds == null ? MARK_NONE : h.odds.toFixed(1);
-  return `<div class="cell odds-cell">${markHtml(h.mark)}<b>${odds}</b></div>`;
+  return `<div class="cell odds-cell">${markHtml(h.mark)}<b class="odds-now">${odds}</b></div>`;
 }
 
 function strengthHtml(h: UmabashiraHorseView): string {
@@ -75,7 +75,7 @@ function horseCol(h: UmabashiraHorseView, nHead: number): string {
   const tone = h.styleLabel ? STYLE_TONE[h.styleLabel] ?? "" : "";
   const styleClass = tone ? ` style-${tone}` : "";
   const w = wakuOf(h.number, nHead);
-  return `<div class="col tint-w${w}">
+  return `<div class="col tint-w${w}" data-sel="${escapeHtml(h.id)}">
         <div class="cell id-row">
           <div class="waku-box w${w}"><b>${h.number}</b></div>
           <span class="style${styleClass}"><span>${style}</span></span>

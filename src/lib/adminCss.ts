@@ -1774,3 +1774,10 @@ body.gougai-page .gougai-desk .work:last-child { overflow: auto; }
   .pipe { position: static; }
 }
 `;
+
+/** 管理画面とメンバー画面で同じウマ柱紙面を描くため、紙面部分だけを共有する。 */
+export function umabashiraPaperCss(): string {
+  const start = ADMIN_CSS.indexOf(".umabashira-paper {");
+  const end = ADMIN_CSS.indexOf("/* 号外：", start);
+  return start >= 0 && end > start ? ADMIN_CSS.slice(start, end) : "";
+}

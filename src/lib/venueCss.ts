@@ -5,6 +5,7 @@ import {
   MEMBER_OVERLAY_CSS,
   MEMBER_TOKENS_CSS,
 } from "./memberShellCss.ts";
+import { umabashiraPaperCss } from "./adminCss.ts";
 
 export const VENUE_CSS = `
 ${MEMBER_TOKENS_CSS}
@@ -523,6 +524,20 @@ ${MEMBER_OVERLAY_CSS}
 }
 .cta:hover { filter: brightness(1.08); }
 .foot-actions { display: flex; align-items: center; gap: .5rem; }
+.foot-voting { display: flex; align-items: center; gap: .5rem; }
+.umabashira-cta {
+  padding: .62rem 1rem;
+  border: 1px solid var(--member-line-strong);
+  border-radius: 2px;
+  color: var(--member-ink-bright);
+  background: var(--member-panel-bg);
+  font: inherit;
+  font-size: .83rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  cursor: pointer;
+}
+.umabashira-cta:hover { border-color: var(--led); background: var(--member-field-bg); }
 .paddock-cta {
   display: inline-block;
   padding: .62rem 1rem;
@@ -624,6 +639,8 @@ ${MEMBER_OVERLAY_CSS}
   .j-pay { flex: 1 1 auto; }
   .j-fin { flex: 1.15 1 auto; width: auto; max-width: 22rem; margin: 0 auto; min-height: 21rem; }
   .foot { display: block; }
+  .foot-voting { display: grid; grid-template-columns: 1fr; gap: .45rem; }
+  .umabashira-cta { width: 100%; min-height: 2.55rem; }
   .foot > .paddock-cta {
     display: flex;
     align-items: center;
@@ -646,6 +663,77 @@ ${MEMBER_OVERLAY_CSS}
   .board-head-detail { display: block; }
   .jumbo-hint .jh-wide { display: none; }
   .jumbo-hint .jh-narrow { display: inline; }
+}
+${umabashiraPaperCss()}
+.umabashira-modal .umabashira-paper .board { flex: none; padding: 0; overflow: visible; }
+.umabashira-modal .umabashira-paper .who { margin-top: 0; color: inherit; font-size: inherit; }
+.umabashira-modal {
+  width: min(96vw, 80rem);
+  height: min(92dvh, 52rem);
+  max-width: none;
+  max-height: none;
+  padding: 0;
+  border: 1px solid var(--member-line-strong);
+  background: #111517;
+  color: var(--member-ink-bright);
+  overflow: hidden;
+}
+.umabashira-modal[open] { display: flex; flex-direction: column; }
+.umabashira-modal::backdrop { background: rgba(0, 0, 0, .78); }
+.umabashira-modal-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .55rem .7rem;
+  border-bottom: 1px solid var(--member-chrome-line);
+  background: var(--member-black);
+}
+.umabashira-modal-head h2 { margin: 0; color: var(--led); font-size: 1rem; }
+.umabashira-modal-head p { margin: .12rem 0 0; color: var(--member-muted); font-size: .7rem; }
+.umabashira-modal-tools { display: flex; align-items: center; gap: .35rem; }
+.umabashira-modal-tools button {
+  min-height: 2.1rem;
+  padding: .3rem .65rem;
+  border: 1px solid var(--member-line-strong);
+  border-radius: 2px;
+  background: var(--member-panel-bg);
+  color: var(--member-ink-bright);
+  font: inherit;
+  font-size: .78rem;
+  cursor: pointer;
+}
+.umabashira-modal-tools .umabashira-modal-close { margin-left: .25rem; border-color: var(--led-dim); color: var(--led); }
+.umabashira-viewport {
+  flex: 1 1 auto;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+  background: #2a3032;
+  cursor: grab;
+}
+.umabashira-viewport:active { cursor: grabbing; }
+.umabashira-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: max-content;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+@media (max-width: 899px) {
+  .umabashira-modal {
+    width: 100vw;
+    height: 100dvh;
+    border: 0;
+  }
+  .umabashira-modal-head { gap: .4rem; padding-top: calc(.45rem + env(safe-area-inset-top)); }
+  .umabashira-modal-head p { max-width: 12rem; }
+  .umabashira-modal-tools { gap: .2rem; }
+  .umabashira-modal-tools button { min-width: 2.2rem; padding: .3rem .45rem; }
+  .umabashira-modal-tools #umabashira-zoom-reset { display: none; }
 }
 ${MEMBER_MOBILE_CHROME_CSS}
 @media (min-width: 900px) {

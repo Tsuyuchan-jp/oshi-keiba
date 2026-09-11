@@ -50,7 +50,7 @@
 - ウマ柱実装前の未決を閉じた（左列残す・PNG+WebP・タブ「ウマ柱」`/admin/umabashira`）— [umabashira.md](features/umabashira.md)
 - ウマ柱の見た目をモック上段で正とする（案B寄せ。案A列頭印は見送り）— [umabashira.md](features/umabashira.md)
 - ウマ柱のスキルは名前を出さずスキルパワー（有効・金の枚数）。レイアウト仮決めとモック2案 — [umabashira.md](features/umabashira.md)・[モック](mocks/umabashira/index.html)
-- ウマ柱の掲載方針（コミュニティ公開画像。評価点と印を出す。投票機能はファンツールに出さない）— [umabashira.md](features/umabashira.md)
+- ウマ柱の掲載方針（コミュニティ公開画像と投票中の場内モーダル。評価点と印を出す。投票機能はファンツールに出さない）— [umabashira.md](features/umabashira.md)
 - P1-08 管理操作の誤操作防止と開始条件を強化（開始前確認モーダル、サーバー側の開始条件、スタミナ勝負の明示選択、メンバー利用停止の再認証。実機確認OK）— [playbook.md](operations/playbook.md)
 - 出走登録タブにウマ番編集を追加（ヒーロー右の一括編集モーダル。1〜出走頭数の重複なしで保存。枠番は扱わない）
 - パドックページを追加（脚質別の出走表示・詳細カード・育成スクリーンショット・投票候補の窓口引き継ぎ。窓口の金額操作は `+100 / +500 / +1,000 / 全額を入力 / リセット`、不足項目の案内、スマホ向け44pxタップ領域へ更新。ユーザー実機確認OK）— [playbook.md](operations/playbook.md)

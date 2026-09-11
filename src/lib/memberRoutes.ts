@@ -215,6 +215,10 @@ export async function tryMemberGet(
     const user = session ? await getUser(env.DB, session.userId) : null;
     const board = await loadBoard(env.DB);
     const m = msg(url);
+    const canViewUmabashira = isActiveMember(user) || session?.role === "admin";
+    const strategicSkills = canViewUmabashira
+      ? await listStrategicSkills(env.DB)
+      : [];
 
     let ticketsHtml: string | undefined;
     if (board.event.status === "published" && isActiveMember(user)) {
@@ -229,6 +233,8 @@ export async function tryMemberGet(
         flash: m,
         slot: resolveVenueSlot(url.searchParams.get("slot")),
         ticketsHtml,
+        strategicSkills,
+        showUmabashira: canViewUmabashira,
         scripts:
           board.event.status === "voting"
             ? livePollScript("/api/board", "win")

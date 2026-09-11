@@ -125,6 +125,7 @@ export function venueFootHtml(opts: {
   ctaHref: string;
   closedHint: string;
   publishedHint: string;
+  showUmabashira?: boolean;
 }): string {
   if (opts.status === "published") {
     return `<div class="foot"><span class="hint" id="phase-hint">${escapeHtml(opts.publishedHint)}</span></div>`;
@@ -135,5 +136,8 @@ export function venueFootHtml(opts: {
   if (opts.status === "setup") {
     return `<div class="foot"><span class="hint" id="phase-hint">投票開始までお待ちください。</span>${paddockCta("出走馬をパドックで見る")}</div>`;
   }
-  return `<div class="foot"><div class="foot-actions">${paddockCta("パドックを見る")}<a class="cta" href="${escapeHtml(opts.ctaHref)}">馬券を買う</a></div></div>`;
+  const umabashira = opts.showUmabashira
+    ? `<button class="umabashira-cta" type="button" id="umabashira-open">ウマ柱を見る</button>`
+    : "";
+  return `<div class="foot"><div class="foot-voting">${umabashira}<div class="foot-actions">${paddockCta("パドックを見る")}<a class="cta" href="${escapeHtml(opts.ctaHref)}">馬券を買う</a></div></div></div>`;
 }

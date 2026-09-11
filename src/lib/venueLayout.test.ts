@@ -133,10 +133,13 @@ test("場内足元のパドック導線は状態ごとに文言と買うボタ�
     ctaHref: "/login",
     closedHint: "",
     publishedHint: "",
+    showUmabashira: true,
   });
   assert.match(votingFoot, /パドックを見る/);
   assert.doesNotMatch(votingFoot, /出走馬をパドックで見る/);
   assert.match(votingFoot, /馬券を買う/);
+  assert.match(votingFoot, /ウマ柱を見る/);
+  assert.match(votingFoot, /class="foot-voting"/);
   assert.match(votingFoot, /href="\/login"/);
 
   const closedFoot = venueFootHtml({
