@@ -1235,18 +1235,18 @@ body.umabashira-page .umabashira-desk .work {
 .umabashira-paper .score-cell b { font-size: .9rem; font-weight: 800; color: #fff; line-height: 1; }
 .umabashira-paper .stub-col .score-cell { background: #e4ddd0; }
 .umabashira-paper .odds-cell {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: .04rem; min-height: 2.4rem; padding: .08rem .02rem;
+  display: grid; grid-template-rows: 1.1rem .92rem; place-content: center; justify-items: center;
+  row-gap: .04rem; min-height: 2.4rem; padding: .08rem .02rem;
 }
 .umabashira-paper .odds-cell .mk {
-  min-height: 1.1rem; font-size: 1.08rem; font-weight: 800; color: var(--mark);
+  height: 1.1rem; display: grid; place-items: center; font-size: 1.08rem; font-weight: 800; color: var(--mark);
   line-height: 1.15; padding: 0 .16rem;
 }
 .umabashira-paper .odds-cell .mk.none {
   color: #8d8678; font-size: .95rem; font-weight: 600; letter-spacing: 0;
   background: transparent; box-shadow: none;
 }
-.umabashira-paper .odds-cell b { font-size: .92rem; font-weight: 800; line-height: 1; }
+.umabashira-paper .odds-cell b { height: .92rem; display: grid; place-items: center; font-size: .92rem; font-weight: 800; line-height: 1; }
 .umabashira-paper .stats {
   font-size: .48rem; font-variant-numeric: tabular-nums; line-height: 1.18;
   text-align: left; padding: .04rem .08rem;
