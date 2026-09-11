@@ -722,10 +722,37 @@ ${umabashiraPaperCss()}
 .umabashira-viewport * { user-select: none; -webkit-user-select: none; }
 .umabashira-canvas {
   position: absolute;
+  z-index: 1;
   top: 0;
   left: 0;
   width: max-content;
   transform-origin: 0 0;
+}
+@media (min-width: 900px) {
+  .umabashira-modal {
+    background: rgba(7, 14, 15, .82);
+    backdrop-filter: blur(10px);
+  }
+  .umabashira-modal::backdrop {
+    background: rgba(0, 0, 0, .54);
+    backdrop-filter: blur(3px);
+  }
+  .umabashira-viewport {
+    background:
+      radial-gradient(ellipse at 12% 10%, rgba(0, 232, 216, .12), transparent 34%),
+      radial-gradient(ellipse at 88% 88%, rgba(255, 138, 42, .09), transparent 38%),
+      linear-gradient(145deg, rgba(19, 36, 37, .88), rgba(8, 16, 17, .76));
+  }
+  .umabashira-viewport::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(159, 229, 220, .06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(159, 229, 220, .06) 1px, transparent 1px);
+    background-size: 2rem 2rem;
+  }
 }
 @media (max-width: 899px) {
   .umabashira-modal {

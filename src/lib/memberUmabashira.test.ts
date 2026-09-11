@@ -49,4 +49,6 @@ test("ウマ柱の拡大・移動スクリプトはブラウザで解釈でき�
   assert.match(source, /Math\.hypot/);
   assert.match(source, /addEventListener\("wheel"/);
   assert.match(source, /paper\.style\.zoom/);
+  assert.match(source, /e\.target === modal/);
+  assert.match(source, /\(viewportSize - contentSize\) \/ 2/);
 });

@@ -49,11 +49,27 @@ test("メンバーが入場・参加し、画面操作で単勝を購入でき�
   const umabashiraPaper = page.locator("#umabashira-modal .umabashira-paper");
   await expect(umabashiraPaper).toBeVisible();
   await expect(umabashiraViewport).toHaveCSS("user-select", "none");
+  const initialLayout = await page.evaluate(() => {
+    const viewport = document.querySelector("#umabashira-viewport")!.getBoundingClientRect();
+    const paper = document.querySelector("#umabashira-modal .umabashira-paper")!.getBoundingClientRect();
+    return {
+      horizontal: Math.abs((paper.left + paper.right) / 2 - (viewport.left + viewport.right) / 2),
+      vertical: Math.abs((paper.top + paper.bottom) / 2 - (viewport.top + viewport.bottom) / 2),
+      background: getComputedStyle(document.querySelector("#umabashira-viewport")!).backgroundImage,
+    };
+  });
+  expect(initialLayout.horizontal).toBeLessThanOrEqual(1);
+  expect(initialLayout.vertical).toBeLessThanOrEqual(1);
+  expect(initialLayout.background).not.toBe("none");
   const beforeWheelZoom = await umabashiraPaper.evaluate((element) => Number((element as HTMLElement).style.zoom));
   await umabashiraViewport.hover();
   await page.mouse.wheel(0, -300);
   await expect.poll(async () => umabashiraPaper.evaluate((element) => Number((element as HTMLElement).style.zoom))).toBeGreaterThan(beforeWheelZoom);
   await page.getByRole("button", { name: "閉じる" }).click();
+
+  await page.getByRole("button", { name: "ウマ柱を見る" }).click();
+  await page.mouse.click(4, 300);
+  await expect(page.locator("#umabashira-modal")).not.toBeVisible();
 
   await page.goto("/bet");
   await expect(page.getByRole("heading", { name: "窓口" })).toBeVisible();

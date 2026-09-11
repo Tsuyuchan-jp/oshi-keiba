@@ -50,9 +50,14 @@ export function memberUmabashiraScript(): string {
     if (!paper) return { x: 0, y: 0 };
     const width = paper.offsetWidth * nextScale;
     const height = paper.offsetHeight * nextScale;
+    const desktop = window.matchMedia("(min-width: 900px)").matches;
+    const axis = (next, viewportSize, contentSize) => {
+      if (contentSize <= viewportSize) return desktop ? (viewportSize - contentSize) / 2 : 0;
+      return Math.min(0, Math.max(viewportSize - contentSize, next));
+    };
     return {
-      x: Math.min(0, Math.max(viewport.clientWidth - width, nextX)),
-      y: Math.min(0, Math.max(viewport.clientHeight - height, nextY)),
+      x: axis(nextX, viewport.clientWidth, width),
+      y: axis(nextY, viewport.clientHeight, height),
     };
   }
   function render() {
@@ -116,6 +121,9 @@ export function memberUmabashiraScript(): string {
     requestAnimationFrame(resetView);
   });
   close?.addEventListener("click", () => modal.close());
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) modal.close();
+  });
   document.getElementById("umabashira-zoom-reset")?.addEventListener("click", resetView);
   document.getElementById("umabashira-zoom-in")?.addEventListener("click", () => zoomTo(scale * 1.25, viewport.clientWidth / 2, viewport.clientHeight / 2));
   document.getElementById("umabashira-zoom-out")?.addEventListener("click", () => zoomTo(scale / 1.25, viewport.clientWidth / 2, viewport.clientHeight / 2));
