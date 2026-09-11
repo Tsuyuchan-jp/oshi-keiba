@@ -23,10 +23,14 @@
 
 ```powershell
 node scripts/extract-uma-dress-catalog.mjs --mdb D:\DMM\umamusumeDMM\Umamusume\umamusume_Data\Persistent\master\master.mdb
-node scripts/gen-skill-catalog.mjs --mdb D:\DMM\umamusumeDMM\Umamusume\umamusume_Data\Persistent\master\master.mdb
+npm.cmd run gen:skill-catalog -- --mdb D:\DMM\umamusumeDMM\Umamusume\umamusume_Data\Persistent\master\master.mdb
+npm.cmd run extract:greens -- --mdb D:\DMM\umamusumeDMM\Umamusume\umamusume_Data\Persistent\master\master.mdb
+npm.cmd run extract:stamina-skills -- --mdb D:\DMM\umamusumeDMM\Umamusume\umamusume_Data\Persistent\master\master.mdb
 ```
 
-前者はOCR照合用の育成ウマ娘・衣装カタログ、後者は総合スキル辞書を更新する。緑スキルの評価値は `npm run extract:greens`、回復率と自己スタミナ消費率は `npm run extract:stamina-skills` で更新する。
+前者はOCR照合用の育成ウマ娘・衣装カタログを更新する。残る3コマンドは順に、総合スキル辞書、緑スキルの評価値、回復率と自己スタミナ消費率を更新する。Windows PowerShell では実行ポリシーの影響を避けるため `npm.cmd` を使う。
+
+2026-09-12 にゲーム更新後の `master.mdb`（更新日時 2026-09-11）から再生成済み。`skill-catalog.json` は2,177件、`green-skills.json` は227件、`stamina-skills.json` は315件。新規スキルが自動評価の有効判定にも反映されるのは、該当開催のイベント設定を保存し直して U-tools の有効スキル一覧を再取得した後。
 
 本戦出走のステータス画面などから、評価点の材料を読む。予選はアプリに載せないので、OCR も本戦のみ。
 
