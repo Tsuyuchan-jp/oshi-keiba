@@ -13,7 +13,7 @@
 
 リリース前は `Unreleased` に追記する。リリース時は `Unreleased` の内容を新しい版の見出しへ移し、`package.json` と `package-lock.json` を同じ版に更新する。新しい版を上に書く。git タグは任意。
 
-## Unreleased
+## 0.8.5 — 2026-09-12
 
 ### Changed
 
