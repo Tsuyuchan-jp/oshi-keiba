@@ -53,3 +53,19 @@ test("OCR読取確認用のブラウザスクリプトを生成できる", () =>
   const source = html.replace(/^<script>/, "").replace(/<\/script>$/, "");
   assert.doesNotThrow(() => new Function(source));
 });
+
+test("composite recovery gold has a +1 chip", () => {
+  const html = registerMaterialsHtml(
+    {
+      stats: { speed: 1200, stamina: 1000, power: 800, guts: 400, wisdom: 800 },
+      aptitudes: { turf: "A", dirt: "G", short: "A", mile: "A", medium: "A", long: "A", nige: "A", senkou: "A", sashi: "A", oikomi: "A" },
+      skillNames: ["鋼の意志", "地固め"],
+      skillIds: [200441, 201601],
+      styleKey: "betweener",
+    },
+    new Set([200441, 201601]),
+  );
+  assert.match(html, /鋼の意志<span class="reg-pts">\+1<\/span>/);
+  assert.doesNotMatch(html, /地固め<span class="reg-pts">\+1<\/span>/);
+  assert.match(html, /金相当スキル数 0/);
+});

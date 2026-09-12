@@ -4,7 +4,12 @@ import { catalogJsonForPage, classifySkill } from "./skillCatalog";
 import type { EventScoreSetup } from "./scoreSetup";
 import { ALLOWED_SHOT_MIME } from "./shotMime";
 import { greenSkillByName } from "./greenSkills";
-import { skillCountsAsGoldLike, skillCountsInBase, TAMERAI_IDS } from "./score";
+import {
+  isCompositeRecoveryGold,
+  skillCountsAsGoldLike,
+  skillCountsInBase,
+  TAMERAI_IDS,
+} from "./score";
 import {
   staminaSkillBreakdown,
   staminaSkillFor,
@@ -39,7 +44,7 @@ function skillChipClass(kind: string): string {
 }
 
 function skillChipsHtml(
-  items: { name: string; kind: string }[],
+  items: { name: string; kind: string; id?: number | null; powerBadge?: string }[],
   emptyLabel: string,
 ): string {
   if (items.length === 0) {
@@ -48,7 +53,7 @@ function skillChipsHtml(
   return items
     .map(
       (h) =>
-        `<span class="reg-chip ${skillChipClass(h.kind)}">${escapeHtml(h.name)}</span>`,
+        `<span class="reg-chip ${skillChipClass(h.kind)}">${escapeHtml(h.name)}${h.powerBadge ? `<span class="reg-pts">${escapeHtml(h.powerBadge)}</span>` : ""}</span>`,
     )
     .join("");
 }
@@ -116,8 +121,12 @@ export function registerMaterialsHtml(
     return !(stamina && stamina.recovery > 0 && !stamina.compoundRecovery);
   });
   const goldLike = parts.effective.filter((h) =>
-    skillCountsAsGoldLike(h.name, h.id),
+    skillCountsAsGoldLike(h.name, h.id) && !isCompositeRecoveryGold(h.name, h.id),
   ).length;
+  const effectiveDisplay = parts.effective.map((h) => ({
+    ...h,
+    ...(isCompositeRecoveryGold(h.name, h.id) ? { powerBadge: "+1" } : {}),
+  }));
   const cand = strategicCandidates(rejected, strategicById, dismissedIds);
   const rejectedLink =
     canEditStrategic && cand.length
@@ -144,7 +153,7 @@ export function registerMaterialsHtml(
       ${aptChip("逃げ", ap.nige)}${aptChip("先行", ap.senkou)}${aptChip("差し", ap.sashi)}${aptChip("追込", ap.oikomi)}
     </div>
     <p class="set-k" style="margin-top:.85rem">有効スキル（総有効スキル数 ${parts.effective.length} / 金相当スキル数 ${goldLike}）</p>
-    <div class="reg-chips">${skillChipsHtml(parts.effective, "なし")}</div>
+    <div class="reg-chips">${skillChipsHtml(effectiveDisplay, "なし")}</div>
     <p class="set-k" style="margin-top:.85rem">スタミナ消費スキル（有効スキルに含まれる・合計 −${percentText(staminaEffects.staminaCostRate)}）</p>
     <div class="reg-chips">${staminaSkillChipsHtml(staminaEffects.costs, "−")}</div>
     <p class="set-k" style="margin-top:.85rem">戦略例外スキル（合計 ${parts.strategicPoints} 点）</p>
@@ -523,7 +532,8 @@ export function ocrAdminScript(
   function chipsHtml(items, emptyLabel, skipClass) {
     if (!items.length) return '<span class="reg-chip">' + esc(emptyLabel) + "</span>";
     return items.map((h) =>
-      '<span class="reg-chip ' + (skipClass || chipKind(h.kind)) + '">' + esc(h.name) + "</span>"
+      '<span class="reg-chip ' + (skipClass || chipKind(h.kind)) + '">' + esc(h.name) +
+      (isCompositeRecoveryGold(h) ? '<span class="reg-pts">+1</span>' : "") + "</span>"
     ).join("");
   }
   function strategicMap() {
@@ -592,6 +602,10 @@ export function ocrAdminScript(
     const skill = STAMINA_BY_ID.get(hit.id) || STAMINA_BY_NAME.get(String(hit.name || "").trim());
     return !!(skill && skill.recovery > 0 && !skill.compoundRecovery);
   }
+  function isCompositeRecoveryGold(hit) {
+    const skill = STAMINA_BY_ID.get(hit.id) || STAMINA_BY_NAME.get(String(hit.name || "").trim());
+    return !!(hit.kind === "gold" && skill && skill.recovery > 0 && skill.compoundRecovery);
+  }
   function rejectedLinkHtml(rejected) {
     const sm = strategicMap();
     const cand = rejected.filter((h) => h.id != null && !sm.has(h.id) && !DISMISSED.has(h.id));
@@ -621,6 +635,7 @@ export function ocrAdminScript(
     const stamina = staminaEffects(okHits);
     const rejected = parts.rejected.filter((hit) => !isPureRecovery(hit));
     const goldLike = parts.effective.filter((h) => {
+      if (isCompositeRecoveryGold(h)) return false;
       const n = String(h.name || "").trim();
       if (h.kind === "gold") return true;
       if (h.kind === "unique" || h.kind === "evo" || h.kind === "scenario") {

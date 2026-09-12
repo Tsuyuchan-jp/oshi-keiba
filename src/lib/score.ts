@@ -12,6 +12,7 @@ import {
 import { classifySkill } from "./skillCatalog.ts";
 import {
   staminaSkillBreakdown,
+  staminaSkillFor,
   type StaminaSkillBreakdown,
 } from "./staminaSkills.ts";
 import type { GreenEvalContext } from "./greenCondition.ts";
@@ -171,6 +172,18 @@ function isGold(name: string, id?: number | null): boolean {
   return classifySkill(name, id).kind === "gold";
 }
 
+/**
+ * 回復と他効果を併せ持つ通常の金スキルは、回復を実効スタミナへ反映し、
+ * スキルパワーでは有効な白スキル1個分として扱う。
+ */
+export function isCompositeRecoveryGold(
+  name: string,
+  id?: number | null,
+): boolean {
+  const stamina = staminaSkillFor(name, id);
+  return isGold(name, id) && stamina != null && stamina.recovery > 0 && stamina.compoundRecovery;
+}
+
 /** 固有・進化・シナリオは仮に金同等（リスト外でも採用＋+2）。緑マスタ名は除外 */
 function isProvisionalGoldLike(name: string, id?: number | null): boolean {
   const kind = classifySkill(name, id).kind;
@@ -244,7 +257,7 @@ export function skillBase(
       tameraiCount += 1;
       continue;
     }
-    if (isGoldLike(name, id)) goldCount += 1;
+    if (isGoldLike(name, id) && !isCompositeRecoveryGold(name, id)) goldCount += 1;
   }
 
   for (let i = 0; i < skillNames.length; i++) {
