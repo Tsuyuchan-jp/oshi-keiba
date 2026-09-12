@@ -1,5 +1,30 @@
 # 本番リリース記録
 
+## v0.8.5 — 2026-09-12 09:31 JST
+
+- リリース対象コミット: `aa9f736`（v0.8.5のリリース準備を行う）
+- 本番URL: `https://oshi-keiba.tsuyuchan-jp.workers.dev/`
+- リリース前Worker ID: `2bbaedeb-06f6-4e14-8b8d-1c2fb9cb6299`
+- リリース後Worker ID: `8b1ec3b6-27a8-40e2-adf0-e1556e5d7dd8`
+- リリース前D1ブックマーク: `0000053c-00000000-000050e4-f6fadb0c27081aab1bfadca4e4b58f8d`
+- 適用migration: なし（本番に未適用migrationなし）
+- Secrets: 必須名（`ADMIN_PASSWORD` / `ADMIN_USER_ID` / `MEMBER_PASSWORD` / `SESSION_SECRET`）の設定を確認
+
+### 公開前検証
+
+- 型検査・Nodeテスト・Workerテスト: 成功（Worker 107件）
+- Playwright E2E: 10件成功
+- Wrangler dry-run: 成功。D1 `oshi-keiba`、R2 `oshi-keiba-shots`、本番用vars `ALLOW_DEMO_RESET=0` / `ALLOW_ADMIN_UNDO=0` を確認
+
+### 公開後確認
+
+- `/login`、`/`、`/admin/login`: HTTP 200
+- 未認証の `/bet`: `/login` へ HTTP 303
+- `/login` で `v0.8.5` の表示を確認
+- `wrangler deployments list` で新Worker IDが100%配信されていることを確認
+
+`npm run deploy` の事前E2EでWindowsのテスト用Workerが一度だけ異常終了したが、同一コミットの直前dry-runと再実行したE2E 10件は成功した。コード変更なしで `npx wrangler deploy` を実行した。
+
 ## v0.8.4 — 2026-09-12 08:38 JST
 
 - リリース対象コミット: `cf71915`（v0.8.4のリリース準備を行う）
