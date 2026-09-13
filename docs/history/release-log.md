@@ -1,5 +1,32 @@
 # 本番リリース記録
 
+## v0.8.5 緊急修正 — 2026-09-13 20:42 JST
+
+- リリース対象コミット: `1e10c56`（緊急対応としてUndo機能を停止する）
+- 本番URL: `https://oshi-keiba.tsuyuchan-jp.workers.dev/`
+- リリース前Worker ID: `8b1ec3b6-27a8-40e2-adf0-e1556e5d7dd8`
+- リリース後Worker ID: `3cc6273c-16f5-406d-ba54-4f686e7bf45f`
+- リリース前D1ブックマーク: `000006e2-00000008-000050e5-b8f7c8e4ee30d78abf759d4e47dfe926`
+- 適用migration: なし（本番に未適用migrationなし）
+- Secrets: 必須名（`ADMIN_PASSWORD` / `ADMIN_USER_ID` / `MEMBER_PASSWORD` / `SESSION_SECRET`）の設定を確認
+
+### 公開前検証
+
+- 型検査・Nodeテスト: 成功（Node 192件）
+- Workerテスト: 107件成功
+- Playwright E2E: 10件成功
+- Wrangler dry-run: 成功。D1 `oshi-keiba`、R2 `oshi-keiba-shots`、本番用vars `ALLOW_DEMO_RESET=0` / `ALLOW_ADMIN_UNDO=0` を確認
+
+### 公開後確認
+
+- `/login`、`/`、`/admin/login`: HTTP 200
+- 未認証の `/bet`: HTTP 303
+- `wrangler deployments list` で新Worker IDが100%配信されていることを確認
+- 本番D1を読み取り確認し、現在開催は `closed`、17頭、保存済み着順0件、順位重複0件であることを確認
+- 既存の `admin_undo` 1行は削除・更新せず保持。新しいUndo生成とUndo画面・実行経路を緊急停止
+
+今回のリリースではWorkerコードだけを更新し、D1とR2のデータ変更は行っていない。障害時はリリース前Worker IDへ戻し、D1データ障害が確認された場合に限り上記ブックマークを使う。
+
 ## v0.8.5 — 2026-09-12 09:31 JST
 
 - リリース対象コミット: `aa9f736`（v0.8.5のリリース準備を行う）
