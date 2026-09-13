@@ -3,13 +3,13 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { adminUndoAllowed } from "./adminUndo.ts";
 
-test("Undo は明示的に許可した環境だけで有効", () => {
+test("緊急停止中のUndoは環境設定にかかわらず無効", () => {
   assert.equal(adminUndoAllowed({}), false);
   assert.equal(adminUndoAllowed({ ALLOW_ADMIN_UNDO: "0" }), false);
-  assert.equal(adminUndoAllowed({ ALLOW_ADMIN_UNDO: "1" }), true);
+  assert.equal(adminUndoAllowed({ ALLOW_ADMIN_UNDO: "1" }), false);
 });
 
-test("ローカル開発だけUndoとデモ初期化を有効にし、通常設定は無効にする", () => {
+test("ローカル開発用の環境設定と通常設定を分離する", () => {
   const packageJson = JSON.parse(readFileSync(new URL("../../package.json", import.meta.url), "utf8"));
   const wranglerConfig = readFileSync(new URL("../../wrangler.jsonc", import.meta.url), "utf8");
   assert.match(packageJson.scripts.dev, /--var ALLOW_ADMIN_UNDO:1/);

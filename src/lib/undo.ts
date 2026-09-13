@@ -8,6 +8,12 @@ export type UndoMeta = {
   created_at: number;
 };
 
+/**
+ * 緊急停止中。分析ログを含む全DBスナップショットがD1の1行2MB上限を超えるため、
+ * 差分方式のUndoへ置き換えるまでは本番・開発環境とも新しいUndoを作成しない。
+ */
+export const ADMIN_UNDO_CAPTURE_ENABLED: boolean = false;
+
 type Snapshot = {
   events: Record<string, unknown>[];
   horses: Record<string, unknown>[];
@@ -259,6 +265,7 @@ export async function captureAdminUndo(
   db: D1Database,
   actionLabel: string,
 ): Promise<void> {
+  if (!ADMIN_UNDO_CAPTURE_ENABLED) return;
   const payload = JSON.stringify(await dumpSnapshot(db));
   await db
     .prepare(
@@ -279,6 +286,10 @@ export async function prepareConditionalAdminUndo(
   eventId: string,
   status: string,
 ): Promise<D1PreparedStatement> {
+  if (!ADMIN_UNDO_CAPTURE_ENABLED) {
+    // 結果公開のトランザクション構造を変えず、DBを変更しない文を先頭に置く。
+    return db.prepare("SELECT 1 AS admin_undo_disabled");
+  }
   const payload = JSON.stringify(await dumpSnapshot(db));
   return db
     .prepare(
