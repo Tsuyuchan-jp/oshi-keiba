@@ -35,6 +35,7 @@ import {
   loadBoard,
   eventScoreSetup,
   captureCurrentIntervalSnapshot,
+  savePreRaceAssessments,
 } from "./lib/store";
 import { applyAdminUndo, captureAdminUndo } from "./lib/undo";
 import { adminUndoAllowed } from "./lib/adminUndo";
@@ -515,6 +516,37 @@ export default {
           return bounce("/admin/register", "ウマ番を保存しました");
         } catch (err) {
           return bounce("/admin/register", err instanceof Error ? err.message : "ウマ番を保存できませんでした", true);
+        }
+      }
+
+      if (method === "POST" && path === "/admin/pre-race-assessments") {
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) return gate;
+        const form = await readForm(request);
+        try {
+          const board = await loadBoard(env.DB);
+          const ids = form.getAll("horse_id");
+          const ranks = form.getAll("pre_race_rank");
+          const memos = form.getAll("pre_race_memo");
+          if (ids.length !== ranks.length || ids.length !== memos.length) {
+            throw new Error("事前評価の入力が不完全です");
+          }
+          const saved = await savePreRaceAssessments(
+            env.DB,
+            board.event,
+            board.horses.map((entry) => entry.horse),
+            ids.map((id, index) => {
+              const rankText = String(ranks[index] ?? "").trim();
+              return {
+                horseId: String(id),
+                rank: rankText ? Number(rankText) : null,
+                memo: String(memos[index] ?? ""),
+              };
+            }),
+          );
+          return bounce("/admin/register", saved ? `運営の事前評価を保存しました（${saved}頭）` : "運営の事前評価を空にしました");
+        } catch (err) {
+          return bounce("/admin/register", err instanceof Error ? err.message : "運営の事前評価を保存できませんでした", true);
         }
       }
 

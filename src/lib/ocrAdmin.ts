@@ -123,9 +123,10 @@ export function registerMaterialsHtml(
   const goldLike = parts.effective.filter((h) =>
     skillCountsAsGoldLike(h.name, h.id) && !isCompositeRecoveryGold(h.name, h.id),
   ).length;
+  const semiGold = parts.effective.filter((h) => isCompositeRecoveryGold(h.name, h.id)).length;
   const effectiveDisplay = parts.effective.map((h) => ({
     ...h,
-    ...(isCompositeRecoveryGold(h.name, h.id) ? { powerBadge: "+1" } : {}),
+    ...(isCompositeRecoveryGold(h.name, h.id) ? { powerBadge: "準金 +1" } : {}),
   }));
   const cand = strategicCandidates(rejected, strategicById, dismissedIds);
   const rejectedLink =
@@ -152,7 +153,7 @@ export function registerMaterialsHtml(
       <span class="reg-slash" aria-hidden="true">/</span>
       ${aptChip("逃げ", ap.nige)}${aptChip("先行", ap.senkou)}${aptChip("差し", ap.sashi)}${aptChip("追込", ap.oikomi)}
     </div>
-    <p class="set-k" style="margin-top:.85rem">有効スキル（総有効スキル数 ${parts.effective.length} / 金相当スキル数 ${goldLike}）</p>
+    <p class="set-k" style="margin-top:.85rem">有効スキル（有効 ${parts.effective.length} / 金 ${goldLike} / 準金 ${semiGold}）</p>
     <div class="reg-chips">${skillChipsHtml(effectiveDisplay, "なし")}</div>
     <p class="set-k" style="margin-top:.85rem">スタミナ消費スキル（有効スキルに含まれる・合計 −${percentText(staminaEffects.staminaCostRate)}）</p>
     <div class="reg-chips">${staminaSkillChipsHtml(staminaEffects.costs, "−")}</div>
@@ -533,7 +534,7 @@ export function ocrAdminScript(
     if (!items.length) return '<span class="reg-chip">' + esc(emptyLabel) + "</span>";
     return items.map((h) =>
       '<span class="reg-chip ' + (skipClass || chipKind(h.kind)) + '">' + esc(h.name) +
-      (isCompositeRecoveryGold(h) ? '<span class="reg-pts">+1</span>' : "") + "</span>"
+      (isCompositeRecoveryGold(h) ? '<span class="reg-pts">準金 +1</span>' : "") + "</span>"
     ).join("");
   }
   function strategicMap() {
@@ -643,6 +644,7 @@ export function ocrAdminScript(
       }
       return false;
     }).length;
+    const semiGold = parts.effective.filter((h) => isCompositeRecoveryGold(h)).length;
     const ocrMiss = missHits.map((h) => ({ name: h.input, kind: "unknown" }));
     const rejLink = rejectedLinkHtml(rejected);
     el.innerHTML =
@@ -661,7 +663,7 @@ export function ocrAdminScript(
         '<span class="reg-slash" aria-hidden="true">/</span>' +
         aptChip("逃げ", ap.nige) + aptChip("先行", ap.senkou) + aptChip("差し", ap.sashi) + aptChip("追込", ap.oikomi) +
       "</div>" +
-      '<p class="set-k" style="margin-top:.85rem">有効スキル（総有効スキル数 ' + parts.effective.length + " / 金相当スキル数 " + goldLike + "）</p>" +
+      '<p class="set-k" style="margin-top:.85rem">有効スキル（有効 ' + parts.effective.length + " / 金 " + goldLike + " / 準金 " + semiGold + "）</p>" +
       '<div class="reg-chips">' + chipsHtml(parts.effective, "なし") + "</div>" +
       '<p class="set-k" style="margin-top:.85rem">スタミナ消費スキル（有効スキルに含まれる・合計 −' + rateText(stamina.staminaCostRate) + "）</p>" +
       '<div class="reg-chips">' + staminaChipsHtml(stamina.costs, "−") + "</div>" +

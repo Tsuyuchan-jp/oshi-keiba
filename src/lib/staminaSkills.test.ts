@@ -54,7 +54,7 @@ test("OCR読取確認用のブラウザスクリプトを生成できる", () =>
   assert.doesNotThrow(() => new Function(source));
 });
 
-test("composite recovery gold has a +1 chip", () => {
+test("composite recovery gold has a semi-gold chip", () => {
   const html = registerMaterialsHtml(
     {
       stats: { speed: 1200, stamina: 1000, power: 800, guts: 400, wisdom: 800 },
@@ -65,7 +65,7 @@ test("composite recovery gold has a +1 chip", () => {
     },
     new Set([200441, 201601]),
   );
-  assert.match(html, /鋼の意志<span class="reg-pts">\+1<\/span>/);
-  assert.doesNotMatch(html, /地固め<span class="reg-pts">\+1<\/span>/);
-  assert.match(html, /金相当スキル数 0/);
+  assert.match(html, /鋼の意志<span class="reg-pts">準金 \+1<\/span>/);
+  assert.doesNotMatch(html, /地固め<span class="reg-pts">準金 \+1<\/span>/);
+  assert.match(html, /準金 1/);
 });

@@ -33,6 +33,7 @@ import type {
   StrategicSkillRow,
 } from "./strategicSkills";
 import type { ScoreRecomputeChange } from "./scoreRecompute";
+import type { PreRaceAssessment, PreRaceAssessmentInput } from "./preRaceAssessment";
 import {
   BET_KIND_LABEL,
   formatSelectionLabel,
@@ -491,6 +492,7 @@ export function adminRegisterPage(
   editId: string | null,
   flash?: { text: string | null; error: boolean },
   strategic: StrategicSkillsBundle = { skills: [], dismissed: [] },
+  assessments: readonly PreRaceAssessment[] = [],
 ): { body: string; scripts: string } {
   const setup = eventScoreSetup(board.event);
   const canSetup = board.event.status === "setup";
@@ -517,6 +519,11 @@ export function adminRegisterPage(
   const dismissedIds = new Set(strategic.dismissed.map((d) => d.skillId));
   const utilBar = heroUtilBarHtml(strategic.skills.length, canSetup);
   const numberedHorses = board.horses.filter((h) => !h.horse.scratched);
+  const assessmentByHorseId = new Map(assessments.map((assessment) => [assessment.horse_id, assessment]));
+  const assessedCount = assessments.filter((assessment) => assessment.rank != null).length;
+  const assessmentEditor = canSetup && numberedHorses.length
+    ? `<button type="button" class="admin-action admin-action--secondary" id="pre-race-assessment-open">運営の事前評価${assessedCount ? `（${assessedCount}頭）` : ""}</button>`
+    : "";
   const horseNumberEditor = canSetup && numberedHorses.length
     ? `<button type="button" class="admin-action admin-action--secondary" id="horse-numbers-open">ウマ番を編集</button>`
     : "";
@@ -534,6 +541,24 @@ export function adminRegisterPage(
           </table></div>
           <p class="horse-numbers-error" id="horse-numbers-error" role="alert" hidden></p>
           <div class="modal-actions"><button type="button" class="admin-action admin-action--secondary" id="horse-numbers-cancel">キャンセル</button><button type="submit" class="admin-action admin-action--primary">保存</button></div>
+        </form>
+      </dialog>`
+    : "";
+  const preRaceAssessmentModal = canSetup && numberedHorses.length
+    ? `<dialog class="modal pre-race-assessment-modal" id="pre-race-assessment-modal" aria-labelledby="pre-race-assessment-title">
+        <h2 id="pre-race-assessment-title" tabindex="-1">運営の事前評価</h2>
+        <p class="note">順位とメモは任意です。1〜${numberedHorses.length}位をすべて埋める必要はありません。投票開始時に、この記録と評価式を固定します。</p>
+        <form method="post" action="/admin/pre-race-assessments" id="pre-race-assessment-form">
+          <div class="pre-race-assessment-scroll"><table class="plain pre-race-assessment-table">
+            <thead><tr><th>順位</th><th>ウマ娘</th><th>メモ（任意・120字まで）</th></tr></thead>
+            <tbody>${numberedHorses.map((entry) => {
+              const p = horseSheetParts(entry.horse);
+              const assessment = assessmentByHorseId.get(entry.horse.id);
+              return `<tr><td><input class="pre-race-rank" name="pre_race_rank" type="number" inputmode="numeric" min="1" max="${numberedHorses.length}" step="1" value="${assessment?.rank ?? ""}" aria-label="${escapeHtml(p.umaName)}の順位"><input type="hidden" name="horse_id" value="${escapeHtml(entry.horse.id)}"></td><td><strong>${escapeHtml(p.umaName)}</strong><span>${escapeHtml(p.runnerName)}</span></td><td><input name="pre_race_memo" maxlength="120" value="${escapeHtml(assessment?.memo ?? "")}" aria-label="${escapeHtml(p.umaName)}のメモ"></td></tr>`;
+            }).join("")}</tbody>
+          </table></div>
+          <p class="pre-race-assessment-error" id="pre-race-assessment-error" role="alert" hidden></p>
+          <div class="modal-actions"><button type="button" class="admin-action admin-action--secondary" id="pre-race-assessment-cancel">キャンセル</button><button type="submit" class="admin-action admin-action--primary">保存</button></div>
         </form>
       </dialog>`
     : "";
@@ -636,7 +661,7 @@ export function adminRegisterPage(
   }
   const body = `${adminPageHero("出走登録", board.event.status, {
       meta: `<span class="page-hero-meta" id="count">${board.horses.length} / 18</span>`,
-      actions: `${horseNumberEditor}${utilBar}`,
+      actions: `${assessmentEditor}${horseNumberEditor}${utilBar}`,
       titleHref: edit ? "/admin/register" : undefined,
     })}
     <div class="register-desk">
@@ -657,6 +682,7 @@ export function adminRegisterPage(
     </div>
     ${editModal}
     ${horseNumberModal}
+    ${preRaceAssessmentModal}
     <dialog class="shot-dlg shot-dlg-left" id="shot-dlg"><div class="shot-scroller fit" id="shot-scroller"><img id="shot-full" alt=""></div></dialog>
     ${strategicSkillsModalHtml()}
     <dialog class="modal" id="drop-horse-modal">
@@ -687,6 +713,20 @@ export function adminRegisterPage(
         if (!invalid && !duplicate) return;
         ev.preventDefault();
         if (horseNumbersError) { horseNumbersError.textContent = invalid ? "ウマ番は 1〜" + inputs.length + " の整数で入力してください" : "ウマ番が重複しています"; horseNumbersError.hidden = false; }
+      });
+      const preRaceAssessmentDlg = document.getElementById("pre-race-assessment-modal");
+      const preRaceAssessmentForm = document.getElementById("pre-race-assessment-form");
+      const preRaceAssessmentError = document.getElementById("pre-race-assessment-error");
+      document.getElementById("pre-race-assessment-open")?.addEventListener("click", () => preRaceAssessmentDlg?.showModal());
+      document.getElementById("pre-race-assessment-cancel")?.addEventListener("click", () => preRaceAssessmentDlg?.close());
+      preRaceAssessmentForm?.addEventListener("submit", (ev) => {
+        const inputs = [...document.querySelectorAll(".pre-race-rank")];
+        const values = inputs.map((input) => String(input.value || "").trim()).filter(Boolean).map(Number);
+        const invalid = values.some((value) => !Number.isInteger(value) || value < 1 || value > inputs.length);
+        const duplicate = new Set(values).size !== values.length;
+        if (!invalid && !duplicate) return;
+        ev.preventDefault();
+        if (preRaceAssessmentError) { preRaceAssessmentError.textContent = invalid ? "順位は1〜" + inputs.length + "で入力してください" : "順位が重複しています"; preRaceAssessmentError.hidden = false; }
       });
       document.getElementById("horse-edit-open")?.addEventListener("click", () => editDlg?.showModal());
       const closeEdit = () => {
@@ -1010,7 +1050,7 @@ function pipeHtml(
   const formula = `スキル点${fmt3(b.weightedSkillBase)} × スピ${fmt3(b.ratios.speed)} × スタ${fmt3(b.ratios.staminaMult)} × パワ${fmt3(b.ratios.power)} × 根性${fmt3(b.ratios.guts)} × 賢さ${fmt3(b.ratios.wisdom)} ＝ ${h.horse.strength}`;
   return `${head}
     <div class="pipe-step"><div class="pipe-k">土台（スキル）</div>
-      <div>有効 ${s.effectiveCount} ＋ 金×2（${s.goldCount}枚）${stratPart} ＋ ためらい ${s.tameraiCount}＝ <b>${s.base}</b></div></div>
+      <div>有効 ${s.effectiveCount} ＋ 金×2（${s.goldCount}枚）＋ 準金（${s.semiGoldCount}個）${stratPart} ＋ ためらい ${s.tameraiCount}＝ <b>${s.base}</b></div></div>
     <div class="pipe-step"><div class="pipe-k">キャラスペック <span class="pipe-s-calc">E=固有・進化スキルの有効バ身　R=このコースの中央値</span></div><div class="pipe-v">${specLine}</div></div>
     <div class="pipe-step"><div class="pipe-k">スキル点算出式</div><div class="pipe-v">${escapeHtml(skillFormula)}</div></div>
     <div class="pipe-step"><div class="pipe-k">緑 → ステへ</div><div class="pipe-green">${greenLines}</div></div>
@@ -1031,6 +1071,11 @@ export function adminHorsesPage(
   reauth: string,
   strategicSkills: readonly StrategicSkillRow[] = [],
   preview?: readonly ScoreRecomputeChange[],
+  preRaceSnapshot?: {
+    formulaVersion: string;
+    formulaSummary: string;
+    assessments: readonly PreRaceAssessmentInput[];
+  },
 ): string {
   const canRescore = board.event.status === "setup";
   const rescore = canRescore
@@ -1038,6 +1083,18 @@ export function adminHorsesPage(
     : `<button class="admin-action admin-action--secondary" type="button" disabled>自動評価点を確認・再計算</button>`;
   const first = board.horses[0]?.horse.id ?? "";
   const sel = selId && board.horses.some((h) => h.horse.id === selId) ? selId : first;
+  const preRaceByHorseId = new Map(preRaceSnapshot?.assessments.map((assessment) => [assessment.horseId, assessment]) ?? []);
+  const preRaceRows = board.horses
+    .filter((entry) => !entry.horse.scratched)
+    .map((entry) => ({ entry, assessment: preRaceByHorseId.get(entry.horse.id) }))
+    .filter((row) => row.assessment?.rank != null || row.assessment?.memo)
+    .sort((a, b) => (a.assessment?.rank ?? Number.MAX_SAFE_INTEGER) - (b.assessment?.rank ?? Number.MAX_SAFE_INTEGER));
+  const preRaceView = preRaceSnapshot
+    ? `<section class="work pre-race-assessment-view"><div class="work-head"><div><h2>運営の事前評価</h2><span class="odds-meta">投票開始時に固定 · ${escapeHtml(preRaceSnapshot.formulaVersion)}</span></div></div>
+        <p class="note">${escapeHtml(preRaceSnapshot.formulaSummary)}</p>
+        ${preRaceRows.length ? `<div class="table-scroll"><table class="plain"><thead><tr><th>順位</th><th>ウマ娘</th><th>メモ</th></tr></thead><tbody>${preRaceRows.map(({ entry, assessment }) => { const p = horseSheetParts(entry.horse); return `<tr><td class="num">${assessment?.rank ?? "—"}</td><td>${escapeHtml(p.umaName)} <span class="odds-meta">${escapeHtml(p.runnerName)}</span></td><td>${escapeHtml(assessment?.memo ?? "—")}</td></tr>`; }).join("")}</tbody></table></div>` : `<p class="note">記録された順位・メモはありません。</p>`}
+      </section>`
+    : "";
   const rows = board.horses
     .map((h) => {
       const p = horseSheetParts(h.horse);
@@ -1068,7 +1125,7 @@ export function adminHorsesPage(
   const previewHtml = preview
     ? `<dialog class="modal" id="rescore-preview-modal"><h2 class="modal-title" id="rescore-preview-title" tabindex="-1">再計算内容の確認</h2><p class="note">${preview.length ? `${preview.length}頭の自動評価点を更新します。` : "変更対象はありません。"}</p>${preview.length ? `<table class="plain"><thead><tr><th>出走馬</th><th>現在</th><th>再計算後</th><th>キャラスペック</th></tr></thead><tbody>${preview.map((x) => `<tr><td>${escapeHtml(x.name)}</td><td class="num">${x.before}</td><td class="num">${x.after}</td><td class="num">×${fmt3(x.characterSpecMultiplier)}</td></tr>`).join("")}</tbody></table>` : ""}<div class="modal-actions"><form method="post" action="/admin/rescore"><button class="admin-action admin-action--primary" type="submit"${preview.length ? "" : " disabled"}>この内容で再計算</button></form><form method="get" action="/admin/horses"><button class="admin-action admin-action--secondary" type="submit">キャンセル</button></form></div></dialog>`
     : "";
-  return `${adminPageHero("出走", board.event.status, { actions: rescore })}${previewHtml}
+  return `${adminPageHero("出走", board.event.status, { actions: rescore })}${previewHtml}${preRaceView}
     <div class="horses-desk">
       <section class="work"><h2>名簿</h2>
         <table class="plain" id="roster"><thead><tr>

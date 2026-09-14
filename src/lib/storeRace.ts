@@ -36,6 +36,7 @@ import { parseEnabledKinds } from "./bets";
 import { eventScoreSetup } from "./storeEvent";
 import { captureAnalysisSnapshotSafely, clearAnalysisLogForEvent } from "./analysisLog";
 import { SYSTEM_ADMIN_USER_ID } from "./storeTreasury";
+import { preRaceAssessmentSnapshotStatement } from "./preRaceAssessment";
 
 /** 投票開始前に満たすべき、画面と API で共通の条件。 */
 export function votingStartProblems(
@@ -88,12 +89,15 @@ export async function openVoting(
   if (problems.length) throw new Error(`投票開始できません: ${problems.join(" / ")}`);
   await captureAdminUndo(db, "投票開始");
   const now = Date.now();
-  await db
-    .prepare(
-      `UPDATE events SET status = 'voting', voting_opened_at = ?, voting_closes_at = ? WHERE id = ?`,
-    )
-    .bind(now, closesAtMs, event.id)
-    .run();
+  const assessmentSnapshot = await preRaceAssessmentSnapshotStatement(db, event.id, now);
+  await db.batch([
+    db
+      .prepare(
+        `UPDATE events SET status = 'voting', voting_opened_at = ?, voting_closes_at = ? WHERE id = ?`,
+      )
+      .bind(now, closesAtMs, event.id),
+    assessmentSnapshot,
+  ]);
   await captureAnalysisSnapshotSafely(db, event.id, "voting_open", now);
 }
 
@@ -557,6 +561,7 @@ export async function revertVotingToSetup(
       .run();
   }
   await db.prepare("DELETE FROM grants WHERE event_id = ?").bind(event.id).run();
+  await db.prepare("DELETE FROM pre_race_assessment_snapshots WHERE event_id = ?").bind(event.id).run();
   await db
     .prepare(
       "UPDATE events SET status = 'setup', voting_opened_at = NULL, closed_at = NULL WHERE id = ?",

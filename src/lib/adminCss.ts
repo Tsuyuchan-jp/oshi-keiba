@@ -1039,6 +1039,18 @@ body.register-page .work .ctas a { align-self: center; font-size: .85rem; color:
 .horse-numbers-table th:first-child, .horse-numbers-table td:first-child { width: 5.75rem; }
 .horse-number-input { width: 4.25rem; padding: .35rem .4rem; border: 1px solid var(--admin-line-strong); border-radius: 5px; background: var(--admin-surface); color: var(--admin-ink); font: inherit; font-variant-numeric: tabular-nums; }
 .horse-numbers-error { margin: .65rem 0 0; color: var(--admin-danger); font-size: .85rem; font-weight: 700; }
+.pre-race-assessment-modal { --admin-modal-max-width: 62rem; }
+.pre-race-assessment-scroll { max-height: min(56dvh, 34rem); overflow: auto; border: 1px solid var(--admin-line-subtle); border-radius: 7px; }
+.pre-race-assessment-table { width: 100%; }
+.pre-race-assessment-table th:first-child, .pre-race-assessment-table td:first-child { width: 5.5rem; }
+.pre-race-assessment-table th:last-child, .pre-race-assessment-table td:last-child { width: 48%; }
+.pre-race-assessment-table td:nth-child(2) strong { display: block; font-size: .88rem; }
+.pre-race-assessment-table td:nth-child(2) span { display: block; margin-top: .08rem; color: var(--admin-muted); font-size: .72rem; }
+.pre-race-rank, .pre-race-assessment-table input[name="pre_race_memo"] { width: 100%; padding: .35rem .4rem; border: 1px solid var(--admin-line-strong); border-radius: 5px; background: var(--admin-surface); color: var(--admin-ink); font: inherit; }
+.pre-race-rank { max-width: 4.25rem; font-variant-numeric: tabular-nums; }
+.pre-race-assessment-error { margin: .65rem 0 0; color: var(--admin-danger); font-size: .85rem; font-weight: 700; }
+.pre-race-assessment-view { margin-bottom: .85rem; }
+.pre-race-assessment-view .note { margin: .1rem 0 .65rem; color: var(--admin-muted); font-size: .8rem; }
 .modal-close { position: absolute; top: .7rem; right: .8rem; width: 2rem; height: 2rem; padding: 0; border-radius: 50%; background: var(--admin-surface-muted); color: var(--admin-muted); font-size: 1.35rem; line-height: 1; }
 .edit-shot-picker { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .6rem; margin: .65rem 0; font-size: .8rem; color: var(--admin-muted); }
 .edit-shot-picker .admin-action { color: var(--admin-accent); }

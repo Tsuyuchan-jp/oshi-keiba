@@ -63,7 +63,7 @@ test("金は有効1＋追加2で計3", () => {
   assert.equal(s.base, 2 + 2);
 });
 
-test("composite recovery gold counts as one effective skill", () => {
+test("composite recovery gold counts as effective +1 and semi-gold +1", () => {
   assert.equal(isCompositeRecoveryGold("鋼の意志", 200441), true);
   const s = skillBase(["鋼の意志", "地固め"], {
     effectiveIds: new Set([200441, 201601]),
@@ -71,7 +71,8 @@ test("composite recovery gold counts as one effective skill", () => {
   });
   assert.equal(s.effectiveCount, 2);
   assert.equal(s.goldCount, 0);
-  assert.equal(s.base, 2);
+  assert.equal(s.semiGoldCount, 1);
+  assert.equal(s.base, 3);
 });
 
 test("固有・進化・シナリオはリスト外でも金同等（枚数1＋+2）", () => {

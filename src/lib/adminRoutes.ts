@@ -31,6 +31,9 @@ import {
   loadTreasuryDashboard,
   analysisExportFilename,
   analysisExportZip,
+  listPreRaceAssessments,
+  getPreRaceAssessmentSnapshot,
+  parsePreRaceAssessmentSnapshot,
 } from "./store";
 import { getAdminUndoMeta } from "./undo";
 import { adminUndoAllowed } from "./adminUndo";
@@ -209,12 +212,16 @@ export async function tryAdminGet(
   }
 
   if (path === "/admin/register") {
-    const strategic = await loadStrategicSkillsBundle(env.DB);
+    const [strategic, assessments] = await Promise.all([
+      loadStrategicSkillsBundle(env.DB),
+      listPreRaceAssessments(env.DB, board.event.id),
+    ]);
     const page = adminRegisterPage(
       board,
       url.searchParams.get("edit"),
       m,
       strategic,
+      assessments,
     );
     return html(
       layoutAdmin({
@@ -230,7 +237,10 @@ export async function tryAdminGet(
   }
 
   if (path === "/admin/horses") {
-    const strategic = await loadStrategicSkillsBundle(env.DB);
+    const [strategic, assessmentSnapshot] = await Promise.all([
+      loadStrategicSkillsBundle(env.DB),
+      getPreRaceAssessmentSnapshot(env.DB, board.event.id),
+    ]);
     let preview = undefined;
     if (url.searchParams.get("rescore") === "preview" && board.event.status === "setup") {
       try {
@@ -252,6 +262,11 @@ export async function tryAdminGet(
           adminReauthField(),
           strategic.skills,
           preview,
+          assessmentSnapshot ? {
+            formulaVersion: assessmentSnapshot.formula_version,
+            formulaSummary: assessmentSnapshot.formula_summary,
+            assessments: parsePreRaceAssessmentSnapshot(assessmentSnapshot),
+          } : undefined,
         ),
       }),
     );

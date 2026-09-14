@@ -99,6 +99,8 @@ export type SkillBaseBreakdown = {
   base: number;
   effectiveCount: number;
   goldCount: number;
+  /** 金複合回復スキル。通常の金より一段低い追加 +1。 */
+  semiGoldCount: number;
   tameraiCount: number;
   countedNames: string[];
   /** 戦略例外の合計点（U-tools 有効とは別レーン） */
@@ -212,6 +214,10 @@ export type SkillBaseOptions = {
   strategicById?: StrategicPointsById;
 };
 
+/** 投票開始時に運営の事前評価と一緒に記録する評価式の識別子。 */
+export const SCORE_FORMULA_VERSION = "score-v3-semi-gold";
+export const SCORE_FORMULA_SUMMARY = "金複合回復：有効 +1／準金 +1／実効スタミナへ回復効果を反映";
+
 function isSkillNameSet(
   value: ReadonlySet<string> | SkillBaseOptions,
 ): value is ReadonlySet<string> {
@@ -230,6 +236,7 @@ export function skillBase(
 
   const countedNames: string[] = [];
   let goldCount = 0;
+  let semiGoldCount = 0;
   let tameraiCount = 0;
   let strategicPoints = 0;
   const strategicItems: { name: string; id: number; points: number }[] = [];
@@ -257,7 +264,11 @@ export function skillBase(
       tameraiCount += 1;
       continue;
     }
-    if (isGoldLike(name, id) && !isCompositeRecoveryGold(name, id)) goldCount += 1;
+    if (isCompositeRecoveryGold(name, id)) {
+      semiGoldCount += 1;
+    } else if (isGoldLike(name, id)) {
+      goldCount += 1;
+    }
   }
 
   for (let i = 0; i < skillNames.length; i++) {
@@ -271,11 +282,12 @@ export function skillBase(
   }
 
   const effectiveCount = countedNames.length;
-  const base = effectiveCount + 2 * goldCount + strategicPoints;
+  const base = effectiveCount + 2 * goldCount + semiGoldCount + strategicPoints;
   return {
     base,
     effectiveCount,
     goldCount,
+    semiGoldCount,
     tameraiCount,
     countedNames,
     strategicPoints,
