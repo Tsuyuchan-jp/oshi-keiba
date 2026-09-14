@@ -364,7 +364,7 @@ body.ledger-page .ledger-side .work { height: auto; }
 .treasury-current small { display: block; color: var(--admin-muted); font-size: .65rem; }
 .treasury-current strong { display: block; white-space: nowrap; font-size: .78rem; font-variant-numeric: tabular-nums; }
 .settlement-heading { flex: 0 0 auto; margin: 0 0 .2rem; font-size: .78rem; color: var(--admin-muted); }
-.settlement-table { min-width: 35rem; }
+.settlement-table { min-width: 48rem; }
 .settlement-table td:first-child { max-width: 12rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .treasury-retained { color: #1d4f8a; font-weight: 700; }
 .ledger-del {

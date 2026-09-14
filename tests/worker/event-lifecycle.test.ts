@@ -225,6 +225,9 @@ describe("開催ライフサイクルのHTTP結合", () => {
     expect(ledgerHtml).toContain("場の管理スペ残高");
     expect(ledgerHtml).toContain("総発行スペ");
     expect(ledgerHtml).toContain("開催別の精算");
+    expect(ledgerHtml).toContain("有効投票");
+    expect(ledgerHtml).toContain("純還元率");
+    expect(ledgerHtml).not.toContain("払戻・返還");
 
     expect(redirectMessage(await postForm("/admin/next-event", {}, adminCookie)).error).toBe(false);
     expect((await eventState(eventId)).is_current).toBe(0);

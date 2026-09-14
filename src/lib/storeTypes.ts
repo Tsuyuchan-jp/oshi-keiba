@@ -68,6 +68,12 @@ export type EventSettlementRow = {
   event_title: string;
   bet_total: number;
   payout_total: number;
+  /** 全投票 − やり直し − 出走取消。パリミュチュエルの分母 */
+  effective_bet_total: number;
+  /** 的中払戻 + 特払い */
+  prize_payout_total: number;
+  redo_total: number;
+  scratch_refund_total: number;
   retained_amount: number;
   settled_at: number;
   source: "publish" | "backfill";
@@ -80,6 +86,10 @@ export type TreasuryDashboard = {
   totalIssued: number;
   currentBetTotal: number;
   currentPayoutTotal: number;
+  currentEffectiveBetTotal: number;
+  currentPrizePayoutTotal: number;
+  currentRedoTotal: number;
+  currentScratchRefundTotal: number;
   currentRetainedAmount: number | null;
   settlements: EventSettlementRow[];
 };

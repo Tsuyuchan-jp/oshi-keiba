@@ -16,6 +16,7 @@ import {
   formatOdds,
   formatOddsWithUnit,
   formatPt,
+  formatReturnRate,
   formulaPanel,
   headerPhaseKind,
   statusLabel,
@@ -1152,16 +1153,20 @@ export function adminLedgerPage(opts: {
       month: "2-digit",
       day: "2-digit",
     });
-    return `<tr><td>${escapeHtml(row.event_title)}</td><td>${escapeHtml(settled)}</td><td class="num">${formatPt(row.bet_total)}</td><td class="num">${formatPt(row.payout_total)}</td><td class="num treasury-retained">${formatPt(row.retained_amount)}</td></tr>`;
+    const fullReturn = row.redo_total + row.scratch_refund_total;
+    return `<tr><td>${escapeHtml(row.event_title)}</td><td>${escapeHtml(settled)}</td><td class="num">${formatPt(row.effective_bet_total)}</td><td class="num">${formatPt(row.prize_payout_total)}</td><td class="num">${formatReturnRate(row.prize_payout_total, row.effective_bet_total)}</td><td class="num">${formatPt(fullReturn)}</td><td class="num treasury-retained">${formatPt(row.retained_amount)}</td></tr>`;
   }).join("");
   const currentRetained = opts.treasury.currentRetainedAmount == null
     ? "未確定"
     : formatPt(opts.treasury.currentRetainedAmount);
+  const currentRate = opts.treasury.currentRetainedAmount == null
+    ? "—"
+    : formatReturnRate(opts.treasury.currentPrizePayoutTotal, opts.treasury.currentEffectiveBetTotal);
   return `${adminPageHero("台帳", opts.board.event.status)}
     <div class="ledger-desk">
       <div class="ledger-side">
         <section class="work ledger-treasury">
-          <div class="work-head"><div><h2>場の会計</h2><p class="ledger-caption">メンバーへ戻らなかったスペを開催公開時に確定</p></div></div>
+          <div class="work-head"><div><h2>場の会計</h2><p class="ledger-caption">有効投票と払戻はやり直し・出走取消を含まない。場への移管は全額返還込みの差額</p></div></div>
           <div class="treasury-kpis">
             <div class="kpi treasury-primary"><span class="k">場の管理スペ残高</span><span class="v">${formatPt(opts.treasury.adminBalance)}</span></div>
             <div class="kpi"><span class="k">総発行スペ</span><span class="v">${formatPt(opts.treasury.totalIssued)}</span></div>
@@ -1169,14 +1174,17 @@ export function adminLedgerPage(opts: {
             <div class="kpi"><span class="k">未精算プール</span><span class="v">${formatPt(opts.treasury.unsettledPoolTotal)}</span></div>
           </div>
           <div class="treasury-current" aria-label="現在の開催の会計">
-            <span><small>今回の投票</small><strong>${formatPt(opts.treasury.currentBetTotal)}</strong></span>
-            <span><small>払戻・返還</small><strong>${formatPt(opts.treasury.currentPayoutTotal)}</strong></span>
+            <span><small>有効投票</small><strong>${formatPt(opts.treasury.currentEffectiveBetTotal)}</strong></span>
+            <span><small>払戻</small><strong>${formatPt(opts.treasury.currentPrizePayoutTotal)}</strong></span>
+            <span><small>純還元率</small><strong>${currentRate}</strong></span>
+            <span><small>やり直し</small><strong>${formatPt(opts.treasury.currentRedoTotal)}</strong></span>
+            <span><small>出走取消</small><strong>${formatPt(opts.treasury.currentScratchRefundTotal)}</strong></span>
             <span><small>場への移管</small><strong>${currentRetained}</strong></span>
           </div>
           <h3 class="settlement-heading">開催別の精算</h3>
           <div class="table-scroll settlement-scroll">
-            <table class="plain settlement-table"><thead><tr><th>開催</th><th>公開日</th><th class="num">投票</th><th class="num">払戻・返還</th><th class="num">場へ</th></tr></thead>
-              <tbody>${settlementRows || `<tr><td colspan="5" class="muted">精算済みの開催はありません</td></tr>`}</tbody></table>
+            <table class="plain settlement-table"><thead><tr><th>開催</th><th>公開日</th><th class="num">有効投票</th><th class="num">払戻</th><th class="num">還元率</th><th class="num">全額返還</th><th class="num">場へ</th></tr></thead>
+              <tbody>${settlementRows || `<tr><td colspan="7" class="muted">精算済みの開催はありません</td></tr>`}</tbody></table>
           </div>
         </section>
         <section class="work ledger-members">

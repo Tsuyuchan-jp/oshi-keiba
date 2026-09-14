@@ -27,6 +27,12 @@ export function formatPt(n: number): string {
   return `${n.toLocaleString("ja-JP")} スペ`;
 }
 
+/** 有効投票に対する的中・特払いの比率。分母ゼロは未算出 */
+export function formatReturnRate(prizePayout: number, effectiveBet: number): string {
+  if (!(effectiveBet > 0)) return "—";
+  return `${((100 * prizePayout) / effectiveBet).toFixed(1)}%`;
+}
+
 /** メンバー目線の収支。増えたら＋、減ったら−。未確定は空 */
 export function formatMove(n: number | null): string {
   if (n == null) return "";

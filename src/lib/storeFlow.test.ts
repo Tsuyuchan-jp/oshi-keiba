@@ -253,9 +253,56 @@ test("二人投票: 総付与と残高・控除の関係が崩れない", async 
   assert.deepEqual(treasury.settlements.map((x) => ({
     bet: x.bet_total,
     payout: x.payout_total,
+    effective: x.effective_bet_total,
+    prize: x.prize_payout_total,
+    redo: x.redo_total,
+    scratch: x.scratch_refund_total,
     retained: x.retained_amount,
     source: x.source,
-  })), [{ bet: aw + al, payout: pay, retained: poolLeft, source: "publish" }]);
+  })), [{
+    bet: aw + al,
+    payout: pay,
+    effective: aw + al,
+    prize: pay,
+    redo: 0,
+    scratch: 0,
+    retained: poolLeft,
+    source: "publish",
+  }]);
+  assert.equal(treasury.currentEffectiveBetTotal, aw + al);
+  assert.equal(treasury.currentPrizePayoutTotal, pay);
+  assert.equal(treasury.currentRedoTotal, 0);
+});
+
+test("場の会計: やり直しは有効投票から除き、払戻は的中だけにする", async () => {
+  const db = createMemoryD1();
+  const { event, h1, h2 } = await seedRace(db);
+  const user = await joinEvent(db, event, await registerMember(db, "やり直し会計"));
+  await placeBet(db, event, user, "win", [h1], 500);
+  assert.equal(await redoMyBets(db, event, user), 500);
+  await placeBet(db, event, user, "win", [h1], 500);
+  await forceClose(db, await refresh(db, event.id));
+  await savePlaces(db, await refresh(db, event.id), [
+    { horseId: h1, place: 1 },
+    { horseId: h2, place: 2 },
+  ]);
+  await publishResults(db, await refresh(db, event.id));
+  const odds = parimutuelOdds(500, 500, event.takeout_d);
+  assert.ok(odds != null);
+  const pay = payoutAmount(500, odds);
+  const treasury = await loadTreasuryDashboard(
+    db,
+    event.id,
+    "9f0cdb75-82dd-4d4e-b7b7-97f7e1ea8c44",
+  );
+  assert.equal(treasury.currentBetTotal, 1000);
+  assert.equal(treasury.currentRedoTotal, 500);
+  assert.equal(treasury.currentEffectiveBetTotal, 500);
+  assert.equal(treasury.currentPrizePayoutTotal, pay);
+  assert.equal(treasury.currentScratchRefundTotal, 0);
+  assert.equal(treasury.settlements[0]?.effective_bet_total, 500);
+  assert.equal(treasury.settlements[0]?.redo_total, 500);
+  assert.equal(treasury.settlements[0]?.prize_payout_total, pay);
 });
 
 test("結果公開を同時に再送しても、払戻と残高加算は一度だけ", async () => {
