@@ -13,8 +13,8 @@
 </head>
 <body><main>
 <h1>金複合回復スキル<br>旧仕様・現行・新仕様案の3比較</h1>
-<p class="meta">本番環境「第1回メンバーシップ特別レース」全17名｜本番データ取得・再計算日 2026-09-14</p>
-<p class="lead">同じ出走データを使い、金複合回復スキルだけを3通りに数え直した比較です。実効スタミナへの回復効果は、3仕様すべてで同じように反映されています。</p>
+<p class="meta">本番環境「第1回メンバーシップ特別レース」全17名｜投票開始ログ snapshot_id=1／再計算日 2026-09-14</p>
+<p class="lead">投票開始時点の評価点を全馬の「現行仕様」基準に固定し、金複合回復スキルだけを3通りに数え直した比較です。実効スタミナへの回復効果は、3仕様すべてで同じように反映されています。</p>
 
 <div class="card-grid">
   <div class="card current"><div class="tag current-c">現行</div><h3>有効 +1</h3><div class="big" id="total-current">—</div><div>17名の評価点合計</div><p class="small">追加の金評価なし。実効スタミナ効果あり。</p></div>
@@ -33,10 +33,10 @@
 <p class="small">再計算式：現行評価点 ×（変更後スキル土台 ÷ 現行スキル土台）<sup>4.5</sup>。回復による実効スタミナ部分は変更しないため、仕様間の差はスキル土台だけです。</p>
 
 <h2>全17名の評価点比較</h2>
-<p>「開催時保存」は実際のSeed作成に使われた評価点です。「現行再計算」以降は、現在本番に残っている入力を同条件で計算した値です。</p>
-<div class="scroll"><table id="score-table"><thead><tr><th>馬番</th><th>出走ウマ娘</th><th>対象数</th><th>開催時保存</th><th class="current-c">現行再計算</th><th class="new-c">新仕様案</th><th class="new-c">現行比</th><th class="old-c">旧仕様</th><th class="old-c">現行比</th><th>着順</th></tr></thead><tbody></tbody></table></div>
+<p>「現行基準」は投票開始時ログに記録された評価点です。新仕様案と旧仕様は、この値を起点にスキル土台の差だけを再計算しています。</p>
+<div class="scroll"><table id="score-table"><thead><tr><th>馬番</th><th>出走ウマ娘</th><th>対象数</th><th class="current-c">投票開始時＝現行基準</th><th class="new-c">新仕様案</th><th class="new-c">現行比</th><th class="old-c">旧仕様</th><th class="old-c">現行比</th><th>着順</th></tr></thead><tbody></tbody></table></div>
 
-<div class="box notice"><strong>4名も比較対象に含めています。</strong><br>メジロパーマー、セイウンスカイ、マヤノトップガン、キタサンブラックは、開催時保存値と現在入力による現行再計算値が一致しません。OCR落ちや「◎→○」修正など、登録後の入力修正による差として許容し、3仕様の比較からは除外していません。3仕様はすべて現在の同一入力を起点にしているため、仕様同士の差は比較できます。</div>
+<div class="box notice"><strong>混在を避けるための基準統一</strong><br>登録時には旧仕様と現行仕様の個体が混在していました。その登録値は基準にせず、投票開始時点で実際にSeedへ使われた評価点を全員の現行値として採用しています。メジロパーマー、セイウンスカイ、マヤノトップガン、キタサンブラックを含む全17名が同じ扱いです。現在の本番入力は、対象スキル数とスキル土台の確認にだけ使用しています。</div>
 
 <h2>評価点の広がり</h2>
 <div class="legend"><span><i></i>現行</span><span class="n"><i></i>新仕様案</span><span class="o"><i></i>旧仕様</span></div>
@@ -49,7 +49,7 @@
 <p class="num-note">確定オッズ「—」は単勝への実投票なし。想定値は単勝Seedだけの比較で、実投票による変動は含みません。</p>
 
 <h2>順位変動と着順相関（参考）</h2>
-<p>現在入力での3仕様を同じ条件で比較します。参考として、実際の開催時保存評価点と着順の相関は <strong>0.554</strong> でした。</p>
+<p>投票開始時点を現行基準として、3仕様を同じ条件で比較します。</p>
 <div class="card-grid" id="correlation-cards"></div>
 <div class="box"><strong>相関はゆるい参考です。</strong><br>一走の着順は展開やランダム性を強く含みます。また確定オッズは初期Seedの影響を受けるため、評価点から独立した正解データではありません。この欄は「極端な破綻がないか」を見る補助情報であり、3仕様の採否を着順だけで決めるものではありません。</div>
 
@@ -63,27 +63,27 @@
 </ol>
 </div>
 
-<p class="foot small">データ源：本番D1の event / horses / score_input / strategic_skills、および第1回イベント分析ログ。データベースへの変更は行っていません。</p>
+<p class="foot small">データ源：第1回イベント分析ログの投票開始スナップショット（評価点・Seed・初期オッズ）と、本番D1の score_input / strategic_skills（対象数・スキル土台）。データベースへの変更は行っていません。</p>
 </main>
 <script>
 const rows=[
-{no:1,name:'ジェンティルドンナ（つゆちゃん）',stored:105,current:105,base:87,count:1,news:110.6,old:116.3,finish:12,seed:5290,initial:12.1,final:null,skills:'悠々自適'},
-{no:2,name:'メジロパーマー（Neko長明）',stored:82.6,current:66.3,base:80,count:1,news:70.1,old:74.1,finish:8,seed:4161,initial:15.4,final:null,skills:'連鎖反応',drift:true},
-{no:3,name:'シュヴァルグラン（Neko長明）',stored:143.9,current:143.9,base:96,count:0,news:143.9,old:143.9,finish:7,seed:7249,initial:8.8,final:18.2,skills:''},
-{no:4,name:'ナリタトップロード（Raiko）',stored:69.1,current:69.1,base:81,count:1,news:73.0,old:77.1,finish:16,seed:3481,initial:18.4,final:null,skills:'連鎖反応'},
-{no:5,name:'オグリキャップ（GEDO）',stored:48.3,current:48.3,base:90,count:1,news:50.7,old:53.3,finish:9,seed:2433,initial:26.3,final:36.3,skills:'連鎖反応'},
-{no:6,name:'ウインバリアシオン（アイビー）',stored:114.5,current:114.5,base:90,count:1,news:120.4,old:126.4,finish:10,seed:5768,initial:11.1,final:4.0,skills:'連鎖反応'},
-{no:7,name:'セイウンスカイ（dai）',stored:77.9,current:62.6,base:80,count:2,news:69.9,old:77.9,finish:11,seed:3924,initial:16.3,final:null,skills:'連鎖反応・悠々自適',drift:true},
-{no:8,name:'ステイゴールド（アイビー）',stored:132.9,current:132.9,base:93,count:2,news:146.2,old:160.6,finish:6,seed:6695,initial:9.6,final:12.1,skills:'連鎖反応・悠々自適'},
-{no:9,name:'ナリタブライアン（satie）',stored:119.6,current:119.6,base:90,count:1,news:125.7,old:132.1,finish:14,seed:6025,initial:10.6,final:30.3,skills:'連鎖反応'},
-{no:10,name:'マヤノトップガン（GEDO）',stored:143.5,current:117.8,base:89,count:1,news:123.8,old:130.2,finish:1,seed:7229,initial:8.9,final:2.4,skills:'連鎖反応',drift:true},
-{no:11,name:'オルフェーヴル（Raiko）',stored:108.3,current:108.3,base:91,count:1,news:113.8,old:119.4,finish:5,seed:5456,initial:11.7,final:181.6,skills:'連鎖反応'},
-{no:12,name:'キタサンブラック（GEDO）',stored:87.7,current:70.2,base:79,count:2,news:78.6,old:87.7,finish:3,seed:4418,initial:14.5,final:3.6,skills:'連鎖反応・悠々自適',drift:true},
-{no:13,name:'ビワハヤヒデ（b-men）',stored:120.4,current:120.4,base:92,count:1,news:126.4,old:132.7,finish:13,seed:6065,initial:10.6,final:null,skills:'連鎖反応'},
-{no:14,name:'マンハッタンカフェ（Raiko）',stored:0.5,current:0.5,base:32,count:0,news:0.5,old:0.5,finish:17,seed:25,initial:2540.8,final:null,skills:''},
-{no:15,name:'ゼンノロブロイ（陸カヤック）',stored:20.8,current:20.8,base:88,count:1,news:21.9,old:23.0,finish:15,seed:1048,initial:61.1,final:null,skills:'悠々自適'},
-{no:16,name:'メジロマックイーン（うどん）',stored:86.1,current:86.1,base:85,count:0,news:86.1,old:86.1,finish:4,seed:4338,initial:14.8,final:18.2,skills:''},
-{no:17,name:'エピファネイア（Neko長明）',stored:126.9,current:126.9,base:91,count:1,news:133.3,old:139.9,finish:2,seed:6393,initial:10.0,final:18.2,skills:'連鎖反応'}
+{no:1,name:'ジェンティルドンナ（つゆちゃん）',current:105,base:87,count:1,news:110.5,old:116.3,finish:12,seed:5290,initial:12.1,final:null,skills:'悠々自適'},
+{no:2,name:'メジロパーマー（Neko長明）',current:82.6,base:80,count:1,news:87.3,old:92.3,finish:8,seed:4161,initial:15.4,final:null,skills:'連鎖反応'},
+{no:3,name:'シュヴァルグラン（Neko長明）',current:143.9,base:96,count:0,news:143.9,old:143.9,finish:7,seed:7249,initial:8.8,final:18.2,skills:''},
+{no:4,name:'ナリタトップロード（Raiko）',current:69.1,base:81,count:1,news:73.0,old:77.1,finish:16,seed:3481,initial:18.4,final:null,skills:'連鎖反応'},
+{no:5,name:'オグリキャップ（GEDO）',current:48.3,base:90,count:1,news:50.8,old:53.3,finish:9,seed:2433,initial:26.3,final:36.3,skills:'連鎖反応'},
+{no:6,name:'ウインバリアシオン（アイビー）',current:114.5,base:90,count:1,news:120.3,old:126.4,finish:10,seed:5768,initial:11.1,final:4.0,skills:'連鎖反応'},
+{no:7,name:'セイウンスカイ（dai）',current:77.9,base:80,count:2,news:87.1,old:97.0,finish:11,seed:3924,initial:16.3,final:null,skills:'連鎖反応・悠々自適'},
+{no:8,name:'ステイゴールド（アイビー）',current:132.9,base:93,count:2,news:146.3,old:160.6,finish:6,seed:6695,initial:9.6,final:12.1,skills:'連鎖反応・悠々自適'},
+{no:9,name:'ナリタブライアン（satie）',current:119.6,base:90,count:1,news:125.7,old:132.0,finish:14,seed:6025,initial:10.6,final:30.3,skills:'連鎖反応'},
+{no:10,name:'マヤノトップガン（GEDO）',current:143.5,base:89,count:1,news:150.9,old:158.6,finish:1,seed:7229,initial:8.9,final:2.4,skills:'連鎖反応'},
+{no:11,name:'オルフェーヴル（Raiko）',current:108.3,base:91,count:1,news:113.8,old:119.4,finish:5,seed:5456,initial:11.7,final:181.6,skills:'連鎖反応'},
+{no:12,name:'キタサンブラック（GEDO）',current:87.7,base:79,count:2,news:98.1,old:109.5,finish:3,seed:4418,initial:14.5,final:3.6,skills:'連鎖反応・悠々自適'},
+{no:13,name:'ビワハヤヒデ（b-men）',current:120.4,base:92,count:1,news:126.4,old:132.6,finish:13,seed:6065,initial:10.6,final:null,skills:'連鎖反応'},
+{no:14,name:'マンハッタンカフェ（Raiko）',current:0.5,base:32,count:0,news:0.5,old:0.5,finish:17,seed:25,initial:2540.8,final:null,skills:''},
+{no:15,name:'ゼンノロブロイ（陸カヤック）',current:20.8,base:88,count:1,news:21.9,old:23.0,finish:15,seed:1048,initial:61.1,final:null,skills:'悠々自適'},
+{no:16,name:'メジロマックイーン（うどん）',current:86.1,base:85,count:0,news:86.1,old:86.1,finish:4,seed:4338,initial:14.8,final:18.2,skills:''},
+{no:17,name:'エピファネイア（Neko長明）',current:126.9,base:91,count:1,news:133.3,old:139.9,finish:2,seed:6393,initial:10.0,final:18.2,skills:'連鎖反応'}
 ];
 const modes={current:{label:'現行',key:'current',cls:'current'},new:{label:'新仕様案',key:'news',cls:'new'},old:{label:'旧仕様',key:'old',cls:'old'}};
 const f1=n=>Number(n).toFixed(1), pct=(a,b)=>`${a>=b?'+':''}${((a/b-1)*100).toFixed(1)}%`;
@@ -93,11 +93,11 @@ document.querySelector('#total-new').textContent=f1(totals.new);
 document.querySelector('#total-old').textContent=f1(totals.old);
 document.querySelector('#delta-new').textContent=`現行比 ${pct(totals.new,totals.current)}`;
 document.querySelector('#delta-old').textContent=`現行比 ${pct(totals.old,totals.current)}`;
-document.querySelector('#score-table tbody').innerHTML=rows.map(r=>`<tr class="${r.drift?'changed':''}"><td>${r.no}</td><td>${r.name}${r.drift?' ※':''}<div class="num-note">${r.skills||'対象なし'}／土台 ${r.base}</div></td><td>${r.count}</td><td>${f1(r.stored)}</td><td class="current-c">${f1(r.current)}</td><td class="new-c">${f1(r.news)}</td><td class="new-c">${pct(r.news,r.current)}</td><td class="old-c">${f1(r.old)}</td><td class="old-c">${pct(r.old,r.current)}</td><td>${r.finish}</td></tr>`).join('');
+document.querySelector('#score-table tbody').innerHTML=rows.map(r=>`<tr><td>${r.no}</td><td>${r.name}<div class="num-note">${r.skills||'対象なし'}／土台 ${r.base}</div></td><td>${r.count}</td><td class="current-c">${f1(r.current)}</td><td class="new-c">${f1(r.news)}</td><td class="new-c">${pct(r.news,r.current)}</td><td class="old-c">${f1(r.old)}</td><td class="old-c">${pct(r.old,r.current)}</td><td>${r.finish}</td></tr>`).join('');
 const max=Math.max(...rows.map(r=>r.old));
 document.querySelector('#bars').innerHTML=rows.map(r=>`<div class="barrow"><div class="barname">${r.no}. ${r.name.replace(/（.*$/,'')}<br><span class="num-note">対象${r.count}</span></div><div class="tracks"><div class="track current" style="width:${r.current/max*82}%"><span>${f1(r.current)}</span></div><div class="track new" style="width:${r.news/max*82}%"><span>${f1(r.news)}</span></div><div class="track old" style="width:${r.old/max*82}%"><span>${f1(r.old)}</span></div></div></div>`).join('');
 function ranks(key){const sorted=[...rows].sort((a,b)=>b[key]-a[key]);return new Map(sorted.map((r,i)=>[r.no,i+1]));}
-function renderMarket(modeName){const m=modes[modeName],total=totals[modeName],rank=ranks(m.key);document.querySelector('#market-table tbody').innerHTML=rows.map(r=>{const scenarioSeed=80000*r[m.key]/total;const odds=64000/scenarioSeed;const actualRank=[...rows].sort((a,b)=>b.stored-a.stored).findIndex(x=>x.no===r.no)+1;const move=actualRank-rank.get(r.no);return `<tr><td>${r.no}</td><td>${r.name}</td><td>${r.count}</td><td>${r.seed.toLocaleString()}</td><td>${f1(r.initial)}</td><td class="${move>0?'rank-up':move<0?'rank-down':''}">${rank.get(r.no)}位 ${move?`（${move>0?'↑':'↓'}${Math.abs(move)}）`:''}</td><td>${Math.round(scenarioSeed).toLocaleString()}</td><td>${f1(odds)}</td><td>${r.final==null?'—':f1(r.final)}</td><td>${r.finish}</td></tr>`}).join('')}
+function renderMarket(modeName){const m=modes[modeName],total=totals[modeName],rank=ranks(m.key);document.querySelector('#market-table tbody').innerHTML=rows.map(r=>{const scenarioSeed=80000*r[m.key]/total;const odds=64000/scenarioSeed;const startRank=ranks('current').get(r.no);const move=startRank-rank.get(r.no);return `<tr><td>${r.no}</td><td>${r.name}</td><td>${r.count}</td><td>${r.seed.toLocaleString()}</td><td>${f1(r.initial)}</td><td class="${move>0?'rank-up':move<0?'rank-down':''}">${rank.get(r.no)}位 ${move?`（${move>0?'↑':'↓'}${Math.abs(move)}）`:''}</td><td>${Math.round(scenarioSeed).toLocaleString()}</td><td>${f1(odds)}</td><td>${r.final==null?'—':f1(r.final)}</td><td>${r.finish}</td></tr>`}).join('')}
 document.querySelectorAll('.controls button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.controls button').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderMarket(b.dataset.mode)}));
 function spearman(key){const rank=ranks(key),n=rows.length;const sum=rows.reduce((s,r)=>s+(rank.get(r.no)-r.finish)**2,0);return 1-6*sum/(n*(n*n-1))}
 document.querySelector('#correlation-cards').innerHTML=Object.entries(modes).map(([id,m])=>`<div class="card ${m.cls}"><div class="tag ${m.cls}-c">${m.label}</div><div class="big">${spearman(m.key).toFixed(3)}</div><div>評価点順位 × 着順の相関</div></div>`).join('');
