@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>金複合回復スキル 3仕様比較｜第1回メンバーシップ特別レース</title>
+<style>
+:root{--ink:#18202a;--muted:#607080;--line:#d9e0e7;--paper:#fff;--bg:#f3f5f7;--current:#2878b5;--new:#23855b;--old:#bd6a23;--warn:#fff4d7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 system-ui,-apple-system,"Segoe UI","Yu Gothic UI",sans-serif}main{max-width:1280px;margin:auto;padding:34px 20px 70px}h1{font-size:clamp(25px,4vw,38px);line-height:1.25;margin:0 0 8px}h2{margin:42px 0 14px;font-size:23px}h3{margin:24px 0 8px}.meta,.small{color:var(--muted);font-size:13px}.lead{font-size:17px;max-width:950px}.card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:22px 0}.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:17px;box-shadow:0 2px 8px #2030400a}.card.current{border-top:5px solid var(--current)}.card.new{border-top:5px solid var(--new)}.card.old{border-top:5px solid var(--old)}.card .tag{font-size:12px;font-weight:800}.card .big{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}.box{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;margin:14px 0}.notice{background:var(--warn);border-color:#e8cc88}.recommend{background:#eaf6ef;border-color:#aed5be}.scroll{overflow-x:auto;background:#fff;border:1px solid var(--line);border-radius:10px}table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}th,td{padding:9px 10px;border-bottom:1px solid #e7ebef;text-align:right;white-space:nowrap}th{position:sticky;top:0;background:#eaf0f5;font-size:12px;z-index:1}th:first-child,td:first-child{text-align:center}th:nth-child(2),td:nth-child(2){text-align:left}.current-c{color:var(--current);font-weight:750}.new-c{color:var(--new);font-weight:750}.old-c{color:var(--old);font-weight:750}.changed{background:#fff9e9}.rank-up{color:#087a42;font-weight:800}.rank-down{color:#b04b35}.legend{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;background:var(--current)}.legend .n i{background:var(--new)}.legend .o i{background:var(--old)}.bars{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 16px}.barrow{display:grid;grid-template-columns:205px 1fr;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid #edf0f3}.barname{font-size:13px}.tracks{position:relative;height:42px}.track{height:8px;border-radius:4px;position:absolute;left:0}.track.current{top:2px;background:var(--current)}.track.new{top:16px;background:var(--new)}.track.old{top:30px;background:var(--old)}.track span{position:absolute;left:calc(100% + 5px);top:-7px;font-size:11px;font-weight:800}.formula{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;background:#eef2f5;padding:3px 6px;border-radius:4px}.controls{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.controls button{border:1px solid #aeb9c3;background:#fff;border-radius:7px;padding:7px 12px;cursor:pointer}.controls button.on{background:#263849;color:#fff}.foot{margin-top:38px;border-top:1px solid var(--line);padding-top:15px}.num-note{font-size:12px;color:var(--muted)}
+@media(max-width:760px){.card-grid{grid-template-columns:1fr}.barrow{grid-template-columns:125px 1fr}.barname{font-size:11px}main{padding:22px 12px 50px}}
+@media print{body{background:#fff}main{max-width:none;padding:0}.controls{display:none}.scroll{overflow:visible}th{position:static}.card,.box,.scroll,.bars{break-inside:avoid;box-shadow:none}}
+</style>
+</head>
+<body><main>
+<h1>金複合回復スキル<br>旧仕様・現行・新仕様案の3比較</h1>
+<p class="meta">本番環境「第1回メンバーシップ特別レース」全17名｜本番データ取得・再計算日 2026-09-14</p>
+<p class="lead">同じ出走データを使い、金複合回復スキルだけを3通りに数え直した比較です。実効スタミナへの回復効果は、3仕様すべてで同じように反映されています。</p>
+
+<div class="card-grid">
+  <div class="card current"><div class="tag current-c">現行</div><h3>有効 +1</h3><div class="big" id="total-current">—</div><div>17名の評価点合計</div><p class="small">追加の金評価なし。実効スタミナ効果あり。</p></div>
+  <div class="card new"><div class="tag new-c">新仕様案</div><h3>有効 +1 ＋ 準金 +1</h3><div class="big" id="total-new">—</div><div>17名の評価点合計</div><p class="small" id="delta-new">—</p></div>
+  <div class="card old"><div class="tag old-c">旧仕様</div><h3>有効 +1 ＋ 金 +2</h3><div class="big" id="total-old">—</div><div>17名の評価点合計</div><p class="small" id="delta-old">—</p></div>
+</div>
+
+<div class="box recommend"><strong>比較上の読みどころ</strong><br>新仕様案は、対象1個の馬で現行比およそ +5.0〜5.7%、2個の馬で +10.0〜11.9%。旧仕様はそれぞれ約 +10.2〜11.8%、+20.9〜24.9%です。新仕様案は旧仕様の影響を概ね半分にしつつ、金複合回復を通常の白有効スキルより一段高く評価します。</div>
+
+<h2>3仕様の定義</h2>
+<div class="scroll"><table><thead><tr><th></th><th>仕様</th><th>有効スキル分</th><th>追加評価</th><th>スキル土台への合計</th><th>実効スタミナ</th></tr></thead><tbody>
+<tr><td>1</td><td class="current-c">現行</td><td>+1</td><td>なし</td><td>+1</td><td>回復率を反映</td></tr>
+<tr><td>2</td><td class="new-c">新仕様案</td><td>+1</td><td>準金 +1</td><td>+2</td><td>回復率を反映</td></tr>
+<tr><td>3</td><td class="old-c">旧仕様</td><td>+1</td><td>金 +2</td><td>+3</td><td>回復率を反映</td></tr>
+</tbody></table></div>
+<p class="small">再計算式：現行評価点 ×（変更後スキル土台 ÷ 現行スキル土台）<sup>4.5</sup>。回復による実効スタミナ部分は変更しないため、仕様間の差はスキル土台だけです。</p>
+
+<h2>全17名の評価点比較</h2>
+<p>「開催時保存」は実際のSeed作成に使われた評価点です。「現行再計算」以降は、現在本番に残っている入力を同条件で計算した値です。</p>
+<div class="scroll"><table id="score-table"><thead><tr><th>馬番</th><th>出走ウマ娘</th><th>対象数</th><th>開催時保存</th><th class="current-c">現行再計算</th><th class="new-c">新仕様案</th><th class="new-c">現行比</th><th class="old-c">旧仕様</th><th class="old-c">現行比</th><th>着順</th></tr></thead><tbody></tbody></table></div>
+
+<div class="box notice"><strong>4名も比較対象に含めています。</strong><br>メジロパーマー、セイウンスカイ、マヤノトップガン、キタサンブラックは、開催時保存値と現在入力による現行再計算値が一致しません。OCR落ちや「◎→○」修正など、登録後の入力修正による差として許容し、3仕様の比較からは除外していません。3仕様はすべて現在の同一入力を起点にしているため、仕様同士の差は比較できます。</div>
+
+<h2>評価点の広がり</h2>
+<div class="legend"><span><i></i>現行</span><span class="n"><i></i>新仕様案</span><span class="o"><i></i>旧仕様</span></div>
+<div class="bars" id="bars"></div>
+
+<h2>想定Seed・初期オッズへの影響</h2>
+<p>当日と同じ <strong>Seed総量 S=80,000、控除率 D=20%</strong> として、各仕様の評価点構成比から単勝Seedと開始時参考オッズを再計算しています。全員の点数が同じ割合で上がるわけではないため、対象スキルを持たない馬との相対順位が動きます。</p>
+<div class="controls"><button class="on" data-mode="current">現行</button><button data-mode="new">新仕様案</button><button data-mode="old">旧仕様</button></div>
+<div class="scroll"><table id="market-table"><thead><tr><th>馬番</th><th>出走ウマ娘</th><th>対象数</th><th>当日Seed</th><th>当日初期オッズ</th><th>選択仕様の順位</th><th>想定Seed</th><th>想定初期オッズ</th><th>確定オッズ</th><th>着順</th></tr></thead><tbody></tbody></table></div>
+<p class="num-note">確定オッズ「—」は単勝への実投票なし。想定値は単勝Seedだけの比較で、実投票による変動は含みません。</p>
+
+<h2>順位変動と着順相関（参考）</h2>
+<p>現在入力での3仕様を同じ条件で比較します。参考として、実際の開催時保存評価点と着順の相関は <strong>0.554</strong> でした。</p>
+<div class="card-grid" id="correlation-cards"></div>
+<div class="box"><strong>相関はゆるい参考です。</strong><br>一走の着順は展開やランダム性を強く含みます。また確定オッズは初期Seedの影響を受けるため、評価点から独立した正解データではありません。この欄は「極端な破綻がないか」を見る補助情報であり、3仕様の採否を着順だけで決めるものではありません。</div>
+
+<h2>今回の比較から判断できること</h2>
+<div class="box">
+<ol>
+<li>現行は金複合回復の回復価値を実効スタミナで評価し、スキル点では白有効1個分に抑えます。</li>
+<li>新仕様案は対象1個で約5%、2個で約10〜12%の上乗せとなり、「回復以外の複合効果」も中間的に評価できます。</li>
+<li>旧仕様は対象2個で約21〜25%上がり、評価点と初期人気を大きく動かします。</li>
+<li>したがって、次回に中間案を試すなら、新仕様案は比較しやすい幅です。ただし複数開催で固定運用し、対象数別に結果を蓄積する必要があります。</li>
+</ol>
+</div>
+
+<p class="foot small">データ源：本番D1の event / horses / score_input / strategic_skills、および第1回イベント分析ログ。データベースへの変更は行っていません。</p>
+</main>
+<script>
+const rows=[
+{no:1,name:'ジェンティルドンナ（つゆちゃん）',stored:105,current:105,base:87,count:1,news:110.6,old:116.3,finish:12,seed:5290,initial:12.1,final:null,skills:'悠々自適'},
+{no:2,name:'メジロパーマー（Neko長明）',stored:82.6,current:66.3,base:80,count:1,news:70.1,old:74.1,finish:8,seed:4161,initial:15.4,final:null,skills:'連鎖反応',drift:true},
+{no:3,name:'シュヴァルグラン（Neko長明）',stored:143.9,current:143.9,base:96,count:0,news:143.9,old:143.9,finish:7,seed:7249,initial:8.8,final:18.2,skills:''},
+{no:4,name:'ナリタトップロード（Raiko）',stored:69.1,current:69.1,base:81,count:1,news:73.0,old:77.1,finish:16,seed:3481,initial:18.4,final:null,skills:'連鎖反応'},
+{no:5,name:'オグリキャップ（GEDO）',stored:48.3,current:48.3,base:90,count:1,news:50.7,old:53.3,finish:9,seed:2433,initial:26.3,final:36.3,skills:'連鎖反応'},
+{no:6,name:'ウインバリアシオン（アイビー）',stored:114.5,current:114.5,base:90,count:1,news:120.4,old:126.4,finish:10,seed:5768,initial:11.1,final:4.0,skills:'連鎖反応'},
+{no:7,name:'セイウンスカイ（dai）',stored:77.9,current:62.6,base:80,count:2,news:69.9,old:77.9,finish:11,seed:3924,initial:16.3,final:null,skills:'連鎖反応・悠々自適',drift:true},
+{no:8,name:'ステイゴールド（アイビー）',stored:132.9,current:132.9,base:93,count:2,news:146.2,old:160.6,finish:6,seed:6695,initial:9.6,final:12.1,skills:'連鎖反応・悠々自適'},
+{no:9,name:'ナリタブライアン（satie）',stored:119.6,current:119.6,base:90,count:1,news:125.7,old:132.1,finish:14,seed:6025,initial:10.6,final:30.3,skills:'連鎖反応'},
+{no:10,name:'マヤノトップガン（GEDO）',stored:143.5,current:117.8,base:89,count:1,news:123.8,old:130.2,finish:1,seed:7229,initial:8.9,final:2.4,skills:'連鎖反応',drift:true},
+{no:11,name:'オルフェーヴル（Raiko）',stored:108.3,current:108.3,base:91,count:1,news:113.8,old:119.4,finish:5,seed:5456,initial:11.7,final:181.6,skills:'連鎖反応'},
+{no:12,name:'キタサンブラック（GEDO）',stored:87.7,current:70.2,base:79,count:2,news:78.6,old:87.7,finish:3,seed:4418,initial:14.5,final:3.6,skills:'連鎖反応・悠々自適',drift:true},
+{no:13,name:'ビワハヤヒデ（b-men）',stored:120.4,current:120.4,base:92,count:1,news:126.4,old:132.7,finish:13,seed:6065,initial:10.6,final:null,skills:'連鎖反応'},
+{no:14,name:'マンハッタンカフェ（Raiko）',stored:0.5,current:0.5,base:32,count:0,news:0.5,old:0.5,finish:17,seed:25,initial:2540.8,final:null,skills:''},
+{no:15,name:'ゼンノロブロイ（陸カヤック）',stored:20.8,current:20.8,base:88,count:1,news:21.9,old:23.0,finish:15,seed:1048,initial:61.1,final:null,skills:'悠々自適'},
+{no:16,name:'メジロマックイーン（うどん）',stored:86.1,current:86.1,base:85,count:0,news:86.1,old:86.1,finish:4,seed:4338,initial:14.8,final:18.2,skills:''},
+{no:17,name:'エピファネイア（Neko長明）',stored:126.9,current:126.9,base:91,count:1,news:133.3,old:139.9,finish:2,seed:6393,initial:10.0,final:18.2,skills:'連鎖反応'}
+];
+const modes={current:{label:'現行',key:'current',cls:'current'},new:{label:'新仕様案',key:'news',cls:'new'},old:{label:'旧仕様',key:'old',cls:'old'}};
+const f1=n=>Number(n).toFixed(1), pct=(a,b)=>`${a>=b?'+':''}${((a/b-1)*100).toFixed(1)}%`;
+const totals={current:rows.reduce((s,r)=>s+r.current,0),new:rows.reduce((s,r)=>s+r.news,0),old:rows.reduce((s,r)=>s+r.old,0)};
+document.querySelector('#total-current').textContent=f1(totals.current);
+document.querySelector('#total-new').textContent=f1(totals.new);
+document.querySelector('#total-old').textContent=f1(totals.old);
+document.querySelector('#delta-new').textContent=`現行比 ${pct(totals.new,totals.current)}`;
+document.querySelector('#delta-old').textContent=`現行比 ${pct(totals.old,totals.current)}`;
+document.querySelector('#score-table tbody').innerHTML=rows.map(r=>`<tr class="${r.drift?'changed':''}"><td>${r.no}</td><td>${r.name}${r.drift?' ※':''}<div class="num-note">${r.skills||'対象なし'}／土台 ${r.base}</div></td><td>${r.count}</td><td>${f1(r.stored)}</td><td class="current-c">${f1(r.current)}</td><td class="new-c">${f1(r.news)}</td><td class="new-c">${pct(r.news,r.current)}</td><td class="old-c">${f1(r.old)}</td><td class="old-c">${pct(r.old,r.current)}</td><td>${r.finish}</td></tr>`).join('');
+const max=Math.max(...rows.map(r=>r.old));
+document.querySelector('#bars').innerHTML=rows.map(r=>`<div class="barrow"><div class="barname">${r.no}. ${r.name.replace(/（.*$/,'')}<br><span class="num-note">対象${r.count}</span></div><div class="tracks"><div class="track current" style="width:${r.current/max*82}%"><span>${f1(r.current)}</span></div><div class="track new" style="width:${r.news/max*82}%"><span>${f1(r.news)}</span></div><div class="track old" style="width:${r.old/max*82}%"><span>${f1(r.old)}</span></div></div></div>`).join('');
+function ranks(key){const sorted=[...rows].sort((a,b)=>b[key]-a[key]);return new Map(sorted.map((r,i)=>[r.no,i+1]));}
+function renderMarket(modeName){const m=modes[modeName],total=totals[modeName],rank=ranks(m.key);document.querySelector('#market-table tbody').innerHTML=rows.map(r=>{const scenarioSeed=80000*r[m.key]/total;const odds=64000/scenarioSeed;const actualRank=[...rows].sort((a,b)=>b.stored-a.stored).findIndex(x=>x.no===r.no)+1;const move=actualRank-rank.get(r.no);return `<tr><td>${r.no}</td><td>${r.name}</td><td>${r.count}</td><td>${r.seed.toLocaleString()}</td><td>${f1(r.initial)}</td><td class="${move>0?'rank-up':move<0?'rank-down':''}">${rank.get(r.no)}位 ${move?`（${move>0?'↑':'↓'}${Math.abs(move)}）`:''}</td><td>${Math.round(scenarioSeed).toLocaleString()}</td><td>${f1(odds)}</td><td>${r.final==null?'—':f1(r.final)}</td><td>${r.finish}</td></tr>`}).join('')}
+document.querySelectorAll('.controls button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.controls button').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderMarket(b.dataset.mode)}));
+function spearman(key){const rank=ranks(key),n=rows.length;const sum=rows.reduce((s,r)=>s+(rank.get(r.no)-r.finish)**2,0);return 1-6*sum/(n*(n*n-1))}
+document.querySelector('#correlation-cards').innerHTML=Object.entries(modes).map(([id,m])=>`<div class="card ${m.cls}"><div class="tag ${m.cls}-c">${m.label}</div><div class="big">${spearman(m.key).toFixed(3)}</div><div>評価点順位 × 着順の相関</div></div>`).join('');
+renderMarket('current');
+</script>
+</body></html>
