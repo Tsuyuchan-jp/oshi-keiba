@@ -1,5 +1,33 @@
 # 本番リリース記録
 
+## v0.8.6 — 2026-09-14 22:31 JST
+
+- リリース対象コミット: `8b99ffe`（場の会計表示を実装クローズし docs と版を 0.8.6 にする）
+- 本番URL: `https://oshi-keiba.tsuyuchan-jp.workers.dev/`
+- リリース前Worker ID: `3cc6273c-16f5-406d-ba54-4f686e7bf45f`
+- リリース後Worker ID: `8da10b69-74b6-4e2d-8e04-fc1f74fe004b`
+- リリース前D1ブックマーク: `00000823-00000000-000050e6-2ffc878614a23c2720aabd8700c39161`
+- 適用migration: なし（本番に未適用migrationなし）
+- Secrets: 必須名（`ADMIN_PASSWORD` / `ADMIN_USER_ID` / `MEMBER_PASSWORD` / `SESSION_SECRET`）の設定を確認
+- R2: `oshi-keiba-shots` 既存
+
+### 公開前検証
+
+- 型検査: 成功
+- Nodeテスト: 193件成功
+- Workerテスト: 107件成功
+- Playwright E2E: 10件成功（初回はPlaywright Chromium未導入で失敗したため `npx playwright install chromium` のあと再実行）
+- Wrangler dry-run: 成功。D1 `oshi-keiba`、R2 `oshi-keiba-shots`、本番用vars `ALLOW_DEMO_RESET=0` / `ALLOW_ADMIN_UNDO=0` を確認
+
+### 公開後確認
+
+- `/login`、`/`、`/admin/login`: HTTP 200
+- 未認証の `/bet`: `/login` へ HTTP 303
+- `/login` で `v0.8.6` の表示を確認
+- `wrangler deployments list` で新Worker IDが100%配信されていることを確認
+
+今回のリリースではWorkerコードだけを更新し、D1とR2のデータ変更は行っていない。障害時はリリース前Worker IDへ戻し、D1データ障害が確認された場合に限り上記ブックマークを使う。管理台帳の有効投票・純還元率は、ログイン後に目視確認する。
+
 ## v0.8.5 緊急修正 — 2026-09-13 20:42 JST
 
 - リリース対象コミット: `1e10c56`（緊急対応としてUndo機能を停止する）
