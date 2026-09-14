@@ -1,6 +1,6 @@
 /**
- * 第1回の保存済み評価点を、複合回復金スキルを金+2へ戻した場合と比較する。
- * ローカルD1のスナップショットを読む分析用スクリプト。DBは変更しない。
+ * 保存済み評価点を、複合回復金スキルを金+2へ戻した場合と比較する。
+ * --remote を付けたときだけ本番D1を読む。DBは変更しない。
  */
 import { execSync } from "node:child_process";
 import { parseHorseScoreInput } from "../src/lib/horseScoreInput.ts";
@@ -9,14 +9,19 @@ import { isCompositeRecoveryGold } from "../src/lib/score.ts";
 import { parseScoreSetup } from "../src/lib/scoreSetup.ts";
 import type { StrategicSkillRow } from "../src/lib/strategicSkills.ts";
 
-const EVENT_ID = "8a5fad1d-eeb9-42e9-aedb-c7a452adbfff";
+const DEFAULT_EVENT_ID = "276b3f48-338c-4add-9027-03f87a6f7d00";
+const args = process.argv.slice(2);
+const remote = args.includes("--remote");
+const eventArg = args.find((arg) => arg.startsWith("--event="));
+const EVENT_ID = eventArg?.slice("--event=".length) || DEFAULT_EVENT_ID;
 type QueryResult<T> = { results: T[] };
 type HorseRow = { id: string; sort_order: number; name: string; strength: number; score_input: string };
 type EventRow = { score_setup: string };
 type StrategicRow = StrategicSkillRow;
 
 function query<T>(sql: string): T[] {
-  const raw = execSync("npx.cmd wrangler d1 execute oshi-keiba --local --command \"" + sql.replace(/\"/g, "\\\"") + "\"", { cwd: process.cwd(), encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  const location = remote ? "--remote" : "--local";
+  const raw = execSync("npx.cmd wrangler d1 execute oshi-keiba " + location + " --command \"" + sql.replace(/\"/g, "\\\"") + "\"", { cwd: process.cwd(), encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
   const begin = raw.indexOf("[\n  {");
   const end = raw.indexOf("\n]\n", begin);
   if (begin < 0 || end < 0) throw new Error("D1応答のJSONを読めませんでした");
@@ -50,4 +55,4 @@ const rows = horses.map((horse) => {
     changePct: Math.round(((restored / scored.breakdown.score) - 1) * 1000) / 10,
   };
 });
-console.log(JSON.stringify({ n, total: rows.length, affected: rows.filter((r) => r.count > 0).length, totalSkills: rows.reduce((sum, r) => sum + r.count, 0), rows }, null, 2));
+console.log(JSON.stringify({ eventId: EVENT_ID, source: remote ? "remote" : "local", n, total: rows.length, affected: rows.filter((r) => r.count > 0).length, totalSkills: rows.reduce((sum, r) => sum + r.count, 0), rows }, null, 2));
