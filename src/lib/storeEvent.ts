@@ -113,6 +113,7 @@ export async function maybeAutoClose(
     event.voting_closes_at != null &&
     now >= event.voting_closes_at
   ) {
+    await captureAnalysisSnapshotSafely(db, event.id, "pre_close", now);
     await db
       .prepare(
         "UPDATE events SET status = 'closed', closed_at = ? WHERE id = ? AND status = 'voting'",

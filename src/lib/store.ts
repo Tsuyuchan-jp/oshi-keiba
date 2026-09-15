@@ -52,7 +52,6 @@ export { loadTreasuryDashboard } from "./storeTreasury";
 export {
   captureAnalysisSnapshot,
   captureAnalysisSnapshotSafely,
-  captureCurrentIntervalSnapshot,
   listAnalysisEvents,
   listAnalysisSnapshots,
   listAnalysisFailures,

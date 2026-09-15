@@ -54,6 +54,12 @@ describe("開催ライフサイクルのHTTP結合", () => {
     expect(snapshots.results[1]).toEqual({ cause: "bet", bettor_count: 1, active_bet_count: 1 });
     expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM analysis_snapshot_odds").first<{ n: number }>())?.n).toBeGreaterThan(0);
 
+    expect(redirectMessage(await postForm("/admin/close", {}, adminCookie)).error).toBe(false);
+    const closing = await env.DB.prepare(
+      "SELECT cause FROM analysis_snapshots WHERE event_id = ? ORDER BY id",
+    ).bind(eventId).all<{ cause: string }>();
+    expect(closing.results.map((row) => row.cause)).toEqual(["voting_open", "bet", "pre_close", "close"]);
+
     const page = await workerFetch(`/admin/analysis?event=${eventId}`, {}, adminCookie);
     expect(page.status).toBe(200);
     expect(await page.text()).toContain("CSV一式をダウンロード");
@@ -279,6 +285,10 @@ describe("開催ライフサイクルのHTTP結合", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ status: "closed" });
     expect((await eventState(eventId)).status).toBe("closed");
+    const snapshots = await env.DB.prepare(
+      "SELECT cause FROM analysis_snapshots WHERE event_id = ? ORDER BY id",
+    ).bind(eventId).all<{ cause: string }>();
+    expect(snapshots.results.map((row) => row.cause)).toEqual(["voting_open", "pre_close", "close"]);
   });
 
   test("出走上限18頭では開始でき、19頭目の登録はDBを増やさず拒否する", async () => {

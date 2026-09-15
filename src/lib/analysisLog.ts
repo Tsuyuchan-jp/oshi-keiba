@@ -7,7 +7,7 @@ import { getEventById } from "./storeEvent";
 import { listActiveBets, listHorses } from "./storeRead";
 import type { Board, EventRow, HorseRow } from "./storeTypes";
 
-export type AnalysisCause = "voting_open" | "bet" | "redo" | "scratch" | "interval" | "close";
+export type AnalysisCause = "voting_open" | "bet" | "redo" | "scratch" | "pre_close" | "close";
 
 /** 式の意味を変えるときだけ上げる。値だけの変更では上げない。 */
 export const ANALYSIS_FORMULA_VERSION = "odds-v2";
@@ -71,7 +71,7 @@ export function analysisCauseLabel(cause: AnalysisCause): string {
     bet: "投票確定",
     redo: "やり直し",
     scratch: "出走取消",
-    interval: "5分記録",
+    pre_close: "締切直前",
     close: "締切",
   })[cause];
 }
@@ -201,12 +201,6 @@ export async function captureAnalysisSnapshotSafely(
     }
     return null;
   }
-}
-
-/** Cron では投票中だけを5分間隔で記録する。 */
-export async function captureCurrentIntervalSnapshot(db: D1Database, now = Date.now()): Promise<void> {
-  const event = await db.prepare("SELECT id FROM events WHERE is_current = 1 LIMIT 1").first<{ id: string }>();
-  if (event) await captureAnalysisSnapshotSafely(db, event.id, "interval", now);
 }
 
 export async function listAnalysisEvents(db: D1Database): Promise<AnalysisEventOption[]> {

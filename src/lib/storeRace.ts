@@ -102,6 +102,7 @@ export async function openVoting(
 export async function forceClose(db: D1Database, event: EventRow): Promise<void> {
   if (event.status !== "voting") throw new Error("締切できるのは投票中だけです");
   const now = Date.now();
+  await captureAnalysisSnapshotSafely(db, event.id, "pre_close", now);
   await db
     .prepare(
       "UPDATE events SET status = 'closed', closed_at = ? WHERE id = ?",

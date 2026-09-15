@@ -1393,7 +1393,7 @@ export function adminAnalysisPage(opts: {
         <div class="kpi"><span class="k">現在の設定 S / E / D</span><span class="v analysis-param">${formatPt(event.seed_pool_s)} / ${formatPt(event.pull_e)} / ${Math.round(event.takeout_d * 100)}%</span></div>
         <div class="kpi${failures.length ? " analysis-failure-kpi" : ""}"><span class="k">ログ保存失敗</span><span class="v">${failures.length}</span></div>
       </div>
-      <p class="note analysis-note">投票開始時、投票・やり直し・出走取消時、5分ごと、締切時に自動記録します。CSVには個別の投票者名・残高を含めません。</p>
+      <p class="note analysis-note">投票開始時、投票・やり直し・出走取消時、締切直前、締切後に自動記録します。CSVには個別の投票者名・残高を含めません。</p>
       ${failures.length ? `<p class="analysis-failure-note">ログ保存の失敗を ${failures.length} 件記録しています。投票自体は成立しています。最新: ${escapeHtml(toJstInput(failures[0]!.occurred_at).replace("T", " "))} JST（${escapeHtml(analysisCauseLabel(failures[0]!.cause))}）</p>` : ""}
     </section>
     <section class="work analysis-list">

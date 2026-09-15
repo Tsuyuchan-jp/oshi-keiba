@@ -34,7 +34,6 @@ import {
   updateParams,
   loadBoard,
   eventScoreSetup,
-  captureCurrentIntervalSnapshot,
   savePreRaceAssessments,
 } from "./lib/store";
 import { isShotKeyReferenced, listAllHorseAssetKeys, listPendingShotDeletes, queueShotDeletes, removePendingShotDelete } from "./lib/shotCleanup";
@@ -739,8 +738,5 @@ export default {
         500,
       );
     }
-  },
-  async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-    ctx.waitUntil(captureCurrentIntervalSnapshot(env.DB));
   },
 };
