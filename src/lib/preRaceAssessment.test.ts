@@ -15,8 +15,8 @@ import { createMemoryD1 } from "./testD1";
 async function fixture() {
   const db = createMemoryD1();
   const event = await ensureEvent(db);
-  await addHorse(db, event, "テスト一号", "A", { strength: 10, recordUndo: false });
-  await addHorse(db, event, "テスト二号", "B", { strength: 9, recordUndo: false });
+  await addHorse(db, event, "テスト一号", "A", { strength: 10 });
+  await addHorse(db, event, "テスト二号", "B", { strength: 9 });
   const horses = await listHorses(db, event.id);
   return { db, event, horses };
 }

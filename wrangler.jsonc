@@ -9,10 +9,9 @@
     "required": ["ADMIN_PASSWORD", "ADMIN_USER_ID", "MEMBER_PASSWORD", "SESSION_SECRET"]
   },
   // secrets.required があると .dev.vars は上の4項目だけ読む。
-  // Undo／デモ初期化は vars（本番は 0）。ローカルは npm run dev の --var で 1 にする。
+  // デモ初期化は vars（本番は 0）。ローカルは npm run dev の --var で 1 にする。
   "vars": {
-    "ALLOW_DEMO_RESET": "0",
-    "ALLOW_ADMIN_UNDO": "0"
+    "ALLOW_DEMO_RESET": "0"
   },
   // 認証4項目のローカル値は Git 管理しない .dev.vars に置く。
   "workers_dev": true,

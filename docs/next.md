@@ -6,7 +6,6 @@
 
 - スキルカタログを umamusume-data の棚と接続する。先に umamusume-data 側で棚を作ってから、当アプリで接続作業を行う
 - 払い戻し後のメンバー向けの表示を改善
-- Undo機能の取り扱いについて検討
 - オッズタブに実投票のみのオッズを表示
 - 分析ログの5分毎記録の必要性を検討
 - 今回の分析ログの成形、次回に向けての改善案を検討
@@ -45,7 +44,7 @@
 
 - 場の会計を実装。結果公開時に `全投票額 − 全払戻・返還額` を管理者固定アカウントへ一度だけ移し、台帳に管理スペ残高・総発行スペ・未精算プール・全開催の精算履歴を表示。第1回を含む公開済み開催は migration で遡及精算する。PC・モバイルともページ全体を固定し、枠内スクロールを自動テストで確認 — [odds.md](specifications/odds.md)
 
-- 分析ログを実装クローズ（投票復旧・Undoとのログ連動を含め実機確認OK）。投票開始・投票・やり直し・取消・5分ごと・締切で板を保存し、管理の「分析ログ」からCSV一式（snapshots / odds / horses）をZIP出力。`formula_version=odds-v2` / `schema_version=analysis-log-v1` を保存し、ログ保存失敗は投票を妨げず管理画面へ件数を表示する — [analysis-log.md](specifications/analysis-log.md)
+- 分析ログを実装クローズ（投票復旧を含め実機確認OK）。投票開始・投票・やり直し・取消・5分ごと・締切で板を保存し、管理の「分析ログ」からCSV一式（snapshots / odds / horses）をZIP出力。`formula_version=odds-v2` / `schema_version=analysis-log-v1` を保存し、ログ保存失敗は投票を妨げず管理画面へ件数を表示する — [analysis-log.md](specifications/analysis-log.md)
 
 - パドックのスマホ表示を画面高へ適応（最大18頭を横幅維持で収める）。詳細カードは閉じた状態からタップ／上スワイプで開き、開いた状態から下スワイプで閉じる。実機確認OK — [playbook.md](operations/playbook.md)
 
@@ -56,7 +55,7 @@
 - ウマ柱第1段をクローズ（ローカル実機確認OK。プレビュー・PNG/WebP。枠色は見た目専用。ノイズは不透明度 0.1。評価点・SP点数の色箱は PNG を正）— [umabashira.md](features/umabashira.md)
 - ウマ柱 PNG の開催名折り返し・右列の狭まり・外枠切れを修正（実機確認OK。ウマ番・脚質の字下げは 0.06em）— [umabashira.md](features/umabashira.md)
 - ウマ柱を出走登録中（setup）でも参考オッズを出す（実機確認OK。現在の紙面を正とする）— [umabashira.md](features/umabashira.md)
-- ローカル進行タブの Undo 復旧列を `npm run dev` の vars で再表示（実機確認OK。`secrets.required` が `.dev.vars` のフラグを落としていた）
+- 汎用Undoを廃止。全DBスナップショット方式は分析ログ増加でD1の1行上限を超えるため削除し、着順は公開前に再保存して訂正する。`admin_undo` テーブルと過去のmigrationは互換性のため残す
 - OCRが配列JSONを返したときの空確認画面を修正（実機確認OK。登録時の `r2_pending_deletions` 未適用はローカル migration で解消）— [ocr.md](specifications/ocr.md)
 - ウマ柱タブを一旦の正とした（実機確認OK。見た目の正は本番 `/admin/umabashira`。モック上段は控え）— [umabashira.md](features/umabashira.md)
 - ウマ柱の管理タブ（モック上段移植・差し込み・プレビュー・PNG/WebP。ナビは開催設定の下）— [umabashira.md](features/umabashira.md)

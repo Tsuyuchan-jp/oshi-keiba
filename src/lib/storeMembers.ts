@@ -3,7 +3,6 @@
  */
 
 import { newId } from "./auth";
-import { captureAdminUndo } from "./undo";
 import { getUser } from "./storeRead";
 import type { EventRow, UserRow } from "./storeTypes";
 
@@ -122,7 +121,6 @@ export async function deleteMember(
   if (!user || user.role !== "member" || user.deleted_at != null) {
     throw new Error("削除できるメンバーが見つかりません");
   }
-  await captureAdminUndo(db, `メンバー削除（${user.display_name}）`);
   await db
     .prepare("UPDATE users SET deleted_at = ? WHERE id = ? AND role = 'member' AND deleted_at IS NULL")
     .bind(Date.now(), userId)

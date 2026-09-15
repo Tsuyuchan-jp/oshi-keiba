@@ -15,7 +15,6 @@ import {
   payoutAmount,
   specialPayoutAmount,
 } from "./odds";
-import { captureAdminUndo, prepareConditionalAdminUndo } from "./undo";
 import { buildBoard } from "./storeBoard";
 import {
   getUser,
@@ -87,7 +86,6 @@ export async function openVoting(
   const horses = await listHorses(db, event.id);
   const problems = votingStartProblems(event, horses);
   if (problems.length) throw new Error(`投票開始できません: ${problems.join(" / ")}`);
-  await captureAdminUndo(db, "投票開始");
   const now = Date.now();
   const assessmentSnapshot = await preRaceAssessmentSnapshotStatement(db, event.id, now);
   await db.batch([
@@ -103,7 +101,6 @@ export async function openVoting(
 
 export async function forceClose(db: D1Database, event: EventRow): Promise<void> {
   if (event.status !== "voting") throw new Error("締切できるのは投票中だけです");
-  await captureAdminUndo(db, "強制締切");
   const now = Date.now();
   await db
     .prepare(
@@ -318,7 +315,6 @@ export async function scratchHorse(
   if (!horse) throw new Error("出走が見つかりません");
   const labeled = hydrateHorseRow(horse);
   if (labeled.scratched) return 0;
-  await captureAdminUndo(db, `出走取消（${labeled.name}）`);
   const { results } = await db
     .prepare("SELECT * FROM bets WHERE event_id = ? AND refunded = 0")
     .bind(event.id)
@@ -377,7 +373,6 @@ export async function savePlaces(
     if (seenPlace.has(p.place)) throw new Error("着順が重複しています");
     seenPlace.add(p.place);
   }
-  await captureAdminUndo(db, "着順を保存");
   const stmts = places.map((p) =>
     db
       .prepare("UPDATE horses SET finish_place = ? WHERE id = ?")
@@ -417,9 +412,7 @@ export async function publishResults(
   const board = buildBoard(current, horses, bets);
   const now = Date.now();
   const payoutGuard = "EXISTS (SELECT 1 FROM events WHERE id = ? AND status = 'closed' AND payouts_applied = 0)";
-  const stmts: D1PreparedStatement[] = [
-    await prepareConditionalAdminUndo(db, "結果公開・払戻", current.id, "closed"),
-  ];
+  const stmts: D1PreparedStatement[] = [];
 
   for (const pool of board.pools) {
     const kindBets = bets.filter((b) => b.kind === pool.kind);
@@ -519,7 +512,6 @@ export async function revertVotingToSetup(
   if (event.status !== "voting") {
     throw new Error("戻せるのは投票中だけです");
   }
-  await captureAdminUndo(db, "投票を取り消して登録に戻す");
   const now = Date.now();
   const { results: betRows } = await db
     .prepare("SELECT * FROM bets WHERE event_id = ? AND refunded = 0")

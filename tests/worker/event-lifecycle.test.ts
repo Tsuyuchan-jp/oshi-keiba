@@ -85,7 +85,7 @@ describe("開催ライフサイクルのHTTP結合", () => {
     }
   });
 
-  test("投票を登録へ戻しても、緊急停止中のUndoデータは作成しない", async () => {
+  test("投票を登録へ戻すと、分析ログも削除する", async () => {
     const { cookie: adminCookie } = await loginAdmin();
     const { eventId, horseIds } = await seedReadyRace();
     expect(redirectMessage(await openRace(adminCookie)).error).toBe(false);
@@ -102,7 +102,6 @@ describe("開催ライフサイクルのHTTP結合", () => {
     expect((await eventState(eventId)).status).toBe("setup");
     expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM analysis_snapshots WHERE event_id = ?").bind(eventId).first<{ n: number }>())?.n).toBe(0);
     expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM analysis_log_failures WHERE event_id = ?").bind(eventId).first<{ n: number }>())?.n).toBe(0);
-    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM admin_undo").first<{ n: number }>())?.n).toBe(0);
   });
 
   test("出走登録から全5賭式の購入・締切・着順・公開・次開催まで進める", async () => {

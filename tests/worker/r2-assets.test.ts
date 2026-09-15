@@ -122,7 +122,7 @@ describe("R2画像のHTTP結合", () => {
     expect((await env.SHOTS.list()).objects).toEqual([]);
   });
 
-  test("画像差し替えは旧画像をUndo猶予中だけ保持し、次の管理操作で削除する", async () => {
+  test("画像差し替えは旧画像を削除予定にし、次の管理操作で削除する", async () => {
     const { cookie: adminCookie } = await loginAdmin();
     const { eventId } = await seedReadyRace({ horseCount: 0 });
     const before = await createHorseWithAssets(eventId, adminCookie);

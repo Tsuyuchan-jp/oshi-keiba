@@ -4,7 +4,6 @@
 
 import { newId } from "./auth";
 import { composeHorseName } from "./horseName";
-import { captureAdminUndo } from "./undo";
 import { listHorses } from "./storeRead";
 import {
   MAX_LIVE_HORSES,
@@ -39,7 +38,6 @@ export async function addHorse(
 ): Promise<string> {
   const o: AddHorseOpts =
     typeof opts === "number" ? { strength: opts } : opts;
-  const recordUndo = o.recordUndo !== false;
   if (event.status !== "setup") {
     throw new Error("名簿は投票開始後は閉じます（飛び入り禁止）");
   }
@@ -58,7 +56,6 @@ export async function addHorse(
   if (live >= MAX_LIVE_HORSES) {
     throw new Error(`頭数は ${MAX_LIVE_HORSES} まで`);
   }
-  if (recordUndo) await captureAdminUndo(db, `出走を追加（${combined}）`);
   const source = o.seedSource === "auto" ? "auto" : "manual";
   const id = newId();
   await db
@@ -95,7 +92,6 @@ export async function updateHorse(
 ): Promise<void> {
   const o: UpdateHorseOpts =
     typeof opts === "number" ? { strength: opts, keepScoreInput: true } : opts;
-  const recordUndo = o.recordUndo !== false;
   if (event.status !== "setup") {
     throw new Error("セットアップ中だけ修正できます");
   }
@@ -110,7 +106,6 @@ export async function updateHorse(
     .bind(horseId, event.id)
     .first();
   if (!horse) throw new Error("出走が見つかりません");
-  if (recordUndo) await captureAdminUndo(db, `出走を修正（${combined}）`);
   if (o.keepScoreInput) {
     await db
       .prepare(
@@ -158,7 +153,6 @@ export async function updateHorseNumbers(
   if (new Set(values).size !== values.length) {
     throw new Error("ウマ番が重複しています");
   }
-  await captureAdminUndo(db, "ウマ番を編集");
   await db.batch(
     numbers.map((entry) =>
       db.prepare("UPDATE horses SET sort_order = ? WHERE id = ? AND event_id = ?")
@@ -181,7 +175,6 @@ export async function dropHorse(
     .bind(horseId, event.id)
     .first<{ name: string }>();
   if (!row) throw new Error("出走が見つかりません");
-  await captureAdminUndo(db, `名簿から外す（${row.name}）`);
   await db
     .prepare("DELETE FROM horses WHERE id = ? AND event_id = ?")
     .bind(horseId, event.id)
@@ -238,6 +231,5 @@ export async function clearHorses(db: D1Database, event: EventRow): Promise<void
   if (event.status !== "setup") {
     throw new Error("出走を空にできるのは出走登録中だけです");
   }
-  await captureAdminUndo(db, "出走を空にする");
   await db.prepare("DELETE FROM horses WHERE event_id = ?").bind(event.id).run();
 }

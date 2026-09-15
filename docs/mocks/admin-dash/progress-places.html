@@ -437,10 +437,6 @@
         t: "投票を取り消して登録に戻す",
         p: "投票を止め、出走登録に戻します。この開催の票は全額戻り、配ったスペも戻します。",
       },
-      undo: {
-        t: "直前の操作を戻す",
-        p: "戻す操作: レースイベント設定を保存。出走・票・残高・払戻がその直前に戻ります。この Undo 自体は戻せません。",
-      },
       member: {
         t: "メンバー削除",
         p: "表示名を名簿から消します。票と残高の扱いは本番どおり確認します。",
@@ -462,9 +458,7 @@
           <button type="button" class="danger" data-esc="revert"${voting ? "" : " disabled"}>投票を取り消して登録に戻す</button>
         </div>
         <div>
-          <p class="esc-k">復旧</p>
-          <button type="button" class="danger" data-esc="undo">操作を戻す</button>
-          <p class="esc-note">戻せる操作: レースイベント設定を保存（10:12 JST）</p>
+          <p class="esc-k">ローカル</p>
           <button type="button" data-esc="member">メンバー削除</button>
           <button type="button" data-esc="demo">デモ初期化（ローカル）</button>
         </div>

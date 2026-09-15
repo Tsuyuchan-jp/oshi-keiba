@@ -42,7 +42,6 @@ const ADMIN_POST_PATHS = [
   "/admin/places",
   "/admin/publish",
   "/admin/member-delete",
-  "/admin/undo",
   "/admin/reset",
   "/admin/api/strategic-skills",
   "/admin/api/strategic-skills/dismiss",

@@ -6,7 +6,6 @@ import { staminaRequirementsForStyle } from "./score";
 import { scoreFromHorse } from "./scoreFromHorse";
 import { eventScoreSetup, numberByHorseId } from "./store";
 import type { Board, EventRow, HorseBoard, UserRow, BetRow, TreasuryDashboard } from "./store";
-import type { UndoMeta } from "./undo";
 import { effectiveIdsFromScoreSetup } from "./scoreSetup";
 import greenJson from "../data/green-skills.json" with { type: "json" };
 import {
@@ -107,7 +106,7 @@ function bindDlgScript(): string {
       });
     }
   };
-  ["reset","undo","clear-horses","discard-event","revert-voting","scratch","drop-horse"].forEach((id) => {
+  ["reset","clear-horses","discard-event","revert-voting","scratch","drop-horse"].forEach((id) => {
     bindDlg(document.getElementById(id + "-modal"), document.getElementById(id + "-open"), document.getElementById(id + "-cancel"));
   });
   const rescoreDlg = document.getElementById("rescore-preview-modal");
@@ -153,18 +152,10 @@ function bindDlgScript(): string {
 }
 
 function escapeDialogs(opts: {
-  undoMeta: UndoMeta | null;
-  allowUndo: boolean;
   allowDemo: boolean;
   reauth: string;
 }): string {
-  const u = opts.undoMeta;
-  const undoLabel = u ? escapeHtml(u.action_label) : "—";
-  const undoWhen = u
-    ? escapeHtml(toJstInput(u.created_at).replace("T", " ")) + " JST"
-    : "";
   return `
-${opts.allowUndo ? "" : `<style>#escape-drawer .esc-grid.undo-disabled > div:nth-child(2) { display: none; }</style>`}
 <dialog class="modal" id="clear-horses-modal">
   <h2>出走を空にする</h2>
   <p><strong>この開催の出走をすべて消します。開催自体は残ります。</strong></p>
@@ -192,16 +183,6 @@ ${opts.allowUndo ? "" : `<style>#escape-drawer .esc-grid.undo-disabled > div:nth
       <button type="button" class="secondary" id="revert-voting-cancel">やめる</button></div>
   </form>
 </dialog>
-${opts.allowUndo ? `<dialog class="modal" id="undo-modal">
-  <h2>直前の操作を戻す</h2>
-  <p><strong>戻す操作: ${undoLabel}</strong></p>
-  <p>出走・票・残高・払戻が、その操作の直前の状態に戻ります。</p>
-  <form method="post" action="/admin/undo" class="reauth" autocomplete="off"
-    data-confirm="${escapeHtml("直前の管理者操作を巻き戻します。戻す操作: " + (u?.action_label ?? "") + "。本当に巻き戻しますか？")}">
-    <div class="row">${opts.reauth}<button class="danger" type="submit">巻き戻す</button>
-      <button type="button" class="secondary" id="undo-cancel">やめる</button></div>
-  </form>
-</dialog>` : ""}
 ${
   opts.allowDemo
     ? `<dialog class="modal" id="reset-modal">
@@ -219,19 +200,14 @@ ${
 <aside class="escape-drawer" id="escape-drawer">
   <div class="esc-top">  <p class="esc-k" style="margin:0">逃げ・復旧</p>
     <button type="button" id="esc-drawer-close" aria-label="閉じる">×</button></div>
-  <div class="esc-grid${opts.allowUndo ? "" : " undo-disabled"}">
+  <div class="esc-grid">
     <div>
       <p class="esc-k">開催を戻す</p>
       <button type="button" id="clear-horses-open">出走を空にする</button>
       <button type="button" class="danger" id="discard-event-open">この開催を破棄</button>
       <button type="button" class="danger" id="revert-voting-open">投票を取り消して登録に戻す</button>
     </div>
-    <div>
-      <p class="esc-k">復旧</p>
-      ${u ? `<button type="button" class="danger" id="undo-open">操作を戻す</button>` : `<button type="button" disabled>操作を戻す</button>`}
-      <p class="esc-note">${u ? `戻せる操作: ${undoLabel}（${undoWhen}）` : "戻せる管理者操作はまだありません。"}</p>
-      ${opts.allowDemo ? `<button type="button" id="reset-open">デモ初期化</button>` : ""}
-    </div>
+    ${opts.allowDemo ? `<div><p class="esc-k">ローカル</p><button type="button" id="reset-open">デモ初期化</button></div>` : ""}
   </div>
 </aside>`;
 }
@@ -387,8 +363,6 @@ function progressWork(board: Board, recentHtml: string): string {
 
 export function adminProgressPage(opts: {
   board: Board;
-  undoMeta: UndoMeta | null;
-  allowUndo: boolean;
   allowDemo: boolean;
   memberCount: number;
   betCount: number;
@@ -448,8 +422,6 @@ export function adminProgressPage(opts: {
   return {
     body,
     afterDash: escapeDialogs({
-      undoMeta: opts.undoMeta,
-      allowUndo: opts.allowUndo,
       allowDemo: opts.allowDemo,
       reauth: adminReauthField(),
     }),

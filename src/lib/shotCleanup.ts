@@ -1,4 +1,4 @@
-/** R2 画像の削除予定。Undo が失効するまで実体の削除を保留する。 */
+/** R2 画像の削除予定。DB更新後に実体を安全に削除する。 */
 
 export async function listPendingShotDeletes(db: D1Database): Promise<string[]> {
   const { results } = await db
@@ -26,18 +26,11 @@ export async function listAllHorseAssetKeys(db: D1Database): Promise<string[]> {
   return (results ?? []).flatMap((row) => [row.shot_key, row.trainer_icon_key]).filter((key): key is string => Boolean(key));
 }
 
-/** Undo 等で再び参照されたキーは削除予定から外す。 */
+/** まだ出走データから参照されているか確認する。 */
 export async function isShotKeyReferenced(db: D1Database, key: string): Promise<boolean> {
   const row = await db
     .prepare("SELECT id FROM horses WHERE shot_key = ? OR trainer_icon_key = ? LIMIT 1")
     .bind(key, key)
     .first();
   return row != null;
-}
-
-export async function cancelRestoredShotDeletes(db: D1Database): Promise<void> {
-  const keys = await listPendingShotDeletes(db);
-  for (const key of keys) {
-    if (await isShotKeyReferenced(db, key)) await removePendingShotDelete(db, key);
-  }
 }

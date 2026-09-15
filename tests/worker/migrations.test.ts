@@ -22,6 +22,7 @@ const EXPECTED_MIGRATIONS = [
   "0017_analysis_log_versions.sql",
   "0018_event_settlements.sql",
   "0019_event_paddock_comments.sql",
+  "0020_pre_race_assessments.sql",
 ];
 
 async function tableNames(db: D1Database): Promise<string[]> {
@@ -32,7 +33,7 @@ async function tableNames(db: D1Database): Promise<string[]> {
 }
 
 describe("D1マイグレーション", () => {
-  test("空のD1へ全19本を適用すると本番用スキーマと初期データが揃う", async () => {
+  test("空のD1へ全20本を適用すると本番用スキーマと初期データが揃う", async () => {
     expect(env.TEST_MIGRATIONS.map((migration) => migration.name)).toEqual(EXPECTED_MIGRATIONS);
     await applyD1Migrations(env.MIGRATION_DB, env.TEST_MIGRATIONS);
 

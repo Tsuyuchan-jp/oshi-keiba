@@ -167,7 +167,6 @@ export async function seedReadyRace(opts: {
   for (let index = 0; index < (opts.horseCount ?? 3); index += 1) {
     horseIds.push(await addHorse(env.DB, event, `テストウマ${index + 1}`, `出走者${index + 1}`, {
       strength: 30 - index,
-      recordUndo: false,
     }));
   }
   return { eventId: event.id, horseIds };

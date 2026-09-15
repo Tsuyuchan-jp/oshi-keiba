@@ -18,7 +18,6 @@ beforeEach(async () => {
     env.DB.prepare("DELETE FROM grants"),
     env.DB.prepare("DELETE FROM horses"),
     env.DB.prepare("DELETE FROM events"),
-    env.DB.prepare("DELETE FROM admin_undo"),
     env.DB.prepare("DELETE FROM r2_pending_deletions"),
     env.DB.prepare("DELETE FROM users WHERE id <> ?").bind(ADMIN_USER_ID),
     env.DB.prepare("UPDATE users SET balance = 0 WHERE id = ?").bind(ADMIN_USER_ID),

@@ -1,6 +1,5 @@
 import { SCORE_FORMULA_SUMMARY, SCORE_FORMULA_VERSION } from "./score";
 import type { EventRow, HorseRow } from "./storeTypes";
-import { captureAdminUndo } from "./undo";
 
 export type PreRaceAssessment = {
   event_id: string;
@@ -64,7 +63,6 @@ export async function savePreRaceAssessments(
     return { horseId: value.horseId, rank, memo: normalizeMemo(value.memo) };
   }).filter((row) => row.rank != null || row.memo != null);
   const now = Date.now();
-  await captureAdminUndo(db, "運営の事前評価を保存");
   await db.batch([
     db.prepare("DELETE FROM pre_race_assessments WHERE event_id = ?").bind(event.id),
     ...rows.map((row) => db.prepare(

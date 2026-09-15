@@ -16,7 +16,7 @@
 - 初期値は **オフ**。出走登録中（`setup`）だけ切り替えられる。
 - オフの開催では、出走登録・編集画面に意気込み入力欄を出さず、パドック詳細にもコメント本文を出さない。
 - オフにしても、すでに保存済みの `horses.paddock_comment` は削除しない。将来オンに戻せば再表示・編集できる。
-- 設定値は `events.paddock_comments_enabled`（0 / 1）。`0019_event_paddock_comments.sql` で追加した。Undoの復元対象にも含める。
+- 設定値は `events.paddock_comments_enabled`（0 / 1）。`0019_event_paddock_comments.sql` で追加した。
 
 ## 詳細カード
 

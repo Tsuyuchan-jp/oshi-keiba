@@ -38,11 +38,9 @@ async function seedRace(db: D1Database) {
   const event0 = await ensureEvent(db);
   const h1 = await addHorse(db, event0, "テスト一着", "A", {
     strength: 20,
-    recordUndo: false,
   });
   const h2 = await addHorse(db, event0, "テスト二着", "B", {
     strength: 10,
-    recordUndo: false,
   });
   await db.prepare("UPDATE events SET voting_closes_at = ?, score_setup = ? WHERE id = ?")
     .bind(Date.now() + 60_000, JSON.stringify({
@@ -66,8 +64,8 @@ async function seedRace(db: D1Database) {
 test("投票開始: 締切と脚質別スタミナが未設定なら直接呼び出しても開始できない", async () => {
   const db = createMemoryD1();
   const event = await ensureEvent(db);
-  await addHorse(db, event, "テスト一号", "A", { strength: 10, recordUndo: false });
-  await addHorse(db, event, "テスト二号", "B", { strength: 10, recordUndo: false });
+  await addHorse(db, event, "テスト一号", "A", { strength: 10 });
+  await addHorse(db, event, "テスト二号", "B", { strength: 10 });
   const current = await refresh(db, event.id);
   await assert.rejects(
     () => openVoting(db, current, null),

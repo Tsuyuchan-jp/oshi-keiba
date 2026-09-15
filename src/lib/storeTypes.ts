@@ -165,7 +165,6 @@ export type AddHorseOpts = {
   dressId?: number | null;
   /** 未指定は manual（デモ投入など） */
   seedSource?: "auto" | "manual";
-  recordUndo?: boolean;
 };
 
 export type UpdateHorseOpts = {
@@ -176,7 +175,6 @@ export type UpdateHorseOpts = {
   seedSource?: "auto" | "manual";
   /** true なら score_input を触らない（Strength だけ直置き） */
   keepScoreInput?: boolean;
-  recordUndo?: boolean;
   /** パドック用プロフィール。未指定なら既存値を保持する。 */
   paddockComment?: string | null;
   trainerIconKey?: string | null;

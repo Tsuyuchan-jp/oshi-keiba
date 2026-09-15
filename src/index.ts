@@ -37,9 +37,7 @@ import {
   captureCurrentIntervalSnapshot,
   savePreRaceAssessments,
 } from "./lib/store";
-import { applyAdminUndo, captureAdminUndo } from "./lib/undo";
-import { adminUndoAllowed } from "./lib/adminUndo";
-import { cancelRestoredShotDeletes, isShotKeyReferenced, listAllHorseAssetKeys, listPendingShotDeletes, queueShotDeletes, removePendingShotDelete } from "./lib/shotCleanup";
+import { isShotKeyReferenced, listAllHorseAssetKeys, listPendingShotDeletes, queueShotDeletes, removePendingShotDelete } from "./lib/shotCleanup";
 import { formatPt, parseJstInput, plainErrorPage } from "./lib/ui";
 import { tryAdminGet } from "./lib/adminRoutes";
 import { tryMemberGet, tryMemberPost } from "./lib/memberRoutes";
@@ -126,7 +124,7 @@ async function putHorseShot(
   return key;
 }
 
-/** 前回操作で Undo の対象から外れた、未参照 R2 画像だけを掃除する。 */
+/** 削除予定のうち、未参照 R2 画像だけを掃除する。 */
 async function flushPendingShotDeletes(env: Env, keys: string[]): Promise<void> {
   if (!env.SHOTS) return;
   for (const key of keys) {
@@ -297,7 +295,6 @@ export default {
           const setup = eventScoreSetup(board.event);
           const strategic = await loadStrategicSkillsBundle(env.DB);
           const changes = await prepareAutoScoreRecompute(env.DB, board.event, setup, strategic.skills);
-          await captureAdminUndo(env.DB, "自動評価点を再計算");
           await applyAutoScoreRecompute(env.DB, changes);
           return bounce("/admin/horses", `自動評価点 ${changes.length}頭を再計算しました`);
         } catch (err) {
@@ -381,7 +378,6 @@ export default {
               paddockComment: comment || null,
               trainerIconKey,
               shotKey,
-              recordUndo: false,
             });
           } catch (err) {
             await env.DB.prepare("DELETE FROM horses WHERE id = ? AND event_id = ?")
@@ -710,26 +706,6 @@ export default {
           return bounce("/admin/ledger", `「${name}」を利用停止にしました。過去の開催記録は残っています`);
         } catch (err) {
           return bounce("/admin/ledger", err instanceof Error ? err.message : "失敗", true);
-        }
-      }
-
-      if (method === "POST" && path === "/admin/undo") {
-        const gate = await requireAdmin(request, env);
-        if (gate instanceof Response) return gate;
-        if (!adminUndoAllowed(env)) {
-          return bounce("/admin", "Undo はこの環境では無効です", true);
-        }
-        const form = await readForm(request);
-        const password = readAdminReauth(form);
-        if (!timingSafeEqualStr(password, env.ADMIN_PASSWORD)) {
-          return bounce("/admin", "管理者パスが違います（巻き戻していません）", true);
-        }
-        try {
-          const label = await applyAdminUndo(env.DB);
-          await cancelRestoredShotDeletes(env.DB);
-          return bounce("/admin", `「${label}」を巻き戻しました`);
-        } catch (err) {
-          return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
         }
       }
 

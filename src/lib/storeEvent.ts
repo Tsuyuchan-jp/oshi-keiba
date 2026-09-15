@@ -15,7 +15,6 @@ import {
   serializeScoreSetup,
   type EventScoreSetup,
 } from "./scoreSetup";
-import { captureAdminUndo } from "./undo";
 import type { ScoreRecomputeChange } from "./scoreRecompute";
 import type { EventRow } from "./storeTypes";
 
@@ -147,7 +146,6 @@ export async function updateParams(
   },
   changes: readonly ScoreRecomputeChange[] = [],
 ): Promise<void> {
-  await captureAdminUndo(db, "レースイベント設定を保存");
   const kinds =
     event.status === "setup" && patch.enabled_kinds != null
       ? serializeEnabledKinds(parseEnabledKinds(patch.enabled_kinds))
@@ -206,7 +204,6 @@ export async function openNextEvent(db: D1Database, event: EventRow): Promise<vo
   if (event.status !== "published") {
     throw new Error("次の開催を開けるのは結果公開のあとだけです");
   }
-  await captureAdminUndo(db, "次の開催を開く");
   await db.prepare("UPDATE events SET is_current = 0").run();
   await insertBlankEvent(db, true, "");
 }
@@ -219,7 +216,6 @@ export async function discardCurrentSetup(
   if (event.status !== "setup") {
     throw new Error("破棄できるのは出走登録中だけです");
   }
-  await captureAdminUndo(db, "この開催を破棄");
   await db.batch([
     db.prepare("DELETE FROM member_operations WHERE event_id = ?").bind(event.id),
     db.prepare("DELETE FROM payouts WHERE event_id = ?").bind(event.id),
@@ -243,7 +239,6 @@ export async function discardCurrentSetup(
 
 /** ローカル実機用。開催・票を消し、残高は 0。名前は残す。G は配らない */
 export async function resetDemo(db: D1Database): Promise<void> {
-  await captureAdminUndo(db, "デモ初期化");
   await db.batch([
     db.prepare("DELETE FROM event_settlements"),
     db.prepare("DELETE FROM member_operations"),

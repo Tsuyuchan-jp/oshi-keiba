@@ -42,7 +42,7 @@ test("再計算: 自動評価の材料不足は馬名を示して中止する", 
   const db = createMemoryD1();
   const event = await ensureEvent(db);
   await addHorse(db, event, "不足ウマ娘", "テスト", {
-    strength: 10, seedSource: "auto", scoreInputJson: null, recordUndo: false,
+    strength: 10, seedSource: "auto", scoreInputJson: null,
   });
   await assert.rejects(
     prepareAutoScoreRecompute(db, event, setup, []),
@@ -54,10 +54,10 @@ test("再計算: 手入力評価の材料不足は無視する", async () => {
   const db = createMemoryD1();
   const event = await ensureEvent(db);
   await addHorse(db, event, "手入力ウマ娘", "テスト", {
-    strength: 10, seedSource: "manual", scoreInputJson: null, recordUndo: false,
+    strength: 10, seedSource: "manual", scoreInputJson: null,
   });
   await addHorse(db, event, "自動ウマ娘", "テスト", {
-    strength: 999, seedSource: "auto", scoreInputJson: serializeHorseScoreInput(input), recordUndo: false,
+    strength: 999, seedSource: "auto", scoreInputJson: serializeHorseScoreInput(input),
   });
   const changes = await prepareAutoScoreRecompute(db, event, setup, []);
   assert.equal(changes.length, 1);
