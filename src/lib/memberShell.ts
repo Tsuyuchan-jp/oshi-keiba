@@ -76,7 +76,7 @@ export function memberMoreScript(): string {
   const syncBackground = () => {
     const preference = globalThis.localStorage?.getItem(preferenceKey);
     const value = preference === "day" || preference === "night" ? preference : "auto";
-    const input = background?.querySelector("input[value=\"" + value + "\"]");
+    const input = background?.querySelector("input[value=\\\"" + value + "\\\"]");
     if (input) input.checked = true;
     const current = document.getElementById("background-current");
     if (current) current.textContent = value === "auto" ? "現在：" + backgroundLabel(backgroundSlot()) : "選択した背景を表示します";
