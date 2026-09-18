@@ -643,6 +643,13 @@ ${MEMBER_OVERLAY_CSS}
   .foot-voting { display: grid; grid-template-columns: 1fr; gap: .45rem; }
   .foot-browse { display: grid; grid-template-columns: 1fr; gap: .45rem; margin-top: .45rem; }
   .umabashira-cta { width: 100%; min-height: 2.55rem; }
+  /* 昼背景では二重の透過を避け、足元のグラス面に馴染む深緑青で固定する。 */
+  .scene[data-slot="day"] .umabashira-cta {
+    background: #16443d;
+    border-color: #86cfc4;
+    color: #f2fffc;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12);
+  }
   .foot > .paddock-cta {
     display: flex;
     align-items: center;
