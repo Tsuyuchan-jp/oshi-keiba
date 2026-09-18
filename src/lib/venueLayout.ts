@@ -297,6 +297,7 @@ function venueChromeScript(published: boolean): string {
 (() => {
   const scene = document.querySelector(".scene");
   const q = new URLSearchParams(location.search).get("slot");
+  const preferenceKey = "oshi-keiba:background";
   function jstHour() {
     const p = new Intl.DateTimeFormat("en-US", {
       timeZone: "Asia/Tokyo", hour: "numeric", hour12: false,
@@ -311,7 +312,9 @@ function venueChromeScript(published: boolean): string {
   }
   function applySlot() {
     if (!scene) return;
+    const preference = globalThis.localStorage?.getItem(preferenceKey);
     if (q === "day" || q === "dusk" || q === "night") scene.dataset.slot = q;
+    else if (preference === "day" || preference === "night") scene.dataset.slot = preference;
     else scene.dataset.slot = fromClock();
   }
   applySlot();
