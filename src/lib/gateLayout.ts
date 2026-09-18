@@ -4,7 +4,7 @@
  */
 import { flashHtml, howToModal } from "./ui.ts";
 import { GATE_CSS } from "./gateCss.ts";
-import { memberMoreScript, memberOutLinks } from "./memberShell.ts";
+import { backgroundModal, memberMoreScript, memberOutLinks } from "./memberShell.ts";
 import { memberSceneSlotScript } from "./memberSceneSlot.ts";
 import type { VenueSlot } from "./venueBoard.ts";
 
@@ -37,6 +37,7 @@ export function gateLoginPage(opts: {
         <button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
         <div class="more-pop" id="more-pop">
           <a href="#" id="howto-open">使い方</a>
+          <button type="button" id="background-open">背景</button>
           <a href="/admin">管理者</a>
         </div>
       </header>
@@ -59,6 +60,7 @@ export function gateLoginPage(opts: {
   </div>
   ${memberOutLinks()}
   ${howToModal()}
+  ${backgroundModal()}
   ${memberMoreScript()}
   ${memberSceneSlotScript()}
 </body>

@@ -42,7 +42,7 @@ import {
   type VenueSlot,
 } from "./venueBoard.ts";
 import { VENUE_CSS } from "./venueCss.ts";
-import { chromeTimesHtml, memberMoreScript, memberOutLinks } from "./memberShell.ts";
+import { backgroundModal, chromeTimesHtml, memberMoreScript, memberOutLinks } from "./memberShell.ts";
 import { memberUmabashiraModalHtml, memberUmabashiraScript } from "./memberUmabashira.ts";
 import type { StrategicSkillRow } from "./strategicSkills.ts";
 
@@ -496,6 +496,7 @@ export function venueBoardPage(opts: {
           <button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
           <div class="more-pop" id="more-pop">
             <a href="#" id="howto-open">使い方</a>
+            <button type="button" id="background-open">背景</button>
             ${logout}
             <a href="/admin">管理者</a>
           </div>
@@ -532,6 +533,7 @@ export function venueBoardPage(opts: {
   </div>
   ${memberOutLinks()}
   ${howToModal()}
+  ${backgroundModal()}
   ${umabashira}
   ${memberMoreScript()}
   ${venueChromeScript(published)}

@@ -24,7 +24,7 @@ import {
 } from "./ui.ts";
 import { BET_CSS } from "./betCss.ts";
 import { betKindSlots } from "./betBoard.ts";
-import { chromeTimesHtml, memberMoreScript, memberOutLinks } from "./memberShell.ts";
+import { backgroundModal, chromeTimesHtml, memberMoreScript, memberOutLinks } from "./memberShell.ts";
 import { memberSceneSlotScript } from "./memberSceneSlot.ts";
 
 export { betKindSlots, type BetSlotSpec } from "./betBoard.ts";
@@ -74,6 +74,7 @@ function shellChrome(opts: { user: UserRow; board: Board }): string {
       <button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
       <div class="more-pop" id="more-pop">
         <a href="#" id="howto-open">使い方</a>
+        <button type="button" id="background-open">背景</button>
         <a href="/logout">ログアウト</a>
         <a href="/admin">管理者</a>
       </div>
@@ -84,6 +85,7 @@ function shellChrome(opts: { user: UserRow; board: Board }): string {
 function shellFoot(): string {
   return `${memberOutLinks()}
   ${howToModal()}
+  ${backgroundModal()}
   ${memberMoreScript()}`;
 }
 

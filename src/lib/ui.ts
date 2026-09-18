@@ -101,7 +101,7 @@ export function plainErrorPage(title: string, message: string): string {
 }
 
 export function howToModal(): string {
-  return `<dialog class="modal" id="howto-modal">
+  return `<dialog class="member-modal" id="howto-modal">
     <h2>使い方</h2>
     <section class="howto-sec">
       <h3>スペ</h3>

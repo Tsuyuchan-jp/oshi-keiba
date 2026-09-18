@@ -13,7 +13,8 @@ export function memberSceneSlotScript(clockId?: string): string {
   return `<script>
 (() => {
   const scene = document.querySelector(".scene");
-  const slot = new URLSearchParams(location.search).get("slot");
+  const querySlot = new URLSearchParams(location.search).get("slot");
+  const preferenceKey = "oshi-keiba:background";
   function fromClock() {
     const parts = new Intl.DateTimeFormat("en-US", {
       timeZone: "Asia/Tokyo", hour: "numeric", hour12: false,
@@ -25,9 +26,12 @@ export function memberSceneSlotScript(clockId?: string): string {
   }
   function tick() {${updateClock}
     if (!scene) return;
-    scene.dataset.slot = slot === "day" || slot === "dusk" || slot === "night"
-      ? slot
-      : fromClock();
+    const preference = globalThis.localStorage?.getItem(preferenceKey);
+    scene.dataset.slot = querySlot === "day" || querySlot === "dusk" || querySlot === "night"
+      ? querySlot
+      : preference === "day" || preference === "night"
+        ? preference
+        : fromClock();
   }
   tick();
   setInterval(tick, 10000);

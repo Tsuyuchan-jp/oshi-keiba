@@ -68,23 +68,35 @@ export const MEMBER_OVERLAY_CSS = `
   letter-spacing: .04em; font-variant-numeric: tabular-nums; line-height: 1;
   user-select: none;
 }
-#howto-modal {
-  max-width: 22rem; background: var(--member-shell-bg); color: var(--member-ink);
+.member-modal {
+  width: min(42rem, calc(100vw - 2rem)); max-width: 42rem;
+  max-height: min(44rem, calc(100dvh - 2rem)); overflow: auto;
+  background: var(--member-shell-bg); color: var(--member-ink);
   border: 1px solid var(--member-line-strong); padding: 1rem 1.1rem;
 }
-#howto-modal::backdrop { background: rgba(0,0,0,.55); }
-#howto-modal h2 { margin: 0 0 .65rem; font-size: 1rem; color: var(--member-ink); }
-#howto-modal .howto-sec { margin: 0 0 .85rem; }
-#howto-modal .howto-sec h3 {
+.member-modal::backdrop { background: rgba(0,0,0,.55); }
+.member-modal h2 { margin: 0 0 .65rem; font-size: 1rem; color: var(--member-ink); }
+.member-modal .howto-sec { margin: 0 0 .85rem; }
+.member-modal .howto-sec h3 {
   margin: 0 0 .25rem; font-size: .78rem; letter-spacing: .06em; color: var(--member-ink-soft);
 }
-#howto-modal .howto-sec p {
+.member-modal .howto-sec p {
   margin: 0; font-size: .85rem; color: #9aa8a4; line-height: 1.55;
 }
-#howto-modal button {
+.member-modal button {
   margin-top: .5rem; font: inherit; background: var(--member-accent-bg); color: var(--member-accent);
   border: 1px solid var(--member-accent); padding: .35rem .7rem; cursor: pointer;
 }
+.background-options { display: grid; gap: .45rem; }
+.background-option {
+  display: grid; gap: .1rem; padding: .7rem .75rem;
+  border: 1px solid var(--member-field-line); cursor: pointer;
+}
+.background-option:has(input:checked) { border-color: var(--member-accent); background: var(--member-accent-bg); }
+.background-option input { accent-color: var(--member-accent); }
+.background-option strong { font-size: .9rem; }
+.background-option span { margin-left: 1.55rem; color: #9aa8a4; font-size: .78rem; line-height: 1.45; }
+.background-current { margin: -.25rem 0 .85rem; color: var(--member-muted); font-size: .82rem; }
 @media (min-width: 900px) {
   .out-links { display: flex; }
 }
