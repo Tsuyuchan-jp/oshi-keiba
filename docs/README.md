@@ -18,7 +18,7 @@
 | 分類 | ファイル | 内容 |
 |---|---|---|
 | 直下 | [now.md](now.md) / [next.md](next.md) / [product.md](product.md) | 現在地、次の作業、プロダクトの判断軸 |
-| 仕様 | [specifications/](specifications/) | [オッズ](specifications/odds.md)、[評価点](specifications/score.md)、[OCR](specifications/ocr.md)、[OCR例外](specifications/ocr-aliases.md)、[分析ログ](specifications/analysis-log.md) |
+| 仕様 | [specifications/](specifications/) | [オッズ](specifications/odds.md)、[連勝 Seed 作業仕様](specifications/exotic-seed.md)、[評価点](specifications/score.md)、[OCR](specifications/ocr.md)、[OCR例外](specifications/ocr-aliases.md)、[分析ログ](specifications/analysis-log.md) |
 | 運用 | [operations/](operations/) | [当日オペ](operations/playbook.md)、[テスト](operations/testing.md)、[リリースと復旧](operations/release.md)、[版上げ](operations/version.md) |
 | 機能別 | [features/](features/) | [号外](features/gougai.md)、[ウマ柱](features/umabashira.md) |
 | 履歴 | [history/](history/) | [変更履歴](history/changelog.md)、[本番リリース記録](history/release-log.md)、[デプロイ前レビュー記録](history/predeploy-fix-list.md) |
