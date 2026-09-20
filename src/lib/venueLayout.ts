@@ -44,6 +44,7 @@ import {
 import { VENUE_CSS } from "./venueCss.ts";
 import { backgroundModal, chromeTimesHtml, memberMoreScript, memberOutLinks } from "./memberShell.ts";
 import { memberUmabashiraModalHtml, memberUmabashiraScript } from "./memberUmabashira.ts";
+import { wakuOf } from "./umabashiraWaku.ts";
 import type { StrategicSkillRow } from "./strategicSkills.ts";
 
 export type { VenueSlot };
@@ -391,7 +392,7 @@ function legacyPreviewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku"
   return `<section class="odds-matrix-panel"><div class="odds-preview-panel-head"><b>${title}</b><span>${description}</span>${selector}</div><div class="odds-matrix" style="--matrix-count:${nums.length}" data-matrix-kind="${kind}" data-matrix-axis="${defaultAxis}"><span class="odds-matrix-corner"></span>${headers}${cells}</div></section>`;
 }
 
-function previewPackedMatrixGridHtml(
+function legacyPreviewPackedMatrixGridHtml(
   columns: readonly number[],
   rows: readonly number[],
   kind: "umaren" | "sanrenpuku",
@@ -408,6 +409,29 @@ function previewPackedMatrixGridHtml(
     }),
   ]).join("");
   return `<div class="odds-matrix ${className}" style="--matrix-count:${columns.length}" data-matrix-kind="${kind}" data-matrix-axis="${axis}"><span class="odds-matrix-corner"></span>${headers}${cells}</div>`;
+}
+
+function previewPackedMatrixGridHtml(
+  columns: readonly number[],
+  runners: readonly number[],
+  kind: "umaren" | "sanrenpuku",
+  axis: number,
+  className: string,
+): string {
+  const runnerCount = runners.length;
+  const axisColumn = (first: number) => {
+    const waku = wakuOf(first, runnerCount);
+    const entries = runners
+      .filter((second) => first < second)
+      .map((second) => {
+        const valid = kind === "umaren" || (first !== axis && second !== axis);
+        const odds = valid ? previewMatrixOdds(kind, axis, first, second) : "";
+        return `<div class="odds-matrix-entry${valid ? "" : " is-blank"}"${kind === "sanrenpuku" ? ` data-matrix-left="${first}" data-matrix-top="${second}"` : ""}><em>${second}</em><b>${odds}</b></div>`;
+      }).join("");
+    const hidden = kind === "sanrenpuku" && first === axis ? " is-blank" : "";
+    return `<section class="odds-matrix-column${hidden}"${kind === "sanrenpuku" ? ` data-matrix-axis-column="${first}"` : ""}><div class="odds-matrix-axis"><i class="waku-marker w${waku}"></i><b>${first}</b><i class="waku-marker w${waku}"></i></div>${entries}</section>`;
+  };
+  return `<div class="odds-matrix ${className}" style="--matrix-count:${columns.length}" data-matrix-kind="${kind}" data-matrix-axis="${axis}">${columns.map(axisColumn).join("")}</div>`;
 }
 
 function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku"): string {
@@ -478,6 +502,9 @@ function previewTabsScript(): string {
     const first = Number(axis.value);
     for (const matrix of matrices) {
       matrix.dataset.matrixAxis = axis.value;
+      for (const column of matrix.querySelectorAll("[data-matrix-axis-column]")) {
+        column.classList.toggle("is-blank", Number(column.dataset.matrixAxisColumn) === first);
+      }
       for (const cell of matrix.querySelectorAll("[data-matrix-left]")) {
         const left = Number(cell.dataset.matrixLeft);
         const top = Number(cell.dataset.matrixTop);
