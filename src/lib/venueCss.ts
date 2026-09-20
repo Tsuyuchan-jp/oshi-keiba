@@ -616,7 +616,7 @@ ${MEMBER_OVERLAY_CSS}
 .odds-matrix-layout { position: relative; min-height: 0; }
 .odds-matrix { display: grid; grid-template-columns: repeat(var(--matrix-count), minmax(0, 1fr)); column-gap: .8rem; align-items: start; min-width: 0; color: var(--odds); font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif; font-size: clamp(.58rem, 1.2vw, .9rem); font-variant-numeric: tabular-nums; }
 .odds-matrix--main { width: 100%; }
-.odds-matrix--folded { position: absolute; right: 0; bottom: 0; width: 100%; align-items: end; }
+.odds-matrix--folded { position: absolute; right: 0; bottom: 0; width: calc(100% * var(--folded-count) / var(--primary-count)); align-items: end; }
 .odds-matrix-column { min-width: 0; }
 .odds-matrix-column.is-blank { display: none; }
 .odds-matrix-axis { display: grid; grid-template-columns: 30% minmax(0, 40%) 30%; align-items: center; min-height: 1.35rem; margin-bottom: .14rem; padding-inline: .08rem; color: var(--member-white); font-size: 1.1em; font-weight: 800; text-align: center; }

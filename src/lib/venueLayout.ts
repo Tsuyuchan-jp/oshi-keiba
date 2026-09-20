@@ -431,7 +431,7 @@ function previewPackedMatrixGridHtml(
         return `<div class="odds-matrix-entry${valid ? "" : " is-blank"}"${kind === "sanrenpuku" ? ` data-matrix-left="${first}" data-matrix-top="${second}"` : ""}><em>${second}</em><b>${odds}</b></div>`;
       }).join("");
     const hidden = kind === "sanrenpuku" && first === axis ? " is-blank" : "";
-    const gridColumn = firstColumnStart !== undefined && first === columns[0] ? ` style="grid-column-start:${firstColumnStart}"` : "";
+    const gridColumn = firstColumnStart !== undefined && first === columns[0] ? ` style="grid-column-start:1"` : "";
     return `<section class="odds-matrix-column${hidden}"${kind === "sanrenpuku" ? ` data-matrix-axis-column="${first}"` : ""}${gridColumn}><div class="odds-matrix-axis"><i class="waku-marker w${waku}"></i><b>${first}</b><i class="waku-marker w${waku}"></i></div>${entries}</section>`;
   };
   return `<div class="odds-matrix ${className}" style="--matrix-count:${gridColumnCount}" data-matrix-kind="${kind}" data-matrix-axis="${axis}">${columns.map(axisColumn).join("")}</div>`;
