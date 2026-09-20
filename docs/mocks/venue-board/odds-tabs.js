@@ -1,13 +1,13 @@
 const horses = [
-  [1, "ジェンティルドンナ", "つゆちゃん", "8.8"], [2, "メジロパーマー", "Neko長明", "13.1"],
-  [3, "シュヴァルグラン", "Neko長明", "7.9"], [4, "ナリタトップロード", "Raiko", "15.6"],
-  [5, "オグリキャップ", "GEDO", "22.5"], [6, "ウインバリアシオン", "アイビー", "9.5"],
-  [7, "セイウンスカイ", "dai", "13.2"], [8, "ステイゴールド", "アイビー", "7.8"],
-  [9, "ナリタブライアン", "satie", "9.1"], [10, "マヤノトップガン", "GEDO", "7.6"],
-  [11, "オルフェーヴル", "Raiko", "10.0"], [12, "キタサンブラック", "GEDO", "11.6"],
-  [13, "ビワハヤヒデ", "b-men", "9.0"], [14, "マンハッタンカフェ", "Raiko", "9999.9+"],
-  [15, "ゼンノロブロイ", "陸カヤック", "51.7"], [16, "メジロマックイーン", "うどん", "13.3"],
-  [17, "エピファネイア", "Neko長明", "8.5"], [18, "トウカイテイオー", "ゲスト", "18.0"],
+  [1, "ジェンティルドンナ", "先行", "つゆちゃん", "8.8"], [2, "メジロパーマー", "逃げ", "Neko長明", "13.1"],
+  [3, "シュヴァルグラン", "差し", "Neko長明", "7.9"], [4, "ナリタトップロード", "差し", "Raiko", "15.6"],
+  [5, "オグリキャップ", "先行", "GEDO", "22.5"], [6, "ウインバリアシオン", "追込", "アイビー", "9.5"],
+  [7, "セイウンスカイ", "逃げ", "dai", "13.2"], [8, "ステイゴールド", "差し", "アイビー", "7.8"],
+  [9, "ナリタブライアン", "先行", "satie", "9.1"], [10, "マヤノトップガン", "逃げ", "GEDO", "7.6"],
+  [11, "オルフェーヴル", "差し", "Raiko", "10.0"], [12, "キタサンブラック", "先行", "GEDO", "11.6"],
+  [13, "ビワハヤヒデ", "先行", "b-men", "9.0"], [14, "マンハッタンカフェ", "追込", "Raiko", "9999.9+"],
+  [15, "ゼンノロブロイ", "差し", "陸カヤック", "51.7"], [16, "メジロマックイーン", "先行", "うどん", "13.3"],
+  [17, "エピファネイア", "差し", "Neko長明", "8.5"], [18, "トウカイテイオー", "先行", "ゲスト", "18.0"],
 ];
 const markets = {
   umaren: [["8-10", "22.4", true], ["3-10", "25.1", true], ["10-17", "28.7", false], ["8-13", "31.4", false], ["3-8", "34.8", true], ["9-10", "38.2", false], ["6-10", "41.6", false], ["3-17", "46.0", false]],
@@ -16,8 +16,8 @@ const markets = {
   sanrentan: [["10→8→3", "400.1", true], ["10→3→8", "401.8", false], ["8→10→3", "403.1", false], ["3→10→8", "406.4", false], ["8→3→10", "408.4", false], ["3→8→10", "410.2", false], ["10→8→17", "447.8", false], ["10→17→8", "463.7", false]],
 };
 function sheet(list) {
-  const rows = list.map(([n, name, runner, odds]) => `<div class="sheet-row"><span class="num">${n}</span><span class="horse">${name}</span><span class="runner">${runner}</span><span class="odds">${odds}</span></div>`).join("");
-  return `<section class="sheet"><div class="sheet-row head"><span>#</span><span>ウマ娘</span><span>トレーナー</span><span class="odds">オッズ</span></div>${rows}</section>`;
+  const rows = list.map(([n, name, style, runner, odds]) => `<div class="sheet-row"><span class="num">${n}</span><span class="horse">${name}</span><span class="runner">${runner}</span><span class="style">${style}</span><span class="odds">${odds}</span></div>`).join("");
+  return `<section class="sheet"><div class="sheet-row head"><span class="num">#</span><span>ウマ娘</span><span>トレーナー</span><span class="style">脚質</span><span class="odds">オッズ</span></div>${rows}</section>`;
 }
 function market(kind, title, realOnly = false) {
   const rows = markets[kind].map(([selection, odds, real], i) => `<div class="market-row"><span class="selection">${selection}${real ? '<small class="tag real">実票</small>' : i < 4 ? '<small class="tag">人気</small>' : ''}</span><span class="odds">${realOnly && !real ? "—" : odds}</span></div>`).join("");
