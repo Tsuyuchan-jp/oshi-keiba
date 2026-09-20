@@ -144,6 +144,8 @@ Display_c = 連勝Seed_c × w + Real_c
 
 比較用モックは [3タブ案](../mocks/venue-board/odds-tabs-3.html) と [5タブ案](../mocks/venue-board/odds-tabs-5.html)。
 
+単勝表示を本番と同じ見た目のまま比較するため、ローカル限定で場内コンポーネントを使う確認画面も用意する。`npm run dev` 中に `/__local/venue-odds?layout=three` または `/__local/venue-odds?layout=five` を開く。この段階の連勝側の数字はレイアウト検討用の静的表示であり、Seed・参考オッズの計算結果ではない。
+
 分析ログは、実票のある買い目に加え、各賭式の人気上位を記録する案を検討する。
 
 ## 更新ルール

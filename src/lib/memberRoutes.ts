@@ -210,6 +210,22 @@ export async function tryMemberGet(
     return html(paddockPage(paddockView(board, await listStrategicSkills(env.DB))));
   }
 
+  if (path === "/__local/venue-odds") {
+    // 本番へ比較用の画面を出さない。npm run dev のローカル確認だけで使う。
+    if (env.ALLOW_DEMO_RESET !== "1") return null;
+    const session = await sessionFromRequest(request, env.SESSION_SECRET);
+    const user = session ? await getUser(env.DB, session.userId) : null;
+    const board = await loadBoard(env.DB);
+    const layout = url.searchParams.get("layout") === "five" ? "five" : "three";
+    return html(venueBoardPage({
+      board,
+      user,
+      flash: msg(url),
+      slot: resolveVenueSlot(url.searchParams.get("slot")),
+      oddsPreview: layout,
+    }));
+  }
+
   if (path === "/" || path === "/board") {
     const session = await sessionFromRequest(request, env.SESSION_SECRET);
     const user = session ? await getUser(env.DB, session.userId) : null;

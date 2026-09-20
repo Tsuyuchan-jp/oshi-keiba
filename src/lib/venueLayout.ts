@@ -49,6 +49,8 @@ import type { StrategicSkillRow } from "./strategicSkills.ts";
 export type { VenueSlot };
 export { resolveVenueSlot } from "./venueBoard.ts";
 
+export type VenueOddsPreviewLayout = "three" | "five";
+
 export function venueCloseHm(ms: number | null): string {
   const t = toJstInput(ms);
   return t ? t.slice(11, 16) : "—";
@@ -292,6 +294,73 @@ function sheetHeadHtml(withPlace: boolean): string {
   </div>`;
 }
 
+/** ローカル表示試作だけの連勝盤。単勝盤は既存の sheet をそのまま使う。 */
+function previewMarketPanelHtml(
+  board: Board,
+  kind: Exclude<BetKind, "win">,
+  title: string,
+  mode: "popular" | "real" = "popular",
+): string {
+  const nums = board.horses.filter((h) => !h.horse.scratched).map((h) => h.number);
+  const n = (i: number) => String(nums[i % nums.length] ?? "?");
+  const selections = kind === "umaren"
+    ? [`${n(7)}-${n(9)}`, `${n(2)}-${n(9)}`, `${n(9)}-${n(16)}`, `${n(7)}-${n(12)}`, `${n(2)}-${n(7)}`, `${n(8)}-${n(9)}`, `${n(5)}-${n(9)}`, `${n(2)}-${n(16)}`]
+    : kind === "umatan"
+      ? [`${n(9)}→${n(7)}`, `${n(7)}→${n(9)}`, `${n(9)}→${n(2)}`, `${n(2)}→${n(9)}`, `${n(9)}→${n(16)}`, `${n(7)}→${n(2)}`, `${n(2)}→${n(7)}`, `${n(12)}→${n(9)}`]
+      : kind === "sanrenpuku"
+        ? [`${n(2)}-${n(7)}-${n(9)}`, `${n(7)}-${n(9)}-${n(16)}`, `${n(2)}-${n(9)}-${n(16)}`, `${n(7)}-${n(9)}-${n(12)}`, `${n(2)}-${n(7)}-${n(16)}`, `${n(2)}-${n(8)}-${n(9)}`, `${n(5)}-${n(7)}-${n(9)}`, `${n(9)}-${n(12)}-${n(16)}`]
+        : [`${n(9)}→${n(7)}→${n(2)}`, `${n(9)}→${n(2)}→${n(7)}`, `${n(7)}→${n(9)}→${n(2)}`, `${n(2)}→${n(9)}→${n(7)}`, `${n(7)}→${n(2)}→${n(9)}`, `${n(2)}→${n(7)}→${n(9)}`, `${n(9)}→${n(7)}→${n(16)}`, `${n(9)}→${n(16)}→${n(7)}`];
+  const odds = kind === "umaren"
+    ? [22.4, 25.1, 28.7, 31.4, 34.8, 38.2, 41.6, 46]
+    : kind === "umatan"
+      ? [48.7, 51.2, 53.8, 57.4, 61.9, 65.3, 68.5, 72.1]
+      : kind === "sanrenpuku"
+        ? [97.3, 108.6, 116.2, 126.4, 134.9, 142.1, 154.7, 169.8]
+        : [400.1, 401.8, 403.1, 406.4, 408.4, 410.2, 447.8, 463.7];
+  const rows = selections.map((selection, i) => {
+    const shown = mode === "real" && i >= 3 ? "—" : `${odds[i]!.toFixed(1)}倍`;
+    const note = mode === "real" ? (i < 3 ? "実票" : "") : (i < 4 ? "人気" : "");
+    return `<div class="odds-preview-row"><span>${escapeHtml(selection)}${note ? `<small>${note}</small>` : ""}</span><b>${shown}</b></div>`;
+  }).join("");
+  return `<section class="odds-preview-panel"><div class="odds-preview-panel-head"><b>${escapeHtml(title)}</b><span>${mode === "real" ? "実票あり" : "人気上位 8組"}</span></div>${rows}</section>`;
+}
+
+function previewMarketHtml(board: Board, layout: VenueOddsPreviewLayout): string {
+  const kinds: Array<Exclude<BetKind, "win">> = ["umaren", "umatan", "sanrenpuku", "sanrentan"];
+  const view = (id: string, body: string, on = false) => `<div class="odds-preview-market" data-preview-view="${id}"${on ? "" : " hidden"}>${body}</div>`;
+  if (layout === "three") {
+    return view("pair", previewMarketPanelHtml(board, "umaren", "馬連") + previewMarketPanelHtml(board, "umatan", "馬単"))
+      + view("triple", previewMarketPanelHtml(board, "sanrenpuku", "3連複") + previewMarketPanelHtml(board, "sanrentan", "3連単"));
+  }
+  return kinds.map((kind) => view(kind,
+    previewMarketPanelHtml(board, kind, `${BET_KIND_LABEL[kind]}・人気上位`)
+      + previewMarketPanelHtml(board, kind, `${BET_KIND_LABEL[kind]}・実票あり`, "real"),
+  )).join("");
+}
+
+function previewTabsHtml(layout: VenueOddsPreviewLayout): string {
+  const tabs = layout === "three"
+    ? [["win", "単勝"], ["pair", "2人組"], ["triple", "3人組"]]
+    : [["win", "単勝"], ["umaren", "馬連"], ["umatan", "馬単"], ["sanrenpuku", "3連複"], ["sanrentan", "3連単"]];
+  return `<div class="odds-preview-tabs" role="tablist" aria-label="オッズ種別">${tabs.map(([id, label], i) => `<button type="button" role="tab" data-preview-tab="${id}" aria-selected="${i === 0 ? "true" : "false"}">${label}</button>`).join("")}</div>`;
+}
+
+function previewTabsScript(): string {
+  return `<script>
+(() => {
+  const root = document.querySelector(".odds-preview");
+  if (!root) return;
+  const tabs = [...root.querySelectorAll("[data-preview-tab]")];
+  const views = [...root.querySelectorAll("[data-preview-view]")];
+  for (const tab of tabs) tab.addEventListener("click", () => {
+    const target = tab.dataset.previewTab;
+    for (const item of tabs) item.setAttribute("aria-selected", String(item === tab));
+    for (const view of views) view.toggleAttribute("hidden", view.dataset.previewView !== target);
+  });
+})();
+</script>`;
+}
+
 function venueChromeScript(published: boolean): string {
   return `<script>
 (() => {
@@ -393,6 +462,8 @@ export function venueBoardPage(opts: {
   ticketsHtml?: string;
   strategicSkills?: readonly StrategicSkillRow[];
   showUmabashira?: boolean;
+  /** ローカル限定の表示試作。通常の場内には指定しない。 */
+  oddsPreview?: VenueOddsPreviewLayout;
 }): string {
   const status = opts.board.event.status;
   const isSetup = status === "setup";
@@ -466,6 +537,25 @@ export function venueBoardPage(opts: {
     ? memberUmabashiraModalHtml(opts.board, opts.strategicSkills)
     : "";
   const head = sheetHeadHtml(published);
+  const preview = opts.oddsPreview && !published ? opts.oddsPreview : null;
+  const boardTitle = (() => {
+    const headParts = venueBoardHeadParts(opts.board);
+    return `<h1><span class="board-head-title">${escapeHtml(headParts[0] ?? "")}</span>${headParts.length > 1 ? `<span class="board-head-detail">${escapeHtml(headParts.slice(1).join("　"))}</span>` : ""}</h1>`;
+  })();
+  const winColumns = `<div class="cols" data-preview-view="win">
+          <div class="sheet-wrap">
+            <div class="sheet" role="table" aria-label="単勝オッズ">
+              ${head}
+              <div id="rows-a">${rows}</div>
+            </div>
+          </div>
+          <div class="sheet-wrap col-b">
+            <div class="sheet" role="table" aria-label="単勝オッズ 続き">
+              ${head}
+              <div id="rows-b"></div>
+            </div>
+          </div>
+        </div>`;
   return `<!doctype html>
 <html lang="ja">
 <head>
@@ -505,30 +595,15 @@ export function venueBoardPage(opts: {
           </div>
         </div>
       </header>
-      <section class="board">
+      <section class="board${preview ? " odds-preview" : ""}">
         ${flash}
         <div class="board-head">
-          ${(() => {
-            const headParts = venueBoardHeadParts(opts.board);
-            return `<h1><span class="board-head-title">${escapeHtml(headParts[0] ?? "")}</span>${headParts.length > 1 ? `<span class="board-head-detail">${escapeHtml(headParts.slice(1).join("　"))}</span>` : ""}</h1>`;
-          })()}
-          ${resultTabs}
+          ${boardTitle}
+          ${preview ? previewTabsHtml(preview) : resultTabs}
         </div>
         ${jumbo}
-        <div class="cols">
-          <div class="sheet-wrap">
-            <div class="sheet" role="table" aria-label="単勝オッズ">
-              ${head}
-              <div id="rows-a">${rows}</div>
-            </div>
-          </div>
-          <div class="sheet-wrap col-b">
-            <div class="sheet" role="table" aria-label="単勝オッズ 続き">
-              ${head}
-              <div id="rows-b"></div>
-            </div>
-          </div>
-        </div>
+        ${winColumns}
+        ${preview ? previewMarketHtml(opts.board, preview) : ""}
         ${tickets}
         ${foot}
       </section>
@@ -540,6 +615,7 @@ export function venueBoardPage(opts: {
   ${umabashira}
   ${memberMoreScript()}
   ${venueChromeScript(published)}
+  ${preview ? previewTabsScript() : ""}
   ${opts.showUmabashira ? memberUmabashiraScript() : ""}
   ${opts.scripts ?? ""}
 </body>

@@ -572,6 +572,31 @@ ${MEMBER_OVERLAY_CSS}
 }
 .cols { display: flex; gap: 0; min-height: 0; flex: 1; }
 .cols .sheet-wrap { flex: 1; }
+/* ローカルの連勝盤表示試作。通常の単勝盤には一切当てない。 */
+.odds-preview .board-head { align-items: center; }
+.odds-preview-tabs { display: flex; align-items: end; gap: .18rem; margin-left: auto; flex: 0 0 auto; }
+.odds-preview-tabs button {
+  border: 1px solid transparent;
+  border-bottom: 0;
+  background: transparent;
+  color: var(--led-dim);
+  font: inherit;
+  font-size: .68rem;
+  letter-spacing: .08em;
+  padding: .2rem .42rem;
+  cursor: pointer;
+}
+.odds-preview-tabs button[aria-selected="true"] { color: var(--odds); border-color: #31514d; background: #0b1313; font-weight: 700; }
+.odds-preview [data-preview-view][hidden] { display: none !important; }
+.odds-preview-market { --col-odds: 7rem; --sheet-pad-y: .42rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .85rem; min-height: 0; flex: 1 1 auto; }
+.odds-preview-panel { min-width: 0; background: var(--member-black); overflow: hidden; }
+.odds-preview-panel-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: var(--sheet-pad-y) .15rem; color: var(--led-dim); font-size: .8rem; letter-spacing: .1em; border-bottom: 1px solid var(--line); }
+.odds-preview-panel-head b { color: var(--member-ink-bright); font-size: 1rem; }
+.odds-preview-panel-head span { font-size: .68rem; }
+.odds-preview-row { display: grid; grid-template-columns: minmax(0, 1fr) var(--col-odds); align-items: center; column-gap: .2rem; padding: var(--sheet-pad-y) .15rem; border-bottom: 1px solid #0c1818; font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif; font-size: 1.1rem; }
+.odds-preview-row span { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--member-ink-bright); font-weight: 700; }
+.odds-preview-row small { margin-left: .35rem; color: var(--member-accent); font-family: "IBM Plex Sans JP", sans-serif; font-size: .58rem; font-weight: 400; }
+.odds-preview-row b { color: var(--odds); text-align: right; white-space: nowrap; font-size: 1.25rem; text-shadow: 0 0 10px rgba(255, 138, 42, .35); }
 .flash {
   flex: 0 0 auto;
   margin: 0 0 .4rem;
@@ -866,5 +891,13 @@ ${MEMBER_MOBILE_GLASS_CSS}
       var(--col-odds)
       var(--col-place);
   }
+  .odds-preview .board-head { align-items: flex-start; }
+  .odds-preview-tabs { margin-left: 0; margin-top: .2rem; max-width: 100%; overflow-x: auto; }
+  .odds-preview-market { grid-template-columns: 1fr; overflow: auto; }
+  .odds-preview-panel + .odds-preview-panel { margin-top: .45rem; }
+  .odds-preview-panel-head { font-size: .68rem; }
+  .odds-preview-panel-head b { font-size: .82rem; }
+  .odds-preview-row { font-size: .9rem; }
+  .odds-preview-row b { font-size: 1.05rem; }
 }
 `;
