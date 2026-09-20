@@ -218,12 +218,15 @@ export async function tryMemberGet(
     const board = await loadBoard(env.DB);
     const layoutParam = url.searchParams.get("layout");
     const layout = layoutParam === "three" || layoutParam === "five" ? layoutParam : "jra";
+    const runnerParam = Number(url.searchParams.get("runners"));
+    const oddsPreviewRunnerCount = [15, 16, 17, 18].includes(runnerParam) ? runnerParam : 17;
     return html(venueBoardPage({
       board,
       user,
       flash: msg(url),
       slot: resolveVenueSlot(url.searchParams.get("slot")),
       oddsPreview: layout,
+      oddsPreviewRunnerCount,
     }));
   }
 

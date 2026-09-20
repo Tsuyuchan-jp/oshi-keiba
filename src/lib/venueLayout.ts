@@ -437,12 +437,17 @@ function previewPackedMatrixGridHtml(
   return `<div class="odds-matrix ${className}" style="--matrix-count:${gridColumnCount}" data-matrix-kind="${kind}" data-matrix-axis="${axis}">${columns.map(axisColumn).join("")}</div>`;
 }
 
-function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku"): string {
-  const nums = board.horses.filter((h) => !h.horse.scratched).map((h) => h.number);
+function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku", previewRunnerCount?: number): string {
+  const boardNums = board.horses.filter((h) => !h.horse.scratched).map((h) => h.number);
+  const nums = previewRunnerCount
+    ? Array.from({ length: previewRunnerCount }, (_, i) => i + 1)
+    : boardNums;
   const axis = nums[0] ?? 1;
-  const primaryCount = Math.min(10, nums.length);
-  const primary = nums.slice(0, primaryCount);
-  const folded = nums.slice(primaryCount);
+  // 最終馬番は以降の相手がいないため軸列にしない。副表が主表の空白だけに収まる列数を選ぶ。
+  const axisNums = nums.slice(0, -1);
+  const primaryCount = Math.ceil((nums.length + 1) / 2);
+  const primary = axisNums.slice(0, primaryCount);
+  const folded = axisNums.slice(primaryCount);
   const selector = kind === "sanrenpuku"
     ? `<label class="odds-matrix-select">軸ウマ娘 <select id="sanrenpuku-axis">${nums.map((num) => `<option value="${num}"${num === axis ? " selected" : ""}>${num}番</option>`).join("")}</select></label>`
     : "";
@@ -450,7 +455,7 @@ function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku"): str
   const description = kind === "umaren" ? "組み合わせ別・参考オッズ" : "軸ウマ娘を含む組み合わせ・参考オッズ";
   const main = previewPackedMatrixGridHtml(primary, nums, kind, axis, "odds-matrix--main");
   const secondary = folded.length > 1
-    ? previewPackedMatrixGridHtml([...folded].reverse(), folded, kind, axis, "odds-matrix--folded", primary.length, primary.length - folded.length + 1)
+    ? previewPackedMatrixGridHtml([...folded].reverse(), nums, kind, axis, "odds-matrix--folded", primary.length, primary.length - folded.length + 1)
     : "";
   return `<section class="odds-matrix-panel"><div class="odds-preview-panel-head"><b>${title}</b><span>${description}</span>${selector}</div><div class="odds-matrix-layout" style="--primary-count:${primary.length};--folded-count:${folded.length}">${main}${secondary}</div></section>`;
 }
@@ -459,12 +464,12 @@ function previewOrderedHtml(board: Board): string {
   return `<div class="odds-preview-ordered">${previewMarketPanelHtml(board, "umatan", "馬単・人気上位")}${previewMarketPanelHtml(board, "umatan", "馬単・直近投票", "real")}${previewMarketPanelHtml(board, "sanrentan", "3連単・人気上位")}${previewMarketPanelHtml(board, "sanrentan", "3連単・直近投票", "real")}</div>`;
 }
 
-function previewMarketHtml(board: Board, layout: VenueOddsPreviewLayout): string {
+function previewMarketHtml(board: Board, layout: VenueOddsPreviewLayout, previewRunnerCount?: number): string {
   const kinds: Array<Exclude<BetKind, "win">> = ["umaren", "umatan", "sanrenpuku", "sanrentan"];
   const view = (id: string, body: string, on = false) => `<div class="odds-preview-market" data-preview-view="${id}"${on ? "" : " hidden"}>${body}</div>`;
   if (layout === "jra") {
-    return view("umaren", previewOddsMatrixHtml(board, "umaren"))
-      + view("sanrenpuku", previewOddsMatrixHtml(board, "sanrenpuku"))
+    return view("umaren", previewOddsMatrixHtml(board, "umaren", previewRunnerCount))
+      + view("sanrenpuku", previewOddsMatrixHtml(board, "sanrenpuku", previewRunnerCount))
       + view("ordered", previewOrderedHtml(board));
   }
   if (layout === "three") {
@@ -627,6 +632,8 @@ export function venueBoardPage(opts: {
   showUmabashira?: boolean;
   /** ローカル限定の表示試作。通常の場内には指定しない。 */
   oddsPreview?: VenueOddsPreviewLayout;
+  /** ローカル試作でのみ使う、連勝表の表示頭数。 */
+  oddsPreviewRunnerCount?: number;
 }): string {
   const status = opts.board.event.status;
   const isSetup = status === "setup";
@@ -701,6 +708,9 @@ export function venueBoardPage(opts: {
     : "";
   const head = sheetHeadHtml(published);
   const preview = opts.oddsPreview && !published ? opts.oddsPreview : null;
+  const previewRunnerControls = preview === "jra" && opts.oddsPreviewRunnerCount
+    ? `<nav class="odds-preview-runner-controls" aria-label="連勝表の表示頭数"><span>表示頭数</span>${[15, 16, 17, 18].map((count) => `<a href="/__local/venue-odds?runners=${count}"${count === opts.oddsPreviewRunnerCount ? ' aria-current="page"' : ""}>${count}人</a>`).join("")}</nav>`
+    : "";
   const boardTitle = (() => {
     const headParts = venueBoardHeadParts(opts.board);
     return `<h1><span class="board-head-title">${escapeHtml(headParts[0] ?? "")}</span>${headParts.length > 1 ? `<span class="board-head-detail">${escapeHtml(headParts.slice(1).join("　"))}</span>` : ""}</h1>`;
@@ -766,11 +776,12 @@ export function venueBoardPage(opts: {
         </div>
         ${jumbo}
         ${winColumns}
-        ${preview ? previewMarketHtml(opts.board, preview) : ""}
+        ${preview ? previewMarketHtml(opts.board, preview, opts.oddsPreviewRunnerCount) : ""}
         ${tickets}
         ${foot}
       </section>
     </div>
+    ${previewRunnerControls}
   </div>
   ${memberOutLinks()}
   ${howToModal()}
