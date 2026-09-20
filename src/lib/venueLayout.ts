@@ -546,7 +546,7 @@ function previewTabsScript(): string {
         const visibleColumns = columns.filter((column) => Number(column.dataset.matrixAxisColumn) !== first);
         const primary = root.querySelector('.odds-matrix--main[data-matrix-kind="sanrenpuku"]');
         const primaryCount = Number(primary?.style.getPropertyValue("--matrix-count"));
-        const axisIsInPrimary = !!primary?.querySelector(`[data-matrix-axis-column="\${first}"]`);
+        const axisIsInPrimary = !!primary?.querySelector('[data-matrix-axis-column="' + first + '"]');
         for (const column of columns) {
           if (column instanceof HTMLElement) column.style.removeProperty("grid-column-start");
         }
