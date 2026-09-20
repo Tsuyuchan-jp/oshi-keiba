@@ -371,7 +371,7 @@ function previewMatrixOdds(kind: "umaren" | "sanrenpuku", a: number, b: number, 
   return value >= 9999.9 ? "9999.9倍以上" : `${value.toFixed(1)}倍`;
 }
 
-function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku"): string {
+function legacyPreviewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku"): string {
   const nums = board.horses.filter((h) => !h.horse.scratched).map((h) => h.number);
   const defaultAxis = nums[0] ?? 1;
   const headers = nums.map((num) => `<span class="odds-matrix-head">${num}</span>`).join("");
@@ -389,6 +389,43 @@ function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku"): str
   const title = kind === "umaren" ? "馬連" : "3連複";
   const description = kind === "umaren" ? "組み合わせ別・参考オッズ" : "軸ウマ娘を含む組み合わせ・参考オッズ";
   return `<section class="odds-matrix-panel"><div class="odds-preview-panel-head"><b>${title}</b><span>${description}</span>${selector}</div><div class="odds-matrix" style="--matrix-count:${nums.length}" data-matrix-kind="${kind}" data-matrix-axis="${defaultAxis}"><span class="odds-matrix-corner"></span>${headers}${cells}</div></section>`;
+}
+
+function previewPackedMatrixGridHtml(
+  columns: readonly number[],
+  rows: readonly number[],
+  kind: "umaren" | "sanrenpuku",
+  axis: number,
+  className: string,
+): string {
+  const headers = columns.map((num) => `<span class="odds-matrix-head">${num}</span>`).join("");
+  const cells = rows.flatMap((second) => [
+    `<span class="odds-matrix-head">${second}</span>`,
+    ...columns.map((first) => {
+      const valid = first < second && (kind === "umaren" || (first !== axis && second !== axis));
+      const odds = valid ? previewMatrixOdds(kind, axis, first, second) : "";
+      return `<span class="odds-matrix-cell${valid ? "" : " is-blank"}"${kind === "sanrenpuku" ? ` data-matrix-left="${first}" data-matrix-top="${second}"` : ""}>${odds}</span>`;
+    }),
+  ]).join("");
+  return `<div class="odds-matrix ${className}" style="--matrix-count:${columns.length}" data-matrix-kind="${kind}" data-matrix-axis="${axis}"><span class="odds-matrix-corner"></span>${headers}${cells}</div>`;
+}
+
+function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku"): string {
+  const nums = board.horses.filter((h) => !h.horse.scratched).map((h) => h.number);
+  const axis = nums[0] ?? 1;
+  const primaryCount = Math.min(10, nums.length);
+  const primary = nums.slice(0, primaryCount);
+  const folded = nums.slice(primaryCount);
+  const selector = kind === "sanrenpuku"
+    ? `<label class="odds-matrix-select">軸ウマ娘 <select id="sanrenpuku-axis">${nums.map((num) => `<option value="${num}"${num === axis ? " selected" : ""}>${num}番</option>`).join("")}</select></label>`
+    : "";
+  const title = kind === "umaren" ? "馬連" : "3連複";
+  const description = kind === "umaren" ? "組み合わせ別・参考オッズ" : "軸ウマ娘を含む組み合わせ・参考オッズ";
+  const main = previewPackedMatrixGridHtml(primary, nums, kind, axis, "odds-matrix--main");
+  const secondary = folded.length > 1
+    ? previewPackedMatrixGridHtml(folded, folded, kind, axis, "odds-matrix--folded")
+    : "";
+  return `<section class="odds-matrix-panel"><div class="odds-preview-panel-head"><b>${title}</b><span>${description}</span>${selector}</div><div class="odds-matrix-layout">${main}${secondary}</div></section>`;
 }
 
 function previewOrderedHtml(board: Board): string {
@@ -435,19 +472,21 @@ function previewTabsScript(): string {
     for (const view of views) view.toggleAttribute("hidden", view.dataset.previewView !== target);
   });
   const axis = root.querySelector("#sanrenpuku-axis");
-  const matrix = root.querySelector('[data-matrix-kind="sanrenpuku"]');
+  const matrices = [...root.querySelectorAll('[data-matrix-kind="sanrenpuku"]')];
   const updateSanrenpuku = () => {
-    if (!(axis instanceof HTMLSelectElement) || !matrix) return;
+    if (!(axis instanceof HTMLSelectElement) || matrices.length === 0) return;
     const first = Number(axis.value);
-    matrix.dataset.matrixAxis = axis.value;
-    for (const cell of matrix.querySelectorAll("[data-matrix-left]")) {
-      const left = Number(cell.dataset.matrixLeft);
-      const top = Number(cell.dataset.matrixTop);
-      const valid = left < top && left !== first && top !== first;
-      cell.classList.toggle("is-blank", !valid);
-      if (!valid) { cell.textContent = ""; continue; }
-      const value = 62 * (1 + (first + left + top) * 0.11 + Math.abs(left - top) * 0.035);
-      cell.textContent = value >= 9999.9 ? "9999.9倍以上" : value.toFixed(1) + "倍";
+    for (const matrix of matrices) {
+      matrix.dataset.matrixAxis = axis.value;
+      for (const cell of matrix.querySelectorAll("[data-matrix-left]")) {
+        const left = Number(cell.dataset.matrixLeft);
+        const top = Number(cell.dataset.matrixTop);
+        const valid = left < top && left !== first && top !== first;
+        cell.classList.toggle("is-blank", !valid);
+        if (!valid) { cell.textContent = ""; continue; }
+        const value = 62 * (1 + (first + left + top) * 0.11 + Math.abs(left - top) * 0.035);
+        cell.textContent = value >= 9999.9 ? "9999.9倍以上" : value.toFixed(1) + "倍";
+      }
     }
   };
   axis?.addEventListener("change", updateSanrenpuku);
