@@ -488,7 +488,7 @@ function previewTabsHtml(layout: VenueOddsPreviewLayout): string {
     : layout === "three"
     ? [["win", "単勝"], ["pair", "2人組"], ["triple", "3人組"]]
     : [["win", "単勝"], ["umaren", "馬連"], ["umatan", "馬単"], ["sanrenpuku", "3連複"], ["sanrentan", "3連単"]];
-  return `<div class="odds-preview-switcher"><span class="odds-preview-switcher-label">参考オッズ</span><div class="odds-preview-tabs" role="tablist" aria-label="オッズ種別">${tabs.map(([id, label], i) => `<button type="button" role="tab" data-preview-tab="${id}" aria-selected="${i === 0 ? "true" : "false"}">${label}</button>`).join("")}</div></div>`;
+  return `<div class="odds-preview-switcher"><span class="odds-preview-switcher-label">表示切替</span><div class="odds-preview-tabs" role="tablist" aria-label="参考オッズの種別">${tabs.map(([id, label], i) => `<button type="button" role="tab" data-preview-tab="${id}" aria-selected="${i === 0 ? "true" : "false"}">${label}</button>`).join("")}</div></div>`;
 }
 
 function previewTabsScript(): string {
