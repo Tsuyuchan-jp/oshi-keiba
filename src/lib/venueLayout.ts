@@ -369,7 +369,7 @@ function previewMarketPanelHtml(
 function previewMatrixOdds(kind: "umaren" | "sanrenpuku", a: number, b: number, c?: number): string {
   const spread = kind === "umaren" ? 14 : 62;
   const value = spread * (1 + (a + b + (c ?? 0)) * 0.11 + Math.abs(a - b) * 0.035);
-  return value >= 9999.9 ? "9999.9倍以上" : `${value.toFixed(1)}倍`;
+  return value >= 9999.9 ? "9999.9+" : value.toFixed(1);
 }
 
 function legacyPreviewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku"): string {
@@ -447,9 +447,9 @@ function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku"): str
   const description = kind === "umaren" ? "組み合わせ別・参考オッズ" : "軸ウマ娘を含む組み合わせ・参考オッズ";
   const main = previewPackedMatrixGridHtml(primary, nums, kind, axis, "odds-matrix--main");
   const secondary = folded.length > 1
-    ? previewPackedMatrixGridHtml(folded, folded, kind, axis, "odds-matrix--folded")
+    ? previewPackedMatrixGridHtml([...folded].reverse(), folded, kind, axis, "odds-matrix--folded")
     : "";
-  return `<section class="odds-matrix-panel"><div class="odds-preview-panel-head"><b>${title}</b><span>${description}</span>${selector}</div><div class="odds-matrix-layout">${main}${secondary}</div></section>`;
+  return `<section class="odds-matrix-panel"><div class="odds-preview-panel-head"><b>${title}</b><span>${description}</span>${selector}</div><div class="odds-matrix-layout" style="--primary-count:${primary.length};--folded-count:${folded.length}">${main}${secondary}</div></section>`;
 }
 
 function previewOrderedHtml(board: Board): string {
@@ -512,7 +512,7 @@ function previewTabsScript(): string {
         cell.classList.toggle("is-blank", !valid);
         if (!valid) { cell.textContent = ""; continue; }
         const value = 62 * (1 + (first + left + top) * 0.11 + Math.abs(left - top) * 0.035);
-        cell.textContent = value >= 9999.9 ? "9999.9倍以上" : value.toFixed(1) + "倍";
+        cell.textContent = value >= 9999.9 ? "9999.9+" : value.toFixed(1);
       }
     }
   };
