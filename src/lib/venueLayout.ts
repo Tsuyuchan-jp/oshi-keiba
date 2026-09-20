@@ -443,9 +443,9 @@ function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku", prev
     ? Array.from({ length: previewRunnerCount }, (_, i) => i + 1)
     : boardNums;
   const axis = nums[0] ?? 1;
-  // 最終馬番は以降の相手がいないため軸列にしない。副表が主表の空白だけに収まる列数を選ぶ。
+  // 最終馬番は以降の相手がいないため軸列にしない。2人減るごとに主表を1列減らす。
   const axisNums = nums.slice(0, -1);
-  const primaryCount = Math.ceil((nums.length + 1) / 2);
+  const primaryCount = Math.min(axisNums.length, Math.ceil(nums.length / 2) + 1);
   const primary = axisNums.slice(0, primaryCount);
   const folded = axisNums.slice(primaryCount);
   const selector = kind === "sanrenpuku"
