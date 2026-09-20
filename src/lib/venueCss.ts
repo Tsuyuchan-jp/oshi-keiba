@@ -588,7 +588,9 @@ ${MEMBER_OVERLAY_CSS}
 }
 .odds-preview-tabs button[aria-selected="true"] { color: var(--odds); border-color: #31514d; background: #0b1313; font-weight: 700; }
 .odds-preview [data-preview-view][hidden] { display: none !important; }
-.odds-preview-market { --col-odds: 7rem; --sheet-pad-y: .42rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .85rem; min-height: 0; flex: 1 1 auto; }
+.odds-preview > .cols,
+.odds-preview > .odds-preview-market { flex: 0 0 var(--odds-preview-body-height, auto); height: var(--odds-preview-body-height, auto); min-height: 0; }
+.odds-preview-market { --col-odds: 7rem; --sheet-pad-y: .42rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .85rem; overflow: hidden; }
 .odds-preview-panel { min-width: 0; display: flex; flex-direction: column; background: var(--member-black); overflow: hidden; }
 .odds-preview-panel-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: var(--sheet-pad-y) .15rem; color: var(--led-dim); font-size: .8rem; letter-spacing: .1em; border-bottom: 1px solid var(--line); }
 .odds-preview-panel-head b { color: var(--member-ink-bright); font-size: .8rem; }

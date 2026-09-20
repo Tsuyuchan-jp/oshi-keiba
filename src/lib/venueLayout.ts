@@ -498,6 +498,30 @@ function previewTabsScript(): string {
   if (!root) return;
   const tabs = [...root.querySelectorAll("[data-preview-tab]")];
   const views = [...root.querySelectorAll("[data-preview-view]")];
+  const winView = root.querySelector('[data-preview-view="win"]');
+  const syncPreviewHeight = () => {
+    if (!(winView instanceof HTMLElement)) return;
+    root.style.removeProperty("--odds-preview-body-height");
+    const wasHidden = winView.hidden;
+    const originalStyle = winView.getAttribute("style");
+    if (wasHidden) {
+      winView.hidden = false;
+      winView.style.position = "absolute";
+      winView.style.visibility = "hidden";
+      winView.style.pointerEvents = "none";
+      winView.style.width = root.clientWidth + "px";
+    }
+    const height = Math.ceil(winView.getBoundingClientRect().height);
+    if (wasHidden) {
+      winView.hidden = true;
+      if (originalStyle == null) winView.removeAttribute("style");
+      else winView.setAttribute("style", originalStyle);
+    }
+    if (height > 0) root.style.setProperty("--odds-preview-body-height", height + "px");
+  };
+  syncPreviewHeight();
+  window.addEventListener("resize", syncPreviewHeight);
+  document.fonts?.ready.then(syncPreviewHeight);
   for (const tab of tabs) tab.addEventListener("click", () => {
     const target = tab.dataset.previewTab;
     for (const item of tabs) item.setAttribute("aria-selected", String(item === tab));
