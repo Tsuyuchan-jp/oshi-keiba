@@ -417,6 +417,8 @@ function previewPackedMatrixGridHtml(
   kind: "umaren" | "sanrenpuku",
   axis: number,
   className: string,
+  gridColumnCount = columns.length,
+  firstColumnStart?: number,
 ): string {
   const runnerCount = runners.length;
   const axisColumn = (first: number) => {
@@ -429,9 +431,10 @@ function previewPackedMatrixGridHtml(
         return `<div class="odds-matrix-entry${valid ? "" : " is-blank"}"${kind === "sanrenpuku" ? ` data-matrix-left="${first}" data-matrix-top="${second}"` : ""}><em>${second}</em><b>${odds}</b></div>`;
       }).join("");
     const hidden = kind === "sanrenpuku" && first === axis ? " is-blank" : "";
-    return `<section class="odds-matrix-column${hidden}"${kind === "sanrenpuku" ? ` data-matrix-axis-column="${first}"` : ""}><div class="odds-matrix-axis"><i class="waku-marker w${waku}"></i><b>${first}</b><i class="waku-marker w${waku}"></i></div>${entries}</section>`;
+    const gridColumn = firstColumnStart !== undefined && first === columns[0] ? ` style="grid-column-start:${firstColumnStart}"` : "";
+    return `<section class="odds-matrix-column${hidden}"${kind === "sanrenpuku" ? ` data-matrix-axis-column="${first}"` : ""}${gridColumn}><div class="odds-matrix-axis"><i class="waku-marker w${waku}"></i><b>${first}</b><i class="waku-marker w${waku}"></i></div>${entries}</section>`;
   };
-  return `<div class="odds-matrix ${className}" style="--matrix-count:${columns.length}" data-matrix-kind="${kind}" data-matrix-axis="${axis}">${columns.map(axisColumn).join("")}</div>`;
+  return `<div class="odds-matrix ${className}" style="--matrix-count:${gridColumnCount}" data-matrix-kind="${kind}" data-matrix-axis="${axis}">${columns.map(axisColumn).join("")}</div>`;
 }
 
 function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku"): string {
@@ -447,7 +450,7 @@ function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku"): str
   const description = kind === "umaren" ? "組み合わせ別・参考オッズ" : "軸ウマ娘を含む組み合わせ・参考オッズ";
   const main = previewPackedMatrixGridHtml(primary, nums, kind, axis, "odds-matrix--main");
   const secondary = folded.length > 1
-    ? previewPackedMatrixGridHtml([...folded].reverse(), folded, kind, axis, "odds-matrix--folded")
+    ? previewPackedMatrixGridHtml([...folded].reverse(), folded, kind, axis, "odds-matrix--folded", primary.length, primary.length - folded.length + 1)
     : "";
   return `<section class="odds-matrix-panel"><div class="odds-preview-panel-head"><b>${title}</b><span>${description}</span>${selector}</div><div class="odds-matrix-layout" style="--primary-count:${primary.length};--folded-count:${folded.length}">${main}${secondary}</div></section>`;
 }

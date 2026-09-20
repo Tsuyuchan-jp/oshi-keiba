@@ -606,9 +606,9 @@ ${MEMBER_OVERLAY_CSS}
 .odds-matrix-select { display: inline-flex; align-items: center; gap: .3rem; margin-left: auto; color: var(--member-ink-bright); font-family: "IBM Plex Sans JP", sans-serif; font-size: .7rem; letter-spacing: 0; }
 .odds-matrix-select select { border: 1px solid #31514d; border-radius: 0; background: #091111; color: var(--led); font: inherit; padding: .1rem .25rem; }
 .odds-matrix-layout { position: relative; min-height: 0; }
-.odds-matrix { display: grid; grid-template-columns: repeat(var(--matrix-count), minmax(0, 1fr)); column-gap: .14rem; align-items: start; min-width: 0; color: var(--odds); font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif; font-size: clamp(.48rem, 1.05vw, .75rem); font-variant-numeric: tabular-nums; }
+.odds-matrix { display: grid; grid-template-columns: repeat(var(--matrix-count), minmax(0, 1fr)); column-gap: .8rem; align-items: start; min-width: 0; color: var(--odds); font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif; font-size: clamp(.48rem, 1.05vw, .75rem); font-variant-numeric: tabular-nums; }
 .odds-matrix--main { width: 100%; }
-.odds-matrix--folded { position: absolute; right: 0; bottom: 0; width: calc(100% * var(--folded-count) / var(--primary-count)); align-items: end; }
+.odds-matrix--folded { position: absolute; right: 0; bottom: 0; width: 100%; align-items: end; }
 .odds-matrix-column { min-width: 0; }
 .odds-matrix-column.is-blank { display: none; }
 .odds-matrix-axis { display: grid; grid-template-columns: 30% minmax(0, 40%) 30%; align-items: center; min-height: 1.2rem; margin-bottom: .12rem; padding-inline: .08rem; color: var(--member-white); font-size: 1.1em; font-weight: 800; text-align: center; }
