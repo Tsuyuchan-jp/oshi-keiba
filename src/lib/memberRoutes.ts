@@ -216,7 +216,8 @@ export async function tryMemberGet(
     const session = await sessionFromRequest(request, env.SESSION_SECRET);
     const user = session ? await getUser(env.DB, session.userId) : null;
     const board = await loadBoard(env.DB);
-    const layout = url.searchParams.get("layout") === "five" ? "five" : "three";
+    const layoutParam = url.searchParams.get("layout");
+    const layout = layoutParam === "three" || layoutParam === "five" ? layoutParam : "jra";
     return html(venueBoardPage({
       board,
       user,

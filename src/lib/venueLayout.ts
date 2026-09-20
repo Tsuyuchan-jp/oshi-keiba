@@ -49,7 +49,7 @@ import type { StrategicSkillRow } from "./strategicSkills.ts";
 export type { VenueSlot };
 export { resolveVenueSlot } from "./venueBoard.ts";
 
-export type VenueOddsPreviewLayout = "three" | "five";
+export type VenueOddsPreviewLayout = "three" | "five" | "jra";
 
 export function venueCloseHm(ms: number | null): string {
   const t = toJstInput(ms);
@@ -365,9 +365,44 @@ function previewMarketPanelHtml(
   return `<section class="odds-preview-panel"><div class="odds-preview-panel-head"><b>${escapeHtml(title)}</b><span>${mode === "real" ? "実票あり" : `人気上位 ${count}組`}</span></div><div class="odds-preview-columns">${columns}</div></section>`;
 }
 
+function previewMatrixOdds(kind: "umaren" | "sanrenpuku", a: number, b: number, c?: number): string {
+  const spread = kind === "umaren" ? 14 : 62;
+  const value = spread * (1 + (a + b + (c ?? 0)) * 0.11 + Math.abs(a - b) * 0.035);
+  return value >= 9999.9 ? "9999.9倍以上" : `${value.toFixed(1)}倍`;
+}
+
+function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku"): string {
+  const nums = board.horses.filter((h) => !h.horse.scratched).map((h) => h.number);
+  const defaultAxis = nums[0] ?? 1;
+  const headers = nums.map((num) => `<span class="odds-matrix-head">${num}</span>`).join("");
+  const cells = nums.flatMap((row) => [
+    `<span class="odds-matrix-head">${row}</span>`,
+    ...nums.map((column) => {
+      const valid = row < column && (kind === "umaren" || (row !== defaultAxis && column !== defaultAxis));
+      const odds = valid ? previewMatrixOdds(kind, defaultAxis, row, column) : "";
+      return `<span class="odds-matrix-cell${valid ? "" : " is-blank"}"${kind === "sanrenpuku" ? ` data-matrix-left="${row}" data-matrix-top="${column}"` : ""}>${odds}</span>`;
+    }),
+  ]).join("");
+  const selector = kind === "sanrenpuku"
+    ? `<label class="odds-matrix-select">軸ウマ娘 <select id="sanrenpuku-axis">${nums.map((num) => `<option value="${num}"${num === defaultAxis ? " selected" : ""}>${num}番</option>`).join("")}</select></label>`
+    : "";
+  const title = kind === "umaren" ? "馬連" : "3連複";
+  const description = kind === "umaren" ? "組み合わせ別・参考オッズ" : "軸ウマ娘を含む組み合わせ・参考オッズ";
+  return `<section class="odds-matrix-panel"><div class="odds-preview-panel-head"><b>${title}</b><span>${description}</span>${selector}</div><div class="odds-matrix" style="--matrix-count:${nums.length}" data-matrix-kind="${kind}" data-matrix-axis="${defaultAxis}"><span class="odds-matrix-corner"></span>${headers}${cells}</div></section>`;
+}
+
+function previewOrderedHtml(board: Board): string {
+  return `<div class="odds-preview-ordered">${previewMarketPanelHtml(board, "umatan", "馬単・人気上位")}${previewMarketPanelHtml(board, "umatan", "馬単・直近投票", "real")}${previewMarketPanelHtml(board, "sanrentan", "3連単・人気上位")}${previewMarketPanelHtml(board, "sanrentan", "3連単・直近投票", "real")}</div>`;
+}
+
 function previewMarketHtml(board: Board, layout: VenueOddsPreviewLayout): string {
   const kinds: Array<Exclude<BetKind, "win">> = ["umaren", "umatan", "sanrenpuku", "sanrentan"];
   const view = (id: string, body: string, on = false) => `<div class="odds-preview-market" data-preview-view="${id}"${on ? "" : " hidden"}>${body}</div>`;
+  if (layout === "jra") {
+    return view("umaren", previewOddsMatrixHtml(board, "umaren"))
+      + view("sanrenpuku", previewOddsMatrixHtml(board, "sanrenpuku"))
+      + view("ordered", previewOrderedHtml(board));
+  }
   if (layout === "three") {
     return view("pair", previewMarketPanelHtml(board, "umaren", "馬連") + previewMarketPanelHtml(board, "umatan", "馬単"))
       + view("triple", previewMarketPanelHtml(board, "sanrenpuku", "3連複") + previewMarketPanelHtml(board, "sanrentan", "3連単"));
@@ -379,7 +414,9 @@ function previewMarketHtml(board: Board, layout: VenueOddsPreviewLayout): string
 }
 
 function previewTabsHtml(layout: VenueOddsPreviewLayout): string {
-  const tabs = layout === "three"
+  const tabs = layout === "jra"
+    ? [["win", "単勝"], ["umaren", "馬連"], ["sanrenpuku", "3連複"], ["ordered", "順序あり"]]
+    : layout === "three"
     ? [["win", "単勝"], ["pair", "2人組"], ["triple", "3人組"]]
     : [["win", "単勝"], ["umaren", "馬連"], ["umatan", "馬単"], ["sanrenpuku", "3連複"], ["sanrentan", "3連単"]];
   return `<div class="odds-preview-tabs" role="tablist" aria-label="オッズ種別">${tabs.map(([id, label], i) => `<button type="button" role="tab" data-preview-tab="${id}" aria-selected="${i === 0 ? "true" : "false"}">${label}</button>`).join("")}</div>`;
@@ -397,6 +434,23 @@ function previewTabsScript(): string {
     for (const item of tabs) item.setAttribute("aria-selected", String(item === tab));
     for (const view of views) view.toggleAttribute("hidden", view.dataset.previewView !== target);
   });
+  const axis = root.querySelector("#sanrenpuku-axis");
+  const matrix = root.querySelector('[data-matrix-kind="sanrenpuku"]');
+  const updateSanrenpuku = () => {
+    if (!(axis instanceof HTMLSelectElement) || !matrix) return;
+    const first = Number(axis.value);
+    matrix.dataset.matrixAxis = axis.value;
+    for (const cell of matrix.querySelectorAll("[data-matrix-left]")) {
+      const left = Number(cell.dataset.matrixLeft);
+      const top = Number(cell.dataset.matrixTop);
+      const valid = left < top && left !== first && top !== first;
+      cell.classList.toggle("is-blank", !valid);
+      if (!valid) { cell.textContent = ""; continue; }
+      const value = 62 * (1 + (first + left + top) * 0.11 + Math.abs(left - top) * 0.035);
+      cell.textContent = value >= 9999.9 ? "9999.9倍以上" : value.toFixed(1) + "倍";
+    }
+  };
+  axis?.addEventListener("change", updateSanrenpuku);
 })();
 </script>`;
 }

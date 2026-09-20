@@ -600,6 +600,19 @@ ${MEMBER_OVERLAY_CSS}
 .odds-preview-row span { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--member-ink-bright); font-weight: 700; }
 .odds-preview-row small { margin-left: .35rem; color: var(--member-accent); font-family: "IBM Plex Sans JP", sans-serif; font-size: .58rem; font-weight: 400; }
 .odds-preview-odds { color: var(--odds); text-align: right; white-space: nowrap; font-family: "Chakra Petch", sans-serif; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.15em; text-shadow: 0 0 10px rgba(255, 138, 42, .35); }
+.odds-matrix-panel { min-width: 0; background: var(--member-black); overflow: auto; }
+.odds-preview-market:has(.odds-matrix-panel) { grid-template-columns: 1fr; }
+.odds-matrix-panel .odds-preview-panel-head { position: sticky; top: 0; z-index: 2; background: var(--member-black); }
+.odds-matrix-select { display: inline-flex; align-items: center; gap: .3rem; margin-left: auto; color: var(--member-ink-bright); font-family: "IBM Plex Sans JP", sans-serif; font-size: .7rem; letter-spacing: 0; }
+.odds-matrix-select select { border: 1px solid #31514d; border-radius: 0; background: #091111; color: var(--led); font: inherit; padding: .1rem .25rem; }
+.odds-matrix { display: grid; grid-template-columns: 1.6rem repeat(var(--matrix-count), minmax(0, 1fr)); min-width: 46rem; color: var(--odds); font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif; font-size: clamp(.48rem, 1.05vw, .75rem); font-variant-numeric: tabular-nums; }
+.odds-matrix > span { min-width: 0; box-sizing: border-box; }
+.odds-matrix-head { padding: .1rem .05rem; color: var(--member-white); text-align: center; font-weight: 700; border-bottom: 1px solid #17302e; }
+.odds-matrix-corner { border-bottom: 1px solid #17302e; }
+.odds-matrix-cell { padding: .11rem .06rem; text-align: right; white-space: nowrap; border-right: 1px solid #10201e; border-bottom: 1px solid #10201e; text-shadow: 0 0 7px rgba(255, 138, 42, .3); }
+.odds-matrix-cell.is-blank { color: transparent; text-shadow: none; }
+.odds-preview-ordered { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem .85rem; min-height: 0; flex: 1 1 auto; overflow: auto; }
+.odds-preview-ordered .odds-preview-panel { min-height: 0; }
 .flash {
   flex: 0 0 auto;
   margin: 0 0 .4rem;
