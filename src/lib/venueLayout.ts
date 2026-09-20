@@ -419,6 +419,7 @@ function previewPackedMatrixGridHtml(
   className: string,
   gridColumnCount = columns.length,
   firstColumnStart?: number,
+  leadingHtml = "",
 ): string {
   const runnerCount = runners.length;
   const axisColumn = (first: number) => {
@@ -435,7 +436,7 @@ function previewPackedMatrixGridHtml(
     return `<section class="odds-matrix-column${hidden}"${kind === "sanrenpuku" ? ` data-matrix-axis-column="${first}"` : ""}${gridColumn}><div class="odds-matrix-axis"><i class="waku-marker w${waku}"></i><b>${first}</b><i class="waku-marker w${waku}"></i></div>${entries}</section>`;
   };
   const kindClass = kind === "sanrenpuku" ? " odds-matrix--sanrenpuku" : "";
-  return `<div class="odds-matrix ${className}${kindClass}" style="--matrix-count:${gridColumnCount}" data-matrix-kind="${kind}" data-matrix-axis="${axis}">${columns.map(axisColumn).join("")}</div>`;
+  return `<div class="odds-matrix ${className}${kindClass}" style="--matrix-count:${gridColumnCount}" data-matrix-kind="${kind}" data-matrix-axis="${axis}">${leadingHtml}${columns.map(axisColumn).join("")}</div>`;
 }
 
 function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku", previewRunnerCount?: number): string {
@@ -449,19 +450,17 @@ function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku", prev
   const primaryCount = Math.min(axisNums.length, Math.floor(nums.length / 2) + 2);
   const primary = axisNums.slice(0, primaryCount);
   const folded = axisNums.slice(primaryCount);
-  const selector = kind === "sanrenpuku"
-    ? `<label class="odds-matrix-select">軸ウマ娘 <select id="sanrenpuku-axis">${nums.map((num) => `<option value="${num}"${num === axis ? " selected" : ""}>${num}番</option>`).join("")}</select></label>`
+  const axisPanel = kind === "sanrenpuku"
+    ? `<aside class="odds-matrix-axis-panel"><span>軸ウマ娘</span><b>${axis}番</b><label>変更<select id="sanrenpuku-axis" aria-label="軸ウマ娘">${nums.map((num) => `<option value="${num}"${num === axis ? " selected" : ""}>${num}番</option>`).join("")}</select></label></aside>`
     : "";
   const title = kind === "umaren" ? "馬連" : "3連複";
   const description = kind === "umaren" ? "組み合わせ別・参考オッズ" : "軸ウマ娘を含む組み合わせ・参考オッズ";
-  const main = previewPackedMatrixGridHtml(primary, nums, kind, axis, "odds-matrix--main");
-  const foldedStart = kind === "sanrenpuku"
-    ? primary.length - folded.length
-    : primary.length - folded.length + 1;
+  const main = previewPackedMatrixGridHtml(primary, nums, kind, axis, "odds-matrix--main", primary.length, undefined, axisPanel);
+  const foldedStart = primary.length - folded.length + 1;
   const secondary = folded.length > 1
     ? previewPackedMatrixGridHtml([...folded].reverse(), nums, kind, axis, "odds-matrix--folded", primary.length, foldedStart)
     : "";
-  return `<section class="odds-matrix-panel"><div class="odds-preview-panel-head"><b>${title}</b><span>${description}</span>${selector}</div><div class="odds-matrix-layout" style="--primary-count:${primary.length};--folded-count:${folded.length}">${main}${secondary}</div></section>`;
+  return `<section class="odds-matrix-panel"><div class="odds-preview-panel-head"><b>${title}</b><span>${description}</span></div><div class="odds-matrix-layout" style="--primary-count:${primary.length};--folded-count:${folded.length}">${main}${secondary}</div></section>`;
 }
 
 function previewOrderedHtml(board: Board): string {
@@ -536,27 +535,12 @@ function previewTabsScript(): string {
   const updateSanrenpuku = () => {
     if (!(axis instanceof HTMLSelectElement) || matrices.length === 0) return;
     const first = Number(axis.value);
+    const axisValue = root.querySelector(".odds-matrix-axis-panel > b");
+    if (axisValue) axisValue.textContent = axis.value + "番";
     for (const matrix of matrices) {
       matrix.dataset.matrixAxis = axis.value;
       for (const column of matrix.querySelectorAll("[data-matrix-axis-column]")) {
         column.classList.toggle("is-blank", Number(column.dataset.matrixAxisColumn) === first);
-      }
-      if (matrix.classList.contains("odds-matrix--folded")) {
-        const columns = [...matrix.querySelectorAll("[data-matrix-axis-column]")];
-        const visibleColumns = columns.filter((column) => Number(column.dataset.matrixAxisColumn) !== first);
-        const primary = root.querySelector('.odds-matrix--main[data-matrix-kind="sanrenpuku"]');
-        const primaryCount = Number(primary?.style.getPropertyValue("--matrix-count"));
-        const axisIsInPrimary = !!primary?.querySelector('[data-matrix-axis-column="' + first + '"]');
-        for (const column of columns) {
-          if (column instanceof HTMLElement) column.style.removeProperty("grid-column-start");
-        }
-        const firstVisible = visibleColumns.find((column) => column instanceof HTMLElement);
-        if (firstVisible && primaryCount > 0) {
-          const start = axisIsInPrimary
-            ? primaryCount - visibleColumns.length
-            : primaryCount - visibleColumns.length + 1;
-          firstVisible.style.gridColumnStart = String(start);
-        }
       }
       for (const cell of matrix.querySelectorAll("[data-matrix-left]")) {
         const left = Number(cell.dataset.matrixLeft);
@@ -566,6 +550,30 @@ function previewTabsScript(): string {
         if (!valid) { cell.textContent = ""; continue; }
         const value = 62 * (1 + (first + left + top) * 0.11 + Math.abs(left - top) * 0.035);
         cell.textContent = value >= 9999.9 ? "9999.9+" : value.toFixed(1);
+      }
+    }
+    const primary = root.querySelector('.odds-matrix--main[data-matrix-kind="sanrenpuku"]');
+    const folded = root.querySelector('.odds-matrix--folded[data-matrix-kind="sanrenpuku"]');
+    if (!(primary instanceof HTMLElement)) return;
+    const primaryColumns = [...primary.querySelectorAll("[data-matrix-axis-column]")];
+    const axisIsInPrimary = primaryColumns.some((column) => Number(column.dataset.matrixAxisColumn) === first);
+    const gridCount = primaryColumns.length + (axisIsInPrimary ? 0 : 1);
+    primary.style.setProperty("--matrix-count", String(gridCount));
+    for (const column of primaryColumns) {
+      if (column instanceof HTMLElement) column.style.removeProperty("grid-column-start");
+    }
+    const firstPrimary = primaryColumns.find((column) => Number(column.dataset.matrixAxisColumn) !== first);
+    if (firstPrimary instanceof HTMLElement) firstPrimary.style.gridColumnStart = "2";
+    if (folded instanceof HTMLElement) {
+      folded.style.setProperty("--matrix-count", String(gridCount));
+      const foldedColumns = [...folded.querySelectorAll("[data-matrix-axis-column]")];
+      for (const column of foldedColumns) {
+        if (column instanceof HTMLElement) column.style.removeProperty("grid-column-start");
+      }
+      const visibleFolded = foldedColumns.filter((column) => Number(column.dataset.matrixAxisColumn) !== first);
+      const firstFolded = visibleFolded.find((column) => column instanceof HTMLElement);
+      if (firstFolded instanceof HTMLElement) {
+        firstFolded.style.gridColumnStart = String(gridCount - visibleFolded.length + 1);
       }
     }
   };
