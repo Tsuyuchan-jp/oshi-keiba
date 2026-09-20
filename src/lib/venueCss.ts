@@ -591,7 +591,7 @@ ${MEMBER_OVERLAY_CSS}
   padding: .2rem .65rem;
   cursor: pointer;
 }
-.odds-preview-tabs button[aria-selected="true"] { position: relative; z-index: 1; margin-bottom: -1px; border-color: var(--odds); border-bottom-color: var(--member-black); background: var(--member-black); color: var(--odds); box-shadow: inset 0 2px 0 var(--odds); text-shadow: 0 0 10px rgba(255, 138, 42, .35); }
+.odds-preview-tabs button[aria-selected="true"] { position: relative; z-index: 1; margin-bottom: -1px; border-color: var(--odds); border-bottom-color: var(--member-black); background: var(--member-black); color: var(--odds); text-shadow: 0 0 10px rgba(255, 138, 42, .35); }
 .odds-preview-tabs button:hover { color: var(--member-ink-bright); background: rgba(0, 232, 216, .05); }
 .odds-preview [data-preview-view][hidden] { display: none !important; }
 .odds-preview > .cols,
@@ -883,6 +883,8 @@ ${MEMBER_MOBILE_CHROME_CSS}
   /* 2列は隙間で分ける。外枠は出さず、見出し下の横線だけ残す */
   .cols { gap: .85rem; }
   .cols .sheet-wrap { min-width: 0; }
+  .odds-preview .board-head { margin-bottom: .55rem; padding-top: .12rem; }
+  .odds-preview .board-head h1 { font-size: 1.35rem; letter-spacing: .16em; text-shadow: 0 0 12px rgba(0, 232, 216, .22); }
 }
 .scene[data-phase="closed"] .cta,
 .scene[data-phase="published"] .cta,
