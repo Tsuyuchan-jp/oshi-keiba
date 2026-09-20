@@ -295,7 +295,7 @@ function sheetHeadHtml(withPlace: boolean): string {
 }
 
 /** ローカル表示試作だけの連勝盤。単勝盤は既存の sheet をそのまま使う。 */
-function previewMarketPanelHtml(
+function legacyPreviewMarketPanelHtml(
   board: Board,
   kind: Exclude<BetKind, "win">,
   title: string,
@@ -319,10 +319,50 @@ function previewMarketPanelHtml(
         : [400.1, 401.8, 403.1, 406.4, 408.4, 410.2, 447.8, 463.7];
   const rows = selections.map((selection, i) => {
     const shown = mode === "real" && i >= 3 ? "—" : `${odds[i]!.toFixed(1)}倍`;
-    const note = mode === "real" ? (i < 3 ? "実票" : "") : (i < 4 ? "人気" : "");
+    const note = mode === "real" && i < 3 ? "実票" : "";
     return `<div class="odds-preview-row"><span>${escapeHtml(selection)}${note ? `<small>${note}</small>` : ""}</span><b>${shown}</b></div>`;
   }).join("");
   return `<section class="odds-preview-panel"><div class="odds-preview-panel-head"><b>${escapeHtml(title)}</b><span>${mode === "real" ? "実票あり" : "人気上位 8組"}</span></div>${rows}</section>`;
+}
+
+function previewMarketPanelHtml(
+  board: Board,
+  kind: Exclude<BetKind, "win">,
+  title: string,
+  mode: "popular" | "real" = "popular",
+): string {
+  const nums = board.horses.filter((h) => !h.horse.scratched).map((h) => h.number);
+  const perColumn = Math.ceil(nums.length / 2);
+  const count = perColumn * 2;
+  const ranked = [...nums.slice(6), ...nums.slice(0, 6)];
+  const selections: string[] = [];
+  for (let a = 0; a < ranked.length && selections.length < count; a += 1) {
+    for (let b = 0; b < ranked.length && selections.length < count; b += 1) {
+      if (a === b || ((kind === "umaren" || kind === "sanrenpuku") && a > b)) continue;
+      if (kind === "umaren" || kind === "umatan") {
+        selections.push(`${ranked[a]}${kind === "umatan" ? "→" : "－"}${ranked[b]}`);
+        continue;
+      }
+      for (let c = 0; c < ranked.length && selections.length < count; c += 1) {
+        if (a === c || b === c || (kind === "sanrenpuku" && (a > b || b > c))) continue;
+        const separator = kind === "sanrentan" ? "→" : "－";
+        selections.push(`${ranked[a]}${separator}${ranked[b]}${separator}${ranked[c]}`);
+      }
+    }
+  }
+  const baseOdds = { umaren: 22.4, umatan: 48.7, sanrenpuku: 97.3, sanrentan: 400.1 }[kind];
+  const row = (selection: string, i: number) => {
+    const shown = mode === "real" && i >= 3
+      ? "－"
+      : `${(baseOdds * (1 + i * 0.12)).toFixed(1)}倍`;
+    const note = mode === "real" ? (i < 3 ? "実票" : "") : (i < 4 ? "人気" : "");
+    return `<div class="odds-preview-row"><em>${i + 1}</em><span>${escapeHtml(selection)}${note ? `<small>${note}</small>` : ""}</span><span class="odds-preview-odds">${shown}</span></div>`;
+  };
+  const columns = [0, 1].map((column) => `<div class="odds-preview-column">${selections
+    .slice(column * perColumn, (column + 1) * perColumn)
+    .map((selection, i) => row(selection, column * perColumn + i))
+    .join("")}</div>`).join("");
+  return `<section class="odds-preview-panel"><div class="odds-preview-panel-head"><b>${escapeHtml(title)}</b><span>${mode === "real" ? "実票あり" : `人気上位 ${count}組`}</span></div><div class="odds-preview-columns">${columns}</div></section>`;
 }
 
 function previewMarketHtml(board: Board, layout: VenueOddsPreviewLayout): string {
