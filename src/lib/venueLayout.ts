@@ -447,11 +447,14 @@ function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku", prev
   const axis = nums[0] ?? 1;
   // 最終馬番は以降の相手がいないため軸列にしない。2人減るごとに主表を1列減らす。
   const axisNums = nums.slice(0, -1);
-  const primaryCount = Math.min(axisNums.length, Math.floor(nums.length / 2) + 2);
+  const primaryCount = kind === "sanrenpuku"
+    ? Math.min(axisNums.length, Math.floor(nums.length / 2) + 2)
+    : Math.min(axisNums.length, Math.ceil(nums.length / 2) + 1);
   const primary = axisNums.slice(0, primaryCount);
   const folded = axisNums.slice(primaryCount);
+  const runnerName = (num: number) => board.horses.find((entry) => entry.number === num)?.horse.uma_name ?? `ウマ娘${num}`;
   const axisPanel = kind === "sanrenpuku"
-    ? `<aside class="odds-matrix-axis-panel"><span>軸ウマ娘</span><b>${axis}番</b><label>変更<select id="sanrenpuku-axis" aria-label="軸ウマ娘">${nums.map((num) => `<option value="${num}"${num === axis ? " selected" : ""}>${num}番</option>`).join("")}</select></label></aside>`
+    ? `<aside class="odds-matrix-axis-panel"><span class="odds-matrix-axis-title">軸ウマ娘</span><button type="button" class="odds-matrix-axis-button" id="sanrenpuku-axis-open" aria-haspopup="dialog" aria-controls="sanrenpuku-axis-modal"><span class="odds-matrix-axis-number">${axis}番</span><span class="odds-matrix-axis-name">${escapeHtml(runnerName(axis))}</span></button></aside>`
     : "";
   const title = kind === "umaren" ? "馬連" : "3連複";
   const description = kind === "umaren" ? "組み合わせ別・参考オッズ" : "軸ウマ娘を含む組み合わせ・参考オッズ";
@@ -461,6 +464,18 @@ function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku", prev
     ? previewPackedMatrixGridHtml([...folded].reverse(), nums, kind, axis, "odds-matrix--folded", primary.length, foldedStart)
     : "";
   return `<section class="odds-matrix-panel"><div class="odds-preview-panel-head"><b>${title}</b><span>${description}</span></div><div class="odds-matrix-layout" style="--primary-count:${primary.length};--folded-count:${folded.length}">${main}${secondary}</div></section>`;
+}
+
+function sanrenpukuAxisModalHtml(board: Board, previewRunnerCount?: number): string {
+  const nums = previewRunnerCount
+    ? Array.from({ length: previewRunnerCount }, (_, i) => i + 1)
+    : board.horses.filter((entry) => !entry.horse.scratched).map((entry) => entry.number);
+  const nameOf = (num: number) => board.horses.find((entry) => entry.number === num)?.horse.uma_name ?? `ウマ娘${num}`;
+  const choices = nums.map((num) => {
+    const waku = wakuOf(num, nums.length);
+    return `<button type="button" class="odds-axis-choice" data-axis-choice="${num}"><i class="waku-marker w${waku}"></i><b>${num}番</b><span class="odds-axis-choice-name">${escapeHtml(nameOf(num))}</span></button>`;
+  }).join("");
+  return `<dialog class="odds-axis-modal" id="sanrenpuku-axis-modal" aria-labelledby="sanrenpuku-axis-modal-title"><header><div><h2 id="sanrenpuku-axis-modal-title">軸ウマ娘を選ぶ</h2><p>選んだウマ娘を含む3連複の組み合わせを表示します。</p></div><button type="button" class="odds-axis-modal-close" id="sanrenpuku-axis-close">閉じる</button></header><select id="sanrenpuku-axis" hidden aria-hidden="true">${nums.map((num) => `<option value="${num}">${num}番</option>`).join("")}</select><div class="odds-axis-choice-grid">${choices}</div></dialog>`;
 }
 
 function previewOrderedHtml(board: Board): string {
@@ -473,7 +488,8 @@ function previewMarketHtml(board: Board, layout: VenueOddsPreviewLayout, preview
   if (layout === "jra") {
     return view("umaren", previewOddsMatrixHtml(board, "umaren", previewRunnerCount))
       + view("sanrenpuku", previewOddsMatrixHtml(board, "sanrenpuku", previewRunnerCount))
-      + view("ordered", previewOrderedHtml(board));
+      + view("ordered", previewOrderedHtml(board))
+      + sanrenpukuAxisModalHtml(board, previewRunnerCount);
   }
   if (layout === "three") {
     return view("pair", previewMarketPanelHtml(board, "umaren", "馬連") + previewMarketPanelHtml(board, "umatan", "馬単"))
@@ -531,12 +547,22 @@ function previewTabsScript(): string {
     for (const view of views) view.toggleAttribute("hidden", view.dataset.previewView !== target);
   });
   const axis = root.querySelector("#sanrenpuku-axis");
+  const axisOpen = root.querySelector("#sanrenpuku-axis-open");
+  const axisModal = root.querySelector("#sanrenpuku-axis-modal");
+  const axisClose = root.querySelector("#sanrenpuku-axis-close");
   const matrices = [...root.querySelectorAll('[data-matrix-kind="sanrenpuku"]')];
   const updateSanrenpuku = () => {
     if (!(axis instanceof HTMLSelectElement) || matrices.length === 0) return;
     const first = Number(axis.value);
-    const axisValue = root.querySelector(".odds-matrix-axis-panel > b");
-    if (axisValue) axisValue.textContent = axis.value + "番";
+    const axisNumber = root.querySelector(".odds-matrix-axis-number");
+    const axisName = root.querySelector(".odds-matrix-axis-name");
+    const selectedChoice = [...root.querySelectorAll("[data-axis-choice]")].find((choice) => choice.dataset.axisChoice === axis.value);
+    if (axisNumber) axisNumber.textContent = axis.value + "番";
+    if (axisName && selectedChoice) axisName.textContent = selectedChoice.querySelector(".odds-axis-choice-name")?.textContent ?? "";
+    for (const choice of root.querySelectorAll("[data-axis-choice]")) {
+      choice.classList.toggle("is-selected", choice === selectedChoice);
+      choice.setAttribute("aria-pressed", String(choice === selectedChoice));
+    }
     for (const matrix of matrices) {
       matrix.dataset.matrixAxis = axis.value;
       for (const column of matrix.querySelectorAll("[data-matrix-axis-column]")) {
@@ -579,6 +605,21 @@ function previewTabsScript(): string {
   };
   updateSanrenpuku();
   axis?.addEventListener("change", updateSanrenpuku);
+  axisOpen?.addEventListener("click", () => {
+    if (axisModal instanceof HTMLDialogElement) axisModal.showModal();
+  });
+  axisClose?.addEventListener("click", () => {
+    if (axisModal instanceof HTMLDialogElement) axisModal.close();
+  });
+  axisModal?.addEventListener("click", (event) => {
+    if (event.target === axisModal && axisModal instanceof HTMLDialogElement) axisModal.close();
+  });
+  for (const choice of root.querySelectorAll("[data-axis-choice]")) choice.addEventListener("click", () => {
+    if (!(axis instanceof HTMLSelectElement)) return;
+    axis.value = choice.dataset.axisChoice ?? axis.value;
+    axis.dispatchEvent(new Event("change"));
+    if (axisModal instanceof HTMLDialogElement) axisModal.close();
+  });
 })();
 </script>`;
 }
