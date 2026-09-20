@@ -445,7 +445,7 @@ function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku", prev
   const axis = nums[0] ?? 1;
   // 最終馬番は以降の相手がいないため軸列にしない。2人減るごとに主表を1列減らす。
   const axisNums = nums.slice(0, -1);
-  const primaryCount = Math.min(axisNums.length, Math.ceil(nums.length / 2) + 1);
+  const primaryCount = Math.min(axisNums.length, Math.floor(nums.length / 2) + 2);
   const primary = axisNums.slice(0, primaryCount);
   const folded = axisNums.slice(primaryCount);
   const selector = kind === "sanrenpuku"
