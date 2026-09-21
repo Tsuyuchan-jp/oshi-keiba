@@ -610,6 +610,7 @@ ${MEMBER_OVERLAY_CSS}
 .odds-preview-odds { color: var(--odds); text-align: right; white-space: nowrap; font-family: "Chakra Petch", sans-serif; font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.15em; text-shadow: 0 0 10px rgba(255, 138, 42, .35); }
 .odds-matrix-panel { min-width: 0; background: var(--member-black); overflow: auto; }
 .odds-preview-market:has(.odds-matrix-panel) { grid-template-columns: 1fr; }
+.odds-preview-market:has(.odds-preview-ordered) { grid-template-columns: 1fr; }
 .odds-matrix-panel .odds-preview-panel-head { position: sticky; top: 0; z-index: 2; background: var(--member-black); }
 .odds-matrix-select { display: inline-flex; align-items: center; gap: .3rem; margin-left: auto; color: var(--member-ink-bright); font-family: "IBM Plex Sans JP", sans-serif; font-size: .7rem; letter-spacing: 0; }
 .odds-matrix-select select { border: 1px solid #31514d; border-radius: 0; background: #091111; color: var(--led); font: inherit; padding: .1rem .25rem; }
