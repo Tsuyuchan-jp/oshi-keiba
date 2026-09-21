@@ -660,8 +660,15 @@ ${MEMBER_OVERLAY_CSS}
 .odds-preview-runner-controls { position: fixed; z-index: 3; left: 1rem; bottom: 1rem; display: flex; align-items: center; gap: .35rem; padding: .45rem .55rem; border: 1px solid #31514d; background: rgba(4, 11, 11, .88); color: var(--led-dim); font-family: "IBM Plex Sans JP", sans-serif; font-size: .72rem; box-shadow: 0 0 16px rgba(0, 0, 0, .32); }
 .odds-preview-runner-controls a { padding: .12rem .28rem; border: 1px solid transparent; color: var(--member-ink-bright); text-decoration: none; }
 .odds-preview-runner-controls a[aria-current="page"] { border-color: #31514d; color: var(--odds); background: #0b1313; font-weight: 700; }
-.odds-preview-ordered { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem .85rem; min-height: 0; flex: 1 1 auto; overflow: auto; }
-.odds-preview-ordered .odds-preview-panel { min-height: 0; }
+.odds-preview-ordered { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .85rem; min-height: 0; flex: 1 1 auto; overflow: auto; }
+.odds-ordered-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; min-width: 0; background: var(--member-black); }
+.odds-ordered-group > h2 { grid-column: 1 / -1; margin: 0; padding: .42rem .2rem; border-bottom: 1px solid #31514d; color: var(--member-ink-bright); font-family: "IBM Plex Sans JP", sans-serif; font-size: .82rem; letter-spacing: .12em; }
+.odds-ordered-column { min-width: 0; }
+.odds-ordered-column + .odds-ordered-column { border-left: 1px solid #1b3431; }
+.odds-ordered-column h3 { margin: 0; padding: .25rem .2rem; color: var(--led-dim); font-family: "IBM Plex Sans JP", sans-serif; font-size: .65rem; font-weight: 700; letter-spacing: .08em; text-align: center; }
+.odds-ordered-row { display: grid; grid-template-columns: minmax(0, 1fr) 4.6rem; align-items: center; gap: .15rem; min-height: 1.65rem; padding: .14rem .2rem; border-top: 1px solid #0c1818; font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif; font-size: clamp(.72rem, 1vw, .92rem); }
+.odds-ordered-row span { min-width: 0; overflow: hidden; color: var(--member-ink-bright); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.odds-ordered-row b { color: var(--odds); font-size: 1.06em; text-align: right; text-shadow: 0 0 8px rgba(255, 138, 42, .3); }
 .flash {
   flex: 0 0 auto;
   margin: 0 0 .4rem;

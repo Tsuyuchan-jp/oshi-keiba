@@ -478,8 +478,39 @@ function sanrenpukuAxisModalHtml(board: Board, previewRunnerCount?: number): str
   return `<dialog class="odds-axis-modal" id="sanrenpuku-axis-modal" aria-labelledby="sanrenpuku-axis-modal-title"><header><div><h2 id="sanrenpuku-axis-modal-title">軸ウマ娘を選ぶ</h2><p>選んだウマ娘を含む3連複の組み合わせを表示します。</p></div><button type="button" class="odds-axis-modal-close" id="sanrenpuku-axis-close">閉じる</button></header><select id="sanrenpuku-axis" hidden aria-hidden="true">${nums.map((num) => `<option value="${num}">${num}番</option>`).join("")}</select><div class="odds-axis-choice-grid">${choices}</div></dialog>`;
 }
 
+function previewOrderedColumnHtml(
+  board: Board,
+  kind: "umatan" | "sanrentan",
+  title: string,
+  mode: "popular" | "real",
+): string {
+  const nums = board.horses.filter((entry) => !entry.horse.scratched).map((entry) => entry.number);
+  const ranked = [...nums.slice(6), ...nums.slice(0, 6)];
+  const selections: string[] = [];
+  for (let a = 0; a < ranked.length && selections.length < 3; a += 1) {
+    for (let b = 0; b < ranked.length && selections.length < 3; b += 1) {
+      if (a === b) continue;
+      if (kind === "umatan") {
+        selections.push(`${ranked[a]}→${ranked[b]}`);
+        continue;
+      }
+      for (let c = 0; c < ranked.length && selections.length < 3; c += 1) {
+        if (a === c || b === c) continue;
+        selections.push(`${ranked[a]}→${ranked[b]}→${ranked[c]}`);
+      }
+    }
+  }
+  const baseOdds = kind === "umatan" ? 48.7 : 400.1;
+  const rows = selections.map((selection, index) => {
+    const odds = baseOdds * (1 + index * 0.12);
+    return `<div class="odds-ordered-row"><span>${selection}</span><b>${odds.toFixed(1)}</b></div>`;
+  }).join("");
+  return `<section class="odds-ordered-column"><h3>${title}</h3>${rows}</section>`;
+}
+
 function previewOrderedHtml(board: Board): string {
-  return `<div class="odds-preview-ordered">${previewMarketPanelHtml(board, "umatan", "馬単・人気上位")}${previewMarketPanelHtml(board, "umatan", "馬単・直近投票", "real")}${previewMarketPanelHtml(board, "sanrentan", "3連単・人気上位")}${previewMarketPanelHtml(board, "sanrentan", "3連単・直近投票", "real")}</div>`;
+  const group = (kind: "umatan" | "sanrentan", title: string) => `<section class="odds-ordered-group"><h2>${title}</h2>${previewOrderedColumnHtml(board, kind, "人気上位", "popular")}${previewOrderedColumnHtml(board, kind, "直近投票", "real")}</section>`;
+  return `<div class="odds-preview-ordered">${group("umatan", "馬単")}${group("sanrentan", "3連単")}</div>`;
 }
 
 function previewMarketHtml(board: Board, layout: VenueOddsPreviewLayout, previewRunnerCount?: number): string {
@@ -503,7 +534,7 @@ function previewMarketHtml(board: Board, layout: VenueOddsPreviewLayout, preview
 
 function previewTabsHtml(layout: VenueOddsPreviewLayout): string {
   const tabs = layout === "jra"
-    ? [["win", "単勝"], ["umaren", "馬連"], ["sanrenpuku", "3連複"], ["ordered", "順序あり"]]
+    ? [["win", "単勝"], ["umaren", "馬連"], ["sanrenpuku", "3連複"], ["ordered", "馬単・3連単"]]
     : layout === "three"
     ? [["win", "単勝"], ["pair", "2人組"], ["triple", "3人組"]]
     : [["win", "単勝"], ["umaren", "馬連"], ["umatan", "馬単"], ["sanrenpuku", "3連複"], ["sanrentan", "3連単"]];
