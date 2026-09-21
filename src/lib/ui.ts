@@ -221,13 +221,16 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
   let timer = null;
   const apply = (payload) => {
     const next = new Map();
+    const winNext = new Map();
     const items = payload.kinds?.[kind] || [];
     for (const it of items) next.set(it.key, it.odds);
+    for (const it of payload.kinds?.win || []) winNext.set(it.key, it.odds);
     for (const tr of document.querySelectorAll(rowSel)) {
       const key = tr.getAttribute("data-sel") || tr.getAttribute("data-horse-id");
       const cell = tr.querySelector(".odds-now");
       if (!cell || !key) continue;
-      const odds = next.get(key);
+      // 馬一覧・場内の行は常に単勝参考オッズ。連勝の買い目行だけ賭式別の値を使う。
+      const odds = tr.matches(".chip, .sheet-row") ? winNext.get(key) : next.get(key);
       const text = (odds == null || !Number.isFinite(odds)) ? "—" : Number(odds).toFixed(1);
       const old = prev.has(key) ? prev.get(key) : parseShown(cell.textContent);
       cell.textContent = text;
@@ -283,7 +286,7 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
         }
       }
     }
-    prev = next;
+    prev = new Map([...next, ...winNext]);
     setTimeout(() => {
       document.querySelectorAll(".pulse-row").forEach((el) => el.classList.remove("pulse-row"));
     }, 1400);
