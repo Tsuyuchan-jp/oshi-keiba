@@ -487,14 +487,14 @@ function previewOrderedColumnHtml(
   const nums = board.horses.filter((entry) => !entry.horse.scratched).map((entry) => entry.number);
   const ranked = [...nums.slice(6), ...nums.slice(0, 6)];
   const selections: string[] = [];
-  for (let a = 0; a < ranked.length && selections.length < 3; a += 1) {
-    for (let b = 0; b < ranked.length && selections.length < 3; b += 1) {
+  for (let a = 0; a < ranked.length && selections.length < 9; a += 1) {
+    for (let b = 0; b < ranked.length && selections.length < 9; b += 1) {
       if (a === b) continue;
       if (kind === "umatan") {
         selections.push(`${ranked[a]}→${ranked[b]}`);
         continue;
       }
-      for (let c = 0; c < ranked.length && selections.length < 3; c += 1) {
+      for (let c = 0; c < ranked.length && selections.length < 9; c += 1) {
         if (a === c || b === c) continue;
         selections.push(`${ranked[a]}→${ranked[b]}→${ranked[c]}`);
       }

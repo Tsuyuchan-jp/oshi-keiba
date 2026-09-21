@@ -667,7 +667,7 @@ ${MEMBER_OVERLAY_CSS}
 .odds-ordered-column { min-width: 0; }
 .odds-ordered-column + .odds-ordered-column { border-left: 1px solid #1b3431; }
 .odds-ordered-column h3 { margin: 0; padding: .25rem .2rem; color: var(--led-dim); font-family: "IBM Plex Sans JP", sans-serif; font-size: .65rem; font-weight: 700; letter-spacing: .08em; text-align: center; }
-.odds-ordered-row { display: grid; grid-template-columns: minmax(0, 1fr) 4.6rem; align-items: center; gap: .15rem; min-height: 1.65rem; padding: .14rem .2rem; border-top: 1px solid #0c1818; font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif; font-size: clamp(.72rem, 1vw, .92rem); }
+.odds-ordered-row { display: grid; grid-template-columns: minmax(0, 1fr) 4.6rem; align-items: center; gap: .15rem; min-height: 2.05rem; padding: .16rem .25rem; border-top: 1px solid #0c1818; font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif; font-size: clamp(.9rem, 1.1vw, 1.05rem); }
 .odds-ordered-row span { min-width: 0; overflow: hidden; color: var(--member-ink-bright); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 .odds-ordered-row b { color: var(--odds); font-size: 1.06em; text-align: right; text-shadow: 0 0 8px rgba(255, 138, 42, .3); }
 .flash {
