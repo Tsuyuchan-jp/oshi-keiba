@@ -501,7 +501,8 @@ function previewOrderedColumnHtml(
     }
   }
   const baseOdds = kind === "umatan" ? 48.7 : 400.1;
-  const rows = selections.map((selection, index) => {
+  const isEmptyRecentVotes = kind === "sanrentan" && mode === "real";
+  const rows = isEmptyRecentVotes ? `<div class="odds-ordered-empty">最初の投票を<br>お待ちしています</div>` : selections.map((selection, index) => {
     const odds = baseOdds * (1 + index * 0.12);
     return `<div class="odds-ordered-row"><span>${selection}</span><b>${odds.toFixed(1)}</b></div>`;
   }).join("");
