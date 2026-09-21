@@ -666,6 +666,7 @@ ${MEMBER_OVERLAY_CSS}
 .odds-ordered-group > h2 { grid-column: 1 / -1; margin: 0; padding: .42rem .2rem; border-bottom: 1px solid #31514d; color: var(--member-ink-bright); font-family: "IBM Plex Sans JP", sans-serif; font-size: .82rem; letter-spacing: .12em; }
 .odds-ordered-column { min-width: 0; }
 .odds-ordered-column + .odds-ordered-column { border-left: 1px solid #1b3431; }
+.odds-ordered-column + .odds-ordered-column .odds-ordered-row { padding-left: .55rem; }
 .odds-ordered-column h3 { margin: 0; padding: .25rem .2rem; color: var(--led-dim); font-family: "IBM Plex Sans JP", sans-serif; font-size: .65rem; font-weight: 700; letter-spacing: .08em; text-align: center; }
 .odds-ordered-row { display: grid; grid-template-columns: minmax(0, 1fr) 4.6rem; align-items: center; gap: .15rem; min-height: 2.05rem; padding: .16rem .25rem; border-top: 1px solid #0c1818; font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif; font-size: clamp(.9rem, 1.1vw, 1.05rem); }
 .odds-ordered-row span { min-width: 0; overflow: hidden; color: var(--member-ink-bright); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
