@@ -16,9 +16,11 @@ import {
   formatSelectionLabel,
   isBetKind,
   kindIsEnabled,
+  normalizeSelection,
   parseEnabledKinds,
   type BetKind,
 } from "./bets.ts";
+import { exoticReferenceOdds } from "./odds.ts";
 import { escapeHtml, bounce, html, json, readForm, redirect } from "./http.ts";
 import {
   getUser,
@@ -73,6 +75,52 @@ function msg(url: URL): { text: string | null; error: boolean } {
 
 function isActiveMember(user: UserRow | null): user is UserRow {
   return user?.role === "member" && user.deleted_at == null;
+}
+
+function exoticReferencePreview(
+  board: Awaited<ReturnType<typeof loadBoard>>,
+  kind: Exclude<BetKind, "win">,
+  pickedIds: string[],
+) {
+  const need = kind === "umaren" || kind === "umatan" ? 2 : 3;
+  const live = board.horses.filter((entry) => !entry.horse.scratched);
+  if (pickedIds.length < need - 1 || pickedIds.length > need || new Set(pickedIds).size !== pickedIds.length) return null;
+  const indexById = new Map(live.map((entry, index) => [entry.horse.id, index]));
+  if (pickedIds.some((id) => !indexById.has(id))) return null;
+  const pool = board.pools.find((entry) => entry.kind === kind);
+  if (!pool) return null;
+  const realByKey = new Map(pool.combos.map((combo) => [combo.selection_key, combo.real]));
+  const nums = numberByHorseId(board);
+  const item = (ids: string[]) => {
+    const normalized = normalizeSelection(kind, ids);
+    const selection = ids.map((id) => indexById.get(id)!);
+    const displayIds = kind === "umaren" || kind === "sanrenpuku"
+      ? [...ids].sort((a, b) => (nums.get(a) ?? 0) - (nums.get(b) ?? 0))
+      : ids;
+    return {
+      key: normalized.selection_key,
+      label: formatSelectionLabel(kind, displayIds[0]!, displayIds[1] ?? null, displayIds[2] ?? null, nums),
+      odds: exoticReferenceOdds({
+        kind,
+        strengths: live.map((entry) => entry.horse.strength),
+        selection,
+        seedPool: board.event.seed_pool_s,
+        timeWeight: board.wTime,
+        realTotal: pool.realTotal,
+        selectionReal: realByKey.get(normalized.selection_key) ?? 0,
+        takeoutD: board.event.takeout_d,
+      }),
+    };
+  };
+  if (pickedIds.length === need) {
+    return { state: "selected" as const, items: [item(pickedIds)] };
+  }
+  return {
+    state: "candidates" as const,
+    items: live
+      .filter((entry) => !pickedIds.includes(entry.horse.id))
+      .map((entry) => item([...pickedIds, entry.horse.id])),
+  };
 }
 
 async function requireMember(
@@ -181,10 +229,18 @@ export async function tryMemberGet(
         }));
       }
     }
+    let reference: ReturnType<typeof exoticReferencePreview> | null = null;
+    const referenceKind = url.searchParams.get("reference_kind");
+    if (referenceKind && isBetKind(referenceKind) && referenceKind !== "win" && liveKinds.includes(referenceKind)) {
+      const pickedIds = [url.searchParams.get("h1"), url.searchParams.get("h2"), url.searchParams.get("h3")]
+        .filter((id): id is string => Boolean(id));
+      reference = exoticReferencePreview(board, referenceKind, pickedIds);
+    }
     return json({
       status: board.event.status,
       statusLabel: statusLabel(board.event.status),
       kinds,
+      reference,
     });
   }
 

@@ -23,6 +23,17 @@ export const DEFAULTS = {
 /** 連勝を単勝参考へ乗せる係数。管理画面では触らない */
 export const IMPUTED_LAMBDA = 1;
 
+/** 連勝 Seed 用。賭式ごとに実票で薄める基準額（docs/specifications/exotic-seed.md）。 */
+export const EXOTIC_PULL_E: Record<Exclude<BetKind, "win">, number> = {
+  umaren: 25_000,
+  umatan: 7_000,
+  sanrenpuku: 7_000,
+  sanrentan: 7_000,
+};
+
+/** 連勝は単勝より人気差を少し強める。 */
+export const EXOTIC_GAMMA = 2;
+
 export function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n));
 }
@@ -123,6 +134,70 @@ export function addImputed(
 
 export function referenceTv(winTotal: number, exoticTotal: number, lambda: number): number {
   return winTotal + lambda * exoticTotal;
+}
+
+/**
+ * 連勝の1買い目に配る確率。順不同は成立しうる並びをすべて加算する。
+ * strengths は出走順、selection はその配列の添字で渡す。
+ */
+export function exoticSelectionProbability(
+  kind: Exclude<BetKind, "win">,
+  strengths: readonly number[],
+  selection: readonly number[],
+  gamma = EXOTIC_GAMMA,
+): number | null {
+  const need = kind === "umaren" || kind === "umatan" ? 2 : 3;
+  if (selection.length !== need || new Set(selection).size !== need) return null;
+  if (selection.some((index) => index < 0 || index >= strengths.length)) return null;
+  const weighted = strengths.map((strength) => Math.max(0, strength) ** gamma);
+  const total = weighted.reduce((sum, value) => sum + value, 0);
+  if (!(total > 0)) return null;
+  const q = weighted.map((value) => value / total);
+  const orderedProbability = (order: readonly number[]) => {
+    let remaining = 1;
+    let probability = 1;
+    for (const index of order) {
+      if (!(remaining > 0) || !(q[index]! >= 0)) return 0;
+      probability *= q[index]! / remaining;
+      remaining -= q[index]!;
+    }
+    return probability;
+  };
+  if (kind === "umatan" || kind === "sanrentan") {
+    return orderedProbability(selection);
+  }
+  if (selection.length === 2) {
+    return orderedProbability(selection) + orderedProbability([selection[1]!, selection[0]!]);
+  }
+  let probability = 0;
+  for (let a = 0; a < 3; a += 1) {
+    for (let b = 0; b < 3; b += 1) {
+      if (b === a) continue;
+      const c = [0, 1, 2].find((index) => index !== a && index !== b)!;
+      probability += orderedProbability([selection[a]!, selection[b]!, selection[c]!]);
+    }
+  }
+  return probability;
+}
+
+/** 投票中の連勝 Seed 参考オッズ。確定配当には使わない。 */
+export function exoticReferenceOdds(opts: {
+  kind: Exclude<BetKind, "win">;
+  strengths: readonly number[];
+  selection: readonly number[];
+  seedPool: number;
+  timeWeight: number;
+  realTotal: number;
+  selectionReal: number;
+  takeoutD: number;
+}): number | null {
+  const probability = exoticSelectionProbability(opts.kind, opts.strengths, opts.selection);
+  if (probability == null) return null;
+  const volumeWeight = wVolume(opts.realTotal, EXOTIC_PULL_E[opts.kind]);
+  const weight = opts.timeWeight * volumeWeight;
+  const display = opts.seedPool * probability * weight + opts.selectionReal;
+  const displayTotal = opts.seedPool * weight + opts.realTotal;
+  return parimutuelOdds(display, displayTotal, opts.takeoutD);
 }
 
 /** 整数ポイントへ切り捨て（払戻） */

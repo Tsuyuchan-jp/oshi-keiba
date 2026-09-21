@@ -5,20 +5,17 @@
 import { escapeHtml } from "./http.ts";
 import {
   BET_KIND_LABEL,
-  formatSelectionLabel,
   parseEnabledKinds,
   type BetKind,
 } from "./bets.ts";
 import { horseSheetParts } from "./horseName.ts";
 import {
-  numberByHorseId,
   type Board,
   type EventStatus,
   type UserRow,
 } from "./store.ts";
 import {
   flashHtml,
-  formatOdds,
   howToModal,
   toJstInput,
 } from "./ui.ts";
@@ -224,27 +221,13 @@ function candidateBarHtml(opts: {
   </section>`;
 }
 
-function comboMiniHtml(board: Board, kind: BetKind): string {
+function referenceOddsHtml(kind: BetKind): string {
   if (kind === "win") return "";
-  const pool = board.pools.find((p) => p.kind === kind);
-  const nums = numberByHorseId(board);
-  const title = `${BET_KIND_LABEL[kind]}のオッズ`;
-  if (!pool || pool.combos.length === 0) {
-    return `<div class="odds-mini"><h2>${escapeHtml(title)}</h2><p class="hint">—</p></div>`;
-  }
-  const rows = pool.combos
-    .map((c) => {
-      const lab = formatSelectionLabel(
-        kind,
-        c.horse_1,
-        c.horse_2,
-        c.horse_3,
-        nums,
-      );
-      return `<div class="orow" data-sel="${escapeHtml(c.selection_key)}"><span>${escapeHtml(lab)}</span><span class="odds-now">${formatOdds(c.odds)}</span></div>`;
-    })
-    .join("");
-  return `<div class="odds-mini combo-list"><h2>${escapeHtml(title)}</h2>${rows}</div>`;
+  return `<section class="reference-odds" id="reference-odds" hidden aria-live="polite">
+    <div class="reference-odds-head"><h2>参考オッズ</h2><span>投票中の目安</span></div>
+    <div class="reference-odds-body" id="reference-odds-body"></div>
+    <p>確定配当ではありません。</p>
+  </section>`;
 }
 
 function markCardScript(opts: {
@@ -290,6 +273,9 @@ function markCardScript(opts: {
   const restEl = document.getElementById("rest");
   const hintEl = document.getElementById("hint");
   const buyGuide = document.getElementById("buy-guide");
+  const referenceOdds = document.getElementById("reference-odds");
+  const referenceOddsBody = document.getElementById("reference-odds-body");
+  let referenceRequest = 0;
   if (hintEl) {
     const candidateHint = {
       win: "パドック候補を選択済みにしています。金額を入力してください。",
@@ -355,6 +341,39 @@ function markCardScript(opts: {
     amtEl.textContent = amount.toLocaleString("ja-JP");
     restEl.textContent = Math.max(0, bal - amount).toLocaleString("ja-JP");
     syncHidden();
+    refreshReferenceOdds();
+  }
+  function formatReferenceOdds(odds) {
+    if (odds == null || !Number.isFinite(odds)) return "—";
+    return odds >= 9999.9 ? "9999.9倍以上" : Number(odds).toFixed(1) + "倍";
+  }
+  async function refreshReferenceOdds() {
+    if (!referenceOdds || !referenceOddsBody || kind === "win") return;
+    const last = picks.length - 1;
+    const isCandidateStage = picks[last] == null && picks.slice(0, -1).every((pick) => pick != null);
+    const isSelected = picks.every((pick) => pick != null);
+    if (!isCandidateStage && !isSelected) {
+      referenceOdds.hidden = true;
+      return;
+    }
+    const params = new URLSearchParams({ reference_kind: kind });
+    picks.forEach((number, index) => {
+      const horse = number == null ? null : byNum.get(number);
+      if (horse) params.set("h" + (index + 1), horse.id);
+    });
+    const request = ++referenceRequest;
+    try {
+      const response = await fetch("/api/board?" + params);
+      if (!response.ok) return;
+      const data = await response.json();
+      if (request !== referenceRequest || data.status !== "voting" || !data.reference) return;
+      const items = data.reference.items || [];
+      if (!items.length) { referenceOdds.hidden = true; return; }
+      referenceOddsBody.innerHTML = items.map((item) =>
+        \`<div class="reference-odds-row"><span>\${item.label}</span><b>\${formatReferenceOdds(item.odds)}</b></div>\`
+      ).join("");
+      referenceOdds.hidden = false;
+    } catch (_) {}
   }
   wells.addEventListener("click", (e) => {
     const b = e.target.closest("[data-well]");
@@ -408,6 +427,7 @@ function markCardScript(opts: {
     if (!confirm(msg)) ev.preventDefault();
   });
   paint();
+  if (referenceOdds) setInterval(refreshReferenceOdds, 5000);
 })();
 </script>`;
 }
@@ -464,7 +484,7 @@ export function betBuyPage(opts: {
         <p class="hint" id="hint">${escapeHtml(slots.hint)}</p>
         <div class="wells wells--${slots.labels.length}" id="wells"></div>
         <div class="board" id="board"></div>
-        ${comboMiniHtml(opts.board, opts.kind)}
+        ${referenceOddsHtml(opts.kind)}
         <div class="tickets">
           <h2>自分の馬券</h2>
           ${opts.myBetsHtml}

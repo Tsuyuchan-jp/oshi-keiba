@@ -140,6 +140,21 @@ ${MEMBER_MOBILE_CHROME_CSS}
   padding: .28rem 0; border-bottom: 1px solid var(--member-table-line); color: var(--member-ink-soft);
 }
 .orow .odds-now { color: var(--member-action); font-variant-numeric: tabular-nums; font-weight: 700; }
+.reference-odds {
+  margin-top: .85rem; padding: .55rem .6rem .5rem;
+  border: 1px solid var(--member-field-line); background: rgba(11, 15, 16, .82);
+}
+.reference-odds-head { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; padding-bottom: .35rem; border-bottom: 1px solid var(--member-table-line); }
+.reference-odds h2 { margin: 0; color: var(--member-ink-soft); font-size: .72rem; font-weight: 700; letter-spacing: .08em; }
+.reference-odds-head span, .reference-odds > p { margin: 0; color: var(--member-muted); font-size: .65rem; }
+.reference-odds-body { max-height: 13.2rem; overflow: auto; }
+.reference-odds-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; align-items: center;
+  padding: .32rem 0; border-bottom: 1px solid var(--member-table-line); color: var(--member-ink-soft); font-size: .82rem;
+}
+.reference-odds-row span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reference-odds-row b { color: var(--member-action); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.reference-odds > p { padding-top: .38rem; line-height: 1.35; }
 .tickets {
   margin-top: .9rem; border-top: 1px solid var(--member-panel-line); padding-top: .55rem;
 }

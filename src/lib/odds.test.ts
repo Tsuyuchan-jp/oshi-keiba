@@ -12,6 +12,8 @@ import {
   allocateSeed,
   DEFAULTS,
   displayPool,
+  exoticReferenceOdds,
+  exoticSelectionProbability,
   IMPUTED_LAMBDA,
   parimutuelOdds,
   payoutAmount,
@@ -137,6 +139,24 @@ test("Seed は Strength 比。確定配当は Real のみ", () => {
   assert.equal(confirmedFav, (700 * 0.8) / 700);
   assert.equal(confirmedEmpty, null);
   assert.notEqual(refFav, confirmedFav);
+});
+
+test("連勝 Seed は順序と順不同を分け、実票なしなら確率から参考オッズを出す", () => {
+  const strengths = [1, 1, 1];
+  assert.ok(Math.abs(exoticSelectionProbability("umatan", strengths, [0, 1])! - 1 / 6) < 1e-12);
+  assert.ok(Math.abs(exoticSelectionProbability("umaren", strengths, [0, 1])! - 1 / 3) < 1e-12);
+  assert.ok(Math.abs(exoticSelectionProbability("sanrentan", strengths, [0, 1, 2])! - 1 / 6) < 1e-12);
+  assert.ok(Math.abs(exoticSelectionProbability("sanrenpuku", strengths, [0, 1, 2])! - 1) < 1e-12);
+  assert.ok(Math.abs(exoticReferenceOdds({
+    kind: "umatan",
+    strengths,
+    selection: [0, 1],
+    seedPool: 80_000,
+    timeWeight: 1,
+    realTotal: 0,
+    selectionReal: 0,
+    takeoutD: 0.2,
+  })! - 4.8) < 1e-12);
 });
 
 test("払戻は切り捨て。不成立は 0", () => {
