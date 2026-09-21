@@ -662,7 +662,7 @@ ${MEMBER_OVERLAY_CSS}
 .odds-preview-runner-controls a { padding: .12rem .28rem; border: 1px solid transparent; color: var(--member-ink-bright); text-decoration: none; }
 .odds-preview-runner-controls a[aria-current="page"] { border-color: #31514d; color: var(--odds); background: #0b1313; font-weight: 700; }
 .odds-preview-ordered { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .85rem; min-height: 0; flex: 1 1 auto; overflow: auto; }
-.odds-ordered-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; min-width: 0; background: var(--member-black); }
+.odds-ordered-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: .5rem; align-content: start; min-width: 0; background: var(--member-black); }
 .odds-ordered-group > h2 { grid-column: 1 / -1; margin: 0; padding: .42rem .2rem; border-bottom: 1px solid #31514d; color: var(--member-ink-bright); font-family: "IBM Plex Sans JP", sans-serif; font-size: .82rem; letter-spacing: .12em; }
 .odds-ordered-column { min-width: 0; }
 .odds-ordered-column + .odds-ordered-column { border-left: 1px solid #1b3431; }
