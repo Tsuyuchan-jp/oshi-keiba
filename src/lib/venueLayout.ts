@@ -572,10 +572,11 @@ function previewTabsScript(): string {
         const left = Number(cell.dataset.matrixLeft);
         const top = Number(cell.dataset.matrixTop);
         const valid = left < top && left !== first && top !== first;
+        const odds = cell.querySelector("b");
         cell.classList.toggle("is-blank", !valid);
-        if (!valid) { cell.textContent = ""; continue; }
+        if (!valid) { if (odds) odds.textContent = ""; continue; }
         const value = 62 * (1 + (first + left + top) * 0.11 + Math.abs(left - top) * 0.035);
-        cell.textContent = value >= 9999.9 ? "9999.9+" : value.toFixed(1);
+        if (odds) odds.textContent = value >= 9999.9 ? "9999.9+" : value.toFixed(1);
       }
     }
     const primary = root.querySelector('.odds-matrix--main[data-matrix-kind="sanrenpuku"]');
