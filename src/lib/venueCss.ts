@@ -614,7 +614,6 @@ ${MEMBER_OVERLAY_CSS}
 .odds-matrix-panel .odds-preview-panel-head { position: sticky; top: 0; z-index: 2; background: var(--member-black); }
 .odds-matrix-select { display: inline-flex; align-items: center; gap: .3rem; margin-left: auto; color: var(--member-ink-bright); font-family: "IBM Plex Sans JP", sans-serif; font-size: .7rem; letter-spacing: 0; }
 .odds-matrix-select select { border: 1px solid #31514d; border-radius: 0; background: #091111; color: var(--led); font: inherit; padding: .1rem .25rem; }
-.odds-matrix-scroll { min-width: 0; min-height: 0; flex: 1 1 auto; overflow: auto; }
 .odds-matrix-layout { position: relative; min-height: 0; }
 .odds-matrix { display: grid; grid-template-columns: repeat(var(--matrix-count), minmax(0, 1fr)); column-gap: .8rem; align-items: start; min-width: 0; color: var(--odds); font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif; font-size: clamp(.58rem, 1.2vw, .9rem); font-variant-numeric: tabular-nums; }
 .odds-matrix--main { width: 100%; }
@@ -989,39 +988,6 @@ ${MEMBER_MOBILE_GLASS_CSS}
     background: transparent;
   }
   .odds-preview-market { grid-template-columns: 1fr; overflow: auto; }
-  .odds-preview-market:has(.odds-matrix-panel) { overflow: hidden; }
-  .odds-matrix-panel { overflow: hidden; }
-  .odds-matrix-scroll { overflow: auto; -webkit-overflow-scrolling: touch; }
-  .odds-matrix-layout { width: max(38rem, calc(var(--primary-count) * 4rem)); }
-  .odds-matrix--folded { right: auto; left: 0; }
-  .odds-matrix { font-size: .9rem; }
-  .odds-matrix--main.odds-matrix--sanrenpuku { grid-template-rows: auto auto; }
-  .odds-matrix--main.odds-matrix--sanrenpuku .odds-matrix-axis-panel {
-    grid-column: 1 / -1;
-    grid-row: 1;
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: .5rem;
-    padding: .35rem .5rem;
-    border-right: 0;
-    border-bottom: 1px solid #31514d;
-  }
-  .odds-matrix--main.odds-matrix--sanrenpuku .odds-matrix-axis-title { text-align: left; }
-  .odds-matrix--main.odds-matrix--sanrenpuku .odds-matrix-axis-button {
-    flex-direction: row;
-    justify-content: flex-start;
-    width: 100%;
-    min-height: 2.25rem;
-    margin: 0;
-    padding: .3rem .5rem;
-  }
-  .odds-matrix--main.odds-matrix--sanrenpuku .odds-matrix-axis-number,
-  .odds-matrix--main.odds-matrix--sanrenpuku .odds-matrix-axis-name { writing-mode: horizontal-tb; text-orientation: mixed; }
-  .odds-matrix--main.odds-matrix--sanrenpuku .odds-matrix-axis-name { overflow-wrap: normal; }
-  .odds-matrix--main.odds-matrix--sanrenpuku .odds-matrix-column { grid-row: 2; }
-  .odds-preview-ordered { grid-template-columns: 1fr; gap: .45rem; overflow: visible; }
-  .odds-ordered-group { background: transparent; }
   .odds-preview-panel + .odds-preview-panel { margin-top: .45rem; }
   .odds-preview-panel-head { font-size: .68rem; }
   .odds-preview-panel-head b { font-size: .82rem; }

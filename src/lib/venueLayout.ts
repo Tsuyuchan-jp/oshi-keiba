@@ -483,7 +483,7 @@ function previewOddsMatrixHtml(
     : "";
   const body = liveResponse && !liveResponse.enabled
     ? unavailableOddsHtml()
-    : `<div class="odds-matrix-scroll"><div class="odds-matrix-layout" style="--primary-count:${primary.length};--folded-count:${folded.length}">${main}${secondary}</div></div>`;
+    : `<div class="odds-matrix-layout" style="--primary-count:${primary.length};--folded-count:${folded.length}">${main}${secondary}</div>`;
   return `<section class="odds-matrix-panel"><div class="odds-preview-panel-head"><b>${title}</b><span>${description}</span></div>${body}</section>`;
 }
 
