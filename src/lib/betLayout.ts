@@ -223,10 +223,7 @@ function candidateBarHtml(opts: {
 
 function referenceOddsHtml(kind: BetKind): string {
   if (kind === "win") return "";
-  return `<aside class="reference-odds-notice" id="reference-odds-notice" hidden role="status" aria-live="polite">
-    <span id="reference-odds-notice-text"></span><button type="button" id="reference-odds-notice-open">見る ↓</button>
-  </aside>
-  <section class="reference-odds" id="reference-odds" hidden aria-live="polite">
+  return `<section class="reference-odds" id="reference-odds" hidden aria-live="polite">
     <div class="reference-odds-head"><h2>参考オッズ</h2><span>投票中の目安</span></div>
     <div class="reference-odds-scroll">
       <div class="reference-odds-body" id="reference-odds-body"></div>
@@ -281,16 +278,18 @@ function markCardScript(opts: {
   const buyGuide = document.getElementById("buy-guide");
   const referenceOdds = document.getElementById("reference-odds");
   const referenceOddsBody = document.getElementById("reference-odds-body");
-  const referenceOddsNotice = document.getElementById("reference-odds-notice");
-  const referenceOddsNoticeText = document.getElementById("reference-odds-notice-text");
-  const referenceOddsNoticeOpen = document.getElementById("reference-odds-notice-open");
+  const referenceOddsCandidates = document.getElementById("reference-odds-candidates");
+  const referenceOddsCandidatesText = document.getElementById("reference-odds-candidates-text");
+  const referenceOddsCandidatesOpen = document.getElementById("reference-odds-candidates-open");
+  const referenceOddsSelected = document.getElementById("reference-odds-selected");
+  const referenceOddsSelectedText = document.getElementById("reference-odds-selected-text");
   let referenceRequest = 0;
-  const hideReferenceOddsNotice = () => {
-    if (referenceOddsNotice) referenceOddsNotice.hidden = true;
+  const clearDockReferenceOdds = () => {
+    if (referenceOddsCandidates) referenceOddsCandidates.hidden = true;
+    if (referenceOddsSelected) referenceOddsSelected.hidden = true;
   };
-  referenceOddsNoticeOpen?.addEventListener("click", () => {
+  referenceOddsCandidatesOpen?.addEventListener("click", () => {
     referenceOdds?.scrollIntoView({ behavior: "smooth", block: "start" });
-    hideReferenceOddsNotice();
   });
   const syncReferenceOddsScrollCue = () => {
     if (!referenceOdds || !referenceOddsBody) return;
@@ -339,7 +338,7 @@ function markCardScript(opts: {
         : validationMessage() ?? "内容を確認して「買う」を押してください。";
     }
   }
-  function paint(announceReferenceOdds = false) {
+  function paint() {
     const used = new Set(picks.filter((x) => x != null));
     dock?.classList.toggle("is-compact", picks.some((x) => x == null));
     wells.innerHTML = labels.map((name, i) => {
@@ -365,20 +364,20 @@ function markCardScript(opts: {
     amtEl.textContent = amount.toLocaleString("ja-JP");
     restEl.textContent = Math.max(0, bal - amount).toLocaleString("ja-JP");
     syncHidden();
-    refreshReferenceOdds(announceReferenceOdds);
+    refreshReferenceOdds();
   }
   function formatReferenceOdds(odds) {
     if (odds == null || !Number.isFinite(odds)) return "—";
     return odds >= 9999.9 ? "9999.9+" : Number(odds).toFixed(1) + "倍";
   }
-  async function refreshReferenceOdds(announce = false) {
+  async function refreshReferenceOdds() {
     if (!referenceOdds || !referenceOddsBody || kind === "win") return;
     const last = picks.length - 1;
     const isCandidateStage = picks[last] == null && picks.slice(0, -1).every((pick) => pick != null);
     const isSelected = picks.every((pick) => pick != null);
     if (!isCandidateStage && !isSelected) {
       referenceOdds.hidden = true;
-      hideReferenceOddsNotice();
+      clearDockReferenceOdds();
       return;
     }
     const params = new URLSearchParams({ reference_kind: kind });
@@ -393,18 +392,19 @@ function markCardScript(opts: {
       const data = await response.json();
       if (request !== referenceRequest || data.status !== "voting" || !data.reference) return;
       const items = data.reference.items || [];
-      if (!items.length) { referenceOdds.hidden = true; return; }
+      if (!items.length) { referenceOdds.hidden = true; clearDockReferenceOdds(); return; }
       referenceOddsBody.innerHTML = items.map((item) =>
         \`<div class="reference-odds-row"><span>\${item.label}</span><b>\${formatReferenceOdds(item.odds)}</b></div>\`
       ).join("");
       referenceOdds.hidden = false;
-      if (announce && referenceOddsNotice && referenceOddsNoticeText) {
-        const selected = data.reference.state === "selected";
-        const text = selected
-          ? "参考オッズ：" + items[0].label + "　" + formatReferenceOdds(items[0].odds)
-          : "参考オッズを更新しました　候補" + items.length + "件";
-        referenceOddsNoticeText.textContent = text;
-        referenceOddsNotice.hidden = false;
+      if (isCandidateStage && referenceOddsCandidates && referenceOddsCandidatesText) {
+        referenceOddsCandidatesText.textContent = "参考オッズ：候補" + items.length + "件";
+        referenceOddsCandidates.hidden = false;
+        if (referenceOddsSelected) referenceOddsSelected.hidden = true;
+      } else if (isSelected && referenceOddsSelected && referenceOddsSelectedText) {
+        referenceOddsSelectedText.textContent = items[0].label + "　" + formatReferenceOdds(items[0].odds);
+        referenceOddsSelected.hidden = false;
+        if (referenceOddsCandidates) referenceOddsCandidates.hidden = true;
       }
       requestAnimationFrame(syncReferenceOddsScrollCue);
     } catch (_) {}
@@ -415,7 +415,7 @@ function markCardScript(opts: {
     const well = Number(b.dataset.well);
     if (well === 0 && candidateNumber != null) return;
     picks[well] = null;
-    hideReferenceOddsNotice();
+    clearDockReferenceOdds();
     paint();
   });
   board.addEventListener("click", (e) => {
@@ -425,11 +425,11 @@ function markCardScript(opts: {
     const i = picks.indexOf(n);
     if (i >= 0) {
       if (i === 0 && candidateNumber != null) return;
-      picks[i] = null; hideReferenceOddsNotice(); paint(); return;
+      picks[i] = null; clearDockReferenceOdds(); paint(); return;
     }
     const hole = picks.findIndex((x) => x == null);
     if (hole >= 0) picks[hole] = n;
-    paint(true);
+    paint();
   });
   document.querySelector(".amt-controls")?.addEventListener("click", (e) => {
     const b = e.target.closest("button");
@@ -527,9 +527,15 @@ export function betBuyPage(opts: {
         </div>
       </div>
       <div class="dock is-compact">
+        <div class="dock-reference-candidates" id="reference-odds-candidates" hidden role="status" aria-live="polite">
+          <span id="reference-odds-candidates-text"></span><button type="button" id="reference-odds-candidates-open">見る ↓</button>
+        </div>
         <div class="amt-box">
-          <div class="amt-show">金額 <b id="amt">0</b><span> スペ</span>
-            <span class="rest">買うと残り <b id="rest">${bal}</b></span>
+          <div class="amount-summary">
+            <div class="amt-show">金額 <b id="amt">0</b><span> スペ</span>
+              <span class="rest">買うと残り <b id="rest">${bal}</b></span>
+            </div>
+            <div class="dock-reference-selected" id="reference-odds-selected" hidden aria-live="polite"><span class="k">参考オッズ</span><b id="reference-odds-selected-text"></b></div>
           </div>
           <div class="amt-controls">
           <div class="amt-row">
