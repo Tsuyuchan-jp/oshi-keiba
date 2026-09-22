@@ -967,7 +967,7 @@ ${MEMBER_MOBILE_GLASS_CSS}
   .scene[data-phase="published"] .sheet-row {
     grid-template-columns:
       var(--col-num)
-      minmax(0, 1fr)
+      minmax(9em, 1fr)
       var(--col-runner)
       var(--col-odds)
       var(--col-place);
@@ -988,6 +988,31 @@ ${MEMBER_MOBILE_GLASS_CSS}
   .odds-preview-tabs button[aria-selected="true"] {
     border-bottom-color: transparent;
     background: transparent;
+  }
+  .odds-preview > .cols .sheet {
+    --col-runner: 3.5rem;
+    --col-style: 1.35rem;
+    --col-odds: 4rem;
+  }
+  .odds-preview > .cols .sheet-row {
+    grid-template-columns:
+      var(--col-num)
+      minmax(9em, 1fr)
+      var(--col-runner)
+      var(--col-style)
+      var(--col-odds)
+      var(--col-place);
+  }
+  @media (max-width: 340px) {
+    .odds-preview > .cols .c-style { display: none; }
+    .odds-preview > .cols .sheet-row {
+      grid-template-columns:
+        var(--col-num)
+        minmax(9em, 1fr)
+        var(--col-runner)
+        var(--col-odds)
+        var(--col-place);
+    }
   }
   .odds-preview > .cols .sheet-wrap { overflow-x: hidden; overflow-y: auto; }
   .odds-preview-market { grid-template-columns: 1fr; overflow: hidden; }
