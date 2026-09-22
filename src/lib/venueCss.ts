@@ -593,6 +593,7 @@ ${MEMBER_OVERLAY_CSS}
 }
 .odds-preview-tabs button[aria-selected="true"] { position: relative; z-index: 1; margin-bottom: -1px; border-color: var(--odds); border-bottom-color: var(--member-black); background: var(--member-black); color: var(--odds); text-shadow: 0 0 10px rgba(255, 138, 42, .35); }
 .odds-preview-tabs button:not([aria-selected="true"]):hover { color: var(--member-ink-bright); background: rgba(0, 232, 216, .05); }
+.odds-preview-tab-label-mobile { display: none; }
 .odds-preview [data-preview-view][hidden] { display: none !important; }
 .odds-preview > .cols,
 .odds-preview > .odds-preview-market { flex: 0 0 var(--odds-preview-body-height, auto); height: var(--odds-preview-body-height, auto); min-height: 0; }
@@ -974,6 +975,8 @@ ${MEMBER_MOBILE_GLASS_CSS}
   .odds-preview-switcher { overflow: hidden; background: transparent; }
   .odds-preview-switcher-label { display: none; }
   .odds-preview-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: hidden; }
+  .odds-preview-tab-label-desktop { display: none; }
+  .odds-preview-tab-label-mobile { display: inline; }
   .odds-preview-tabs button {
     min-height: 2.7rem;
     padding-inline: .2rem;
