@@ -192,6 +192,19 @@ ${MEMBER_MOBILE_CHROME_CSS}
 .reference-odds-row span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .reference-odds-row b { color: var(--member-action); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .reference-odds > p { padding-top: .38rem; line-height: 1.35; }
+.reference-odds-notice {
+  position: fixed; z-index: 20; top: max(.6rem, env(safe-area-inset-top)); left: 50%;
+  display: flex; align-items: center; gap: .55rem; width: min(calc(100vw - 1.4rem), 31rem);
+  transform: translateX(-50%); padding: .5rem .55rem .5rem .7rem;
+  border: 1px solid var(--member-accent); background: rgba(11, 15, 16, .96);
+  box-shadow: 0 .35rem 1.1rem rgba(0, 0, 0, .35); color: var(--member-ink-bright);
+  font-size: .76rem; font-weight: 700;
+}
+.reference-odds-notice span { min-width: 0; flex: 1; }
+.reference-odds-notice button {
+  flex: 0 0 auto; border: 0; padding: .35rem .45rem; background: var(--member-accent-bg);
+  color: var(--member-accent); font: inherit; font-size: .7rem; font-weight: 800; cursor: pointer;
+}
 .tickets {
   margin-top: .9rem; border-top: 1px solid var(--member-panel-line); padding-top: .55rem;
 }
@@ -263,6 +276,7 @@ ${MEMBER_MOBILE_CHROME_CSS}
   .wells--3 .well { height: 5rem; min-height: 5rem; }
 }
 @media (min-width: 900px) {
+  .reference-odds-notice { display: none !important; }
   .app-shell { height: calc(100dvh - 3rem); max-height: calc(100dvh - 3rem); }
 }
 ${MEMBER_MOBILE_GLASS_CSS}
