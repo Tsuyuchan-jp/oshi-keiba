@@ -165,3 +165,15 @@ test("場内足元のパドック導線は状態ごとに文言と買うボタ�
   assert.doesNotMatch(publishedFoot, /paddock-cta/);
   assert.doesNotMatch(publishedFoot, /馬券を買う/);
 });
+
+test("場内オッズは上限を9999.9+で表示する", () => {
+  const html = venueHorseRowHtml({
+    id: "h1",
+    number: 1,
+    umaName: "スズカ",
+    runnerName: "a",
+    styleLabel: "逃げ",
+    odds: 12_000,
+  });
+  assert.match(html, /class="odds-now">9999\.9\+</);
+});

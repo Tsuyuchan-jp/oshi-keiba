@@ -1,5 +1,4 @@
 import {
-  formatSelectionLabel,
   normalizeSelection,
   parseEnabledKinds,
   type BetKind,
@@ -41,20 +40,14 @@ function candidate(
   kind: Exclude<BetKind, "win">,
   ids: string[],
   numbers: number[],
-  numberById: Map<string, number>,
 ): Candidate {
   const normalized = normalizeSelection(kind, ids);
+  const separator = kind === "umatan" || kind === "sanrentan" ? "→" : "-";
   return {
     ids,
     numbers,
     key: normalized.selection_key,
-    label: formatSelectionLabel(
-      kind,
-      normalized.horse_1,
-      normalized.horse_2,
-      normalized.horse_3,
-      numberById,
-    ),
+    label: numbers.join(separator),
   };
 }
 
@@ -64,7 +57,6 @@ function candidatesFor(
   axisNumber?: number,
 ): Candidate[] {
   const live = liveEntries(board);
-  const numberById = new Map(live.map((entry) => [entry.horse.id, entry.number]));
   const output: Candidate[] = [];
   if (kind === "umaren" || kind === "umatan") {
     for (let a = 0; a < live.length; a += 1) {
@@ -74,7 +66,6 @@ function candidatesFor(
           kind,
           [live[a]!.horse.id, live[b]!.horse.id],
           [live[a]!.number, live[b]!.number],
-          numberById,
         ));
       }
     }
@@ -92,7 +83,6 @@ function candidatesFor(
           kind,
           [live[a]!.horse.id, live[b]!.horse.id, live[c]!.horse.id],
           numbers,
-          numberById,
         ));
       }
     }

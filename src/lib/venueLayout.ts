@@ -768,6 +768,10 @@ function previewTabsScript(apiPath?: string): string {
       const response = await fetch(apiPath + "?" + params, { headers: { accept: "application/json" } });
       if (!response.ok) return;
       const payload = await response.json();
+      if (payload.status && payload.status !== document.body.dataset.phase) {
+        location.reload();
+        return;
+      }
       applyVenue(payload.venue);
       if (payload.status !== "setup" && payload.status !== "voting" && timer != null) {
         clearInterval(timer);
