@@ -976,7 +976,7 @@ ${MEMBER_MOBILE_GLASS_CSS}
   .odds-preview-switcher-label { display: none; }
   .odds-preview-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: hidden; }
   .odds-preview-tab-label-ordered { font-size: 0; }
-  .odds-preview-tab-label-ordered::after { content: "馬単\A 3連単"; white-space: pre; font-size: .74rem; }
+  .odds-preview-tab-label-ordered::after { content: "馬単\\A 3連単"; white-space: pre; font-size: .74rem; }
   .odds-preview-tabs button {
     min-height: 2.7rem;
     padding-inline: .2rem;
@@ -988,11 +988,13 @@ ${MEMBER_MOBILE_GLASS_CSS}
     border-bottom-color: transparent;
     background: transparent;
   }
+  .odds-preview { overflow: hidden; }
   .odds-preview-market { grid-template-columns: 1fr; overflow: auto; }
   .odds-preview-market:has(.odds-matrix-panel) { overflow: hidden; }
   .odds-matrix-panel { overflow: hidden; }
   .odds-matrix-scroll { overflow: auto; -webkit-overflow-scrolling: touch; }
-  .odds-matrix-layout { min-width: max(38rem, calc(var(--primary-count) * 4rem)); }
+  .odds-matrix-layout { width: max(38rem, calc(var(--primary-count) * 4rem)); }
+  .odds-matrix--folded { right: auto; left: 0; }
   .odds-matrix { font-size: .9rem; }
   .odds-matrix--main.odds-matrix--sanrenpuku { grid-template-rows: auto auto; }
   .odds-matrix--main.odds-matrix--sanrenpuku .odds-matrix-axis-panel {
