@@ -758,16 +758,17 @@ function previewTabsScript(apiPath?: string): string {
       renderOrderedColumn(market, "real");
     }
   };
-  let refreshing = false;
+  let requestSerial = 0;
   const refresh = async (view) => {
-    if (!apiPath || refreshing || !["win", "umaren", "sanrenpuku", "ordered"].includes(view)) return;
-    refreshing = true;
+    if (!apiPath || !["win", "umaren", "sanrenpuku", "ordered"].includes(view)) return;
+    const request = ++requestSerial;
     try {
       const params = new URLSearchParams({ venue_view: view });
       if (view === "sanrenpuku" && axis instanceof HTMLSelectElement) params.set("axis", axis.value);
       const response = await fetch(apiPath + "?" + params, { headers: { accept: "application/json" } });
       if (!response.ok) return;
       const payload = await response.json();
+      if (request !== requestSerial) return;
       if (payload.status && payload.status !== document.body.dataset.phase) {
         location.reload();
         return;
@@ -778,7 +779,6 @@ function previewTabsScript(apiPath?: string): string {
         timer = null;
       }
     } catch { /* 次の5秒更新で再試行する */ }
-    finally { refreshing = false; }
   };
   const activeView = () => tabs.find((tab) => tab.getAttribute("aria-selected") === "true")?.dataset.previewTab ?? "win";
   let timer = apiPath && (document.body.dataset.phase === "setup" || document.body.dataset.phase === "voting")
