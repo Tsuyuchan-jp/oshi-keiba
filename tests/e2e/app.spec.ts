@@ -393,3 +393,29 @@ test("場内の連勝4タブは実データ更新し、ローカル確認画面�
   }
   expect(pageErrors).toEqual([]);
 });
+
+test("場内連勝タブは出走登録中・投票中・締切後で表示を切り替える", async ({ page }) => {
+  const pageErrors = collectPageErrors(page);
+  await loginAdmin(page);
+
+  await page.request.post("/admin/revert-voting", {
+    form: { admin_reauth: "e2e-admin-password" },
+  });
+  await page.goto("/");
+  await expect(page.locator("body")).toHaveAttribute("data-phase", "setup");
+  await expect(page.locator("[data-preview-tab]")).toHaveCount(4);
+  await expect(page.locator('[data-preview-view="umaren"] .odds-matrix-entry:not(.is-blank) b').first()).not.toHaveText("—");
+
+  await page.request.post("/admin/open");
+  await page.goto("/");
+  await expect(page.locator("body")).toHaveAttribute("data-phase", "voting");
+  await expect(page.locator("[data-preview-tab]")).toHaveCount(4);
+
+  await page.request.post("/admin/close");
+  await page.goto("/");
+  await expect(page.locator("body")).toHaveAttribute("data-phase", "closed");
+  await expect(page.locator("[data-preview-tab]")).toHaveCount(4);
+  await page.getByRole("tab", { name: "馬連" }).click();
+  await expect(page.locator('[data-preview-view="umaren"] .odds-matrix-entry:not(.is-blank) b').first()).not.toHaveText("");
+  expect(pageErrors).toEqual([]);
+});
