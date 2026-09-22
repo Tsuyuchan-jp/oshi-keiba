@@ -249,7 +249,7 @@ ${MEMBER_MOBILE_CHROME_CSS}
 .amt-show .rest b { color: var(--member-ink-soft); font-weight: 700; font-size: inherit; margin-left: 0; }
 .dock-reference-selected { min-width: 0; text-align: right; font-size: .78rem; line-height: 1.35; }
 .dock-reference-selected .k { display: block; color: var(--member-muted); font-size: .67rem; letter-spacing: .06em; }
-.dock-reference-selected b { display: block; color: var(--member-action); font-size: 1rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dock-reference-selected b { display: block; color: var(--member-action); font-size: 1.1rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .buy-guide { grid-column: 1 / -1; margin: 0; color: var(--member-muted); font-size: .68rem; line-height: 1.35; white-space: nowrap; }
 .buy {
   grid-column: 2; align-self: center; min-height: 44px;
