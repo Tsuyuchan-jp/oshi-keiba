@@ -987,7 +987,9 @@ ${MEMBER_MOBILE_GLASS_CSS}
     border-bottom-color: transparent;
     background: transparent;
   }
-  .odds-preview-market { grid-template-columns: 1fr; overflow: auto; }
+  .odds-preview > .cols .sheet-wrap { overflow-x: hidden; overflow-y: auto; }
+  .odds-preview-market { grid-template-columns: 1fr; overflow: hidden; }
+  .odds-preview-ordered { overflow-x: hidden; overflow-y: auto; }
   .odds-preview-panel + .odds-preview-panel { margin-top: .45rem; }
   .odds-preview-panel-head { font-size: .68rem; }
   .odds-preview-panel-head b { font-size: .82rem; }
