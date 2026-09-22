@@ -282,13 +282,17 @@ function markCardScript(opts: {
   const referenceOddsCandidatesText = document.getElementById("reference-odds-candidates-text");
   const referenceOddsCandidatesOpen = document.getElementById("reference-odds-candidates-open");
   const referenceOddsSelected = document.getElementById("reference-odds-selected");
-  const referenceOddsSelectedText = document.getElementById("reference-odds-selected-text");
+  const referenceOddsSelectedSelection = document.getElementById("reference-odds-selected-selection");
+  const referenceOddsSelectedValue = document.getElementById("reference-odds-selected-value");
   let referenceRequest = 0;
+  let referenceOddsSeen = false;
   const clearDockReferenceOdds = () => {
     if (referenceOddsCandidates) referenceOddsCandidates.hidden = true;
     if (referenceOddsSelected) referenceOddsSelected.hidden = true;
   };
   referenceOddsCandidatesOpen?.addEventListener("click", () => {
+    referenceOddsSeen = true;
+    if (referenceOddsCandidates) referenceOddsCandidates.hidden = true;
     referenceOdds?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
   const syncReferenceOddsScrollCue = () => {
@@ -299,6 +303,14 @@ function markCardScript(opts: {
   };
   referenceOddsBody?.addEventListener("scroll", syncReferenceOddsScrollCue, { passive: true });
   window.addEventListener("resize", syncReferenceOddsScrollCue);
+  if (referenceOdds && typeof IntersectionObserver !== "undefined") {
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      referenceOddsSeen = true;
+      if (referenceOddsCandidates) referenceOddsCandidates.hidden = true;
+    }, { threshold: 0.15 });
+    observer.observe(referenceOdds);
+  }
   if (hintEl) {
     const candidateHint = {
       win: "パドック候補を選択済みにしています。金額を入力してください。",
@@ -399,10 +411,11 @@ function markCardScript(opts: {
       referenceOdds.hidden = false;
       if (isCandidateStage && referenceOddsCandidates && referenceOddsCandidatesText) {
         referenceOddsCandidatesText.textContent = "参考オッズ：候補" + items.length + "件";
-        referenceOddsCandidates.hidden = false;
+        referenceOddsCandidates.hidden = referenceOddsSeen;
         if (referenceOddsSelected) referenceOddsSelected.hidden = true;
-      } else if (isSelected && referenceOddsSelected && referenceOddsSelectedText) {
-        referenceOddsSelectedText.textContent = items[0].label + "　" + formatReferenceOdds(items[0].odds);
+      } else if (isSelected && referenceOddsSelected && referenceOddsSelectedSelection && referenceOddsSelectedValue) {
+        referenceOddsSelectedSelection.textContent = items[0].label;
+        referenceOddsSelectedValue.textContent = formatReferenceOdds(items[0].odds);
         referenceOddsSelected.hidden = false;
         if (referenceOddsCandidates) referenceOddsCandidates.hidden = true;
       }
@@ -415,6 +428,7 @@ function markCardScript(opts: {
     const well = Number(b.dataset.well);
     if (well === 0 && candidateNumber != null) return;
     picks[well] = null;
+    referenceOddsSeen = false;
     clearDockReferenceOdds();
     paint();
   });
@@ -425,10 +439,11 @@ function markCardScript(opts: {
     const i = picks.indexOf(n);
     if (i >= 0) {
       if (i === 0 && candidateNumber != null) return;
-      picks[i] = null; clearDockReferenceOdds(); paint(); return;
+      picks[i] = null; referenceOddsSeen = false; clearDockReferenceOdds(); paint(); return;
     }
     const hole = picks.findIndex((x) => x == null);
     if (hole >= 0) picks[hole] = n;
+    referenceOddsSeen = false;
     paint();
   });
   document.querySelector(".amt-controls")?.addEventListener("click", (e) => {
@@ -535,7 +550,7 @@ export function betBuyPage(opts: {
             <div class="amt-show">金額 <b id="amt">0</b><span> スペ</span>
               <span class="rest">買うと残り <b id="rest">${bal}</b></span>
             </div>
-            <div class="dock-reference-selected" id="reference-odds-selected" hidden aria-live="polite"><span class="k">参考オッズ</span><b id="reference-odds-selected-text"></b></div>
+            <div class="dock-reference-selected" id="reference-odds-selected" hidden aria-live="polite"><span class="k">参考オッズ　<span id="reference-odds-selected-selection"></span></span><b id="reference-odds-selected-value"></b></div>
           </div>
           <div class="amt-controls">
           <div class="amt-row">
