@@ -375,7 +375,7 @@ function previewMarketPanelHtml(
 function previewMatrixOdds(kind: "umaren" | "sanrenpuku", a: number, b: number, c?: number): string {
   const spread = kind === "umaren" ? 14 : 62;
   const value = spread * (1 + (a + b + (c ?? 0)) * 0.11 + Math.abs(a - b) * 0.035);
-  return value >= 9999.9 ? "9999.9+" : value.toFixed(1);
+  return value >= 9999.9 ? "9999.9" : value.toFixed(1);
 }
 
 function legacyPreviewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku"): string {
@@ -449,7 +449,8 @@ function previewPackedMatrixGridHtml(
     return `<section class="odds-matrix-column${hidden}"${kind === "sanrenpuku" ? ` data-matrix-axis-column="${first}"` : ""}${gridColumn}><div class="odds-matrix-axis"><i class="waku-marker w${waku}"></i><b>${first}</b><i class="waku-marker w${waku}"></i></div>${entries}</section>`;
   };
   const kindClass = kind === "sanrenpuku" ? " odds-matrix--sanrenpuku" : "";
-  return `<div class="odds-matrix ${className}${kindClass}" style="--matrix-count:${gridColumnCount}" data-matrix-kind="${kind}" data-matrix-axis="${axis}">${leadingHtml}${columns.map(axisColumn).join("")}</div>`;
+  const mobileGridColumnCount = gridColumnCount - (kind === "sanrenpuku" && columns.includes(axis) ? 1 : 0);
+  return `<div class="odds-matrix ${className}${kindClass}" style="--matrix-count:${gridColumnCount};--mobile-matrix-count:${mobileGridColumnCount}" data-matrix-kind="${kind}" data-matrix-axis="${axis}">${leadingHtml}${columns.map(axisColumn).join("")}</div>`;
 }
 
 function previewOddsMatrixHtml(
@@ -471,11 +472,12 @@ function previewOddsMatrixHtml(
   const primary = axisNums.slice(0, primaryCount);
   const folded = axisNums.slice(primaryCount);
   const runnerName = (num: number) => board.horses.find((entry) => entry.number === num)?.horse.uma_name ?? `ウマ娘${num}`;
+  const axisWaku = wakuOf(axis, board.horses.length);
   const axisPanel = kind === "sanrenpuku"
     ? `<aside class="odds-matrix-axis-panel"><span class="odds-matrix-axis-title">軸ウマ娘</span><button type="button" class="odds-matrix-axis-button" id="sanrenpuku-axis-open" aria-haspopup="dialog" aria-controls="sanrenpuku-axis-modal"><span class="odds-matrix-axis-number">${axis}番</span><span class="odds-matrix-axis-name">${escapeHtml(runnerName(axis))}</span></button></aside>`
     : "";
   const mobileAxisPanel = kind === "sanrenpuku"
-    ? `<aside class="odds-matrix-axis-panel odds-matrix-axis-panel--mobile"><span class="odds-matrix-axis-title">軸ウマ娘</span><button type="button" class="odds-matrix-axis-button" data-sanrenpuku-axis-open aria-haspopup="dialog" aria-controls="sanrenpuku-axis-modal"><span class="odds-matrix-axis-number--mobile">${axis}番</span><span class="odds-matrix-axis-name--mobile">${escapeHtml(runnerName(axis))}</span></button></aside>`
+    ? `<aside class="odds-matrix-axis-panel odds-matrix-axis-panel--mobile"><span class="odds-matrix-axis-title">軸ウマ娘</span><button type="button" class="odds-matrix-axis-button" data-sanrenpuku-axis-open aria-haspopup="dialog" aria-controls="sanrenpuku-axis-modal"><span class="odds-matrix-axis-number--mobile"><i class="waku-marker w${axisWaku}"></i><b>${axis}番</b><i class="waku-marker w${axisWaku}"></i></span><span class="odds-matrix-axis-name--mobile">${escapeHtml(runnerName(axis))}</span></button></aside>`
     : "";
   const title = kind === "umaren" ? "馬連" : "3連複";
   const description = kind === "umaren" ? "組み合わせ別・参考オッズ" : "軸ウマ娘を含む組み合わせ・参考オッズ";
@@ -492,7 +494,7 @@ function previewOddsMatrixHtml(
 
 function venueOddsText(odds: number | null): string {
   if (odds == null || !Number.isFinite(odds)) return "—";
-  return odds >= 9999.9 ? "9999.9+" : odds.toFixed(1);
+  return odds >= 9999.9 ? "9999.9" : odds.toFixed(1);
 }
 
 function unavailableOddsHtml(): string {
@@ -638,7 +640,11 @@ function previewTabsScript(apiPath?: string): string {
     const axisNumbers = root.querySelectorAll(".odds-matrix-axis-number, .odds-matrix-axis-number--mobile");
     const axisNames = root.querySelectorAll(".odds-matrix-axis-name, .odds-matrix-axis-name--mobile");
     const selectedChoice = [...root.querySelectorAll("[data-axis-choice]")].find((choice) => choice.dataset.axisChoice === axis.value);
-    for (const axisNumber of axisNumbers) axisNumber.textContent = axis.value + "番";
+    for (const axisNumber of axisNumbers) {
+      const numberText = axisNumber.querySelector("b");
+      if (numberText) numberText.textContent = axis.value + "番";
+      else axisNumber.textContent = axis.value + "番";
+    }
     for (const axisName of axisNames) if (selectedChoice) axisName.textContent = selectedChoice.querySelector(".odds-axis-choice-name")?.textContent ?? "";
     for (const choice of root.querySelectorAll("[data-axis-choice]")) {
       choice.classList.toggle("is-selected", choice === selectedChoice);
@@ -659,7 +665,7 @@ function previewTabsScript(apiPath?: string): string {
         if (!valid) { if (odds) odds.textContent = ""; continue; }
         if (!apiPath) {
           const value = 62 * (1 + (first + left + top) * 0.11 + Math.abs(left - top) * 0.035);
-          if (odds) odds.textContent = value >= 9999.9 ? "9999.9+" : value.toFixed(1);
+          if (odds) odds.textContent = value >= 9999.9 ? "9999.9" : value.toFixed(1);
         }
       }
     }
@@ -710,7 +716,7 @@ function previewTabsScript(apiPath?: string): string {
   });
   const shownOdds = (odds) => odds == null || !Number.isFinite(odds)
     ? "—"
-    : Number(odds) >= 9999.9 ? "9999.9+" : Number(odds).toFixed(1);
+    : Number(odds) >= 9999.9 ? "9999.9" : Number(odds).toFixed(1);
   const renderOrderedColumn = (market, mode) => {
     const column = root.querySelector('[data-ordered-kind="' + market.kind + '"][data-ordered-mode="' + mode + '"] .odds-ordered-rows');
     if (!column) return;
