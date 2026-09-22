@@ -225,7 +225,10 @@ function referenceOddsHtml(kind: BetKind): string {
   if (kind === "win") return "";
   return `<section class="reference-odds" id="reference-odds" hidden aria-live="polite">
     <div class="reference-odds-head"><h2>参考オッズ</h2><span>投票中の目安</span></div>
-    <div class="reference-odds-body" id="reference-odds-body"></div>
+    <div class="reference-odds-scroll">
+      <div class="reference-odds-body" id="reference-odds-body"></div>
+      <span class="reference-odds-scroll-hint" aria-hidden="true">↓ 下へスクロール</span>
+    </div>
     <p>確定配当ではありません。</p>
   </section>`;
 }
@@ -276,6 +279,14 @@ function markCardScript(opts: {
   const referenceOdds = document.getElementById("reference-odds");
   const referenceOddsBody = document.getElementById("reference-odds-body");
   let referenceRequest = 0;
+  const syncReferenceOddsScrollCue = () => {
+    if (!referenceOdds || !referenceOddsBody) return;
+    const scrollable = referenceOddsBody.scrollHeight > referenceOddsBody.clientHeight + 1;
+    referenceOdds.classList.toggle("is-scrollable", scrollable);
+    referenceOdds.classList.toggle("is-scrolled", !scrollable || referenceOddsBody.scrollTop > 4);
+  };
+  referenceOddsBody?.addEventListener("scroll", syncReferenceOddsScrollCue, { passive: true });
+  window.addEventListener("resize", syncReferenceOddsScrollCue);
   if (hintEl) {
     const candidateHint = {
       win: "パドック候補を選択済みにしています。金額を入力してください。",
@@ -373,6 +384,7 @@ function markCardScript(opts: {
         \`<div class="reference-odds-row"><span>\${item.label}</span><b>\${formatReferenceOdds(item.odds)}</b></div>\`
       ).join("");
       referenceOdds.hidden = false;
+      requestAnimationFrame(syncReferenceOddsScrollCue);
     } catch (_) {}
   }
   wells.addEventListener("click", (e) => {

@@ -147,7 +147,44 @@ ${MEMBER_MOBILE_CHROME_CSS}
 .reference-odds-head { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; padding-bottom: .35rem; border-bottom: 1px solid var(--member-table-line); }
 .reference-odds h2 { margin: 0; color: var(--member-ink-soft); font-size: .72rem; font-weight: 700; letter-spacing: .08em; }
 .reference-odds-head span, .reference-odds > p { margin: 0; color: var(--member-muted); font-size: .65rem; }
-.reference-odds-body { max-height: 13.2rem; overflow: auto; }
+.reference-odds-scroll { position: relative; }
+.reference-odds-body {
+  max-height: 13.2rem;
+  overflow: auto;
+  padding-inline-end: .45rem;
+  scrollbar-gutter: stable;
+}
+.reference-odds-scroll::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2.2rem;
+  pointer-events: none;
+  background: linear-gradient(transparent, rgba(11, 15, 16, .96));
+  opacity: 0;
+  transition: opacity .18s ease;
+}
+.reference-odds-scroll-hint {
+  position: absolute;
+  z-index: 2;
+  right: .7rem;
+  bottom: .28rem;
+  left: .25rem;
+  pointer-events: none;
+  color: var(--member-muted);
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(.15rem);
+  transition: opacity .18s ease, transform .18s ease;
+}
+.reference-odds.is-scrollable:not(.is-scrolled) .reference-odds-scroll::after { opacity: 1; }
+.reference-odds.is-scrollable:not(.is-scrolled) .reference-odds-scroll-hint { opacity: 1; transform: translateY(0); }
 .reference-odds-row {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; align-items: center;
   padding: .32rem 0; border-bottom: 1px solid var(--member-table-line); color: var(--member-ink-soft); font-size: .82rem;

@@ -393,3 +393,39 @@ test("場内の連勝4タブは実データ更新し、ローカル確認画面�
   }
   expect(pageErrors).toEqual([]);
 });
+
+test("窓口の連勝参考オッズは候補が多いときだけスクロール案内を出す", async ({ page }) => {
+  const pageErrors = collectPageErrors(page);
+  await registerMember(page, "参考オッズ案内");
+  await page.route(/\/api\/board\?reference_kind=umatan/, async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "voting",
+        reference: {
+          items: Array.from({ length: 20 }, (_, index) => ({
+            label: `1→${index + 2}`,
+            odds: index + 10.5,
+          })),
+        },
+      }),
+    });
+  });
+  await page.goto("/bet?kind=umatan");
+  await page.getByRole("button", { name: /E2E開催に参加/ }).click();
+  await page.locator("#board [data-n]").first().click();
+
+  const reference = page.locator("#reference-odds");
+  const body = page.locator("#reference-odds-body");
+  const hint = page.locator(".reference-odds-scroll-hint");
+  await expect(reference).toBeVisible();
+  await expect(reference).toHaveClass(/is-scrollable/);
+  await expect(hint).toHaveCSS("opacity", "1");
+  await body.evaluate((element) => {
+    element.scrollTop = 12;
+    element.dispatchEvent(new Event("scroll"));
+  });
+  await expect(reference).toHaveClass(/is-scrolled/);
+  await expect(hint).toHaveCSS("opacity", "0");
+  expect(pageErrors).toEqual([]);
+});
