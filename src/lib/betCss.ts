@@ -200,6 +200,7 @@ ${MEMBER_MOBILE_CHROME_CSS}
   box-shadow: 0 .35rem 1.1rem rgba(0, 0, 0, .35); color: var(--member-ink-bright);
   font-size: .76rem; font-weight: 700;
 }
+.reference-odds-notice[hidden] { display: none; }
 .reference-odds-notice span { min-width: 0; flex: 1; }
 .reference-odds-notice button {
   flex: 0 0 auto; border: 0; padding: .35rem .45rem; background: var(--member-accent-bg);
