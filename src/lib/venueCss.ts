@@ -988,7 +988,6 @@ ${MEMBER_MOBILE_GLASS_CSS}
     border-bottom-color: transparent;
     background: transparent;
   }
-  .odds-preview { overflow: hidden; }
   .odds-preview-market { grid-template-columns: 1fr; overflow: auto; }
   .odds-preview-market:has(.odds-matrix-panel) { overflow: hidden; }
   .odds-matrix-panel { overflow: hidden; }
