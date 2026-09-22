@@ -284,11 +284,14 @@ function markCardScript(opts: {
   const referenceOddsSelected = document.getElementById("reference-odds-selected");
   const referenceOddsSelectedText = document.getElementById("reference-odds-selected-text");
   let referenceRequest = 0;
+  let referenceOddsSeen = false;
   const clearDockReferenceOdds = () => {
     if (referenceOddsCandidates) referenceOddsCandidates.hidden = true;
     if (referenceOddsSelected) referenceOddsSelected.hidden = true;
   };
   referenceOddsCandidatesOpen?.addEventListener("click", () => {
+    referenceOddsSeen = true;
+    if (referenceOddsCandidates) referenceOddsCandidates.hidden = true;
     referenceOdds?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
   const syncReferenceOddsScrollCue = () => {
@@ -299,6 +302,14 @@ function markCardScript(opts: {
   };
   referenceOddsBody?.addEventListener("scroll", syncReferenceOddsScrollCue, { passive: true });
   window.addEventListener("resize", syncReferenceOddsScrollCue);
+  if (referenceOdds && typeof IntersectionObserver !== "undefined") {
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      referenceOddsSeen = true;
+      if (referenceOddsCandidates) referenceOddsCandidates.hidden = true;
+    }, { threshold: 0.15 });
+    observer.observe(referenceOdds);
+  }
   if (hintEl) {
     const candidateHint = {
       win: "パドック候補を選択済みにしています。金額を入力してください。",
@@ -399,7 +410,7 @@ function markCardScript(opts: {
       referenceOdds.hidden = false;
       if (isCandidateStage && referenceOddsCandidates && referenceOddsCandidatesText) {
         referenceOddsCandidatesText.textContent = "参考オッズ：候補" + items.length + "件";
-        referenceOddsCandidates.hidden = false;
+        referenceOddsCandidates.hidden = referenceOddsSeen;
         if (referenceOddsSelected) referenceOddsSelected.hidden = true;
       } else if (isSelected && referenceOddsSelected && referenceOddsSelectedText) {
         referenceOddsSelectedText.textContent = items[0].label + "　" + formatReferenceOdds(items[0].odds);
@@ -415,6 +426,7 @@ function markCardScript(opts: {
     const well = Number(b.dataset.well);
     if (well === 0 && candidateNumber != null) return;
     picks[well] = null;
+    referenceOddsSeen = false;
     clearDockReferenceOdds();
     paint();
   });
@@ -425,10 +437,11 @@ function markCardScript(opts: {
     const i = picks.indexOf(n);
     if (i >= 0) {
       if (i === 0 && candidateNumber != null) return;
-      picks[i] = null; clearDockReferenceOdds(); paint(); return;
+      picks[i] = null; referenceOddsSeen = false; clearDockReferenceOdds(); paint(); return;
     }
     const hole = picks.findIndex((x) => x == null);
     if (hole >= 0) picks[hole] = n;
+    referenceOddsSeen = false;
     paint();
   });
   document.querySelector(".amt-controls")?.addEventListener("click", (e) => {
