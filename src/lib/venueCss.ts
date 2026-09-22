@@ -973,7 +973,7 @@ ${MEMBER_MOBILE_GLASS_CSS}
       var(--col-place);
   }
   .odds-preview .board-head { align-items: flex-start; }
-  .odds-preview-switcher { overflow: hidden; background: transparent; }
+  .odds-preview-switcher { overflow: hidden; border-bottom: 0; background: transparent; }
   .odds-preview-switcher-label { display: none; }
   .odds-preview-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: hidden; }
   .odds-preview-tab-label-ordered { font-size: 0; }
@@ -1029,6 +1029,7 @@ ${MEMBER_MOBILE_GLASS_CSS}
     display: block;
     overflow-x: auto;
     overflow-y: hidden;
+    padding-bottom: .8rem;
     background: var(--member-black);
     -webkit-overflow-scrolling: touch;
   }
