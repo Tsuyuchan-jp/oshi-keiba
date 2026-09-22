@@ -990,9 +990,9 @@ ${MEMBER_MOBILE_GLASS_CSS}
     background: transparent;
   }
   .odds-preview > .cols .sheet {
-    --col-runner: 3.5rem;
+    --col-runner: 4rem;
     --col-style: 1.35rem;
-    --col-odds: 4rem;
+    --col-odds: 3.5rem;
   }
   .odds-preview > .cols .sheet-row {
     grid-template-columns:
