@@ -413,7 +413,7 @@ function markCardScript(opts: {
         referenceOddsCandidates.hidden = referenceOddsSeen;
         if (referenceOddsSelected) referenceOddsSelected.hidden = true;
       } else if (isSelected && referenceOddsSelected && referenceOddsSelectedText) {
-        referenceOddsSelectedText.textContent = items[0].label + "　" + formatReferenceOdds(items[0].odds);
+        referenceOddsSelectedText.textContent = items[0].label + "　／　" + formatReferenceOdds(items[0].odds);
         referenceOddsSelected.hidden = false;
         if (referenceOddsCandidates) referenceOddsCandidates.hidden = true;
       }

@@ -247,15 +247,15 @@ ${MEMBER_MOBILE_CHROME_CSS}
 }
 .amt-show .rest { display: block; font-size: .68rem; color: var(--member-muted); margin-top: .1rem; }
 .amt-show .rest b { color: var(--member-ink-soft); font-weight: 700; font-size: inherit; margin-left: 0; }
-.dock-reference-selected { min-width: 0; text-align: right; font-size: .72rem; line-height: 1.3; }
-.dock-reference-selected .k { display: block; color: var(--member-muted); font-size: .59rem; letter-spacing: .06em; }
-.dock-reference-selected b { display: block; color: var(--member-action); font-variant-numeric: tabular-nums; }
+.dock-reference-selected { min-width: 0; text-align: right; font-size: .78rem; line-height: 1.35; }
+.dock-reference-selected .k { display: block; color: var(--member-muted); font-size: .67rem; letter-spacing: .06em; }
+.dock-reference-selected b { display: block; color: var(--member-action); font-size: 1rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .buy-guide { grid-column: 1 / -1; margin: 0; color: var(--member-muted); font-size: .68rem; line-height: 1.35; white-space: nowrap; }
 .buy {
-  grid-column: 2; align-self: stretch;
+  grid-column: 2; align-self: center; min-height: 44px;
   background: var(--member-action); color: var(--member-action-ink); border: 0;
-  padding: .85rem 1.25rem; font: inherit; font-weight: 800;
-  letter-spacing: .12em; cursor: pointer; min-width: 7.5rem;
+  padding: .7rem .9rem; font: inherit; font-weight: 800;
+  letter-spacing: .1em; cursor: pointer; min-width: 6.25rem;
 }
 .buy:disabled { opacity: .35; cursor: not-allowed; }
 .join-btn {
