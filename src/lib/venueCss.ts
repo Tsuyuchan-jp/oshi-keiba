@@ -977,6 +977,7 @@ ${MEMBER_MOBILE_GLASS_CSS}
   .odds-preview-tabs button {
     min-height: 2.7rem;
     padding-inline: .2rem;
+    border-bottom-color: transparent;
     background: transparent;
     line-height: 1.2;
   }
