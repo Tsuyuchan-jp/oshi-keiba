@@ -345,3 +345,51 @@ test("管理者は号外本文を安全に編集し、PNGとWebPを書き出せ�
   await expectDownload(page, "#gougai-webp", "webp");
   expect(pageErrors).toEqual([]);
 });
+
+test("場内の連勝4タブは実データ更新し、ローカル確認画面は15〜18頭を保つ", async ({ page }) => {
+  const pageErrors = collectPageErrors(page);
+  await page.goto("/");
+
+  const tabs = page.locator("[data-preview-tab]");
+  await expect(tabs).toHaveCount(4);
+  await expect(tabs).toHaveText(["単勝", "馬連", "3連複", "馬単・3連単"]);
+
+  await page.getByRole("tab", { name: "馬連" }).click();
+  const umaren = page.locator('[data-preview-view="umaren"]');
+  await expect(umaren).toBeVisible();
+  await expect(umaren.locator(".odds-matrix-entry:not(.is-blank) b")).toHaveCount(3);
+
+  await page.getByRole("tab", { name: "3連複" }).click();
+  await page.locator("#sanrenpuku-axis-open").click();
+  await page.locator('[data-axis-choice="2"]').click();
+  await expect(page.locator(".odds-matrix-axis-number")).toHaveText("2番");
+  await expect.poll(async () => page.locator('[data-preview-view="sanrenpuku"] .odds-matrix-entry:not(.is-blank) b').allTextContents())
+    .toEqual(expect.arrayContaining([expect.stringMatching(/^(?:\d+\.\d|9999\.9\+)$/)]));
+
+  await page.getByRole("tab", { name: "馬単・3連単" }).click();
+  await expect(page.locator('[data-preview-view="ordered"]')).toBeVisible();
+  await expect(page.locator(".odds-ordered-group")).toHaveCount(2);
+  await expect(page.locator(".odds-ordered-empty")).toHaveCount(2);
+
+  const apiCounts = await page.evaluate(async () => {
+    const [pair, trio, ordered] = await Promise.all([
+      fetch("/api/board?venue_view=umaren").then((response) => response.json()),
+      fetch("/api/board?venue_view=sanrenpuku&axis=2").then((response) => response.json()),
+      fetch("/api/board?venue_view=ordered").then((response) => response.json()),
+    ]);
+    return {
+      pair: pair.venue.items.length,
+      trio: trio.venue.items.length,
+      ordered: ordered.venue.markets.map((market: { popular: unknown[]; recent: unknown[] }) => [market.popular.length, market.recent.length]),
+    };
+  });
+  expect(apiCounts).toEqual({ pair: 3, trio: 1, ordered: [[6, 0], [6, 0]] });
+
+  for (const runners of [15, 16, 17, 18]) {
+    await page.goto(`/__local/venue-odds?runners=${runners}`);
+    await expect(page.locator(`.odds-preview-runner-controls a[aria-current="page"]`)).toHaveText(`${runners}人`);
+    await page.getByRole("tab", { name: "馬連" }).click();
+    await expect(page.locator('[data-preview-view="umaren"] .odds-matrix-column').first()).toBeVisible();
+  }
+  expect(pageErrors).toEqual([]);
+});
