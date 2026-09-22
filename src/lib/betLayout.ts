@@ -543,14 +543,15 @@ export function betBuyPage(opts: {
         <div class="dock-reference-candidates" id="reference-odds-candidates" hidden role="status" aria-live="polite">
           <span id="reference-odds-candidates-text"></span><button type="button" id="reference-odds-candidates-open">見る ↓</button>
         </div>
-        <div class="amt-box">
+        <div class="purchase-summary">
           <div class="amount-summary">
             <div class="amt-show">金額 <b id="amt">0</b><span> スペ</span>
               <span class="rest">買うと残り <b id="rest">${bal}</b></span>
             </div>
-            <div class="dock-reference-selected" id="reference-odds-selected" hidden aria-live="polite"><span class="k">参考オッズ</span><b id="reference-odds-selected-text"></b></div>
           </div>
-          <div class="amt-controls">
+          <div class="dock-reference-selected" id="reference-odds-selected" hidden aria-live="polite"><span class="k">買い目・参考オッズ</span><b id="reference-odds-selected-text"></b></div>
+        </div>
+        <div class="amt-controls">
           <div class="amt-row">
             <button type="button" data-add="100">+100</button>
             <button type="button" data-add="500">+500</button>
@@ -560,10 +561,9 @@ export function betBuyPage(opts: {
             <button type="button" class="amt-all" data-all>全額を入力</button>
             <button type="button" class="amt-reset" data-set="0">リセット</button>
           </div>
-          </div>
-          <p class="buy-guide" id="buy-guide" aria-live="polite">買い目と購入金額を選んでください。</p>
         </div>
         <button type="submit" class="buy" id="buy" aria-describedby="buy-guide" ${opts.preview ? "disabled" : ""}>買う</button>
+        <p class="buy-guide" id="buy-guide" aria-live="polite">買い目と購入金額を選んでください。</p>
       </div>
     </form>
     <form id="redo-form" method="post" action="/bet/redo" hidden>

@@ -224,9 +224,13 @@ ${MEMBER_MOBILE_CHROME_CSS}
   flex: 0 0 auto; border: 0; padding: .32rem .45rem; background: rgba(224, 179, 74, .18);
   color: var(--member-accent); font: inherit; font-size: .7rem; font-weight: 800; cursor: pointer;
 }
-.amt-box { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
-.amount-summary { display: flex; align-items: flex-end; justify-content: space-between; gap: .5rem; min-width: 0; }
-.amt-controls { display: flex; flex-direction: column; gap: 4px; }
+.purchase-summary {
+  grid-column: 1 / -1;
+  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: end; gap: .75rem;
+  min-width: 0;
+}
+.amount-summary { min-width: 0; }
+.amt-controls { grid-column: 1; display: flex; flex-direction: column; gap: 4px; }
 .amt-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
 .amt-action-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px; }
 .amt-row button {
@@ -243,11 +247,12 @@ ${MEMBER_MOBILE_CHROME_CSS}
 }
 .amt-show .rest { display: block; font-size: .68rem; color: var(--member-muted); margin-top: .1rem; }
 .amt-show .rest b { color: var(--member-ink-soft); font-weight: 700; font-size: inherit; margin-left: 0; }
-.dock-reference-selected { min-width: 0; text-align: right; font-size: .66rem; line-height: 1.3; }
+.dock-reference-selected { min-width: 0; text-align: right; font-size: .72rem; line-height: 1.3; }
 .dock-reference-selected .k { display: block; color: var(--member-muted); font-size: .59rem; letter-spacing: .06em; }
-.dock-reference-selected b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--member-action); font-variant-numeric: tabular-nums; }
-.buy-guide { margin: 0; color: var(--member-muted); font-size: .68rem; line-height: 1.35; }
+.dock-reference-selected b { display: block; color: var(--member-action); font-variant-numeric: tabular-nums; }
+.buy-guide { grid-column: 1 / -1; margin: 0; color: var(--member-muted); font-size: .68rem; line-height: 1.35; white-space: nowrap; }
 .buy {
+  grid-column: 2; align-self: stretch;
   background: var(--member-action); color: var(--member-action-ink); border: 0;
   padding: .85rem 1.25rem; font: inherit; font-weight: 800;
   letter-spacing: .12em; cursor: pointer; min-width: 7.5rem;
@@ -273,13 +278,16 @@ ${MEMBER_MOBILE_CHROME_CSS}
 }
 @media (max-width: 899px) {
   .dock.is-compact { padding-top: .45rem; padding-bottom: calc(.45rem + env(safe-area-inset-bottom)); }
-  .dock.is-compact .amt-box { gap: 0; }
+  .dock.is-compact .purchase-summary { grid-column: 1; }
   .dock.is-compact .amt-controls,
   .dock.is-compact .buy-guide { display: none; }
   .wells--3 .well { height: 5rem; min-height: 5rem; }
 }
 @media (min-width: 900px) {
   .dock-reference-candidates, .dock-reference-selected { display: none !important; }
+  .purchase-summary { grid-column: 1; }
+  .buy { grid-row: 1 / span 3; }
+  .buy-guide { grid-column: 1; }
   .app-shell { height: calc(100dvh - 3rem); max-height: calc(100dvh - 3rem); }
 }
 ${MEMBER_MOBILE_GLASS_CSS}
