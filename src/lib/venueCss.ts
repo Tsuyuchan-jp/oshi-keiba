@@ -971,9 +971,19 @@ ${MEMBER_MOBILE_GLASS_CSS}
       var(--col-place);
   }
   .odds-preview .board-head { align-items: flex-start; }
-  .odds-preview-switcher { overflow: hidden; }
-  .odds-preview-switcher-label { padding-inline: .5rem; }
-  .odds-preview-tabs { grid-template-columns: repeat(4, minmax(4.6rem, 1fr)); overflow-x: auto; }
+  .odds-preview-switcher { overflow: hidden; background: transparent; }
+  .odds-preview-switcher-label { display: none; }
+  .odds-preview-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: hidden; }
+  .odds-preview-tabs button {
+    min-height: 2.7rem;
+    padding-inline: .2rem;
+    background: transparent;
+    line-height: 1.2;
+  }
+  .odds-preview-tabs button[aria-selected="true"] {
+    border-bottom-color: transparent;
+    background: transparent;
+  }
   .odds-preview-market { grid-template-columns: 1fr; overflow: auto; }
   .odds-preview-panel + .odds-preview-panel { margin-top: .45rem; }
   .odds-preview-panel-head { font-size: .68rem; }
