@@ -1,6 +1,6 @@
 # いま
 
-最終更新: 2026-09-14
+最終更新: 2026-09-22
 
 動いている催しがプロダクトの本体。第1回（2026-08-23 メンバーシップエクストラLoH）は払い戻しまで完了。第2回は Neko長明さんが開催を決めた。作り直しはしない。
 
@@ -9,6 +9,8 @@
 アプリ版は [version.md](operations/version.md)（数字の正本は `package.json`）
 
 詳細は [playbook.md](operations/playbook.md)。第2回までにやることは [next.md](next.md)。パドックのスマホ表示は実機確認OK（最大18頭を画面高へ収め、詳細カードはタップ／上スワイプで開き、下スワイプで閉じる）。号外タブはクローズ相当の第1段（ローカル実機確認OK。`/admin/gougai`。左プレビュー・右編集・PNG / WebP。1着未入力はプレースホルダ）。見た目の正は [gougai.md](features/gougai.md) と [モック](mocks/gougai/index.html)。ウマ柱はメンバー閲覧を含めて実装クローズ（実機確認OK）。正は本番タブ `/admin/umabashira` と場内のメンバーモーダル（パドック導線がある開催フェーズ）。スマホはピンチ拡大・ドラッグ、PCはモーダル枠に合わせた中央表示・ホイール拡大・ドラッグに対応する。枠色は見た目専用。ノイズは不透明度 0.1。出走登録中も参考オッズ。評価点・SP点数の色箱は PNG を正。仕様は [umabashira.md](features/umabashira.md)。モックは同じ見た目の控え。出力は PNG と WebP。
+
+連勝Seedの場内移植と、場内・窓口のPC向け表示改善は実機確認OKでクローズ。場内は4タブの実データ表示、窓口は候補一覧のスクロールバー余白と「↓ 下へスクロール」案内を含む。詳細は [odds.md](specifications/odds.md) と [exotic-seed.md](specifications/exotic-seed.md)。次チャットではスマホ版表示を扱う。
 
 ## 仮置き（第2回）
 
