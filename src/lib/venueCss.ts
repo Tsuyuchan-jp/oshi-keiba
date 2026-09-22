@@ -593,7 +593,6 @@ ${MEMBER_OVERLAY_CSS}
 }
 .odds-preview-tabs button[aria-selected="true"] { position: relative; z-index: 1; margin-bottom: -1px; border-color: var(--odds); border-bottom-color: var(--member-black); background: var(--member-black); color: var(--odds); text-shadow: 0 0 10px rgba(255, 138, 42, .35); }
 .odds-preview-tabs button:not([aria-selected="true"]):hover { color: var(--member-ink-bright); background: rgba(0, 232, 216, .05); }
-.odds-preview-tab-label-mobile { display: none; }
 .odds-preview [data-preview-view][hidden] { display: none !important; }
 .odds-preview > .cols,
 .odds-preview > .odds-preview-market { flex: 0 0 var(--odds-preview-body-height, auto); height: var(--odds-preview-body-height, auto); min-height: 0; }
@@ -615,6 +614,7 @@ ${MEMBER_OVERLAY_CSS}
 .odds-matrix-panel .odds-preview-panel-head { position: sticky; top: 0; z-index: 2; background: var(--member-black); }
 .odds-matrix-select { display: inline-flex; align-items: center; gap: .3rem; margin-left: auto; color: var(--member-ink-bright); font-family: "IBM Plex Sans JP", sans-serif; font-size: .7rem; letter-spacing: 0; }
 .odds-matrix-select select { border: 1px solid #31514d; border-radius: 0; background: #091111; color: var(--led); font: inherit; padding: .1rem .25rem; }
+.odds-matrix-scroll { min-width: 0; min-height: 0; flex: 1 1 auto; overflow: auto; }
 .odds-matrix-layout { position: relative; min-height: 0; }
 .odds-matrix { display: grid; grid-template-columns: repeat(var(--matrix-count), minmax(0, 1fr)); column-gap: .8rem; align-items: start; min-width: 0; color: var(--odds); font-family: "Chakra Petch", "IBM Plex Sans JP", sans-serif; font-size: clamp(.58rem, 1.2vw, .9rem); font-variant-numeric: tabular-nums; }
 .odds-matrix--main { width: 100%; }
@@ -975,8 +975,8 @@ ${MEMBER_MOBILE_GLASS_CSS}
   .odds-preview-switcher { overflow: hidden; background: transparent; }
   .odds-preview-switcher-label { display: none; }
   .odds-preview-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: hidden; }
-  .odds-preview-tab-label-desktop { display: none; }
-  .odds-preview-tab-label-mobile { display: inline; }
+  .odds-preview-tab-label-ordered { font-size: 0; }
+  .odds-preview-tab-label-ordered::after { content: "馬単\A 3連単"; white-space: pre; font-size: .74rem; }
   .odds-preview-tabs button {
     min-height: 2.7rem;
     padding-inline: .2rem;
@@ -989,6 +989,38 @@ ${MEMBER_MOBILE_GLASS_CSS}
     background: transparent;
   }
   .odds-preview-market { grid-template-columns: 1fr; overflow: auto; }
+  .odds-preview-market:has(.odds-matrix-panel) { overflow: hidden; }
+  .odds-matrix-panel { overflow: hidden; }
+  .odds-matrix-scroll { overflow: auto; -webkit-overflow-scrolling: touch; }
+  .odds-matrix-layout { min-width: max(38rem, calc(var(--primary-count) * 4rem)); }
+  .odds-matrix { font-size: .9rem; }
+  .odds-matrix--main.odds-matrix--sanrenpuku { grid-template-rows: auto auto; }
+  .odds-matrix--main.odds-matrix--sanrenpuku .odds-matrix-axis-panel {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: .5rem;
+    padding: .35rem .5rem;
+    border-right: 0;
+    border-bottom: 1px solid #31514d;
+  }
+  .odds-matrix--main.odds-matrix--sanrenpuku .odds-matrix-axis-title { text-align: left; }
+  .odds-matrix--main.odds-matrix--sanrenpuku .odds-matrix-axis-button {
+    flex-direction: row;
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 2.25rem;
+    margin: 0;
+    padding: .3rem .5rem;
+  }
+  .odds-matrix--main.odds-matrix--sanrenpuku .odds-matrix-axis-number,
+  .odds-matrix--main.odds-matrix--sanrenpuku .odds-matrix-axis-name { writing-mode: horizontal-tb; text-orientation: mixed; }
+  .odds-matrix--main.odds-matrix--sanrenpuku .odds-matrix-axis-name { overflow-wrap: normal; }
+  .odds-matrix--main.odds-matrix--sanrenpuku .odds-matrix-column { grid-row: 2; }
+  .odds-preview-ordered { grid-template-columns: 1fr; gap: .45rem; overflow: visible; }
+  .odds-ordered-group { background: transparent; }
   .odds-preview-panel + .odds-preview-panel { margin-top: .45rem; }
   .odds-preview-panel-head { font-size: .68rem; }
   .odds-preview-panel-head b { font-size: .82rem; }

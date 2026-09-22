@@ -483,7 +483,7 @@ function previewOddsMatrixHtml(
     : "";
   const body = liveResponse && !liveResponse.enabled
     ? unavailableOddsHtml()
-    : `<div class="odds-matrix-layout" style="--primary-count:${primary.length};--folded-count:${folded.length}">${main}${secondary}</div>`;
+    : `<div class="odds-matrix-scroll"><div class="odds-matrix-layout" style="--primary-count:${primary.length};--folded-count:${folded.length}">${main}${secondary}</div></div>`;
   return `<section class="odds-matrix-panel"><div class="odds-preview-panel-head"><b>${title}</b><span>${description}</span></div>${body}</section>`;
 }
 
@@ -583,7 +583,7 @@ function previewTabsHtml(layout: VenueOddsPreviewLayout): string {
     : layout === "three"
     ? [["win", "単勝"], ["pair", "2人組"], ["triple", "3人組"]]
     : [["win", "単勝"], ["umaren", "馬連"], ["umatan", "馬単"], ["sanrenpuku", "3連複"], ["sanrentan", "3連単"]];
-  return `<div class="odds-preview-switcher"><span class="odds-preview-switcher-label">表示切替</span><div class="odds-preview-tabs" role="tablist" aria-label="参考オッズの種別">${tabs.map(([id, label], i) => `<button type="button" role="tab" data-preview-tab="${id}" aria-selected="${i === 0 ? "true" : "false"}">${id === "ordered" ? '<span class="odds-preview-tab-label-desktop">馬単・3連単</span><span class="odds-preview-tab-label-mobile">馬単<br>3連単</span>' : label}</button>`).join("")}</div></div>`;
+  return `<div class="odds-preview-switcher"><span class="odds-preview-switcher-label">表示切替</span><div class="odds-preview-tabs" role="tablist" aria-label="参考オッズの種別">${tabs.map(([id, label], i) => `<button type="button" role="tab" data-preview-tab="${id}" aria-selected="${i === 0 ? "true" : "false"}">${id === "ordered" ? '<span class="odds-preview-tab-label-ordered">馬単・3連単</span>' : label}</button>`).join("")}</div></div>`;
 }
 
 function previewTabsScript(apiPath?: string): string {
