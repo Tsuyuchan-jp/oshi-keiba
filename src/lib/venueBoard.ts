@@ -19,6 +19,7 @@ export type VenueSlot = "day" | "dusk" | "night";
 
 function formatOdds(n: number | null): string {
   if (n == null || !Number.isFinite(n)) return "—";
+  if (n >= 9999.9) return "9999.9+";
   return n.toFixed(1);
 }
 

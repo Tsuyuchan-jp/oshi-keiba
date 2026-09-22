@@ -15,11 +15,13 @@ import { IMPUTED_LAMBDA } from "./odds";
 
 export function formatOdds(n: number | null): string {
   if (n == null || !Number.isFinite(n)) return "—";
+  if (n >= 9999.9) return "9999.9+";
   return n.toFixed(1);
 }
 
 export function formatOddsWithUnit(n: number | null): string {
   if (n == null || !Number.isFinite(n)) return "—";
+  if (n >= 9999.9) return "9999.9+倍";
   return `${n.toFixed(1)}倍`;
 }
 
@@ -231,7 +233,7 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
       if (!cell || !key) continue;
       // 馬一覧・場内の行は常に単勝参考オッズ。連勝の買い目行だけ賭式別の値を使う。
       const odds = tr.matches(".chip, .sheet-row") ? winNext.get(key) : next.get(key);
-      const text = (odds == null || !Number.isFinite(odds)) ? "—" : Number(odds).toFixed(1);
+      const text = (odds == null || !Number.isFinite(odds)) ? "—" : Number(odds) >= 9999.9 ? "9999.9+" : Number(odds).toFixed(1);
       const old = prev.has(key) ? prev.get(key) : parseShown(cell.textContent);
       cell.textContent = text;
       if (old != null && odds != null && Math.abs(odds - old) >= 0.1) {
@@ -257,7 +259,7 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
           tr.innerHTML = '<td></td><td class="num odds-cell"><span class="odds-now"></span><span class="odds-delta" hidden></span></td>';
           tr.children[0].textContent = it.label;
           tr.querySelector(".odds-now").textContent =
-            (it.odds == null || !Number.isFinite(it.odds)) ? "—" : Number(it.odds).toFixed(1);
+            (it.odds == null || !Number.isFinite(it.odds)) ? "—" : Number(it.odds) >= 9999.9 ? "9999.9+" : Number(it.odds).toFixed(1);
           tbody.appendChild(tr);
         }
       }
@@ -280,7 +282,7 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
           const od = document.createElement("span");
           od.className = "odds-now";
           od.textContent =
-            (it.odds == null || !Number.isFinite(it.odds)) ? "—" : Number(it.odds).toFixed(1);
+            (it.odds == null || !Number.isFinite(it.odds)) ? "—" : Number(it.odds) >= 9999.9 ? "9999.9+" : Number(it.odds).toFixed(1);
           row.append(lab, od);
           mini.appendChild(row);
         }

@@ -58,6 +58,7 @@ import {
 import { paddockPage } from "./paddockPage.ts";
 import { paddockView } from "./paddockView.ts";
 import { listStrategicSkills } from "./strategicSkills.ts";
+import { venueOddsResponse } from "./venueOdds.ts";
 
 function requiredOperationId(value: string | null): string {
   if (!value || !/^[0-9a-f-]{36}$/i.test(value)) {
@@ -197,6 +198,15 @@ export async function tryMemberGet(
 
   if (path === "/api/board") {
     const board = await loadBoard(env.DB);
+    const venueView = url.searchParams.get("venue_view");
+    if (venueView === "win" || venueView === "umaren" || venueView === "sanrenpuku" || venueView === "ordered") {
+      const axis = Number(url.searchParams.get("axis"));
+      return json({
+        status: board.event.status,
+        statusLabel: statusLabel(board.event.status),
+        venue: venueOddsResponse(board, venueView, Number.isFinite(axis) ? axis : undefined),
+      });
+    }
     const nums = numberByHorseId(board);
     const kinds: Record<
       string,
@@ -311,10 +321,6 @@ export async function tryMemberGet(
         ticketsHtml,
         strategicSkills,
         showUmabashira: canViewUmabashira,
-        scripts:
-          board.event.status === "voting"
-            ? livePollScript("/api/board", "win")
-            : "",
       }),
     );
   }

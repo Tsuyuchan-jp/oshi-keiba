@@ -46,6 +46,12 @@ import { backgroundModal, chromeTimesHtml, memberMoreScript, memberOutLinks } fr
 import { memberUmabashiraModalHtml, memberUmabashiraScript } from "./memberUmabashira.ts";
 import { wakuOf } from "./umabashiraWaku.ts";
 import type { StrategicSkillRow } from "./strategicSkills.ts";
+import {
+  venueOddsResponse,
+  type VenueOddsItem,
+  type VenueOddsResponse,
+  type VenueOrderedMarket,
+} from "./venueOdds.ts";
 
 export type { VenueSlot };
 export { resolveVenueSlot } from "./venueBoard.ts";
@@ -420,6 +426,7 @@ function previewPackedMatrixGridHtml(
   gridColumnCount = columns.length,
   firstColumnStart?: number,
   leadingHtml = "",
+  liveItems?: readonly VenueOddsItem[],
 ): string {
   const runnerCount = runners.length;
   const axisColumn = (first: number) => {
@@ -428,8 +435,14 @@ function previewPackedMatrixGridHtml(
       .filter((second) => first < second)
       .map((second) => {
         const valid = kind === "umaren" || (first !== axis && second !== axis);
-        const odds = valid ? previewMatrixOdds(kind, axis, first, second) : "";
-        return `<div class="odds-matrix-entry${valid ? "" : " is-blank"}"${kind === "sanrenpuku" ? ` data-matrix-left="${first}" data-matrix-top="${second}"` : ""}><em>${second}</em><b>${odds}</b></div>`;
+        const label = kind === "umaren"
+          ? `${first}-${second}`
+          : [axis, first, second].sort((a, b) => a - b).join("-");
+        const liveItem = liveItems?.find((item) => item.label === label);
+        const odds = valid
+          ? (liveItems ? venueOddsText(liveItem?.odds ?? null) : previewMatrixOdds(kind, axis, first, second))
+          : "";
+        return `<div class="odds-matrix-entry${valid ? "" : " is-blank"}" data-odds-label="${label}"${kind === "sanrenpuku" ? ` data-matrix-left="${first}" data-matrix-top="${second}"` : ""}><em>${second}</em><b>${odds}</b></div>`;
       }).join("");
     const hidden = kind === "sanrenpuku" && first === axis ? " is-blank" : "";
     const gridColumn = firstColumnStart !== undefined && first === columns[0] ? ` style="grid-column-start:${firstColumnStart}"` : "";
@@ -439,7 +452,12 @@ function previewPackedMatrixGridHtml(
   return `<div class="odds-matrix ${className}${kindClass}" style="--matrix-count:${gridColumnCount}" data-matrix-kind="${kind}" data-matrix-axis="${axis}">${leadingHtml}${columns.map(axisColumn).join("")}</div>`;
 }
 
-function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku", previewRunnerCount?: number): string {
+function previewOddsMatrixHtml(
+  board: Board,
+  kind: "umaren" | "sanrenpuku",
+  previewRunnerCount?: number,
+  liveResponse?: Extract<VenueOddsResponse, { view: "umaren" | "sanrenpuku" }>,
+): string {
   const boardNums = board.horses.filter((h) => !h.horse.scratched).map((h) => h.number);
   const nums = previewRunnerCount
     ? Array.from({ length: previewRunnerCount }, (_, i) => i + 1)
@@ -458,12 +476,24 @@ function previewOddsMatrixHtml(board: Board, kind: "umaren" | "sanrenpuku", prev
     : "";
   const title = kind === "umaren" ? "馬連" : "3連複";
   const description = kind === "umaren" ? "組み合わせ別・参考オッズ" : "軸ウマ娘を含む組み合わせ・参考オッズ";
-  const main = previewPackedMatrixGridHtml(primary, nums, kind, axis, "odds-matrix--main", primary.length, undefined, axisPanel);
+  const main = previewPackedMatrixGridHtml(primary, nums, kind, axis, "odds-matrix--main", primary.length, undefined, axisPanel, liveResponse?.items);
   const foldedStart = primary.length - folded.length + 1;
   const secondary = folded.length > 1
-    ? previewPackedMatrixGridHtml([...folded].reverse(), nums, kind, axis, "odds-matrix--folded", primary.length, foldedStart)
+    ? previewPackedMatrixGridHtml([...folded].reverse(), nums, kind, axis, "odds-matrix--folded", primary.length, foldedStart, "", liveResponse?.items)
     : "";
-  return `<section class="odds-matrix-panel"><div class="odds-preview-panel-head"><b>${title}</b><span>${description}</span></div><div class="odds-matrix-layout" style="--primary-count:${primary.length};--folded-count:${folded.length}">${main}${secondary}</div></section>`;
+  const body = liveResponse && !liveResponse.enabled
+    ? unavailableOddsHtml()
+    : `<div class="odds-matrix-layout" style="--primary-count:${primary.length};--folded-count:${folded.length}">${main}${secondary}</div>`;
+  return `<section class="odds-matrix-panel"><div class="odds-preview-panel-head"><b>${title}</b><span>${description}</span></div>${body}</section>`;
+}
+
+function venueOddsText(odds: number | null): string {
+  if (odds == null || !Number.isFinite(odds)) return "—";
+  return odds >= 9999.9 ? "9999.9+" : odds.toFixed(1);
+}
+
+function unavailableOddsHtml(): string {
+  return `<div class="odds-market-unavailable">この開催では取り扱いなし</div>`;
 }
 
 function sanrenpukuAxisModalHtml(board: Board, previewRunnerCount?: number): string {
@@ -483,6 +513,7 @@ function previewOrderedColumnHtml(
   kind: "umatan" | "sanrentan",
   title: string,
   mode: "popular" | "real",
+  liveMarket?: VenueOrderedMarket,
 ): string {
   const nums = board.horses.filter((entry) => !entry.horse.scratched).map((entry) => entry.number);
   const ranked = [...nums.slice(6), ...nums.slice(0, 6)];
@@ -501,26 +532,39 @@ function previewOrderedColumnHtml(
     }
   }
   const baseOdds = kind === "umatan" ? 48.7 : 400.1;
-  const isEmptyRecentVotes = kind === "sanrentan" && mode === "real";
-  const rows = isEmptyRecentVotes ? `<div class="odds-ordered-empty">最初の投票を<br>お待ちしています</div>` : selections.map((selection, index) => {
+  const liveItems = liveMarket ? (mode === "popular" ? liveMarket.popular : liveMarket.recent) : null;
+  const isEmptyRecentVotes = liveItems ? mode === "real" && liveItems.length === 0 : kind === "sanrentan" && mode === "real";
+  const rows = isEmptyRecentVotes ? `<div class="odds-ordered-empty">最初の投票を<br>お待ちしています</div>` : liveItems ? liveItems.map((item) => {
+    return `<div class="odds-ordered-row" data-odds-key="${escapeHtml(item.key)}"><span>${escapeHtml(item.label)}</span><b>${venueOddsText(item.odds)}</b></div>`;
+  }).join("") : selections.map((selection, index) => {
     const odds = baseOdds * (1 + index * 0.12);
     return `<div class="odds-ordered-row"><span>${selection}</span><b>${odds.toFixed(1)}</b></div>`;
   }).join("");
-  return `<section class="odds-ordered-column"><h3>${title}</h3>${rows}</section>`;
+  return `<section class="odds-ordered-column" data-ordered-kind="${kind}" data-ordered-mode="${mode}"><h3>${title}</h3><div class="odds-ordered-rows">${rows}</div></section>`;
 }
 
-function previewOrderedHtml(board: Board): string {
-  const group = (kind: "umatan" | "sanrentan", title: string) => `<section class="odds-ordered-group"><h2>${title}</h2>${previewOrderedColumnHtml(board, kind, "人気上位", "popular")}${previewOrderedColumnHtml(board, kind, "直近投票", "real")}</section>`;
+function previewOrderedHtml(board: Board, liveResponse?: Extract<VenueOddsResponse, { view: "ordered" }>): string {
+  const group = (kind: "umatan" | "sanrentan", title: string) => {
+    const market = liveResponse?.markets.find((item) => item.kind === kind);
+    const body = market && !market.enabled
+      ? unavailableOddsHtml()
+      : previewOrderedColumnHtml(board, kind, "人気上位", "popular", market)
+        + previewOrderedColumnHtml(board, kind, "直近投票", "real", market);
+    return `<section class="odds-ordered-group" data-ordered-group="${kind}"><h2>${title}</h2>${body}</section>`;
+  };
   return `<div class="odds-preview-ordered">${group("umatan", "馬単")}${group("sanrentan", "3連単")}</div>`;
 }
 
-function previewMarketHtml(board: Board, layout: VenueOddsPreviewLayout, previewRunnerCount?: number): string {
+function previewMarketHtml(board: Board, layout: VenueOddsPreviewLayout, previewRunnerCount?: number, live = false): string {
   const kinds: Array<Exclude<BetKind, "win">> = ["umaren", "umatan", "sanrenpuku", "sanrentan"];
   const view = (id: string, body: string, on = false) => `<div class="odds-preview-market" data-preview-view="${id}"${on ? "" : " hidden"}>${body}</div>`;
   if (layout === "jra") {
-    return view("umaren", previewOddsMatrixHtml(board, "umaren", previewRunnerCount))
-      + view("sanrenpuku", previewOddsMatrixHtml(board, "sanrenpuku", previewRunnerCount))
-      + view("ordered", previewOrderedHtml(board))
+    const umaren = live ? venueOddsResponse(board, "umaren") as Extract<VenueOddsResponse, { view: "umaren" }> : undefined;
+    const sanrenpuku = live ? venueOddsResponse(board, "sanrenpuku", 1) as Extract<VenueOddsResponse, { view: "sanrenpuku" }> : undefined;
+    const ordered = live ? venueOddsResponse(board, "ordered") as Extract<VenueOddsResponse, { view: "ordered" }> : undefined;
+    return view("umaren", previewOddsMatrixHtml(board, "umaren", previewRunnerCount, umaren))
+      + view("sanrenpuku", previewOddsMatrixHtml(board, "sanrenpuku", previewRunnerCount, sanrenpuku))
+      + view("ordered", previewOrderedHtml(board, ordered))
       + sanrenpukuAxisModalHtml(board, previewRunnerCount);
   }
   if (layout === "three") {
@@ -542,11 +586,12 @@ function previewTabsHtml(layout: VenueOddsPreviewLayout): string {
   return `<div class="odds-preview-switcher"><span class="odds-preview-switcher-label">表示切替</span><div class="odds-preview-tabs" role="tablist" aria-label="参考オッズの種別">${tabs.map(([id, label], i) => `<button type="button" role="tab" data-preview-tab="${id}" aria-selected="${i === 0 ? "true" : "false"}">${label}</button>`).join("")}</div></div>`;
 }
 
-function previewTabsScript(): string {
+function previewTabsScript(apiPath?: string): string {
   return `<script>
 (() => {
   const root = document.querySelector(".odds-preview");
   if (!root) return;
+  const apiPath = ${JSON.stringify(apiPath ?? null)};
   const tabs = [...root.querySelectorAll("[data-preview-tab]")];
   const views = [...root.querySelectorAll("[data-preview-view]")];
   const winView = root.querySelector('[data-preview-view="win"]');
@@ -577,6 +622,7 @@ function previewTabsScript(): string {
     const target = tab.dataset.previewTab;
     for (const item of tabs) item.setAttribute("aria-selected", String(item === tab));
     for (const view of views) view.toggleAttribute("hidden", view.dataset.previewView !== target);
+    void refresh(target);
   });
   const axis = root.querySelector("#sanrenpuku-axis");
   const axisOpen = root.querySelector("#sanrenpuku-axis-open");
@@ -605,10 +651,13 @@ function previewTabsScript(): string {
         const top = Number(cell.dataset.matrixTop);
         const valid = left < top && left !== first && top !== first;
         const odds = cell.querySelector("b");
+        cell.dataset.oddsLabel = [first, left, top].sort((a, b) => a - b).join("-");
         cell.classList.toggle("is-blank", !valid);
         if (!valid) { if (odds) odds.textContent = ""; continue; }
-        const value = 62 * (1 + (first + left + top) * 0.11 + Math.abs(left - top) * 0.035);
-        if (odds) odds.textContent = value >= 9999.9 ? "9999.9+" : value.toFixed(1);
+        if (!apiPath) {
+          const value = 62 * (1 + (first + left + top) * 0.11 + Math.abs(left - top) * 0.035);
+          if (odds) odds.textContent = value >= 9999.9 ? "9999.9+" : value.toFixed(1);
+        }
       }
     }
     const primary = root.querySelector('.odds-matrix--main[data-matrix-kind="sanrenpuku"]');
@@ -637,7 +686,10 @@ function previewTabsScript(): string {
     }
   };
   updateSanrenpuku();
-  axis?.addEventListener("change", updateSanrenpuku);
+  axis?.addEventListener("change", () => {
+    updateSanrenpuku();
+    void refresh("sanrenpuku");
+  });
   axisOpen?.addEventListener("click", () => {
     if (axisModal instanceof HTMLDialogElement) axisModal.showModal();
   });
@@ -652,6 +704,84 @@ function previewTabsScript(): string {
     axis.value = choice.dataset.axisChoice ?? axis.value;
     axis.dispatchEvent(new Event("change"));
     if (axisModal instanceof HTMLDialogElement) axisModal.close();
+  });
+  const shownOdds = (odds) => odds == null || !Number.isFinite(odds)
+    ? "—"
+    : Number(odds) >= 9999.9 ? "9999.9+" : Number(odds).toFixed(1);
+  const renderOrderedColumn = (market, mode) => {
+    const column = root.querySelector('[data-ordered-kind="' + market.kind + '"][data-ordered-mode="' + mode + '"] .odds-ordered-rows');
+    if (!column) return;
+    const items = mode === "popular" ? market.popular : market.recent;
+    column.replaceChildren();
+    if (mode === "real" && items.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "odds-ordered-empty";
+      empty.append("最初の投票を", document.createElement("br"), "お待ちしています");
+      column.append(empty);
+      return;
+    }
+    for (const item of items) {
+      const row = document.createElement("div");
+      row.className = "odds-ordered-row";
+      row.dataset.oddsKey = item.key;
+      const label = document.createElement("span");
+      label.textContent = item.label;
+      const odds = document.createElement("b");
+      odds.textContent = shownOdds(item.odds);
+      row.append(label, odds);
+      column.append(row);
+    }
+  };
+  const applyVenue = (venue) => {
+    if (!venue) return;
+    if (venue.view === "win") {
+      const items = new Map(venue.items.map((item) => [item.key, item.odds]));
+      for (const row of root.querySelectorAll('.sheet-row[data-sel]')) {
+        const cell = row.querySelector(".odds-now");
+        if (cell) cell.textContent = shownOdds(items.get(row.dataset.sel));
+      }
+      return;
+    }
+    if (venue.view === "umaren" || venue.view === "sanrenpuku") {
+      const view = root.querySelector('[data-preview-view="' + venue.view + '"]');
+      if (!view || !venue.enabled) return;
+      const items = new Map(venue.items.map((item) => [item.label, item.odds]));
+      for (const cell of view.querySelectorAll("[data-odds-label]")) {
+        const odds = cell.querySelector("b");
+        if (odds && !cell.classList.contains("is-blank")) odds.textContent = shownOdds(items.get(cell.dataset.oddsLabel));
+      }
+      return;
+    }
+    for (const market of venue.markets) {
+      if (!market.enabled) continue;
+      renderOrderedColumn(market, "popular");
+      renderOrderedColumn(market, "real");
+    }
+  };
+  let refreshing = false;
+  const refresh = async (view) => {
+    if (!apiPath || refreshing || !["win", "umaren", "sanrenpuku", "ordered"].includes(view)) return;
+    refreshing = true;
+    try {
+      const params = new URLSearchParams({ venue_view: view });
+      if (view === "sanrenpuku" && axis instanceof HTMLSelectElement) params.set("axis", axis.value);
+      const response = await fetch(apiPath + "?" + params, { headers: { accept: "application/json" } });
+      if (!response.ok) return;
+      const payload = await response.json();
+      applyVenue(payload.venue);
+      if (payload.status !== "setup" && payload.status !== "voting" && timer != null) {
+        clearInterval(timer);
+        timer = null;
+      }
+    } catch { /* 次の5秒更新で再試行する */ }
+    finally { refreshing = false; }
+  };
+  const activeView = () => tabs.find((tab) => tab.getAttribute("aria-selected") === "true")?.dataset.previewTab ?? "win";
+  let timer = apiPath && (document.body.dataset.phase === "setup" || document.body.dataset.phase === "voting")
+    ? setInterval(() => { if (!document.hidden) void refresh(activeView()); }, 5000)
+    : null;
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) void refresh(activeView());
   });
 })();
 </script>`;
@@ -836,6 +966,8 @@ export function venueBoardPage(opts: {
     : "";
   const head = sheetHeadHtml(published);
   const preview = opts.oddsPreview && !published ? opts.oddsPreview : null;
+  const oddsLayout: VenueOddsPreviewLayout | null = preview ?? (!published ? "jra" : null);
+  const liveOdds = oddsLayout != null && preview == null;
   const previewRunnerControls = preview === "jra" && opts.oddsPreviewRunnerCount
     ? `<nav class="odds-preview-runner-controls" aria-label="連勝表の表示頭数"><span>表示頭数</span>${[15, 16, 17, 18].map((count) => `<a href="/__local/venue-odds?runners=${count}"${count === opts.oddsPreviewRunnerCount ? ' aria-current="page"' : ""}>${count}人</a>`).join("")}</nav>`
     : "";
@@ -896,16 +1028,16 @@ export function venueBoardPage(opts: {
           </div>
         </div>
       </header>
-      <section class="board${preview ? " odds-preview" : ""}">
+      <section class="board${oddsLayout ? " odds-preview" : ""}">
         ${flash}
         <div class="board-head">
           ${boardTitle}
           ${resultTabs}
         </div>
-        ${preview ? previewTabsHtml(preview) : ""}
+        ${oddsLayout ? previewTabsHtml(oddsLayout) : ""}
         ${jumbo}
         ${winColumns}
-        ${preview ? previewMarketHtml(opts.board, preview, opts.oddsPreviewRunnerCount) : ""}
+        ${oddsLayout ? previewMarketHtml(opts.board, oddsLayout, opts.oddsPreviewRunnerCount, liveOdds) : ""}
         ${tickets}
         ${foot}
       </section>
@@ -918,7 +1050,7 @@ export function venueBoardPage(opts: {
   ${umabashira}
   ${memberMoreScript()}
   ${venueChromeScript(published)}
-  ${preview ? previewTabsScript() : ""}
+  ${oddsLayout ? previewTabsScript(liveOdds ? "/api/board" : undefined) : ""}
   ${opts.showUmabashira ? memberUmabashiraScript() : ""}
   ${opts.scripts ?? ""}
 </body>

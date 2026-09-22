@@ -36,18 +36,20 @@ function buildKindPool(
   const kindBets = bets.filter((b) => !b.refunded && b.kind === kind);
   const byKey = new Map<
     string,
-    { horse_1: string; horse_2: string | null; horse_3: string | null; real: number }
+    { horse_1: string; horse_2: string | null; horse_3: string | null; real: number; lastBetAt: number }
   >();
   for (const b of kindBets) {
     const cur = byKey.get(b.selection_key);
     if (cur) {
       cur.real += b.amount;
+      cur.lastBetAt = Math.max(cur.lastBetAt, b.created_at);
     } else {
       byKey.set(b.selection_key, {
         horse_1: b.horse_1,
         horse_2: b.horse_2,
         horse_3: b.horse_3,
         real: b.amount,
+        lastBetAt: b.created_at,
       });
     }
   }
@@ -59,6 +61,7 @@ function buildKindPool(
       horse_2: v.horse_2,
       horse_3: v.horse_3,
       real: v.real,
+      lastBetAt: v.lastBetAt,
       odds:
         confirmed || kind !== "win"
           ? parimutuelOdds(v.real, realTotal, takeoutD)
@@ -183,6 +186,7 @@ export function buildBoard(
         horse_3: null,
         real: h.real,
         odds: h.referenceOdds,
+        lastBetAt: null,
       }));
   } else {
     winPool.combos = rows
@@ -194,6 +198,7 @@ export function buildBoard(
         horse_3: null,
         real: h.real,
         odds: h.confirmedOdds,
+        lastBetAt: null,
       }));
   }
 

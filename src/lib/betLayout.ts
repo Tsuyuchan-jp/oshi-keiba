@@ -323,7 +323,7 @@ function markCardScript(opts: {
       const h = n != null ? byNum.get(n) : null;
       const odds =
         h && kind === "win" && h.odds != null
-          ? \`<span class="o">\${Number(h.odds).toFixed(1)}倍</span>\`
+          ? \`<span class="o">\${Number(h.odds) >= 9999.9 ? "9999.9+" : Number(h.odds).toFixed(1)}倍</span>\`
           : "";
       return \`<button type="button" class="well\${h ? " fill" : ""}" data-well="\${i}">
         <span class="k">\${name}</span>
@@ -333,7 +333,7 @@ function markCardScript(opts: {
     }).join("");
     board.innerHTML = displayHorses.map((h) => {
       const on = picks.includes(h.number);
-      const od = h.odds == null || !Number.isFinite(h.odds) ? "—" : Number(h.odds).toFixed(1);
+      const od = h.odds == null || !Number.isFinite(h.odds) ? "—" : Number(h.odds) >= 9999.9 ? "9999.9+" : Number(h.odds).toFixed(1);
       return \`<button type="button" class="chip\${on ? " on" : ""}" data-n="\${h.number}" data-sel="\${h.id}" data-horse-id="\${h.id}">
         <span class="n">\${h.number}</span><span class="uma">\${h.umaName}</span><span class="od odds-now">\${od}</span>
       </button>\`;
@@ -345,7 +345,7 @@ function markCardScript(opts: {
   }
   function formatReferenceOdds(odds) {
     if (odds == null || !Number.isFinite(odds)) return "—";
-    return odds >= 9999.9 ? "9999.9倍以上" : Number(odds).toFixed(1) + "倍";
+    return odds >= 9999.9 ? "9999.9+" : Number(odds).toFixed(1) + "倍";
   }
   async function refreshReferenceOdds() {
     if (!referenceOdds || !referenceOddsBody || kind === "win") return;

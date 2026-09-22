@@ -129,6 +129,8 @@ export type PoolCombo = {
   horse_3: string | null;
   real: number;
   odds: number | null;
+  /** 返還されていない同じ買い目への最終投票時刻 */
+  lastBetAt: number | null;
 };
 
 export type KindPool = {
