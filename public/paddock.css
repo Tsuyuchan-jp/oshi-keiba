@@ -16,6 +16,6 @@
 .trainer-card{margin:9px 0 13px;padding:7px 9px 10px;border:1px solid #c9e7c9;border-radius:11px;background:linear-gradient(90deg,#e2f4d6,#fff8d8)}
 .trainer-card .trainer-profile{margin:0;padding:0;border:0;border-radius:0;background:none}
 .trainer-card .trainer-comment{position:relative;margin:9px 0 0}
-.trainer-card .trainer-comment blockquote{padding:8px 10px;border-color:#e7b649;background:#fff;box-shadow:0 1px 0 #fff8}
-.trainer-card .trainer-comment blockquote:before{top:-15px;left:14px;width:20px;height:15px;background:#e7b649;clip-path:polygon(50% 0,100% 100%,0 100%)}
-.trainer-card .trainer-comment blockquote:after{top:-11px;left:17px;width:14px;height:11px;background:#fff;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.trainer-card .trainer-comment blockquote{padding:8px 10px;border-color:#e7b649;background:#f6fbf5;box-shadow:0 1px 0 #fff8}
+.trainer-card .trainer-comment blockquote:before{top:-10px;left:11px;width:20px;height:10px;background:#e7b649;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.trainer-card .trainer-comment blockquote:after{top:-7px;left:14px;width:14px;height:7px;background:#f6fbf5;clip-path:polygon(50% 0,100% 100%,0 100%)}

@@ -92,7 +92,7 @@ test("18 horses fit vertically without changing the mobile horizontal layout", a
   await expect(detail).toHaveClass(/open/);
   await expect(detail.locator(".trainer-card")).toBeVisible();
   await expect(detail.locator(".trainer-card .trainer-comment blockquote")).toContainText("先頭を目指します");
-  await expect(detail.locator(".trainer-card .trainer-comment blockquote")).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(detail.locator(".trainer-card .trainer-comment blockquote")).toHaveCSS("background-color", "rgb(246, 251, 245)");
   const handle = page.locator(".detail__summary");
   const box = await handle.boundingBox();
   if (!box) throw new Error("detail swipe handle is unavailable");
