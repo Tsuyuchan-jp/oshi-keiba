@@ -43,7 +43,15 @@ import {
   type BetKind,
 } from "./bets";
 import { parimutuelOdds } from "./odds";
-import { analysisCauseLabel, type AnalysisEventOption, type AnalysisFailureRow, type AnalysisSnapshotRow } from "./analysisLog";
+import {
+  ANALYSIS_ARCHIVE_WARNING_BYTES,
+  analysisCauseLabel,
+  type AnalysisArchiveRow,
+  type AnalysisEventOption,
+  type AnalysisFailureRow,
+  type AnalysisLogState,
+  type AnalysisSnapshotRow,
+} from "./analysisLog";
 import { votingStartProblems } from "./storeRace";
 import {
   DEFAULT_SCORE_REQ,
@@ -1357,13 +1365,28 @@ export function adminAnalysisPage(opts: {
   events: AnalysisEventOption[];
   snapshots: AnalysisSnapshotRow[];
   failures: AnalysisFailureRow[];
+  analysisState: AnalysisLogState | null;
+  archives: AnalysisArchiveRow[];
 }): string {
-  const { event, events, snapshots, failures } = opts;
+  const { event, events, snapshots, failures, analysisState, archives } = opts;
   const latest = snapshots[0] ?? null;
   const selected = events
     .map((item) => `<option value="${escapeHtml(item.id)}"${item.id === event.id ? " selected" : ""}>${escapeHtml(item.title || "（無題の開催）")} · ${escapeHtml(statusLabel(item.status))}</option>`)
     .join("");
   const exportHref = `/admin/analysis/export?event=${encodeURIComponent(event.id)}`;
+  const activeBytes = analysisState?.active_uncompressed_bytes ?? 0;
+  const sizeText = `${(activeBytes / 1024 / 1024).toFixed(2)} MiB`;
+  const archiveRows = archives.map((archive) => {
+    const href = `/admin/analysis/archive?event=${encodeURIComponent(event.id)}&part=${archive.part_number}`;
+    const period = `${escapeHtml(toJstInput(archive.first_captured_at).replace("T", " "))}〜${escapeHtml(toJstInput(archive.last_captured_at).replace("T", " "))}`;
+    return `<tr>
+      <td>Part ${String(archive.part_number).padStart(3, "0")}</td>
+      <td>${period}</td>
+      <td class="num">${archive.snapshot_count}</td>
+      <td class="num">${(archive.uncompressed_bytes / 1024 / 1024).toFixed(2)} MiB</td>
+      <td><a class="admin-action admin-action--secondary" href="${escapeHtml(href)}">ダウンロード</a></td>
+    </tr>`;
+  }).join("");
   const rows = snapshots.slice(0, 40).map((snapshot) => `<tr>
       <td>${escapeHtml(toJstInput(snapshot.captured_at).replace("T", " "))}</td>
       <td>${escapeHtml(analysisCauseLabel(snapshot.cause))}</td>
@@ -1375,8 +1398,8 @@ export function adminAnalysisPage(opts: {
     </tr>`).join("");
   return `${adminPageHero("分析ログ", event.status, {
       meta: `<span class="page-hero-meta">投票中ボードの集計記録</span>`,
-      actions: snapshots.length
-        ? `<a class="admin-action admin-action--secondary" href="${escapeHtml(exportHref)}">CSV一式をダウンロード</a>`
+      actions: snapshots.length || archives.length
+        ? `<a class="admin-action admin-action--secondary" href="${escapeHtml(exportHref)}">分析データを一括ダウンロード</a>`
         : "",
     })}
     <section class="work analysis-summary">
@@ -1391,11 +1414,22 @@ export function adminAnalysisPage(opts: {
         <div class="kpi"><span class="k">記録件数</span><span class="v">${snapshots.length}</span></div>
         <div class="kpi"><span class="k">最終記録</span><span class="v analysis-time">${latest ? escapeHtml(toJstInput(latest.captured_at).replace("T", " ")) : "—"}</span></div>
         <div class="kpi"><span class="k">現在の設定 S / E / D</span><span class="v analysis-param">${formatPt(event.seed_pool_s)} / ${formatPt(event.pull_e)} / ${Math.round(event.takeout_d * 100)}%</span></div>
+        <div class="kpi${analysisState?.last_archive_error ? " analysis-failure-kpi" : ""}"><span class="k">未退避データ / 自動退避基準</span><span class="v analysis-param">${sizeText} / ${(ANALYSIS_ARCHIVE_WARNING_BYTES / 1024 / 1024).toFixed(0)} MiB</span></div>
+        <div class="kpi"><span class="k">R2自動退避</span><span class="v">${archives.length}回</span></div>
+        <div class="kpi${analysisState?.skipped_snapshot_count ? " analysis-failure-kpi" : ""}"><span class="k">容量保護で省略</span><span class="v">${analysisState?.skipped_snapshot_count ?? 0}件</span></div>
         <div class="kpi${failures.length ? " analysis-failure-kpi" : ""}"><span class="k">ログ保存失敗</span><span class="v">${failures.length}</span></div>
       </div>
       <p class="note analysis-note">投票開始時、投票・やり直し・出走取消時、締切直前、締切後に自動記録します。CSVには個別の投票者名・残高を含めません。</p>
+      ${archives.length ? `<div class="analysis-storage-notice"><strong>容量保護のためR2へ自動退避済み</strong><span>3 MiB到達時点の分析ログを ${archives.length} 件に分けて保管しています。一括ダウンロードには現在分も含まれます。</span></div>` : ""}
+      ${analysisState?.archive_in_progress ? `<div class="analysis-storage-notice"><strong>分析ログをR2へ退避中</strong><span>完了後に元データをD1から削除します。投票はそのまま続けられます。</span></div>` : ""}
+      ${analysisState?.skipped_snapshot_count ? `<div class="analysis-storage-notice is-warning"><strong>4 MiBの容量保護が作動しました</strong><span>通常操作の記録を ${analysisState.skipped_snapshot_count} 件省略しました。投票開始・締切直前・締切後の記録は省略しません。一括データの analysis-status.csv にも記録しています。</span></div>` : ""}
+      ${analysisState?.last_archive_error ? `<div class="analysis-storage-notice is-error"><strong>分析ログを自動退避できませんでした</strong><span>${escapeHtml(analysisState.last_archive_error)}。元データはD1に残しています。</span></div>` : ""}
       ${failures.length ? `<p class="analysis-failure-note">ログ保存の失敗を ${failures.length} 件記録しています。投票自体は成立しています。最新: ${escapeHtml(toJstInput(failures[0]!.occurred_at).replace("T", " "))} JST（${escapeHtml(analysisCauseLabel(failures[0]!.cause))}）</p>` : ""}
     </section>
+    ${archives.length ? `<section class="work analysis-archives">
+      <div class="work-head"><h2>自動退避した分析ログ</h2><span class="odds-meta">非公開R2に保管</span></div>
+      <div class="table-scroll"><table class="plain"><thead><tr><th>ファイル</th><th>記録期間（JST）</th><th class="num">記録数</th><th class="num">未圧縮容量</th><th></th></tr></thead><tbody>${archiveRows}</tbody></table></div>
+    </section>` : ""}
     <section class="work analysis-list">
       <div class="work-head"><h2>直近の記録</h2><span class="odds-meta">${snapshots.length > 40 ? `最新40件 / 全${snapshots.length}件` : `全${snapshots.length}件`}</span></div>
       ${snapshots.length ? `<div class="table-scroll"><table class="plain analysis-table"><thead><tr><th>時刻（JST）</th><th>記録理由</th><th class="num">TV</th><th class="num">w</th><th class="num">投票者</th><th class="num">単勝実票</th><th class="num">連勝実票</th></tr></thead><tbody>${rows}</tbody></table></div>` : `<p class="note">まだ記録はありません。投票開始後に自動で記録されます。</p>`}

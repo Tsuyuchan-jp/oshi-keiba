@@ -25,7 +25,7 @@ export type VenueOddsResponse =
   | { view: "umaren" | "sanrenpuku"; enabled: boolean; axis: number | null; items: VenueOddsItem[] }
   | { view: "ordered"; markets: VenueOrderedMarket[] };
 
-type Candidate = {
+export type ExoticCandidate = {
   ids: string[];
   numbers: number[];
   key: string;
@@ -40,7 +40,7 @@ function candidate(
   kind: Exclude<BetKind, "win">,
   ids: string[],
   numbers: number[],
-): Candidate {
+): ExoticCandidate {
   const normalized = normalizeSelection(kind, ids);
   const separator = kind === "umatan" || kind === "sanrentan" ? "→" : "-";
   return {
@@ -51,13 +51,13 @@ function candidate(
   };
 }
 
-function candidatesFor(
+export function exoticCandidatesFor(
   board: Board,
   kind: Exclude<BetKind, "win">,
   axisNumber?: number,
-): Candidate[] {
+): ExoticCandidate[] {
   const live = liveEntries(board);
-  const output: Candidate[] = [];
+  const output: ExoticCandidate[] = [];
   if (kind === "umaren" || kind === "umatan") {
     for (let a = 0; a < live.length; a += 1) {
       for (let b = 0; b < live.length; b += 1) {
@@ -101,7 +101,7 @@ function compareNumbers(a: readonly number[], b: readonly number[]): number {
 function itemsFor(
   board: Board,
   kind: Exclude<BetKind, "win">,
-  candidates: Candidate[],
+  candidates: ExoticCandidate[],
 ): Array<VenueOddsItem & { lastBetAt: number | null }> {
   const live = liveEntries(board);
   const indexById = new Map(live.map((entry, index) => [entry.horse.id, index]));
@@ -135,7 +135,7 @@ function itemsFor(
 function orderedMarket(board: Board, kind: "umatan" | "sanrentan"): VenueOrderedMarket {
   const enabled = parseEnabledKinds(board.event.enabled_kinds).includes(kind);
   if (!enabled) return { kind, enabled, popular: [], recent: [] };
-  const items = itemsFor(board, kind, candidatesFor(board, kind));
+  const items = itemsFor(board, kind, exoticCandidatesFor(board, kind));
   const popular = [...items]
     .sort((a, b) => {
       if (a.odds == null && b.odds != null) return 1;
@@ -181,6 +181,6 @@ export function venueOddsResponse(
     view,
     enabled,
     axis,
-    items: enabled ? itemsFor(board, view, candidatesFor(board, view, axis ?? undefined)) : [],
+    items: enabled ? itemsFor(board, view, exoticCandidatesFor(board, view, axis ?? undefined)) : [],
   };
 }

@@ -26,6 +26,8 @@
 
 ## アーカイブ
 
+- 分析ログへ連勝Seed・参考オッズ・各賭式人気上位10件・実票のある全買い目を追加し、`odds-v3` / `analysis-log-v2` で識別。未圧縮3MiBで非公開R2へ自動退避、4MiBで通常記録を止めて締切用記録を予約し、管理画面の状態表示と終了後の一括ダウンロードを実装 — [analysis-log.md](specifications/analysis-log.md)
+
 - 連勝側への仮想Seedと初期参考オッズを実装。第2回は評価点70未満を70として扱う暫定下限を追加し、開催後に倍率分布とメンバーの反応を見て再検討する — [odds.md](specifications/odds.md)・[exotic-seed.md](specifications/exotic-seed.md)
 
 - メンバー画面の背景設定を実装クローズ（「⋯」から自動／昼固定／夜固定を選べる。設定は同じ端末に保存し、場内・窓口・入場へ共通適用。使い方と共通モーダル化し、PC幅を改善。場内の時刻更新でも固定設定を維持。昼背景のスマホ「ウマ柱を見る」は二重透過を避ける不透明な深緑青。初回モーダルは出さない。実機確認OK）— [playbook.md](operations/playbook.md)・[umabashira.md](features/umabashira.md)

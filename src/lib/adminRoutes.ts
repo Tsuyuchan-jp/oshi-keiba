@@ -28,9 +28,13 @@ import {
   listAnalysisEvents,
   listAnalysisSnapshots,
   listAnalysisFailures,
+  getAnalysisLogState,
+  listAnalysisArchives,
+  archiveAnalysisIfNeeded,
   loadTreasuryDashboard,
   analysisExportFilename,
   analysisExportZip,
+  analysisArchiveZip,
   listPreRaceAssessments,
   getPreRaceAssessmentSnapshot,
   parsePreRaceAssessmentSnapshot,
@@ -124,11 +128,30 @@ export async function tryAdminGet(
     const requestedId = url.searchParams.get("event");
     const event = requestedId ? await getEventById(env.DB, requestedId) : board.event;
     if (!event) return new Response("開催が見つかりません", { status: 404 });
-    const body = await analysisExportZip(env.DB, event.id);
+    const body = await analysisExportZip(env.DB, event.id, env.SHOTS);
     return new Response(body, {
       headers: {
         "Content-Type": "application/zip",
         "Content-Disposition": `attachment; filename="${analysisExportFilename(event)}"`,
+        "Cache-Control": "private, no-store",
+      },
+    });
+  }
+
+  if (path === "/admin/analysis/archive") {
+    const gate = await requireAdmin(request, env);
+    if (gate instanceof Response) return gate;
+    const eventId = url.searchParams.get("event") ?? "";
+    const part = Number(url.searchParams.get("part"));
+    if (!env.SHOTS || !eventId || !Number.isInteger(part) || part < 1) {
+      return new Response("分析ログが見つかりません", { status: 404 });
+    }
+    const body = await analysisArchiveZip(env.DB, eventId, part, env.SHOTS);
+    if (!body) return new Response("分析ログが見つかりません", { status: 404 });
+    return new Response(body, {
+      headers: {
+        "Content-Type": "application/zip",
+        "Content-Disposition": `attachment; filename="analysis-part-${String(part).padStart(3, "0")}.zip"`,
         "Cache-Control": "private, no-store",
       },
     });
@@ -152,23 +175,35 @@ export async function tryAdminGet(
   const board = await loadBoard(env.DB);
   const m = msg(url);
   const allowDemo = env.ALLOW_DEMO_RESET === "1";
+  const currentAnalysisState = await getAnalysisLogState(env.DB, board.event.id);
+  const layoutState = {
+    analysisAlert: Boolean(
+      currentAnalysisState?.last_archive_error
+      || currentAnalysisState?.skipped_snapshot_count
+      || (currentAnalysisState?.active_uncompressed_bytes ?? 0) >= 3 * 1024 * 1024,
+    ),
+  };
 
   if (path === "/admin/analysis") {
     const events = await listAnalysisEvents(env.DB);
     const requestedId = url.searchParams.get("event");
     const event = requestedId ? await getEventById(env.DB, requestedId) : board.event;
     if (!event) return new Response("開催が見つかりません", { status: 404 });
-    const [snapshots, failures] = await Promise.all([
+    await archiveAnalysisIfNeeded(env.DB, event, env.SHOTS);
+    const [snapshots, failures, analysisState, archives] = await Promise.all([
       listAnalysisSnapshots(env.DB, event.id),
       listAnalysisFailures(env.DB, event.id),
+      getAnalysisLogState(env.DB, event.id),
+      listAnalysisArchives(env.DB, event.id),
     ]);
     return html(
       layoutAdmin({
+        ...layoutState,
         title: "分析ログ",
         tab: "analysis",
         user: gate.user,
         eventStatus: event.status,
-        body: adminAnalysisPage({ event, events, snapshots, failures }),
+        body: adminAnalysisPage({ event, events, snapshots, failures, analysisState, archives }),
       }),
     );
   }
@@ -186,6 +221,7 @@ export async function tryAdminGet(
     });
     return html(
       layoutAdmin({
+        ...layoutState,
         title: "進行",
         tab: "progress",
         user: gate.user,
@@ -212,6 +248,7 @@ export async function tryAdminGet(
     );
     return html(
       layoutAdmin({
+        ...layoutState,
         title: "出走登録",
         tab: "register",
         user: gate.user,
@@ -238,6 +275,7 @@ export async function tryAdminGet(
     }
     return html(
       layoutAdmin({
+        ...layoutState,
         title: "出走",
         tab: "horses",
         user: gate.user,
@@ -270,6 +308,7 @@ export async function tryAdminGet(
     const betRows = allBets.map((b) => betRowHtml(b, board, nums, payByBet)).join("");
     return html(
       layoutAdmin({
+        ...layoutState,
         title: "台帳",
         tab: "ledger",
         user: gate.user,
@@ -283,6 +322,7 @@ export async function tryAdminGet(
   if (path === "/admin/odds") {
     return html(
       layoutAdmin({
+        ...layoutState,
         title: "オッズ",
         tab: "odds",
         user: gate.user,
@@ -298,6 +338,7 @@ export async function tryAdminGet(
     const page = adminUmabashiraPage(board, strategic.skills);
     return html(
       layoutAdmin({
+        ...layoutState,
         title: "ウマ柱",
         tab: "umabashira",
         user: gate.user,
@@ -313,6 +354,7 @@ export async function tryAdminGet(
     const page = adminGougaiPage(board);
     return html(
       layoutAdmin({
+        ...layoutState,
         title: "号外",
         tab: "gougai",
         user: gate.user,
@@ -327,6 +369,7 @@ export async function tryAdminGet(
   const settings = adminSettingsPage(board, m);
   return html(
     layoutAdmin({
+      ...layoutState,
       title: "開催設定",
       tab: "settings",
       user: gate.user,

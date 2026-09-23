@@ -459,6 +459,7 @@ export async function tryMemberPost(
         ids,
         Number(form.get("amount") ?? "0"),
         requiredOperationId(form.get("operation_id")),
+        env.SHOTS,
       );
       const flash = encodeURIComponent(
         JSON.stringify({ hit: result.selection_key }),
@@ -512,6 +513,7 @@ export async function tryMemberPost(
         board.event,
         gate.user,
         requiredOperationId(form.get("operation_id")),
+        env.SHOTS,
       );
       return bounce(
         "/bet",

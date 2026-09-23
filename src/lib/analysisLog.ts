@@ -1,18 +1,31 @@
 /** 開催後の調整に使う、投票中ボードの集計スナップショットとCSV出力。 */
 
 import { formatSelectionLabel, parseEnabledKinds, type BetKind } from "./bets";
-import { IMPUTED_LAMBDA } from "./odds";
+import {
+  EXOTIC_GAMMA,
+  EXOTIC_PULL_E,
+  EXOTIC_STRENGTH_FLOOR,
+  exoticReferenceQuote,
+  IMPUTED_LAMBDA,
+  wVolume,
+} from "./odds";
 import { buildBoard, numberByHorseId } from "./storeBoard";
 import { getEventById } from "./storeEvent";
 import { listActiveBets, listHorses } from "./storeRead";
 import type { Board, EventRow, HorseRow } from "./storeTypes";
+import { exoticCandidatesFor } from "./venueOdds";
 
 export type AnalysisCause = "voting_open" | "bet" | "redo" | "scratch" | "pre_close" | "close";
 
 /** 式の意味を変えるときだけ上げる。値だけの変更では上げない。 */
-export const ANALYSIS_FORMULA_VERSION = "odds-v2";
+export const ANALYSIS_FORMULA_VERSION = "odds-v3";
 /** CSV列の意味・構造を変えるときだけ上げる。 */
-export const ANALYSIS_SCHEMA_VERSION = "analysis-log-v1";
+export const ANALYSIS_SCHEMA_VERSION = "analysis-log-v2";
+
+export const ANALYSIS_ARCHIVE_WARNING_BYTES = 3 * 1024 * 1024;
+export const ANALYSIS_CAPTURE_PAUSE_BYTES = 4 * 1024 * 1024;
+const ANALYSIS_ARCHIVE_PREFIX = "analysis-archives";
+const ANALYSIS_POPULAR_LIMIT = 10;
 
 export type AnalysisSnapshotRow = {
   id: number;
@@ -37,6 +50,7 @@ export type AnalysisSnapshotRow = {
   bettor_count: number;
   active_bet_count: number;
   live_horse_count: number;
+  log_complete: number;
 };
 
 type AnalysisOddsRow = {
@@ -53,6 +67,49 @@ type AnalysisOddsRow = {
   imputed: number | null;
   display: number | null;
   is_scratched: number;
+  is_bet: number;
+  popular_rank: number | null;
+};
+
+type AnalysisMarketRow = {
+  snapshot_id: number;
+  kind: Exclude<BetKind, "win">;
+  real_total: number;
+  pull_e: number;
+  seed_pool_s: number;
+  gamma: number;
+  strength_floor: number;
+  w_time: number;
+  w_volume: number;
+  w: number;
+};
+
+export type AnalysisLogState = {
+  event_id: string;
+  active_uncompressed_bytes: number;
+  horse_csv_bytes: number;
+  archive_count: number;
+  archive_in_progress: number;
+  capture_paused: number;
+  skipped_snapshot_count: number;
+  limit_reached_at: number | null;
+  last_archived_at: number | null;
+  last_archive_error: string | null;
+};
+
+export type AnalysisArchiveRow = {
+  id: number;
+  event_id: string;
+  part_number: number;
+  r2_key: string;
+  archived_at: number;
+  first_captured_at: number;
+  last_captured_at: number;
+  snapshot_count: number;
+  odds_row_count: number;
+  uncompressed_bytes: number;
+  formula_version: string;
+  schema_version: string;
 };
 
 export type AnalysisEventOption = Pick<EventRow, "id" | "title" | "status" | "created_at" | "is_current">;
@@ -89,10 +146,14 @@ async function countSnapshotMembers(db: D1Database, eventId: string): Promise<{
   return { joined: joined?.n ?? 0, bettors: bettors?.n ?? 0, activeBets: activeBets?.n ?? 0 };
 }
 
-function oddsRows(board: Board, snapshotId: number): AnalysisOddsRow[] {
+function oddsRows(board: Board, snapshotId: number): {
+  odds: AnalysisOddsRow[];
+  markets: AnalysisMarketRow[];
+} {
   const nums = numberByHorseId(board);
   const votingLike = board.event.status === "voting" || board.event.status === "setup";
   const rows: AnalysisOddsRow[] = [];
+  const markets: AnalysisMarketRow[] = [];
   for (const kind of parseEnabledKinds(board.event.enabled_kinds)) {
     if (kind === "win") {
       for (const h of board.horses) {
@@ -111,30 +172,97 @@ function oddsRows(board: Board, snapshotId: number): AnalysisOddsRow[] {
           imputed: h.imputed,
           display: h.display,
           is_scratched: 0,
+          is_bet: h.real > 0 ? 1 : 0,
+          popular_rank: null,
         });
       }
       continue;
     }
     const pool = board.pools.find((p) => p.kind === kind);
-    for (const combo of pool?.combos ?? []) {
+    const realByKey = new Map((pool?.combos ?? []).map((combo) => [combo.selection_key, combo]));
+    const live = board.horses.filter((entry) => !entry.horse.scratched && entry.number > 0);
+    const indexById = new Map(live.map((entry, index) => [entry.horse.id, index]));
+    const candidates = votingLike
+      ? exoticCandidatesFor(board, kind)
+      : (pool?.combos ?? []).map((combo) => ({
+          ids: [combo.horse_1, combo.horse_2, combo.horse_3].filter((id): id is string => id != null),
+          numbers: [combo.horse_1, combo.horse_2, combo.horse_3]
+            .filter((id): id is string => id != null)
+            .map((id) => nums.get(id) ?? 0),
+          key: combo.selection_key,
+          label: formatSelectionLabel(kind, combo.horse_1, combo.horse_2, combo.horse_3, nums),
+        }));
+    const calculated = candidates.map((entry) => {
+      const combo = realByKey.get(entry.key);
+      const quote = votingLike
+        ? exoticReferenceQuote({
+            kind,
+            strengths: live.map((item) => item.horse.strength),
+            selection: entry.ids.map((id) => indexById.get(id)!),
+            seedPool: board.event.seed_pool_s,
+            timeWeight: board.wTime,
+            realTotal: pool?.realTotal ?? 0,
+            selectionReal: combo?.real ?? 0,
+            takeoutD: board.event.takeout_d,
+          })
+        : null;
+      return {
+        entry,
+        combo,
+        shownOdds: votingLike ? (quote?.odds ?? null) : (combo?.odds ?? null),
+        seed: quote?.seed ?? null,
+        display: quote?.display ?? null,
+      };
+    });
+    const popular = [...calculated]
+      .filter((item) => item.shownOdds != null)
+      .sort((a, b) => {
+        const oddsDifference = a.shownOdds! - b.shownOdds!;
+        if (oddsDifference) return oddsDifference;
+        for (let index = 0; index < Math.max(a.entry.numbers.length, b.entry.numbers.length); index += 1) {
+          const numberDifference = (a.entry.numbers[index] ?? 0) - (b.entry.numbers[index] ?? 0);
+          if (numberDifference) return numberDifference;
+        }
+        return 0;
+      })
+      .slice(0, ANALYSIS_POPULAR_LIMIT);
+    const popularRank = new Map(popular.map((item, index) => [item.entry.key, index + 1]));
+    for (const item of calculated) {
+      const real = item.combo?.real ?? 0;
+      if (!(real > 0) && !popularRank.has(item.entry.key)) continue;
       rows.push({
         snapshot_id: snapshotId,
         kind,
-        selection_key: combo.selection_key,
-        selection_label: formatSelectionLabel(kind, combo.horse_1, combo.horse_2, combo.horse_3, nums),
-        horse_1: combo.horse_1,
-        horse_2: combo.horse_2,
-        horse_3: combo.horse_3,
-        real: combo.real,
-        shown_odds: combo.odds,
-        seed: null,
+        selection_key: item.entry.key,
+        selection_label: item.entry.label,
+        horse_1: item.entry.ids[0]!,
+        horse_2: item.entry.ids[1] ?? null,
+        horse_3: item.entry.ids[2] ?? null,
+        real,
+        shown_odds: item.shownOdds,
+        seed: item.seed,
         imputed: null,
-        display: null,
+        display: item.display,
         is_scratched: 0,
+        is_bet: real > 0 ? 1 : 0,
+        popular_rank: popularRank.get(item.entry.key) ?? null,
       });
     }
+    const volumeWeight = wVolume(pool?.realTotal ?? 0, EXOTIC_PULL_E[kind]);
+    markets.push({
+      snapshot_id: snapshotId,
+      kind,
+      real_total: pool?.realTotal ?? 0,
+      pull_e: EXOTIC_PULL_E[kind],
+      seed_pool_s: board.event.seed_pool_s,
+      gamma: EXOTIC_GAMMA,
+      strength_floor: EXOTIC_STRENGTH_FLOOR,
+      w_time: board.wTime,
+      w_volume: volumeWeight,
+      w: board.wTime * volumeWeight,
+    });
   }
-  return rows;
+  return { odds: rows, markets };
 }
 
 /** 成功した操作の直後に、メンバーが見た板と同じ計算結果を保存する。 */
@@ -143,9 +271,26 @@ export async function captureAnalysisSnapshot(
   eventId: string,
   cause: AnalysisCause,
   now = Date.now(),
+  archiveBucket?: R2Bucket,
 ): Promise<number | null> {
   const event = await getEventById(db, eventId);
   if (!event || (event.status !== "voting" && event.status !== "closed")) return null;
+  let logState = await getAnalysisLogState(db, event.id);
+  if (logState && logState.active_uncompressed_bytes >= ANALYSIS_ARCHIVE_WARNING_BYTES) {
+    await tryArchiveCurrentAnalysis(db, event, archiveBucket, now);
+    logState = await getAnalysisLogState(db, event.id);
+  }
+  const reservedCause = cause === "voting_open" || cause === "pre_close" || cause === "close";
+  if (logState && logState.active_uncompressed_bytes >= ANALYSIS_CAPTURE_PAUSE_BYTES && !reservedCause) {
+    await db.prepare(
+      `UPDATE analysis_log_states SET
+        capture_paused = 1,
+        skipped_snapshot_count = skipped_snapshot_count + 1,
+        limit_reached_at = COALESCE(limit_reached_at, ?)
+      WHERE event_id = ?`,
+    ).bind(now, event.id).run();
+    return null;
+  }
   const [horses, bets, counts] = await Promise.all([
     listHorses(db, event.id),
     listActiveBets(db, event.id),
@@ -156,8 +301,8 @@ export async function captureAnalysisSnapshot(
     `INSERT INTO analysis_snapshots (
       event_id, captured_at, cause, seed_pool_s, pull_e, takeout_d, w_time_floor, w_time_exp, lambda, formula_version, schema_version,
       w_time, w_volume, w, win_real_total, exotic_real_total, tv,
-      joined_count, bettor_count, active_bet_count, live_horse_count
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      joined_count, bettor_count, active_bet_count, live_horse_count, log_complete
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
   ).bind(
     event.id, now, cause, event.seed_pool_s, event.pull_e, event.takeout_d,
     event.w_time_floor, event.w_time_exp, IMPUTED_LAMBDA, ANALYSIS_FORMULA_VERSION, ANALYSIS_SCHEMA_VERSION,
@@ -165,18 +310,56 @@ export async function captureAnalysisSnapshot(
     counts.joined, counts.bettors, counts.activeBets, board.horses.filter((h) => !h.horse.scratched).length,
   ).run();
   const snapshotId = Number(result.meta.last_row_id);
-  const rows = oddsRows(board, snapshotId);
-  if (rows.length) {
-    await db.batch(rows.map((r) => db.prepare(
+  const snapshot: AnalysisSnapshotRow = {
+    id: snapshotId,
+    event_id: event.id,
+    captured_at: now,
+    cause,
+    seed_pool_s: event.seed_pool_s,
+    pull_e: event.pull_e,
+    takeout_d: event.takeout_d,
+    w_time_floor: event.w_time_floor,
+    w_time_exp: event.w_time_exp,
+    lambda: IMPUTED_LAMBDA,
+    formula_version: ANALYSIS_FORMULA_VERSION,
+    schema_version: ANALYSIS_SCHEMA_VERSION,
+    w_time: board.wTime,
+    w_volume: board.wVolume,
+    w: board.w,
+    win_real_total: board.realTotal,
+    exotic_real_total: board.exoticTotal,
+    tv: board.tv,
+    joined_count: counts.joined,
+    bettor_count: counts.bettors,
+    active_bet_count: counts.activeBets,
+    live_horse_count: board.horses.filter((h) => !h.horse.scratched).length,
+    log_complete: 1,
+  };
+  const captured = oddsRows(board, snapshotId);
+  if (captured.odds.length) {
+    await db.batch(captured.odds.map((r) => db.prepare(
       `INSERT INTO analysis_snapshot_odds (
         snapshot_id, kind, selection_key, selection_label, horse_1, horse_2, horse_3,
-        real, shown_odds, seed, imputed, display, is_scratched
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        real, shown_odds, seed, imputed, display, is_scratched, is_bet, popular_rank
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     ).bind(
       r.snapshot_id, r.kind, r.selection_key, r.selection_label, r.horse_1, r.horse_2, r.horse_3,
-      r.real, r.shown_odds, r.seed, r.imputed, r.display, r.is_scratched,
+      r.real, r.shown_odds, r.seed, r.imputed, r.display, r.is_scratched, r.is_bet, r.popular_rank,
     )));
   }
+  if (captured.markets.length) {
+    await db.batch(captured.markets.map((r) => db.prepare(
+      `INSERT INTO analysis_snapshot_markets (
+        snapshot_id, kind, real_total, pull_e, seed_pool_s, gamma, strength_floor,
+        w_time, w_volume, w
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).bind(
+      r.snapshot_id, r.kind, r.real_total, r.pull_e, r.seed_pool_s, r.gamma, r.strength_floor,
+      r.w_time, r.w_volume, r.w,
+    )));
+  }
+  await db.prepare("UPDATE analysis_snapshots SET log_complete = 1 WHERE id = ?").bind(snapshotId).run();
+  await updateAnalysisSizeAndArchive(db, event, horses, snapshot, captured, archiveBucket, now);
   return snapshotId;
 }
 
@@ -186,9 +369,10 @@ export async function captureAnalysisSnapshotSafely(
   eventId: string,
   cause: AnalysisCause,
   now = Date.now(),
+  archiveBucket?: R2Bucket,
 ): Promise<number | null> {
   try {
-    return await captureAnalysisSnapshot(db, eventId, cause, now);
+    return await captureAnalysisSnapshot(db, eventId, cause, now, archiveBucket);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error("分析ログの保存に失敗しました:", { eventId, cause, message });
@@ -212,7 +396,7 @@ export async function listAnalysisEvents(db: D1Database): Promise<AnalysisEventO
 
 export async function listAnalysisSnapshots(db: D1Database, eventId: string): Promise<AnalysisSnapshotRow[]> {
   const { results } = await db.prepare(
-    "SELECT * FROM analysis_snapshots WHERE event_id = ? ORDER BY captured_at DESC, id DESC",
+    "SELECT * FROM analysis_snapshots WHERE event_id = ? AND log_complete = 1 ORDER BY captured_at DESC, id DESC",
   ).bind(eventId).all<AnalysisSnapshotRow>();
   return results ?? [];
 }
@@ -224,10 +408,41 @@ export async function listAnalysisFailures(db: D1Database, eventId: string): Pro
   return results ?? [];
 }
 
+export async function getAnalysisLogState(
+  db: D1Database,
+  eventId: string,
+): Promise<AnalysisLogState | null> {
+  return db.prepare(
+    "SELECT * FROM analysis_log_states WHERE event_id = ?",
+  ).bind(eventId).first<AnalysisLogState>();
+}
+
+export async function listAnalysisArchives(
+  db: D1Database,
+  eventId: string,
+): Promise<AnalysisArchiveRow[]> {
+  const { results } = await db.prepare(
+    "SELECT * FROM analysis_log_archives WHERE event_id = ? ORDER BY part_number",
+  ).bind(eventId).all<AnalysisArchiveRow>();
+  return results ?? [];
+}
+
 /** 投票を登録へ戻した開催の分析途中経過は、次の投票と混在させない。 */
-export async function clearAnalysisLogForEvent(db: D1Database, eventId: string): Promise<void> {
+export async function clearAnalysisLogForEvent(
+  db: D1Database,
+  eventId: string,
+  archiveBucket?: R2Bucket,
+): Promise<void> {
+  const archives = await listAnalysisArchives(db, eventId);
+  if (archives.length && archiveBucket) {
+    await archiveBucket.delete(archives.map((archive) => archive.r2_key));
+  } else if (archives.length) {
+    throw new Error("分析ログの退避先に接続できないため登録へ戻せません");
+  }
   await db.batch([
     db.prepare("DELETE FROM analysis_log_failures WHERE event_id = ?").bind(eventId),
+    db.prepare("DELETE FROM analysis_log_archives WHERE event_id = ?").bind(eventId),
+    db.prepare("DELETE FROM analysis_log_states WHERE event_id = ?").bind(eventId),
     // analysis_snapshot_odds は FK の ON DELETE CASCADE で同時に消える。
     db.prepare("DELETE FROM analysis_snapshots WHERE event_id = ?").bind(eventId),
   ]);
@@ -295,39 +510,288 @@ function zip(files: { name: string; data: Uint8Array }[]): Uint8Array {
   return out;
 }
 
-export async function analysisExportZip(db: D1Database, eventId: string): Promise<Uint8Array> {
-  const event = await getEventById(db, eventId);
-  if (!event) throw new Error("開催が見つかりません");
-  const [snapshots, odds, horses] = await Promise.all([
-    listAnalysisSnapshots(db, eventId),
-    db.prepare("SELECT * FROM analysis_snapshot_odds WHERE snapshot_id IN (SELECT id FROM analysis_snapshots WHERE event_id = ?) ORDER BY snapshot_id, kind, selection_key").bind(eventId).all<AnalysisOddsRow>(),
-    listHorses(db, eventId),
-  ]);
-  const snapshotColumns = ["snapshot_id", "captured_at_jst", "captured_at_ms", "trigger", "formula_version", "schema_version", "S", "E", "D", "w_time_floor", "w_time_exp", "lambda", "w_time", "w_volume", "w", "win_real_total", "exotic_real_total", "tv", "joined_count", "bettor_count", "active_bet_count", "live_horse_count"];
-  const oddsColumns = ["snapshot_id", "kind", "selection_key", "selection_label", "horse_1_id", "horse_2_id", "horse_3_id", "real", "shown_odds", "seed", "imputed", "display", "is_scratched"];
-  const horseColumns = ["event_id", "horse_id", "horse_number", "name", "strength", "seed_source", "is_scratched", "finish_place"];
-  const snapshotCsv = csv(snapshots.map((s) => ({
+const SNAPSHOT_COLUMNS = ["snapshot_id", "captured_at_jst", "captured_at_ms", "trigger", "formula_version", "schema_version", "S", "E", "D", "w_time_floor", "w_time_exp", "lambda", "w_time", "w_volume", "w", "win_real_total", "exotic_real_total", "tv", "joined_count", "bettor_count", "active_bet_count", "live_horse_count"];
+const ODDS_COLUMNS = ["snapshot_id", "kind", "selection_key", "selection_label", "horse_1_id", "horse_2_id", "horse_3_id", "real", "shown_odds", "seed", "imputed", "display", "is_scratched", "is_bet", "popular_rank"];
+const MARKET_COLUMNS = ["snapshot_id", "kind", "real_total", "pull_e", "seed_pool_s", "gamma", "strength_floor", "w_time", "w_volume", "w"];
+const HORSE_COLUMNS = ["event_id", "horse_id", "horse_number", "name", "strength", "seed_source", "is_scratched", "finish_place"];
+const STATUS_COLUMNS = ["event_id", "writer_formula_version", "writer_schema_version", "archive_threshold_bytes", "pause_threshold_bytes", "active_uncompressed_bytes", "archive_count", "capture_paused", "skipped_snapshot_count", "limit_reached_at_jst", "last_archived_at_jst", "last_archive_error"];
+
+function snapshotCsvRow(s: AnalysisSnapshotRow): Record<string, string | number | null> {
+  return {
     snapshot_id: s.id, captured_at_jst: jst(s.captured_at), captured_at_ms: s.captured_at, trigger: s.cause,
     formula_version: s.formula_version, schema_version: s.schema_version,
     S: s.seed_pool_s, E: s.pull_e, D: s.takeout_d, w_time_floor: s.w_time_floor, w_time_exp: s.w_time_exp,
     lambda: s.lambda, w_time: s.w_time, w_volume: s.w_volume, w: s.w,
     win_real_total: s.win_real_total, exotic_real_total: s.exotic_real_total, tv: s.tv,
-    joined_count: s.joined_count, bettor_count: s.bettor_count, active_bet_count: s.active_bet_count, live_horse_count: s.live_horse_count,
-  })), snapshotColumns);
-  const oddsCsv = csv((odds.results ?? []).map((o) => ({
+    joined_count: s.joined_count, bettor_count: s.bettor_count, active_bet_count: s.active_bet_count,
+    live_horse_count: s.live_horse_count,
+  };
+}
+
+function oddsCsvRow(o: AnalysisOddsRow): Record<string, string | number | null> {
+  return {
     snapshot_id: o.snapshot_id, kind: o.kind, selection_key: o.selection_key, selection_label: o.selection_label,
     horse_1_id: o.horse_1, horse_2_id: o.horse_2, horse_3_id: o.horse_3, real: o.real,
-    shown_odds: o.shown_odds, seed: o.seed, imputed: o.imputed, display: o.display, is_scratched: o.is_scratched,
-  })), oddsColumns);
-  const horseCsv = csv(horses.map((h, index) => ({
+    shown_odds: o.shown_odds, seed: o.seed, imputed: o.imputed, display: o.display,
+    is_scratched: o.is_scratched, is_bet: o.is_bet, popular_rank: o.popular_rank,
+  };
+}
+
+function marketCsvRow(m: AnalysisMarketRow): Record<string, string | number | null> {
+  return { ...m };
+}
+
+function horseCsv(
+  event: EventRow,
+  horses: HorseRow[],
+): Uint8Array {
+  return csv(horses.map((h, index) => ({
     event_id: event.id, horse_id: h.id, horse_number: index + 1, name: h.name, strength: h.strength,
     seed_source: h.seed_source, is_scratched: h.scratched, finish_place: h.finish_place,
-  })), horseColumns);
-  return zip([
-    { name: "snapshots.csv", data: snapshotCsv },
-    { name: "odds.csv", data: oddsCsv },
-    { name: "horses.csv", data: horseCsv },
+  })), HORSE_COLUMNS);
+}
+
+function analysisStatusCsv(eventId: string, state: AnalysisLogState | null): Uint8Array {
+  return csv([{
+    event_id: eventId,
+    writer_formula_version: ANALYSIS_FORMULA_VERSION,
+    writer_schema_version: ANALYSIS_SCHEMA_VERSION,
+    archive_threshold_bytes: ANALYSIS_ARCHIVE_WARNING_BYTES,
+    pause_threshold_bytes: ANALYSIS_CAPTURE_PAUSE_BYTES,
+    active_uncompressed_bytes: state?.active_uncompressed_bytes ?? 0,
+    archive_count: state?.archive_count ?? 0,
+    capture_paused: state?.capture_paused ?? 0,
+    skipped_snapshot_count: state?.skipped_snapshot_count ?? 0,
+    limit_reached_at_jst: state?.limit_reached_at == null ? "" : jst(state.limit_reached_at),
+    last_archived_at_jst: state?.last_archived_at == null ? "" : jst(state.last_archived_at),
+    last_archive_error: state?.last_archive_error ?? "",
+  }], STATUS_COLUMNS);
+}
+
+function csvContentBytes(
+  rows: Array<Record<string, string | number | null>>,
+  columns: string[],
+): number {
+  return csv(rows, columns).length - csv([], columns).length;
+}
+
+async function analysisExportFiles(
+  db: D1Database,
+  eventId: string,
+  maxSnapshotId?: number,
+): Promise<{ event: EventRow; files: { name: string; data: Uint8Array }[]; snapshots: AnalysisSnapshotRow[]; oddsCount: number }> {
+  const event = await getEventById(db, eventId);
+  if (!event) throw new Error("開催が見つかりません");
+  const cutoff = maxSnapshotId == null ? "" : " AND id <= ?";
+  const bindCutoff = (statement: D1PreparedStatement) => maxSnapshotId == null
+    ? statement.bind(eventId)
+    : statement.bind(eventId, maxSnapshotId);
+  const [snapshots, odds, markets, horses] = await Promise.all([
+    bindCutoff(db.prepare(`SELECT * FROM analysis_snapshots WHERE event_id = ? AND log_complete = 1${cutoff} ORDER BY captured_at DESC, id DESC`)).all<AnalysisSnapshotRow>(),
+    bindCutoff(db.prepare(`SELECT * FROM analysis_snapshot_odds WHERE snapshot_id IN (SELECT id FROM analysis_snapshots WHERE event_id = ? AND log_complete = 1${cutoff}) ORDER BY snapshot_id, kind, selection_key`)).all<AnalysisOddsRow>(),
+    bindCutoff(db.prepare(`SELECT * FROM analysis_snapshot_markets WHERE snapshot_id IN (SELECT id FROM analysis_snapshots WHERE event_id = ? AND log_complete = 1${cutoff}) ORDER BY snapshot_id, kind`)).all<AnalysisMarketRow>(),
+    listHorses(db, eventId),
   ]);
+  const snapshotRows = snapshots.results ?? [];
+  const oddsRows = odds.results ?? [];
+  return {
+    event,
+    snapshots: snapshotRows,
+    oddsCount: oddsRows.length,
+    files: [
+      { name: "snapshots.csv", data: csv(snapshotRows.map(snapshotCsvRow), SNAPSHOT_COLUMNS) },
+      { name: "markets.csv", data: csv((markets.results ?? []).map(marketCsvRow), MARKET_COLUMNS) },
+      { name: "odds.csv", data: csv(oddsRows.map(oddsCsvRow), ODDS_COLUMNS) },
+      { name: "horses.csv", data: horseCsv(event, horses) },
+    ],
+  };
+}
+
+async function archiveCurrentAnalysis(
+  db: D1Database,
+  event: EventRow,
+  bucket: R2Bucket,
+  now: number,
+): Promise<void> {
+  const cutoff = await db.prepare(
+    "SELECT MAX(id) AS id FROM analysis_snapshots WHERE event_id = ? AND log_complete = 1",
+  ).bind(event.id).first<{ id: number | null }>();
+  if (cutoff?.id == null) {
+    await db.prepare(
+      "UPDATE analysis_log_states SET archive_in_progress = 0 WHERE event_id = ?",
+    ).bind(event.id).run();
+    return;
+  }
+  const exported = await analysisExportFiles(db, event.id, cutoff.id);
+  if (!exported.snapshots.length) {
+    await db.prepare(
+      "UPDATE analysis_log_states SET archive_in_progress = 0 WHERE event_id = ?",
+    ).bind(event.id).run();
+    return;
+  }
+  const state = await getAnalysisLogState(db, event.id);
+  const partNumber = (state?.archive_count ?? 0) + 1;
+  const key = `${ANALYSIS_ARCHIVE_PREFIX}/${event.id}/part-${String(partNumber).padStart(3, "0")}.zip`;
+  const body = zip(exported.files);
+  const uncompressedBytes = exported.files.reduce((sum, file) => sum + file.data.length, 0);
+  const horseBytes = exported.files.find((file) => file.name === "horses.csv")?.data.length ?? 0;
+  const emptyCurrentBytes = horseBytes
+    + csv([], SNAPSHOT_COLUMNS).length
+    + csv([], MARKET_COLUMNS).length
+    + csv([], ODDS_COLUMNS).length;
+  const archivedContentBytes = uncompressedBytes - emptyCurrentBytes;
+  await bucket.put(key, body, { httpMetadata: { contentType: "application/zip" } });
+  const times = exported.snapshots.map((snapshot) => snapshot.captured_at);
+  await db.batch([
+    db.prepare(
+      `INSERT INTO analysis_log_archives (
+        event_id, part_number, r2_key, archived_at, first_captured_at, last_captured_at,
+        snapshot_count, odds_row_count, uncompressed_bytes, formula_version, schema_version
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).bind(
+      event.id, partNumber, key, now, Math.min(...times), Math.max(...times),
+      exported.snapshots.length, exported.oddsCount, uncompressedBytes,
+      ANALYSIS_FORMULA_VERSION, ANALYSIS_SCHEMA_VERSION,
+    ),
+    db.prepare(
+      "DELETE FROM analysis_snapshots WHERE event_id = ? AND log_complete = 1 AND id <= ?",
+    ).bind(event.id, cutoff.id),
+    db.prepare(
+      `UPDATE analysis_log_states SET
+        active_uncompressed_bytes = MAX(
+          active_uncompressed_bytes - ?,
+          horse_csv_bytes + ?
+        ),
+        archive_count = ?, archive_in_progress = 0,
+        capture_paused = 0,
+        last_archived_at = ?, last_archive_error = NULL
+      WHERE event_id = ?`,
+    ).bind(
+      archivedContentBytes,
+      csv([], SNAPSHOT_COLUMNS).length + csv([], MARKET_COLUMNS).length + csv([], ODDS_COLUMNS).length,
+      partNumber,
+      now,
+      event.id,
+    ),
+  ]);
+}
+
+async function updateAnalysisSizeAndArchive(
+  db: D1Database,
+  event: EventRow,
+  horses: HorseRow[],
+  snapshot: AnalysisSnapshotRow,
+  captured: { odds: AnalysisOddsRow[]; markets: AnalysisMarketRow[] },
+  archiveBucket: R2Bucket | undefined,
+  now: number,
+): Promise<void> {
+  const horseBytes = horseCsv(event, horses).length;
+  const emptyCurrentBytes = horseBytes
+    + csv([], SNAPSHOT_COLUMNS).length
+    + csv([], MARKET_COLUMNS).length
+    + csv([], ODDS_COLUMNS).length;
+  const addedBytes = csvContentBytes([snapshotCsvRow(snapshot)], SNAPSHOT_COLUMNS)
+    + csvContentBytes(captured.markets.map(marketCsvRow), MARKET_COLUMNS)
+    + csvContentBytes(captured.odds.map(oddsCsvRow), ODDS_COLUMNS);
+  await db.prepare(
+    `INSERT INTO analysis_log_states (
+      event_id, active_uncompressed_bytes, horse_csv_bytes, archive_count, archive_in_progress,
+      capture_paused, skipped_snapshot_count, limit_reached_at,
+      last_archived_at, last_archive_error
+    ) VALUES (?, ?, ?, 0, 0, 0, 0, NULL, NULL, NULL)
+    ON CONFLICT(event_id) DO UPDATE SET
+      active_uncompressed_bytes = analysis_log_states.active_uncompressed_bytes
+        - analysis_log_states.horse_csv_bytes + excluded.horse_csv_bytes + ?,
+      horse_csv_bytes = excluded.horse_csv_bytes`,
+  ).bind(event.id, emptyCurrentBytes + addedBytes, horseBytes, addedBytes).run();
+  const state = await getAnalysisLogState(db, event.id);
+  if (!state || state.active_uncompressed_bytes < ANALYSIS_ARCHIVE_WARNING_BYTES) return;
+  await tryArchiveCurrentAnalysis(db, event, archiveBucket, now);
+}
+
+async function tryArchiveCurrentAnalysis(
+  db: D1Database,
+  event: EventRow,
+  bucket: R2Bucket | undefined,
+  now: number,
+): Promise<void> {
+  if (!bucket) {
+    await db.prepare(
+      "UPDATE analysis_log_states SET last_archive_error = ? WHERE event_id = ?",
+    ).bind("3MiBに達しましたが、退避先のR2を利用できません", event.id).run();
+    return;
+  }
+  const claimed = await db.prepare(
+    `UPDATE analysis_log_states
+      SET archive_in_progress = ?, last_archive_error = NULL
+      WHERE event_id = ? AND (archive_in_progress = 0 OR archive_in_progress < ?)
+        AND active_uncompressed_bytes >= ?`,
+  ).bind(now, event.id, now - 5 * 60 * 1000, ANALYSIS_ARCHIVE_WARNING_BYTES).run();
+  if ((claimed.meta.changes ?? 0) === 0) return;
+  try {
+    await archiveCurrentAnalysis(db, event, bucket, now);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    await db.prepare(
+      "UPDATE analysis_log_states SET archive_in_progress = 0, last_archive_error = ? WHERE event_id = ?",
+    ).bind(message.slice(0, 500), event.id).run();
+  }
+}
+
+export async function archiveAnalysisIfNeeded(
+  db: D1Database,
+  event: EventRow,
+  bucket?: R2Bucket,
+  now = Date.now(),
+): Promise<void> {
+  const state = await getAnalysisLogState(db, event.id);
+  if (!state || state.active_uncompressed_bytes < ANALYSIS_ARCHIVE_WARNING_BYTES) return;
+  await tryArchiveCurrentAnalysis(db, event, bucket, now);
+}
+
+export async function analysisExportZip(
+  db: D1Database,
+  eventId: string,
+  bucket?: R2Bucket,
+): Promise<Uint8Array> {
+  const [current, archives, state] = await Promise.all([
+    analysisExportFiles(db, eventId),
+    listAnalysisArchives(db, eventId),
+    getAnalysisLogState(db, eventId),
+  ]);
+  const statusFile = { name: "analysis-status.csv", data: analysisStatusCsv(eventId, state) };
+  if (!archives.length) return zip([...current.files, statusFile]);
+  if (!bucket) throw new Error("分析ログの退避先に接続できません");
+  const archiveFiles: { name: string; data: Uint8Array }[] = [];
+  for (const archive of archives) {
+    const object = await bucket.get(archive.r2_key);
+    if (!object) throw new Error(`分析ログ part-${archive.part_number} が見つかりません`);
+    archiveFiles.push({
+      name: `part-${String(archive.part_number).padStart(3, "0")}.zip`,
+      data: new Uint8Array(await object.arrayBuffer()),
+    });
+  }
+  archiveFiles.push({ name: "part-current.zip", data: zip(current.files) });
+  archiveFiles.push(statusFile);
+  archiveFiles.push({
+    name: "README.txt",
+    data: new TextEncoder().encode("分析ログは容量保護のため複数ZIPに分割されています。すべて展開して分析してください。\r\n"),
+  });
+  return zip(archiveFiles);
+}
+
+export async function analysisArchiveZip(
+  db: D1Database,
+  eventId: string,
+  partNumber: number,
+  bucket: R2Bucket,
+): Promise<Uint8Array | null> {
+  const archive = await db.prepare(
+    "SELECT * FROM analysis_log_archives WHERE event_id = ? AND part_number = ?",
+  ).bind(eventId, partNumber).first<AnalysisArchiveRow>();
+  if (!archive) return null;
+  const object = await bucket.get(archive.r2_key);
+  return object ? new Uint8Array(await object.arrayBuffer()) : null;
 }
 
 export function analysisExportFilename(event: EventRow): string {

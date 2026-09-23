@@ -23,6 +23,7 @@ const EXPECTED_MIGRATIONS = [
   "0018_event_settlements.sql",
   "0019_event_paddock_comments.sql",
   "0020_pre_race_assessments.sql",
+  "0021_analysis_exotic_archives.sql",
 ];
 
 async function tableNames(db: D1Database): Promise<string[]> {
@@ -40,6 +41,9 @@ describe("D1マイグレーション", () => {
     expect(await tableNames(env.MIGRATION_DB)).toEqual(expect.arrayContaining([
       "admin_undo",
       "analysis_snapshot_odds",
+      "analysis_snapshot_markets",
+      "analysis_log_states",
+      "analysis_log_archives",
       "analysis_snapshots",
       "analysis_log_failures",
       "bets",

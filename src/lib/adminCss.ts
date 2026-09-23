@@ -82,6 +82,7 @@ button, select, input, textarea { font: inherit; }
   color: var(--admin-side-ink);
   font-size: .88rem;
 }
+.side > a { display: flex; align-items: center; gap: .45rem; }
 .side a:hover { background: #2a323c; color: var(--admin-surface); }
 .side a.on { background: var(--admin-accent); color: var(--admin-surface); }
 .side .side-foot { margin-top: auto; padding-top: 1rem; }
@@ -125,6 +126,20 @@ button, select, input, textarea { font: inherit; }
 .analysis-failure-kpi .v { color: var(--admin-danger); }
 .analysis-failure-note { margin: .65rem 0 0; color: #862b2b; font-size: .84rem; }
 .analysis-table td:first-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.analysis-storage-notice {
+  display: grid; gap: .12rem; margin-top: .7rem; padding: .62rem .75rem;
+  border: 1px solid #b9cee4; border-radius: var(--admin-control-radius); background: #f1f7fc;
+  color: #294e73; font-size: .82rem;
+}
+.analysis-storage-notice strong { font-size: .86rem; }
+.analysis-storage-notice.is-warning { border-color: #d8bd80; background: #fff9e9; color: #765817; }
+.analysis-storage-notice.is-error { border-color: #d8aaaa; background: #fff5f5; color: #862b2b; }
+.analysis-archives .admin-action { display: inline-flex; white-space: nowrap; padding: .28rem .55rem; font-size: .78rem; }
+.analysis-archives td:nth-child(2) { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.analysis-tab-alert {
+  display: inline-grid; place-items: center; min-width: 1.25rem; height: 1.25rem; margin-left: auto;
+  border-radius: 999px; background: #c98a1d; color: #fff; font-size: .72rem; font-weight: 800;
+}
 .work h2, .card h2 { font-size: 1.02rem; margin-bottom: .55rem; }
 .kpis {
   display: flex;

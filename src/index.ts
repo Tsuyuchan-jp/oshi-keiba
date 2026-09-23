@@ -550,7 +550,7 @@ export default {
         if (gate instanceof Response) return gate;
         try {
           const board = await loadBoard(env.DB);
-          await openVoting(env.DB, board.event, board.event.voting_closes_at);
+          await openVoting(env.DB, board.event, board.event.voting_closes_at, env.SHOTS);
           return bounce("/admin", "投票を開始しました");
         } catch (err) {
           return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
@@ -562,7 +562,7 @@ export default {
         if (gate instanceof Response) return gate;
         try {
           const board = await loadBoard(env.DB);
-          await forceClose(env.DB, board.event);
+          await forceClose(env.DB, board.event, env.SHOTS);
           return bounce("/admin", "強制締切しました");
         } catch (err) {
           return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
@@ -633,7 +633,7 @@ export default {
         }
         try {
           const board = await loadBoard(env.DB);
-          await revertVotingToSetup(env.DB, board.event);
+          await revertVotingToSetup(env.DB, board.event, env.SHOTS);
           return bounce("/admin", "投票を取り消し、出走登録に戻しました");
         } catch (err) {
           return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
@@ -654,6 +654,7 @@ export default {
             env.DB,
             board.event,
             form.get("horse_id") ?? "",
+            env.SHOTS,
           );
           return bounce("/admin/horses", `取消しました。返還 ${formatPt(refunded)}`);
         } catch (err) {

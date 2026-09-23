@@ -202,13 +202,44 @@ export function exoticReferenceOdds(opts: {
   selectionReal: number;
   takeoutD: number;
 }): number | null {
+  return exoticReferenceQuote(opts)?.odds ?? null;
+}
+
+export type ExoticReferenceQuote = {
+  probability: number;
+  seed: number;
+  weight: number;
+  display: number;
+  displayTotal: number;
+  odds: number | null;
+};
+
+/** 分析ログでも画面と同じ中間値を保存できる連勝参考オッズの内訳。 */
+export function exoticReferenceQuote(opts: {
+  kind: Exclude<BetKind, "win">;
+  strengths: readonly number[];
+  selection: readonly number[];
+  seedPool: number;
+  timeWeight: number;
+  realTotal: number;
+  selectionReal: number;
+  takeoutD: number;
+}): ExoticReferenceQuote | null {
   const probability = exoticSelectionProbability(opts.kind, opts.strengths, opts.selection);
   if (probability == null) return null;
   const volumeWeight = wVolume(opts.realTotal, EXOTIC_PULL_E[opts.kind]);
   const weight = opts.timeWeight * volumeWeight;
-  const display = opts.seedPool * probability * weight + opts.selectionReal;
+  const seed = opts.seedPool * probability;
+  const display = seed * weight + opts.selectionReal;
   const displayTotal = opts.seedPool * weight + opts.realTotal;
-  return parimutuelOdds(display, displayTotal, opts.takeoutD);
+  return {
+    probability,
+    seed,
+    weight,
+    display,
+    displayTotal,
+    odds: parimutuelOdds(display, displayTotal, opts.takeoutD),
+  };
 }
 
 /** 整数ポイントへ切り捨て（払戻） */

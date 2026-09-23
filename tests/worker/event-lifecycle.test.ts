@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers";
 import { describe, expect, test } from "vitest";
-import { loadBoard } from "../../src/lib/store";
+import { captureAnalysisSnapshotSafely, loadBoard } from "../../src/lib/store";
 import { revertVotingToSetup } from "../../src/lib/storeRace";
 import {
   joinRace,
@@ -39,7 +39,16 @@ describe("開催ライフサイクルのHTTP結合", () => {
       "SELECT cause, tv, w, formula_version, schema_version FROM analysis_snapshots WHERE event_id = ? ORDER BY id",
     ).bind(eventId).all<{ cause: string; tv: number; w: number; formula_version: string; schema_version: string }>();
     expect(opened.results).toHaveLength(1);
-    expect(opened.results[0]).toMatchObject({ cause: "voting_open", tv: 0, formula_version: "odds-v2", schema_version: "analysis-log-v1" });
+    expect(opened.results[0]).toMatchObject({ cause: "voting_open", tv: 0, formula_version: "odds-v3", schema_version: "analysis-log-v2" });
+    const openedMarkets = await env.DB.prepare(
+      "SELECT kind, gamma, strength_floor FROM analysis_snapshot_markets WHERE snapshot_id = (SELECT id FROM analysis_snapshots WHERE event_id = ? ORDER BY id LIMIT 1)",
+    ).bind(eventId).all<{ kind: string; gamma: number; strength_floor: number }>();
+    expect(openedMarkets.results).toHaveLength(4);
+    expect(openedMarkets.results).toContainEqual({ kind: "umaren", gamma: 2, strength_floor: 70 });
+    const openedExotic = await env.DB.prepare(
+      "SELECT COUNT(*) AS n FROM analysis_snapshot_odds WHERE snapshot_id = (SELECT id FROM analysis_snapshots WHERE event_id = ? ORDER BY id LIMIT 1) AND kind <> 'win' AND seed IS NOT NULL AND popular_rank IS NOT NULL",
+    ).bind(eventId).first<{ n: number }>();
+    expect(openedExotic?.n).toBe(16);
 
     const { cookie: memberCookie } = await registerMember("分析ログ会員");
     expect(redirectMessage(await joinRace(memberCookie)).error).toBe(false);
@@ -62,10 +71,61 @@ describe("開催ライフサイクルのHTTP結合", () => {
 
     const page = await workerFetch(`/admin/analysis?event=${eventId}`, {}, adminCookie);
     expect(page.status).toBe(200);
-    expect(await page.text()).toContain("CSV一式をダウンロード");
+    expect(await page.text()).toContain("分析データを一括ダウンロード");
     const exportRes = await workerFetch(`/admin/analysis/export?event=${eventId}`, {}, adminCookie);
     expect(exportRes.headers.get("Content-Type")).toBe("application/zip");
     expect(new Uint8Array(await exportRes.arrayBuffer()).slice(0, 2)).toEqual(new Uint8Array([0x50, 0x4b]));
+  });
+
+  test("分析ログが3MiBに達するとR2へ退避し、管理画面から一括取得できる", async () => {
+    const { cookie: adminCookie } = await loginAdmin();
+    const { eventId, horseIds } = await seedReadyRace();
+    expect(redirectMessage(await openRace(adminCookie)).error).toBe(false);
+    await env.DB.prepare(
+      "UPDATE analysis_log_states SET active_uncompressed_bytes = ? WHERE event_id = ?",
+    ).bind(3 * 1024 * 1024 - 1, eventId).run();
+
+    const { cookie: memberCookie } = await registerMember("分析ログ退避会員");
+    expect(redirectMessage(await joinRace(memberCookie)).error).toBe(false);
+    expect(redirectMessage(await postForm("/bet", {
+      kind: "win", h1: horseIds[0]!, h2: "", h3: "", amount: "100", operation_id: crypto.randomUUID(),
+    }, memberCookie)).error).toBe(false);
+
+    const archive = await env.DB.prepare(
+      "SELECT part_number, r2_key, snapshot_count, uncompressed_bytes FROM analysis_log_archives WHERE event_id = ?",
+    ).bind(eventId).first<{ part_number: number; r2_key: string; snapshot_count: number; uncompressed_bytes: number }>();
+    expect(archive).toMatchObject({ part_number: 1, snapshot_count: 2 });
+    expect(archive?.uncompressed_bytes).toBeGreaterThan(0);
+    expect(await env.SHOTS.head(archive!.r2_key)).not.toBeNull();
+    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM analysis_snapshots WHERE event_id = ?").bind(eventId).first<{ n: number }>())?.n).toBe(0);
+
+    const page = await workerFetch(`/admin/analysis?event=${eventId}`, {}, adminCookie);
+    const html = await page.text();
+    expect(html).toContain("容量保護のためR2へ自動退避済み");
+    expect(html).toContain("Part 001");
+    const exportRes = await workerFetch(`/admin/analysis/export?event=${eventId}`, {}, adminCookie);
+    expect(exportRes.headers.get("Content-Type")).toBe("application/zip");
+    expect(new Uint8Array(await exportRes.arrayBuffer()).slice(0, 2)).toEqual(new Uint8Array([0x50, 0x4b]));
+  });
+
+  test("R2へ退避できず4MiBに達した場合は通常記録を止め、締切記録の枠を残す", async () => {
+    const { cookie: adminCookie } = await loginAdmin();
+    const { eventId } = await seedReadyRace();
+    expect(redirectMessage(await openRace(adminCookie)).error).toBe(false);
+    await env.DB.prepare(
+      "UPDATE analysis_log_states SET active_uncompressed_bytes = ? WHERE event_id = ?",
+    ).bind(4 * 1024 * 1024, eventId).run();
+
+    expect(await captureAnalysisSnapshotSafely(env.DB, eventId, "bet")).toBeNull();
+    const state = await env.DB.prepare(
+      "SELECT capture_paused, skipped_snapshot_count, last_archive_error FROM analysis_log_states WHERE event_id = ?",
+    ).bind(eventId).first<{ capture_paused: number; skipped_snapshot_count: number; last_archive_error: string | null }>();
+    expect(state).toMatchObject({ capture_paused: 1, skipped_snapshot_count: 1 });
+    expect(state?.last_archive_error).toContain("R2");
+    expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM analysis_snapshots WHERE event_id = ?").bind(eventId).first<{ n: number }>())?.n).toBe(1);
+
+    const page = await workerFetch(`/admin/analysis?event=${eventId}`, {}, adminCookie);
+    expect(await page.text()).toContain("4 MiBの容量保護が作動しました");
   });
 
   test("分析ログの保存に失敗しても投票は成立し、管理者向けに失敗を残す", async () => {

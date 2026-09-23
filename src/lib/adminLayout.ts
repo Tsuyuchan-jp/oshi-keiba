@@ -38,10 +38,11 @@ export function layoutAdmin(opts: {
   flash?: { text: string | null; error: boolean };
   scripts?: string;
   afterDash?: string;
+  analysisAlert?: boolean;
 }): string {
   const nav = TABS.map(
     (t) =>
-      `<a href="${t.href}" class="${opts.tab === t.id ? "on" : ""}">${escapeHtml(t.label)}</a>`,
+      `<a href="${t.href}" class="${opts.tab === t.id ? "on" : ""}">${escapeHtml(t.label)}${t.id === "analysis" && opts.analysisAlert ? `<span class="analysis-tab-alert" title="分析ログの容量または退避状態を確認してください" aria-label="要確認">!</span>` : ""}</a>`,
   ).join("");
   const flash = opts.flash?.text
     ? flashHtml(opts.flash.text, opts.flash.error)

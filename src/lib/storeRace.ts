@@ -81,6 +81,7 @@ export async function openVoting(
   db: D1Database,
   event: EventRow,
   closesAtMs: number | null,
+  archiveBucket?: R2Bucket,
 ): Promise<void> {
   if (event.status !== "setup") throw new Error("投票開始できるのはセットアップ中だけです");
   const horses = await listHorses(db, event.id);
@@ -96,20 +97,24 @@ export async function openVoting(
       .bind(now, closesAtMs, event.id),
     assessmentSnapshot,
   ]);
-  await captureAnalysisSnapshotSafely(db, event.id, "voting_open", now);
+  await captureAnalysisSnapshotSafely(db, event.id, "voting_open", now, archiveBucket);
 }
 
-export async function forceClose(db: D1Database, event: EventRow): Promise<void> {
+export async function forceClose(
+  db: D1Database,
+  event: EventRow,
+  archiveBucket?: R2Bucket,
+): Promise<void> {
   if (event.status !== "voting") throw new Error("締切できるのは投票中だけです");
   const now = Date.now();
-  await captureAnalysisSnapshotSafely(db, event.id, "pre_close", now);
+  await captureAnalysisSnapshotSafely(db, event.id, "pre_close", now, archiveBucket);
   await db
     .prepare(
       "UPDATE events SET status = 'closed', closed_at = ? WHERE id = ?",
     )
     .bind(now, event.id)
     .run();
-  await captureAnalysisSnapshotSafely(db, event.id, "close", now);
+  await captureAnalysisSnapshotSafely(db, event.id, "close", now, archiveBucket);
 }
 
 export async function placeBet(
@@ -120,6 +125,7 @@ export async function placeBet(
   horseIds: string[],
   amount: number,
   operationId = newId(),
+  archiveBucket?: R2Bucket,
 ): Promise<{ selection_key: string }> {
   if (event.status !== "voting") throw new Error("投票期間外です");
   if (!(await hasJoinedEvent(db, event.id, user.id))) {
@@ -215,7 +221,7 @@ export async function placeBet(
   const completed = await findMemberOperation(db, operationId);
   if (!completed) throw new Error("残高が足りません");
   assertOperationMatches(completed, event.id, user.id, "bet", requestHash);
-  await captureAnalysisSnapshotSafely(db, event.id, "bet", now);
+  await captureAnalysisSnapshotSafely(db, event.id, "bet", now, archiveBucket);
   return { selection_key: sel.selection_key };
 }
 
@@ -225,6 +231,7 @@ export async function redoMyBets(
   event: EventRow,
   user: UserRow,
   operationId = newId(),
+  archiveBucket?: R2Bucket,
 ): Promise<number> {
   if (event.status !== "voting") throw new Error("やりなおしは投票中だけです");
   if (!(await hasJoinedEvent(db, event.id, user.id))) {
@@ -272,7 +279,7 @@ export async function redoMyBets(
   const completed = await findMemberOperation(db, operationId);
   if (!completed) throw new Error("取り消す馬券がありません");
   assertOperationMatches(completed, event.id, user.id, "redo", requestHash);
-  await captureAnalysisSnapshotSafely(db, event.id, "redo", now);
+  await captureAnalysisSnapshotSafely(db, event.id, "redo", now, archiveBucket);
   return completed.result_amount;
 }
 
@@ -305,6 +312,7 @@ export async function scratchHorse(
   db: D1Database,
   event: EventRow,
   horseId: string,
+  archiveBucket?: R2Bucket,
 ): Promise<number> {
   if (event.status === "published") {
     throw new Error("公開後は取消できません");
@@ -348,7 +356,7 @@ export async function scratchHorse(
     );
   }
   await db.batch(stmts);
-  await captureAnalysisSnapshotSafely(db, event.id, "scratch");
+  await captureAnalysisSnapshotSafely(db, event.id, "scratch", Date.now(), archiveBucket);
   return bets.reduce((a, b) => a + b.amount, 0);
 }
 
@@ -509,6 +517,7 @@ export async function publishResults(
 export async function revertVotingToSetup(
   db: D1Database,
   event: EventRow,
+  archiveBucket?: R2Bucket,
 ): Promise<void> {
   if (event.status !== "voting") {
     throw new Error("戻せるのは投票中だけです");
@@ -561,5 +570,5 @@ export async function revertVotingToSetup(
     )
     .bind(event.id)
     .run();
-  await clearAnalysisLogForEvent(db, event.id);
+  await clearAnalysisLogForEvent(db, event.id, archiveBucket);
 }

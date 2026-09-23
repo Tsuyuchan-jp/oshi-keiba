@@ -55,10 +55,15 @@ export {
   listAnalysisEvents,
   listAnalysisSnapshots,
   listAnalysisFailures,
+  getAnalysisLogState,
+  listAnalysisArchives,
+  archiveAnalysisIfNeeded,
   clearAnalysisLogForEvent,
   analysisExportZip,
+  analysisArchiveZip,
   analysisExportFilename,
 } from "./analysisLog";
+export type { AnalysisLogState, AnalysisArchiveRow } from "./analysisLog";
 
 export {
   upsertUser,
