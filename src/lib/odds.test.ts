@@ -14,6 +14,7 @@ import {
   displayPool,
   exoticReferenceOdds,
   exoticSelectionProbability,
+  EXOTIC_STRENGTH_FLOOR,
   IMPUTED_LAMBDA,
   parimutuelOdds,
   payoutAmount,
@@ -157,6 +158,16 @@ test("連勝 Seed は順序と順不同を分け、実票なしなら確率か�
     selectionReal: 0,
     takeoutD: 0.2,
   })! - 4.8) < 1e-12);
+});
+
+test("連勝 Seed は暫定下限70を評価点へ適用する", () => {
+  assert.equal(EXOTIC_STRENGTH_FLOOR, 70);
+  const rawStrengths = [0.5, 20, 70, 140];
+  const flooredStrengths = [70, 70, 70, 140];
+  const rawProbability = exoticSelectionProbability("umatan", rawStrengths, [0, 3]);
+  const flooredProbability = exoticSelectionProbability("umatan", flooredStrengths, [0, 3]);
+  assert.ok(rawProbability != null && flooredProbability != null);
+  assert.ok(Math.abs(rawProbability - flooredProbability) < 1e-12);
 });
 
 test("払戻は切り捨て。不成立は 0", () => {

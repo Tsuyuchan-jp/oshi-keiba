@@ -34,6 +34,15 @@ export const EXOTIC_PULL_E: Record<Exclude<BetKind, "win">, number> = {
 /** 連勝は単勝より人気差を少し強める。 */
 export const EXOTIC_GAMMA = 2;
 
+/**
+ * 連勝の参考オッズ用にだけ使う評価点下限。
+ *
+ * 第2回メンバーシップ特別レースでの暫定値。低評価の出走者を含む買い目の
+ * 参考オッズが極端にならないようにするためのもので、表示する評価点、単勝、
+ * 締切後の確定配当には適用しない。開催後にメンバーの反応と実績を見て見直す。
+ */
+export const EXOTIC_STRENGTH_FLOOR = 70;
+
 export function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n));
 }
@@ -149,7 +158,9 @@ export function exoticSelectionProbability(
   const need = kind === "umaren" || kind === "umatan" ? 2 : 3;
   if (selection.length !== need || new Set(selection).size !== need) return null;
   if (selection.some((index) => index < 0 || index >= strengths.length)) return null;
-  const weighted = strengths.map((strength) => Math.max(0, strength) ** gamma);
+  const weighted = strengths.map((strength) =>
+    Math.max(EXOTIC_STRENGTH_FLOOR, Math.max(0, strength)) ** gamma,
+  );
   const total = weighted.reduce((sum, value) => sum + value, 0);
   if (!(total > 0)) return null;
   const q = weighted.map((value) => value / total);
