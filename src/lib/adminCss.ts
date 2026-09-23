@@ -140,6 +140,21 @@ button, select, input, textarea { font: inherit; }
   display: inline-grid; place-items: center; min-width: 1.25rem; height: 1.25rem; margin-left: auto;
   border-radius: 999px; background: #c98a1d; color: #fff; font-size: .72rem; font-weight: 800;
 }
+/* 分析ログ: PCは管理ダッシュの高さを保ち、時系列テーブルだけを枠内で読む。 */
+body.analysis-page { overflow: hidden; }
+body.analysis-page .dash { height: 100dvh; min-height: 0; overflow: hidden; }
+body.analysis-page .main {
+  display: flex; flex-direction: column; min-height: 0; height: 100%; overflow: hidden;
+  padding: 1rem 1.25rem 2.4rem;
+}
+body.analysis-page .hero,
+body.analysis-page .analysis-summary,
+body.analysis-page .analysis-archives { flex: 0 0 auto; }
+body.analysis-page .analysis-list {
+  flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column;
+  overflow: hidden; margin-bottom: 0;
+}
+body.analysis-page .analysis-list .table-scroll { min-height: 0; }
 .work h2, .card h2 { font-size: 1.02rem; margin-bottom: .55rem; }
 .kpis {
   display: flex;
@@ -1752,6 +1767,10 @@ body.gougai-page .gougai-desk .work:last-child { overflow: auto; }
     display: flex; flex-direction: column; height: auto; flex: none;
   }
   body.odds-page .odds-desk .work { height: min(52vh, 20rem); }
+  body.analysis-page { overflow: auto; }
+  body.analysis-page .dash { height: auto; min-height: 100dvh; }
+  body.analysis-page .main { height: auto; overflow: visible; }
+  body.analysis-page .analysis-list { display: block; overflow: visible; }
   body.ledger-page { overflow: hidden; }
   body.ledger-page .dash { height: 100dvh; min-height: 0; grid-template-rows: auto minmax(0, 1fr); }
   body.ledger-page .side {
