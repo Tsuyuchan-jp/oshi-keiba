@@ -75,7 +75,7 @@ export async function tryAdminGet(
   if (request.method !== "GET") return null;
 
   if (path === "/admin/login") {
-    const board = await loadBoard(env.DB);
+    const board = await loadBoard(env.DB, env.SHOTS);
     const m = msg(url);
     return html(
       layoutAdmin({
@@ -91,7 +91,7 @@ export async function tryAdminGet(
   if (shot) {
     const gate = await requireAdmin(request, env);
     if (gate instanceof Response) return gate;
-    const board = await loadBoard(env.DB);
+    const board = await loadBoard(env.DB, env.SHOTS);
     const horse = board.horses.find((h) => h.horse.id === shot[1]);
     const key = horse?.horse.shot_key;
     if (!key || !env.SHOTS) {
@@ -112,7 +112,7 @@ export async function tryAdminGet(
   if (trainerIcon) {
     const gate = await requireAdmin(request, env);
     if (gate instanceof Response) return gate;
-    const board = await loadBoard(env.DB);
+    const board = await loadBoard(env.DB, env.SHOTS);
     const horse = board.horses.find((h) => h.horse.id === trainerIcon[1]);
     const key = horse?.horse.trainer_icon_key;
     if (!key || !env.SHOTS) return new Response("画像がありません", { status: 404 });
@@ -124,7 +124,7 @@ export async function tryAdminGet(
   if (path === "/admin/analysis/export") {
     const gate = await requireAdmin(request, env);
     if (gate instanceof Response) return gate;
-    const board = await loadBoard(env.DB);
+    const board = await loadBoard(env.DB, env.SHOTS);
     const requestedId = url.searchParams.get("event");
     const event = requestedId ? await getEventById(env.DB, requestedId) : board.event;
     if (!event) return new Response("開催が見つかりません", { status: 404 });
@@ -172,7 +172,7 @@ export async function tryAdminGet(
 
   const gate = await requireAdmin(request, env);
   if (gate instanceof Response) return gate;
-  const board = await loadBoard(env.DB);
+  const board = await loadBoard(env.DB, env.SHOTS);
   const m = msg(url);
   const allowDemo = env.ALLOW_DEMO_RESET === "1";
   const currentAnalysisState = await getAnalysisLogState(env.DB, board.event.id);

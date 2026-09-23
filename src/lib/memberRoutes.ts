@@ -197,7 +197,7 @@ export async function tryMemberGet(
   }
 
   if (path === "/api/board") {
-    const board = await loadBoard(env.DB);
+    const board = await loadBoard(env.DB, env.SHOTS);
     const venueView = url.searchParams.get("venue_view");
     if (venueView === "win" || venueView === "umaren" || venueView === "sanrenpuku" || venueView === "ordered") {
       const axis = Number(url.searchParams.get("axis"));
@@ -258,7 +258,7 @@ export async function tryMemberGet(
   if (paddockMedia) {
     const gate = await requireMemberOrAdmin(request, env);
     if (gate instanceof Response) return gate;
-    const board = await loadBoard(env.DB);
+    const board = await loadBoard(env.DB, env.SHOTS);
     const horse = board.horses.find((item) => item.horse.id === paddockMedia[2]);
     const key = paddockMedia[1] === "shot"
       ? horse?.horse.shot_key
@@ -272,7 +272,7 @@ export async function tryMemberGet(
   if (path === "/paddock") {
     const gate = await requireMemberOrAdmin(request, env);
     if (gate instanceof Response) return gate;
-    const board = await loadBoard(env.DB);
+    const board = await loadBoard(env.DB, env.SHOTS);
     return html(paddockPage(paddockView(board, await listStrategicSkills(env.DB))));
   }
 
@@ -281,7 +281,7 @@ export async function tryMemberGet(
     if (env.ALLOW_DEMO_RESET !== "1") return null;
     const session = await sessionFromRequest(request, env.SESSION_SECRET);
     const user = session ? await getUser(env.DB, session.userId) : null;
-    const board = await loadBoard(env.DB);
+    const board = await loadBoard(env.DB, env.SHOTS);
     const layoutParam = url.searchParams.get("layout");
     const layout = layoutParam === "three" || layoutParam === "five" ? layoutParam : "jra";
     const runnerParam = Number(url.searchParams.get("runners"));
@@ -299,7 +299,7 @@ export async function tryMemberGet(
   if (path === "/" || path === "/board") {
     const session = await sessionFromRequest(request, env.SESSION_SECRET);
     const user = session ? await getUser(env.DB, session.userId) : null;
-    const board = await loadBoard(env.DB);
+    const board = await loadBoard(env.DB, env.SHOTS);
     const m = msg(url);
     const canViewUmabashira = isActiveMember(user) || session?.role === "admin";
     const strategicSkills = canViewUmabashira
@@ -328,7 +328,7 @@ export async function tryMemberGet(
   if (path === "/bet") {
     const gate = await requireMemberOrAdmin(request, env);
     if (gate instanceof Response) return gate;
-    const board = await loadBoard(env.DB);
+    const board = await loadBoard(env.DB, env.SHOTS);
     const user = (await getUser(env.DB, gate.user.id))!;
     const m = msg(url);
     const kindParam = url.searchParams.get("kind") ?? "win";
@@ -445,7 +445,7 @@ export async function tryMemberPost(
     const kindRaw = form.get("kind") ?? "win";
     const kind: BetKind = isBetKind(kindRaw) ? kindRaw : "win";
     try {
-      const board = await loadBoard(env.DB);
+      const board = await loadBoard(env.DB, env.SHOTS);
       const ids = [
         form.get("h1") ?? "",
         form.get("h2") ?? "",
@@ -481,7 +481,7 @@ export async function tryMemberPost(
     if (gate instanceof Response) return gate;
     const form = await readForm(request);
     try {
-      const board = await loadBoard(env.DB);
+      const board = await loadBoard(env.DB, env.SHOTS);
       await joinEvent(env.DB, board.event, gate.user);
       const kindRaw = form.get("kind") ?? "win";
       const kind: BetKind = isBetKind(kindRaw) ? kindRaw : "win";
@@ -507,7 +507,7 @@ export async function tryMemberPost(
     if (gate instanceof Response) return gate;
     const form = await readForm(request);
     try {
-      const board = await loadBoard(env.DB);
+      const board = await loadBoard(env.DB, env.SHOTS);
       const total = await redoMyBets(
         env.DB,
         board.event,

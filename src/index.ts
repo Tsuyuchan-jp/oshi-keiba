@@ -220,7 +220,7 @@ export default {
           const base = scoreSetupFromForm((name) => String(form.get(name) ?? ""));
           if (!base) throw new Error("評価条件を正しく入力してください。");
           const nextSetup = await enrichScoreSetupWithEffects(base);
-          const board = await loadBoard(env.DB);
+          const board = await loadBoard(env.DB, env.SHOTS);
           const strategic = await loadStrategicSkillsBundle(env.DB);
           const changes = await prepareAutoScoreRecompute(env.DB, board.event, nextSetup, strategic.skills);
           return Response.json({ changes });
@@ -236,7 +236,7 @@ export default {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
         const form = await readForm(request);
-        const board = await loadBoard(env.DB);
+        const board = await loadBoard(env.DB, env.SHOTS);
         const titleRaw = String(form.get("title") ?? "").trim();
         try {
           if (!titleRaw) throw new Error("イベント名を入力してください。");
@@ -290,7 +290,7 @@ export default {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
         try {
-          const board = await loadBoard(env.DB);
+          const board = await loadBoard(env.DB, env.SHOTS);
           const setup = eventScoreSetup(board.event);
           const strategic = await loadStrategicSkillsBundle(env.DB);
           const changes = await prepareAutoScoreRecompute(env.DB, board.event, setup, strategic.skills);
@@ -306,7 +306,7 @@ export default {
         if (gate instanceof Response) return gate;
         try {
           const pendingBefore = await listPendingShotDeletes(env.DB);
-          const board = await loadBoard(env.DB);
+          const board = await loadBoard(env.DB, env.SHOTS);
           const fd = await request.formData();
           const ocrOk = String(fd.get("ocr_ok") ?? "") === "1";
           const shot = fd.get("shot");
@@ -400,7 +400,7 @@ export default {
         const form = await request.formData();
         try {
           const pendingBefore = await listPendingShotDeletes(env.DB);
-          const board = await loadBoard(env.DB);
+          const board = await loadBoard(env.DB, env.SHOTS);
           const horseId = String(form.get("horse_id") ?? "");
           const existing = board.horses.find((h) => h.horse.id === horseId);
           if (!existing) throw new Error("出走が見つかりません");
@@ -482,7 +482,7 @@ export default {
         const form = await readForm(request);
         try {
           const pendingBefore = await listPendingShotDeletes(env.DB);
-          const board = await loadBoard(env.DB);
+          const board = await loadBoard(env.DB, env.SHOTS);
           const horse = board.horses.find((entry) => entry.horse.id === form.get("horse_id"));
           const deletingKeys = [horse?.horse.shot_key, horse?.horse.trainer_icon_key].filter((key): key is string => Boolean(key));
           await queueShotDeletes(env.DB, deletingKeys);
@@ -499,7 +499,7 @@ export default {
         if (gate instanceof Response) return gate;
         const form = await readForm(request);
         try {
-          const board = await loadBoard(env.DB);
+          const board = await loadBoard(env.DB, env.SHOTS);
           const ids = form.getAll("horse_id");
           const numbers = form.getAll("horse_number");
           if (ids.length !== numbers.length) throw new Error("ウマ番の入力が不完全です");
@@ -519,7 +519,7 @@ export default {
         if (gate instanceof Response) return gate;
         const form = await readForm(request);
         try {
-          const board = await loadBoard(env.DB);
+          const board = await loadBoard(env.DB, env.SHOTS);
           const ids = form.getAll("horse_id");
           const ranks = form.getAll("pre_race_rank");
           const memos = form.getAll("pre_race_memo");
@@ -549,7 +549,7 @@ export default {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
         try {
-          const board = await loadBoard(env.DB);
+          const board = await loadBoard(env.DB, env.SHOTS);
           await openVoting(env.DB, board.event, board.event.voting_closes_at, env.SHOTS);
           return bounce("/admin", "投票を開始しました");
         } catch (err) {
@@ -561,7 +561,7 @@ export default {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
         try {
-          const board = await loadBoard(env.DB);
+          const board = await loadBoard(env.DB, env.SHOTS);
           await forceClose(env.DB, board.event, env.SHOTS);
           return bounce("/admin", "強制締切しました");
         } catch (err) {
@@ -573,7 +573,7 @@ export default {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
         try {
-          const board = await loadBoard(env.DB);
+          const board = await loadBoard(env.DB, env.SHOTS);
           await openNextEvent(env.DB, board.event);
           return bounce("/admin", "次の開催を開きました。タイトルと締切を入れてください");
         } catch (err) {
@@ -591,7 +591,7 @@ export default {
         }
         try {
           const pendingBefore = await listPendingShotDeletes(env.DB);
-          const board = await loadBoard(env.DB);
+          const board = await loadBoard(env.DB, env.SHOTS);
           const deletingKeys = board.horses.flatMap((entry) => [entry.horse.shot_key, entry.horse.trainer_icon_key]).filter((key): key is string => Boolean(key));
           await queueShotDeletes(env.DB, deletingKeys);
           await clearHorses(env.DB, board.event);
@@ -612,7 +612,7 @@ export default {
         }
         try {
           const pendingBefore = await listPendingShotDeletes(env.DB);
-          const board = await loadBoard(env.DB);
+          const board = await loadBoard(env.DB, env.SHOTS);
           const deletingKeys = board.horses.flatMap((entry) => [entry.horse.shot_key, entry.horse.trainer_icon_key]).filter((key): key is string => Boolean(key));
           await queueShotDeletes(env.DB, deletingKeys);
           await discardCurrentSetup(env.DB, board.event);
@@ -632,7 +632,7 @@ export default {
           return bounce("/admin", "管理者パスが違います（戻していません）", true);
         }
         try {
-          const board = await loadBoard(env.DB);
+          const board = await loadBoard(env.DB, env.SHOTS);
           await revertVotingToSetup(env.DB, board.event, env.SHOTS);
           return bounce("/admin", "投票を取り消し、出走登録に戻しました");
         } catch (err) {
@@ -649,7 +649,7 @@ export default {
           return bounce("/admin/horses", "管理者パスが違います（取消していません）", true);
         }
         try {
-          const board = await loadBoard(env.DB);
+          const board = await loadBoard(env.DB, env.SHOTS);
           const refunded = await scratchHorse(
             env.DB,
             board.event,
@@ -667,7 +667,7 @@ export default {
         if (gate instanceof Response) return gate;
         const form = await readForm(request);
         try {
-          const board = await loadBoard(env.DB);
+          const board = await loadBoard(env.DB, env.SHOTS);
           const places = board.horses
             .filter((h) => !h.horse.scratched)
             .map((h) => ({
@@ -685,7 +685,7 @@ export default {
         const gate = await requireAdmin(request, env);
         if (gate instanceof Response) return gate;
         try {
-          const board = await loadBoard(env.DB);
+          const board = await loadBoard(env.DB, env.SHOTS);
           const result = await publishResults(env.DB, board.event, env.ADMIN_USER_ID);
           return bounce("/admin", result === "published" ? "公開し、払戻しました" : "すでに公開・払戻済みです");
         } catch (err) {

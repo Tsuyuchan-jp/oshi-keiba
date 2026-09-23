@@ -107,13 +107,14 @@ export async function maybeAutoClose(
   db: D1Database,
   event: EventRow,
   now = Date.now(),
+  archiveBucket?: R2Bucket,
 ): Promise<EventRow> {
   if (
     event.status === "voting" &&
     event.voting_closes_at != null &&
     now >= event.voting_closes_at
   ) {
-    await captureAnalysisSnapshotSafely(db, event.id, "pre_close", now);
+    await captureAnalysisSnapshotSafely(db, event.id, "pre_close", now, archiveBucket);
     await db
       .prepare(
         "UPDATE events SET status = 'closed', closed_at = ? WHERE id = ? AND status = 'voting'",
@@ -121,7 +122,7 @@ export async function maybeAutoClose(
       .bind(now, event.id)
       .run();
     const closed = (await getEventById(db, event.id))!;
-    await captureAnalysisSnapshotSafely(db, closed.id, "close", now);
+    await captureAnalysisSnapshotSafely(db, closed.id, "close", now, archiveBucket);
     return closed;
   }
   return event;

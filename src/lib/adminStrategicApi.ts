@@ -17,8 +17,8 @@ import { loadBoard } from "./store.ts";
 import { eventScoreSetup } from "./store.ts";
 import { autoScoreRecomputeStatements, prepareAutoScoreRecompute } from "./scoreRecompute.ts";
 
-async function requireSetup(db: D1Database): Promise<void> {
-  const board = await loadBoard(db);
+async function requireSetup(db: D1Database, archiveBucket?: R2Bucket): Promise<void> {
+  const board = await loadBoard(db, archiveBucket);
   if (board.event.status !== "setup") {
     throw new Error("出走登録中だけ編集できます");
   }
@@ -45,8 +45,12 @@ function projectedSkills(
   return [...current.filter((row) => row.skillId !== next.skillId), next].sort((a, b) => a.name.localeCompare(b.name, "ja"));
 }
 
-async function prepareStrategicMutation(db: D1Database, mutation: StrategicMutation) {
-  const board = await loadBoard(db);
+async function prepareStrategicMutation(
+  db: D1Database,
+  mutation: StrategicMutation,
+  archiveBucket?: R2Bucket,
+) {
+  const board = await loadBoard(db, archiveBucket);
   const current = await listStrategicSkills(db);
   const skills = projectedSkills(current, mutation);
   const changes = await prepareAutoScoreRecompute(db, board.event, eventScoreSetup(board.event), skills);
@@ -56,8 +60,12 @@ async function prepareStrategicMutation(db: D1Database, mutation: StrategicMutat
   return { changes, statements };
 }
 
-async function commitStrategicMutation(db: D1Database, mutation: StrategicMutation): Promise<void> {
-  const { changes, statements } = await prepareStrategicMutation(db, mutation);
+async function commitStrategicMutation(
+  db: D1Database,
+  mutation: StrategicMutation,
+  archiveBucket?: R2Bucket,
+): Promise<void> {
+  const { changes, statements } = await prepareStrategicMutation(db, mutation, archiveBucket);
   await db.batch([...statements, ...autoScoreRecomputeStatements(db, changes)]);
 }
 
@@ -90,7 +98,7 @@ export async function tryAdminStrategicApi(
   }
 
   if (path === base && request.method === "POST") {
-    await requireSetup(env.DB);
+    await requireSetup(env.DB, env.SHOTS);
     const body = (await request.json()) as {
       skillId?: number;
       name?: string;
@@ -102,20 +110,20 @@ export async function tryAdminStrategicApi(
       name: String(body.name ?? ""),
       points: body.points ?? 1,
       memo: body.memo ?? "",
-    }});
+    }}, env.SHOTS);
     return Response.json({ ok: true });
   }
 
   if (path === base && request.method === "DELETE") {
-    await requireSetup(env.DB);
+    await requireSetup(env.DB, env.SHOTS);
     const id = Number(new URL(request.url).searchParams.get("id"));
     if (!Number.isFinite(id)) throw new Error("id が不正です");
-    await commitStrategicMutation(env.DB, { action: "remove", skillId: id });
+    await commitStrategicMutation(env.DB, { action: "remove", skillId: id }, env.SHOTS);
     return Response.json({ ok: true });
   }
 
   if (path === `${base}/dismiss` && request.method === "POST") {
-    await requireSetup(env.DB);
+    await requireSetup(env.DB, env.SHOTS);
     const body = (await request.json()) as { skillId?: number; name?: string };
     await dismissStrategicSkill(env.DB, {
       skillId: Number(body.skillId),
@@ -125,7 +133,7 @@ export async function tryAdminStrategicApi(
   }
 
   if (path === `${base}/dismiss` && request.method === "DELETE") {
-    await requireSetup(env.DB);
+    await requireSetup(env.DB, env.SHOTS);
     const id = Number(new URL(request.url).searchParams.get("id"));
     if (!Number.isFinite(id)) throw new Error("id が不正です");
     await undismissStrategicSkill(env.DB, id);
@@ -133,7 +141,7 @@ export async function tryAdminStrategicApi(
   }
 
   if (path === `${base}/preview` && request.method === "POST") {
-    await requireSetup(env.DB);
+    await requireSetup(env.DB, env.SHOTS);
     const body = (await request.json()) as { action?: string; skill?: { skillId?: number; name?: string; points?: number; memo?: string }; skillId?: number };
     const mutation: StrategicMutation = body.action === "remove"
       ? { action: "remove", skillId: Number(body.skillId) }
@@ -141,7 +149,7 @@ export async function tryAdminStrategicApi(
           skillId: Number(body.skill?.skillId), name: String(body.skill?.name ?? ""),
           points: Number(body.skill?.points), memo: String(body.skill?.memo ?? ""),
         } };
-    const { changes } = await prepareStrategicMutation(env.DB, mutation);
+    const { changes } = await prepareStrategicMutation(env.DB, mutation, env.SHOTS);
     return Response.json({ changes });
   }
 

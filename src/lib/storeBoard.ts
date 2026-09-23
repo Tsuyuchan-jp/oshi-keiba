@@ -217,9 +217,13 @@ export function buildBoard(
   };
 }
 
-export async function loadBoard(db: D1Database, now = Date.now()): Promise<Board> {
+export async function loadBoard(
+  db: D1Database,
+  archiveBucket?: R2Bucket,
+  now = Date.now(),
+): Promise<Board> {
   let event = await ensureEvent(db);
-  event = await maybeAutoClose(db, event, now);
+  event = await maybeAutoClose(db, event, now, archiveBucket);
   const [horses, bets] = await Promise.all([
     listHorses(db, event.id),
     listActiveBets(db, event.id),

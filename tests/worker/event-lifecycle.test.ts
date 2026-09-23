@@ -351,6 +351,27 @@ describe("開催ライフサイクルのHTTP結合", () => {
     expect(snapshots.results.map((row) => row.cause)).toEqual(["voting_open", "pre_close", "close"]);
   });
 
+  test("時刻による自動締切でも分析ログをR2へ退避できる", async () => {
+    const { cookie: adminCookie } = await loginAdmin();
+    const { eventId } = await seedReadyRace();
+    expect(redirectMessage(await openRace(adminCookie)).error).toBe(false);
+    await env.DB.prepare("UPDATE analysis_log_states SET active_uncompressed_bytes = ? WHERE event_id = ?")
+      .bind(3 * 1024 * 1024 - 1, eventId).run();
+    await env.DB.prepare("UPDATE events SET voting_closes_at = ? WHERE id = ?")
+      .bind(Date.now() - 1, eventId).run();
+
+    expect((await workerFetch("/api/board")).status).toBe(200);
+    const archive = await env.DB.prepare(
+      "SELECT r2_key, snapshot_count FROM analysis_log_archives WHERE event_id = ?",
+    ).bind(eventId).first<{ r2_key: string; snapshot_count: number }>();
+    expect(archive).toMatchObject({ snapshot_count: 2 });
+    expect(await env.SHOTS.head(archive!.r2_key)).not.toBeNull();
+    const snapshots = await env.DB.prepare(
+      "SELECT cause FROM analysis_snapshots WHERE event_id = ? ORDER BY id",
+    ).bind(eventId).all<{ cause: string }>();
+    expect(snapshots.results.map((row) => row.cause)).toEqual(["close"]);
+  });
+
   test("出走上限18頭では開始でき、19頭目の登録はDBを増やさず拒否する", async () => {
     const { cookie: adminCookie } = await loginAdmin();
     const { eventId } = await seedReadyRace({ horseCount: 18 });
