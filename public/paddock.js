@@ -247,7 +247,9 @@
       : '<span class="trainer-placeholder">Trainer</span>';
     const trainer = `<div class="trainer-profile">${icon}<div><span>TRAINER</span><b>${esc(h.trainerName)}</b></div></div>`;
     const comment = h.comment ? `<blockquote>${esc(h.comment)}</blockquote>` : '<blockquote>意気込みコメントは未登録です</blockquote>';
-    const trainerSection = view.commentsEnabled ? `${trainer}<div class="trainer-comment">${comment}</div>` : trainer;
+    const trainerSection = view.commentsEnabled
+      ? `<div class="trainer-card">${trainer}<div class="trainer-comment">${comment}</div></div>`
+      : trainer;
     const shot = h.shotUrl ? '<button type="button" class="shot-action">育成スクリーンショットを見る</button>' : "";
     detail.className = "detail open";
     detail.innerHTML = `<div class="detail__summary"><small>下にスワイプして閉じる</small></div><div class="detail__heading"><span>${esc(h.styleLabel)}</span>　<span>${h.number}番</span></div><div class="profile">${h.detailImageUrl ? `<img src="${esc(h.detailImageUrl)}" alt="${esc(h.umaName)}">` : ""}<div class="profile-text"><h2>${esc(h.umaName)}</h2>${h.dressName ? `<p class="profile-dress">${esc(h.dressName)}</p>` : ""}<strong>${odds(h.odds)}</strong></div></div>${trainerSection}<section class="skill"><div><span>スキルパワー</span><b>${h.skillPower ?? "—"}</b></div><small>有効 ${h.skillSummary?.effective ?? 0}　金相当 ${h.skillSummary?.goldLike ?? 0}　戦略 +${h.skillSummary?.strategic ?? 0}</small></section><section class="status"><h3>基礎能力</h3>${stats(h)}${aptitudeBadges(h.aptitudes)}</section><div class="actions">${shot}<a class="candidate" href="/bet?candidate=${encodeURIComponent(h.id)}">このウマ娘を投票候補にする →</a></div>`;

@@ -16,6 +16,7 @@ async function mockEighteenHorses(page: Page): Promise<void> {
     const end = body.indexOf(';</script><script src="/paddock.js"', start);
     if (start < prefix.length || end < 0) throw new Error("paddock data script was not found");
     const view = JSON.parse(body.slice(start, end));
+    view.commentsEnabled = true;
     const source = view.horses[0];
     const styles = [
       ...Array(9).fill("runner"),
@@ -89,6 +90,9 @@ test("18 horses fit vertically without changing the mobile horizontal layout", a
   await horses.first().click();
   const detail = page.locator("#detail");
   await expect(detail).toHaveClass(/open/);
+  await expect(detail.locator(".trainer-card")).toBeVisible();
+  await expect(detail.locator(".trainer-card .trainer-comment blockquote")).toContainText("先頭を目指します");
+  await expect(detail.locator(".trainer-card .trainer-comment blockquote")).toHaveCSS("background-color", "rgb(255, 255, 255)");
   const handle = page.locator(".detail__summary");
   const box = await handle.boundingBox();
   if (!box) throw new Error("detail swipe handle is unavailable");
