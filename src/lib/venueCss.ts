@@ -988,7 +988,7 @@ ${MEMBER_MOBILE_GLASS_CSS}
     padding: .3rem .2rem;
     border-color: #31514d;
     border-bottom-color: #17302e;
-    background: rgba(7, 24, 24, .62);
+    background: transparent;
     font-weight: 700;
   }
   .scene[data-phase="published"] .result-tabs button[aria-pressed="true"] {
