@@ -99,6 +99,15 @@ test("メンバーが入場・参加し、画面操作で単勝を購入でき�
   await expect(page.locator(".bet-ticket")).toContainText("100 スペ");
   await expect(page.locator(".bet-ticket")).toContainText("スペシャルウィーク");
   await expect(page.locator(".ticket-page")).toHaveCSS("background-color", "rgba(5, 14, 13, 0.72)");
+  const singleTicketGrid = await page.locator(".ticket-grid").evaluate((grid) => {
+    const card = grid.querySelector(".bet-ticket");
+    if (!card) throw new Error("ticket card is unavailable");
+    const gridWidth = grid.getBoundingClientRect().width;
+    const cardWidth = card.getBoundingClientRect().width;
+    const gap = Number.parseFloat(getComputedStyle(grid).columnGap);
+    return { gridWidth, cardWidth, gap };
+  });
+  expect(Math.abs(singleTicketGrid.gridWidth - (singleTicketGrid.cardWidth * 2 + singleTicketGrid.gap))).toBeLessThanOrEqual(1);
   expect(pageErrors).toEqual([]);
 });
 
