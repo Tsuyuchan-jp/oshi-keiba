@@ -20,10 +20,12 @@ import {
   loadTreasuryDashboard,
   listUserBets,
   loginMember,
+  listHorses,
   openVoting,
   placeBet,
   publishResults,
   redoMyBets,
+  reopenClosedToVoting,
   registerMember,
   savePlaces,
 } from "./store.ts";
@@ -386,4 +388,79 @@ test("メンバーを利用停止にしても、公開済み開催の投票と�
   assert.equal(restored.id, user.id);
   assert.equal(restored.deleted_at, null);
   assert.equal((await listMembers(db)).length, 1);
+});
+
+test("締切は出走と馬券を残して投票中へ戻せる。公開後は戻せない", async () => {
+  const db = createMemoryD1();
+  const { event, h1, h2 } = await seedRace(db);
+  const user = await joinEvent(db, event, await registerMember(db, "巻き戻し会員"));
+  await placeBet(db, event, user, "win", [h1], 500);
+  const balanceAfterBet = (await getUser(db, user.id))!.balance;
+  await db.prepare("UPDATE events SET voting_closes_at = ? WHERE id = ?")
+    .bind(Date.now() - 1_000, event.id).run();
+  await forceClose(db, await refresh(db, event.id));
+  await savePlaces(db, await refresh(db, event.id), [
+    { horseId: h1, place: 1 },
+    { horseId: h2, place: 2 },
+  ]);
+  const closedCauses = await db.prepare(
+    "SELECT cause FROM analysis_snapshots WHERE event_id = ? AND cause IN ('pre_close', 'close')",
+  ).bind(event.id).all<{ cause: string }>();
+  assert.equal(closedCauses.results?.length, 2);
+
+  const bet = (await listAllBets(db, event.id, "new"))[0]!;
+  await db.prepare(
+    "INSERT INTO payouts (id, event_id, user_id, bet_id, amount, kind, created_at) VALUES (?, ?, ?, ?, ?, 'win', ?)",
+  ).bind("payout-guard", event.id, user.id, bet.id, 100, Date.now()).run();
+  const guarded = await refresh(db, event.id);
+  await assert.rejects(
+    () => reopenClosedToVoting(db, guarded),
+    /確定配当のある開催は戻せません/,
+  );
+  assert.equal((await refresh(db, event.id)).status, "closed");
+  assert.equal((await listHorses(db, event.id)).find((horse) => horse.id === h1)?.finish_place, 1);
+  await db.prepare("DELETE FROM payouts WHERE id = ?").bind("payout-guard").run();
+
+  await reopenClosedToVoting(db, await refresh(db, event.id));
+
+  const reopened = await refresh(db, event.id);
+  assert.equal(reopened.status, "voting");
+  assert.equal(reopened.closed_at, null);
+  assert.equal(reopened.voting_closes_at, null);
+  assert.equal(reopened.payouts_applied, 0);
+  const horses = await listHorses(db, event.id);
+  assert.equal(horses.length, 2);
+  assert.ok(horses.every((horse) => horse.finish_place == null));
+  const bets = await listAllBets(db, event.id, "new");
+  assert.equal(bets.length, 1);
+  assert.equal(bets[0]?.refunded, 0);
+  assert.equal(bets[0]?.amount, 500);
+  assert.equal((await getUser(db, user.id))!.balance, balanceAfterBet);
+  const remainingClose = await db.prepare(
+    "SELECT COUNT(*) AS n FROM analysis_snapshots WHERE event_id = ? AND cause IN ('pre_close', 'close')",
+  ).bind(event.id).first<{ n: number }>();
+  assert.equal(remainingClose?.n, 0);
+  const keptOpen = await db.prepare(
+    "SELECT COUNT(*) AS n FROM analysis_snapshots WHERE event_id = ? AND cause = 'voting_open'",
+  ).bind(event.id).first<{ n: number }>();
+  assert.equal(keptOpen?.n, 1);
+
+  await assert.rejects(
+    () => reopenClosedToVoting(db, reopened),
+    /投票締切後、結果公開前/,
+  );
+
+  await forceClose(db, await refresh(db, event.id));
+  await savePlaces(db, await refresh(db, event.id), [
+    { horseId: h1, place: 1 },
+    { horseId: h2, place: 2 },
+  ]);
+  await publishResults(db, await refresh(db, event.id));
+  const published = await refresh(db, event.id);
+  await assert.rejects(
+    () => reopenClosedToVoting(db, published),
+    /投票締切後、結果公開前/,
+  );
+  assert.equal((await refresh(db, event.id)).status, "published");
+  assert.equal((await listHorses(db, event.id)).length, 2);
 });

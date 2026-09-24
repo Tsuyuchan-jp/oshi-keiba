@@ -513,6 +513,56 @@ export async function publishResults(
   throw new Error("結果公開の確定に失敗しました。画面を更新して再試行してください");
 }
 
+/**
+ * ローカル実機用。締切（closed）だけを投票中へ戻す。
+ * 出走・馬券・残高・参加Gはそのまま。公開・払戻・精算がある開催は戻さない。
+ * 着順と締切時の分析ログだけ消し、過ぎた締切時刻は未設定にして即時再締切を防ぐ。
+ */
+export async function reopenClosedToVoting(
+  db: D1Database,
+  event: EventRow,
+): Promise<void> {
+  if (event.status !== "closed") {
+    throw new Error("戻せるのは投票締切後、結果公開前だけです");
+  }
+  if (event.payouts_applied) {
+    throw new Error("払戻済みの開催は戻せません");
+  }
+  const now = Date.now();
+  const closeAt =
+    event.voting_closes_at != null && event.voting_closes_at > now
+      ? event.voting_closes_at
+      : null;
+  const reopened =
+    "EXISTS (SELECT 1 FROM events WHERE id = ? AND status = 'voting' AND closed_at IS NULL AND payouts_applied = 0)";
+  const results = await db.batch([
+    db
+      .prepare(
+        `UPDATE events SET status = 'voting', closed_at = NULL, voting_closes_at = ?
+         WHERE id = ? AND status = 'closed' AND payouts_applied = 0
+           AND NOT EXISTS (SELECT 1 FROM payouts WHERE event_id = ? AND kind IN ('win', 'special'))
+           AND NOT EXISTS (SELECT 1 FROM event_settlements WHERE event_id = ?)`,
+      )
+      .bind(closeAt, event.id, event.id, event.id),
+    db
+      .prepare(`UPDATE horses SET finish_place = NULL WHERE event_id = ? AND ${reopened}`)
+      .bind(event.id, event.id),
+    db
+      .prepare(
+        `DELETE FROM analysis_snapshots WHERE event_id = ? AND cause IN ('pre_close', 'close') AND ${reopened}`,
+      )
+      .bind(event.id, event.id),
+    db
+      .prepare(
+        `DELETE FROM analysis_log_failures WHERE event_id = ? AND cause IN ('pre_close', 'close') AND ${reopened}`,
+      )
+      .bind(event.id, event.id),
+  ]);
+  if ((results[0]?.meta.changes ?? 0) !== 1) {
+    throw new Error("確定配当のある開催は戻せません");
+  }
+}
+
 /** 投票中を setup に戻す。票は全額返還。この開催の G は巻き戻す */
 export async function revertVotingToSetup(
   db: D1Database,

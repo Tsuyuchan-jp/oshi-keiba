@@ -4,8 +4,10 @@ import {
   insertUser,
   loginAdmin,
   postForm,
+  redirectMessage,
   registerMember,
   signedCookie,
+  TEST_ADMIN_PASSWORD,
   workerFetch,
 } from "./helpers";
 
@@ -37,6 +39,7 @@ const ADMIN_POST_PATHS = [
   "/admin/next-event",
   "/admin/clear-horses",
   "/admin/discard-event",
+  "/admin/reopen-closed",
   "/admin/revert-voting",
   "/admin/scratch",
   "/admin/places",
@@ -122,6 +125,21 @@ describe("管理経路の権限", () => {
       const response = await workerFetch(path, {}, cookie);
       expect(response.status, path).toBe(200);
     }
+  });
+
+  test("締切の巻き戻しは本番設定では実行しない", async () => {
+    const { cookie } = await loginAdmin();
+    const page = await workerFetch("/admin", {}, cookie);
+    const html = await page.text();
+    expect(html).not.toContain("id=\"reopen-closed-open\"");
+    expect(html).not.toContain("action=\"/admin/reopen-closed\"");
+    const response = await postForm("/admin/reopen-closed", {
+      admin_reauth: TEST_ADMIN_PASSWORD,
+    }, cookie);
+    expect(redirectMessage(response)).toMatchObject({
+      error: true,
+      message: "締切の巻き戻しはローカルだけです",
+    });
   });
 
   test("管理者だけが戦略例外一覧とexportを取得できる", async () => {

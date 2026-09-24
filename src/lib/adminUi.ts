@@ -114,7 +114,7 @@ function bindDlgScript(): string {
       });
     }
   };
-  ["reset","clear-horses","discard-event","revert-voting","scratch","drop-horse"].forEach((id) => {
+  ["reset","clear-horses","discard-event","revert-voting","reopen-closed","scratch","drop-horse"].forEach((id) => {
     bindDlg(document.getElementById(id + "-modal"), document.getElementById(id + "-open"), document.getElementById(id + "-cancel"));
   });
   const rescoreDlg = document.getElementById("rescore-preview-modal");
@@ -193,7 +193,16 @@ function escapeDialogs(opts: {
 </dialog>
 ${
   opts.allowDemo
-    ? `<dialog class="modal" id="reset-modal">
+    ? `<dialog class="modal" id="reopen-closed-modal">
+  <h2>締切を投票中に戻す（ローカルのみ）</h2>
+  <p><strong>投票締切を取り消し、投票中に戻します。出走と馬券はそのままです。着順は消します。結果公開後は戻せません。</strong></p>
+  <form method="post" action="/admin/reopen-closed" class="reauth" autocomplete="off"
+    data-confirm="締切を取り消し、投票中に戻します。出走と馬券はそのまま、着順は消えます。\\n\\n本当に戻しますか？">
+    <div class="row">${opts.reauth}<button class="danger" type="submit">投票中に戻す</button>
+      <button type="button" class="secondary" id="reopen-closed-cancel">やめる</button></div>
+  </form>
+</dialog>
+<dialog class="modal" id="reset-modal">
   <h2>デモ初期化（ローカルのみ）</h2>
   <form method="post" action="/admin/reset" class="reauth" autocomplete="off"
     data-confirm="デモを初期化します。本当に初期化しますか？">
@@ -215,7 +224,7 @@ ${
       <button type="button" class="danger" id="discard-event-open">この開催を破棄</button>
       <button type="button" class="danger" id="revert-voting-open">投票を取り消して登録に戻す</button>
     </div>
-    ${opts.allowDemo ? `<div><p class="esc-k">ローカル</p><button type="button" id="reset-open">デモ初期化</button></div>` : ""}
+    ${opts.allowDemo ? `<div><p class="esc-k">ローカル</p><button type="button" id="reopen-closed-open">締切を投票中に戻す</button><button type="button" id="reset-open">デモ初期化</button></div>` : ""}
   </div>
 </aside>`;
 }

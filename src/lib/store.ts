@@ -93,5 +93,6 @@ export {
   scratchHorse,
   savePlaces,
   publishResults,
+  reopenClosedToVoting,
   revertVotingToSetup,
 } from "./storeRace";

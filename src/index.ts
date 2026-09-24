@@ -26,6 +26,7 @@ import {
   openVoting,
   publishResults,
   resetDemo,
+  reopenClosedToVoting,
   revertVotingToSetup,
   savePlaces,
   scratchHorse,
@@ -618,6 +619,26 @@ export default {
           await discardCurrentSetup(env.DB, board.event);
           await flushPendingShotDeletes(env, pendingBefore.filter((key) => !deletingKeys.includes(key)));
           return bounce("/admin", "開催を破棄しました");
+        } catch (err) {
+          return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
+        }
+      }
+
+      if (method === "POST" && path === "/admin/reopen-closed") {
+        const gate = await requireAdmin(request, env);
+        if (gate instanceof Response) return gate;
+        if (!demoResetAllowed(env)) {
+          return bounce("/admin", "締切の巻き戻しはローカルだけです", true);
+        }
+        const form = await readForm(request);
+        const password = readAdminReauth(form);
+        if (!timingSafeEqualStr(password, env.ADMIN_PASSWORD)) {
+          return bounce("/admin", "管理者パスが違います（戻していません）", true);
+        }
+        try {
+          const board = await loadBoard(env.DB, env.SHOTS);
+          await reopenClosedToVoting(env.DB, board.event);
+          return bounce("/admin", "締切を取り消し、投票中に戻しました");
         } catch (err) {
           return bounce("/admin", err instanceof Error ? err.message : "失敗", true);
         }
