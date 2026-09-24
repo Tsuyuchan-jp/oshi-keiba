@@ -20,7 +20,6 @@ import {
 import {
   eventScoreSetup,
   numberByHorseId,
-  type BetRow,
   type Board,
   type UserRow,
 } from "./store.ts";
@@ -235,56 +234,6 @@ export function venueFinishBoardHtml(board: Board): string {
       ${foot}
     </div>
   </article>`;
-}
-
-export function venueTicketResult(
-  bet: BetRow,
-  pay: { kind: string; amount: number } | undefined,
-): { text: string; hit: boolean } {
-  if (bet.refunded && pay?.kind === "refund") {
-    return { text: "取消（全額戻し）", hit: false };
-  }
-  if (bet.refunded && pay?.kind === "redo") {
-    return { text: "やりなおし", hit: false };
-  }
-  if (pay?.kind === "special") {
-    return { text: "特払い（8割戻し）", hit: false };
-  }
-  if (pay?.kind === "win") {
-    return { text: `的中 ${formatPt(pay.amount)}`, hit: true };
-  }
-  if (bet.refunded) return { text: "返還", hit: false };
-  return { text: "外れ", hit: false };
-}
-
-export function venueTicketsHtml(
-  bets: BetRow[],
-  payouts: { bet_id: string; amount: number; kind: string }[],
-  board: Board,
-): string {
-  if (bets.length === 0) {
-    return `<div class="tickets" id="tickets">
-      <div class="tickets-h">自分の馬券</div>
-      <div class="t-row"><span class="lab">なし</span><span class="yen"></span><span class="res"></span></div>
-    </div>`;
-  }
-  const payByBet = new Map(payouts.map((p) => [p.bet_id, p]));
-  const nums = numberByHorseId(board);
-  const rows = bets
-    .map((b) => {
-      const label = `${BET_KIND_LABEL[b.kind]} ${formatSelectionLabel(b.kind, b.horse_1, b.horse_2, b.horse_3, nums)}`;
-      const res = venueTicketResult(b, payByBet.get(b.id));
-      return `<div class="t-row">
-        <span class="lab">${escapeHtml(label)}</span>
-        <span class="yen">${escapeHtml(formatPt(b.amount))}</span>
-        <span class="res${res.hit ? " hit" : ""}">${escapeHtml(res.text)}</span>
-      </div>`;
-    })
-    .join("");
-  return `<div class="tickets" id="tickets">
-    <div class="tickets-h">自分の馬券</div>
-    ${rows}
-  </div>`;
 }
 
 function sheetHeadHtml(withPlace: boolean): string {
