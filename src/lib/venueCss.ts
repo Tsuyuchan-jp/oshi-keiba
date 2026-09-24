@@ -480,6 +480,19 @@ ${MEMBER_OVERLAY_CSS}
 }
 .scene[data-phase="published"][data-result="show"] .jumbo-hint { display: block; }
 .jumbo-hint .jh-narrow { display: none; }
+.ticket-result-notice {
+  display: flex; align-items: center; justify-content: space-between; gap: .8rem;
+  margin: .65rem 0 .2rem; padding: .65rem .75rem;
+  border: 1px solid #315e55; background: rgba(10, 34, 30, .88); color: var(--member-table-ink);
+}
+.ticket-result-notice > div { display: grid; gap: .08rem; min-width: 0; }
+.ticket-result-notice span { color: var(--led-dim); font: 700 .58rem/1 "Chakra Petch", sans-serif; letter-spacing: .14em; }
+.ticket-result-notice b { color: var(--member-ink-bright); font-size: .88rem; }
+.ticket-result-notice small { color: var(--led-dim); font-size: .68rem; }
+.ticket-result-notice a { flex: 0 0 auto; padding: .5rem .7rem; border: 1px solid var(--member-accent); background: var(--member-accent-bg); color: var(--member-accent); font-size: .72rem; font-weight: 800; text-decoration: none; }
+.ticket-result-notice.is-hit { border-color: #b43a2c; background: linear-gradient(90deg, rgba(91,18,13,.82), rgba(20,31,27,.9)); }
+.ticket-result-notice.is-hit span, .ticket-result-notice.is-hit small { color: #ffc1b9; }
+.ticket-result-notice.is-hit a { border-color: #ff7565; background: #a9251c; color: #fff8f5; }
 .scene[data-phase="published"] .foot:not(:has(#phase-hint:not(:empty))) { display: none; }
 .tickets {
   display: none;
@@ -508,6 +521,10 @@ ${MEMBER_OVERLAY_CSS}
 .t-row .yen { font-variant-numeric: tabular-nums; color: var(--member-table-ink); }
 .t-row .res { color: var(--led-dim); white-space: nowrap; }
 .t-row .res.hit { color: var(--odds); font-weight: 700; }
+@media (max-width: 520px) {
+  .ticket-result-notice { align-items: stretch; flex-direction: column; }
+  .ticket-result-notice a { text-align: center; }
+}
 .cta {
   background: var(--odds);
   color: var(--member-action-ink);

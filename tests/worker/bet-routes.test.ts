@@ -8,6 +8,7 @@ import {
   redirectMessage,
   registerMember,
   seedReadyRace,
+  workerFetch,
 } from "./helpers";
 
 type RaceContext = {
@@ -63,6 +64,22 @@ async function userBalance(userId: string): Promise<number> {
 }
 
 describe("投票ルートの境界と再送", () => {
+  test("購入した買い目を疑似馬券ページで確認できる", async () => {
+    const race = await prepareRace();
+    expect(redirectMessage(await postForm(
+      "/bet",
+      betValues(race.horseIds, { amount: "200" }),
+      race.memberCookie,
+    )).error).toBe(false);
+
+    const response = await workerFetch("/tickets", {}, race.memberCookie);
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toContain("自分の馬券");
+    expect(body).toContain("bet-ticket");
+    expect(body).toContain("200 スペ");
+  });
+
   test("参加前の購入を拒否し、参加時の付与は一度だけ行う", async () => {
     const race = await prepareRace({ join: false });
     const denied = redirectMessage(await postForm(

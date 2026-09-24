@@ -70,6 +70,7 @@ function shellChrome(opts: { user: UserRow; board: Board }): string {
     <div class="chrome-menu">
       <button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
       <div class="more-pop" id="more-pop">
+        <a href="/tickets">馬券</a>
         <a href="#" id="howto-open">使い方</a>
         <button type="button" id="background-open">背景</button>
         <a href="/logout">ログアウト</a>

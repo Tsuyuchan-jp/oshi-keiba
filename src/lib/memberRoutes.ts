@@ -59,6 +59,8 @@ import { paddockPage } from "./paddockPage.ts";
 import { paddockView } from "./paddockView.ts";
 import { listStrategicSkills } from "./strategicSkills.ts";
 import { venueOddsResponse } from "./venueOdds.ts";
+import { ticketsPage, ticketShelfLinkHtml, venueTicketNoticeHtml } from "./ticketsLayout.ts";
+import { buildMyTickets } from "./ticketsView.ts";
 
 function requiredOperationId(value: string | null): string {
   if (!value || !/^[0-9a-f-]{36}$/i.test(value)) {
@@ -276,6 +278,21 @@ export async function tryMemberGet(
     return html(paddockPage(paddockView(board, await listStrategicSkills(env.DB))));
   }
 
+  if (path === "/tickets") {
+    const gate = await requireMember(request, env);
+    if (gate instanceof Response) return gate;
+    const board = await loadBoard(env.DB, env.SHOTS);
+    const [bets, payouts] = await Promise.all([
+      listUserBets(env.DB, board.event.id, gate.user.id),
+      listUserPayouts(env.DB, board.event.id, gate.user.id),
+    ]);
+    return html(ticketsPage({
+      board,
+      user: gate.user,
+      tickets: buildMyTickets(board, bets, payouts),
+    }));
+  }
+
   if (path === "/__local/venue-odds") {
     // 本番へ比較用の画面を出さない。npm run dev のローカル確認だけで使う。
     if (env.ALLOW_DEMO_RESET !== "1") return null;
@@ -307,10 +324,12 @@ export async function tryMemberGet(
       : [];
 
     let ticketsHtml: string | undefined;
+    let ticketNoticeHtml: string | undefined;
     if (board.event.status === "published" && isActiveMember(user)) {
       const bets = await listUserBets(env.DB, board.event.id, user.id);
       const payouts = await listUserPayouts(env.DB, board.event.id, user.id);
       ticketsHtml = venueTicketsHtml(bets, payouts, board);
+      ticketNoticeHtml = venueTicketNoticeHtml(buildMyTickets(board, bets, payouts));
     }
     return html(
       venueBoardPage({
@@ -319,6 +338,7 @@ export async function tryMemberGet(
         flash: m,
         slot: resolveVenueSlot(url.searchParams.get("slot")),
         ticketsHtml,
+        ticketNoticeHtml,
         strategicSkills,
         showUmabashira: canViewUmabashira,
       }),
@@ -356,15 +376,8 @@ export async function tryMemberGet(
     }
 
     const canBuy = !gate.preview && board.event.status === "voting" && joined;
-    const myBetsHtml =
-      grouped.length === 0
-        ? `<p class="hint">まだ馬券がありません。</p>`
-        : grouped
-            .map(
-              (g) =>
-                `<div class="t-row" data-sel="${escapeHtml(g.selection_key)}"><span>${escapeHtml(g.label)}</span><span class="num">${formatPt(g.amount)}</span></div>`,
-            )
-            .join("");
+    const ticketViews = buildMyTickets(board, myBets, []);
+    const myBetsHtml = ticketShelfLinkHtml(ticketViews);
     const redoHtml =
       canBuy && grouped.length > 0
         ? `<button type="submit" class="text-btn" form="redo-form" onclick="return confirm('全ての馬券がリセットされますがよろしいですか？');">やりなおし（全部取消）</button>`

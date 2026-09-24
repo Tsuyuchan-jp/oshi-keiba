@@ -40,6 +40,7 @@ export function paddockPage(view: PaddockView): string {
           </nav>
           <button type="button" class="paddock-more-btn" id="paddock-more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
           <div class="paddock-more-pop" id="paddock-more-pop">
+            <a href="/tickets">馬券</a>
             <a href="#" id="paddock-howto-open">使い方</a>
             <a href="/logout">ログアウト</a>
             <a href="/admin">管理者</a>

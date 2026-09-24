@@ -77,6 +77,15 @@ test("モバイル幅でも入場・場内・窓口の主要操作が画面内�
   await expect(page.getByRole("button", { name: "買う" })).toBeVisible();
   await expectNoHorizontalOverflow(page);
   await expectMemberChromeFits(page);
+
+  await page.locator('.chip[data-n="1"]').click();
+  await page.getByRole("button", { name: "+100" }).click();
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "買う" }).click();
+  await page.goto("/tickets");
+  await expect(page.locator(".bet-ticket")).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+  await expectMemberChromeFits(page);
   expect(pageErrors).toEqual([]);
 });
 

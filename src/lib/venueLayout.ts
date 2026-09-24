@@ -899,6 +899,8 @@ export function venueBoardPage(opts: {
   scripts?: string;
   /** published の自分の馬券。未ログインや無しは呼び出し側で空相当を渡す */
   ticketsHtml?: string;
+  /** published 直後に見せる、専用馬券ページへの結果導線。 */
+  ticketNoticeHtml?: string;
   strategicSkills?: readonly StrategicSkillRow[];
   showUmabashira?: boolean;
   /** ローカル限定の表示試作。通常の場内には指定しない。 */
@@ -967,6 +969,7 @@ export function venueBoardPage(opts: {
     ? (opts.ticketsHtml ??
       `<div class="tickets" id="tickets"><div class="tickets-h">自分の馬券</div><div class="t-row"><span class="lab">なし</span><span class="yen"></span><span class="res"></span></div></div>`)
     : "";
+  const ticketNotice = published ? (opts.ticketNoticeHtml ?? "") : "";
   const foot = venueFootHtml({
     status,
     ctaHref,
@@ -1034,6 +1037,7 @@ export function venueBoardPage(opts: {
         <div class="chrome-menu">
           <button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
           <div class="more-pop" id="more-pop">
+            ${opts.user ? `<a href="/tickets">馬券</a>` : ""}
             <a href="#" id="howto-open">使い方</a>
             <button type="button" id="background-open">背景</button>
             ${logout}
@@ -1049,6 +1053,7 @@ export function venueBoardPage(opts: {
         </div>
         ${oddsLayout ? previewTabsHtml(oddsLayout) : ""}
         ${jumbo}
+        ${ticketNotice}
         ${winColumns}
         ${oddsLayout ? previewMarketHtml(opts.board, oddsLayout, opts.oddsPreviewRunnerCount, liveOdds) : ""}
         ${tickets}

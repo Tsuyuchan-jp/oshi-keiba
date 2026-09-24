@@ -50,6 +50,7 @@ const ADMIN_POST_PATHS = [
 
 const MEMBER_GET_PATHS = [
   "/bet",
+  "/tickets",
   "/paddock",
   "/paddock/shot/missing",
   "/paddock/trainer-icon/missing",
@@ -172,9 +173,9 @@ describe("メンバー経路の権限", () => {
     expect(response.headers.get("Location")).toBe("/login");
   });
 
-  test("メンバーは窓口とパドックを開ける", async () => {
+  test("メンバーは窓口・馬券・パドックを開ける", async () => {
     const { cookie } = await registerMember("画面閲覧メンバー");
-    for (const path of ["/bet", "/paddock"]) {
+    for (const path of ["/bet", "/tickets", "/paddock"]) {
       const response = await workerFetch(path, {}, cookie);
       expect(response.status, path).toBe(200);
     }

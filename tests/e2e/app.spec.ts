@@ -90,7 +90,13 @@ test("メンバーが入場・参加し、画面操作で単勝を購入でき�
 
   await expect(page.getByText("買いました")).toBeVisible();
   await expect(page.locator("#bal")).toHaveText("2,900");
-  await expect(page.locator('.tickets .t-row[data-sel="e2e-horse-1"]')).toContainText("100");
+  await expect(page.locator(".ticket-shelf-link")).toContainText("1枚・合計 100 スペ");
+  await page.locator(".ticket-shelf-link").click();
+  await expect(page).toHaveURL(/\/tickets$/);
+  await expect(page.getByRole("heading", { name: "自分の馬券" })).toBeVisible();
+  await expect(page.locator(".bet-ticket")).toHaveCount(1);
+  await expect(page.locator(".bet-ticket")).toContainText("100 スペ");
+  await expect(page.locator(".bet-ticket")).toContainText("スペシャルウィーク");
   expect(pageErrors).toEqual([]);
 });
 

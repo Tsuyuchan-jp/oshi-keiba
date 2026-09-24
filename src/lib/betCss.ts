@@ -229,6 +229,15 @@ ${MEMBER_MOBILE_CHROME_CSS}
   display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: end; gap: .75rem;
   min-width: 0;
 }
+.ticket-shelf-link {
+  display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+  padding: .65rem .7rem; border: 1px solid var(--member-line-strong); background: var(--member-field-bg);
+  color: var(--member-ink); text-decoration: none;
+}
+.ticket-shelf-link span { display: grid; gap: .12rem; min-width: 0; }
+.ticket-shelf-link small { color: var(--member-muted); font-size: .66rem; letter-spacing: .08em; }
+.ticket-shelf-link b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .82rem; }
+.ticket-shelf-link strong { flex: 0 0 auto; color: var(--member-accent); font-size: .74rem; }
 .amount-summary { min-width: 0; }
 .amt-controls { grid-column: 1; display: flex; flex-direction: column; gap: 4px; }
 .amt-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
