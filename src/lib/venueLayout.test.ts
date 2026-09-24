@@ -126,7 +126,7 @@ test("場内足元のパドック導線は状態ごとに文言と買うボタ�
     publishedHint: "",
     showUmabashira: true,
   });
-  assert.match(setupFoot, /パドックを除く/);
+  assert.match(setupFoot, /パドックを覗く/);
   assert.doesNotMatch(setupFoot, /馬券を買う/);
   assert.match(setupFoot, /投票開始までお待ちください/);
   assert.match(setupFoot, /ウマ柱を見る/);
@@ -138,7 +138,7 @@ test("場内足元のパドック導線は状態ごとに文言と買うボタ�
     publishedHint: "",
     showUmabashira: true,
   });
-  assert.match(votingFoot, /パドックを除く/);
+  assert.match(votingFoot, /パドックを覗く/);
   assert.match(votingFoot, /馬券を買う/);
   assert.match(votingFoot, /ウマ柱を見る/);
   assert.match(votingFoot, /class="foot-voting"/);
@@ -151,7 +151,7 @@ test("場内足元のパドック導線は状態ごとに文言と買うボタ�
     publishedHint: "",
     showUmabashira: true,
   });
-  assert.match(closedFoot, /パドックを除く/);
+  assert.match(closedFoot, /パドックを覗く/);
   assert.doesNotMatch(closedFoot, /馬券を買う/);
   assert.match(closedFoot, /着順はまだ出ません/);
   assert.doesNotMatch(closedFoot, /ウマ柱を見る/);
@@ -165,7 +165,7 @@ test("場内足元のパドック導線は状態ごとに文言と買うボタ�
     showClosedTicketLink: true,
   });
   assert.match(closedWithTickets, /href="\/tickets">自分の馬券を見る</);
-  assert.match(closedWithTickets, /href="\/paddock">パドックを除く</);
+  assert.match(closedWithTickets, /href="\/paddock">パドックを覗く</);
   assert.match(closedWithTickets, /class="foot-actions closed-ticket-actions"/);
   assert.doesNotMatch(closedWithTickets, /ウマ柱を見る/);
 

@@ -133,7 +133,7 @@ export function venueMoreMenuHtml(opts: {
 }
 
 function paddockCta(): string {
-  return `<a class="paddock-cta" href="/paddock">パドックを除く</a>`;
+  return `<a class="paddock-cta" href="/paddock">パドックを覗く</a>`;
 }
 
 function umabashiraCta(show: boolean | undefined): string {
