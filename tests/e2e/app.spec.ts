@@ -132,6 +132,8 @@ test("管理者が主要画面を巡回でき、メンバー画面ではプレ�
   await page.goto("/bet");
   await expect(page.locator(".admin-preview")).toContainText("管理者プレビュー");
   await expect(page.getByRole("button", { name: "買う" })).toBeDisabled();
+  await page.goto("/tickets");
+  await expect(page.getByText("管理者確認用の表示です。購入操作はできません。")).toBeVisible();
   await page.goto("/paddock");
   await expect(page.locator("body")).toContainText("スペシャルウィーク");
   expect(pageErrors).toEqual([]);

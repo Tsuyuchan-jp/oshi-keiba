@@ -39,6 +39,9 @@ body { overflow: hidden; }
 .ticket-summary b { color: #fff4ce; font-variant-numeric: tabular-nums; }
 .ticket-summary .summary-hit { border-color: rgba(221,65,43,.65); color: #ffd8d2; }
 .ticket-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 29rem), 1fr)); gap: 1rem; max-width: 66rem; margin: 0 auto; }
+.ticket-kind-group { max-width: 66rem; margin: 0 auto 1.5rem; }
+.ticket-kind-group > h2 { display: flex; align-items: baseline; gap: .45rem; margin: 0 0 .5rem; color: #c3dcd6; font-size: .82rem; letter-spacing: .1em; }
+.ticket-kind-group > h2 span { color: #79aaa4; font-size: .68rem; font-weight: 500; letter-spacing: .04em; }
 .bet-ticket {
   position: relative; display: grid; grid-template-columns: 4.2rem minmax(0, 1fr);
   min-height: 13.2rem; overflow: hidden; color: #152a23;

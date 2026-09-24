@@ -279,7 +279,7 @@ export async function tryMemberGet(
   }
 
   if (path === "/tickets") {
-    const gate = await requireMember(request, env);
+    const gate = await requireMemberOrAdmin(request, env);
     if (gate instanceof Response) return gate;
     const board = await loadBoard(env.DB, env.SHOTS);
     const [bets, payouts] = await Promise.all([
@@ -290,6 +290,7 @@ export async function tryMemberGet(
       board,
       user: gate.user,
       tickets: buildMyTickets(board, bets, payouts),
+      preview: gate.preview,
     }));
   }
 

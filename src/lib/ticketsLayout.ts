@@ -1,4 +1,5 @@
 import { escapeHtml } from "./http.ts";
+import { BET_KINDS } from "./bets.ts";
 import { backgroundModal, chromeTimesHtml, memberMoreScript, memberOutLinks } from "./memberShell.ts";
 import { memberSceneSlotScript } from "./memberSceneSlot.ts";
 import type { Board, EventStatus, UserRow } from "./store.ts";
@@ -52,6 +53,16 @@ function ticketHtml(ticket: MyTicketView, board: Board, index: number): string {
   </article>`;
 }
 
+function ticketGroupsHtml(tickets: MyTicketView[], board: Board): string {
+  let index = 0;
+  return BET_KINDS.map((kind) => {
+    const grouped = tickets.filter((ticket) => ticket.kind === kind);
+    if (grouped.length === 0) return "";
+    const cards = grouped.map((ticket) => ticketHtml(ticket, board, index++)).join("");
+    return `<section class="ticket-kind-group"><h2>${escapeHtml(grouped[0]!.kindLabel)}<span>${grouped.length}枚</span></h2><div class="ticket-grid">${cards}</div></section>`;
+  }).join("");
+}
+
 export function ticketShelfLinkHtml(tickets: MyTicketView[]): string {
   const summary = ticketSummary(tickets);
   if (summary.count === 0) return `<p class="hint">まだ馬券がありません。</p>`;
@@ -68,11 +79,11 @@ export function venueTicketNoticeHtml(tickets: MyTicketView[]): string {
   </section>`;
 }
 
-export function ticketsPage(opts: { board: Board; user: UserRow; tickets: MyTicketView[] }): string {
+export function ticketsPage(opts: { board: Board; user: UserRow; tickets: MyTicketView[]; preview?: boolean }): string {
   const summary = ticketSummary(opts.tickets);
   const hit = opts.board.event.status === "published" && summary.hitCount > 0;
   const list = opts.tickets.length > 0
-    ? `<div class="ticket-grid">${opts.tickets.map((ticket, index) => ticketHtml(ticket, opts.board, index)).join("")}</div>`
+    ? ticketGroupsHtml(opts.tickets, opts.board)
     : `<section class="ticket-empty"><h2>まだ馬券がありません</h2><p>窓口で買った馬券が、ここに紙券のように並びます。</p><a href="/bet">窓口へ</a></section>`;
   const metaNow = opts.board.event.status === "voting" ? `<span id="meta-now">いま <strong id="now-clock">--:--</strong></span>` : "";
   const metaClose = opts.board.event.status === "voting"
@@ -84,7 +95,7 @@ export function ticketsPage(opts: { board: Board; user: UserRow; tickets: MyTick
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;600;700;800&family=Chakra+Petch:wght@600;700;800&display=swap" rel="stylesheet">
   <style>${TICKETS_CSS}</style></head><body>
-  <div class="scene member-glass" data-slot="night"><div class="scene-bg" aria-hidden="true"></div><div class="app-shell">
+  <div class="scene member-glass member-glass--tickets" data-slot="night"><div class="scene-bg" aria-hidden="true"></div><div class="app-shell">
     <header class="chrome member-chrome ticket-chrome">
       <div class="chrome-brand"><a class="brand" href="/">OSHI KEIBA</a><div class="who">${escapeHtml(opts.user.display_name)} · ${escapeHtml(formatPt(opts.user.balance))}</div></div>
       <div class="chrome-state"><span class="pill idle"><span class="dot"></span>${escapeHtml(statusLabel(opts.board.event.status))}</span>${chromeTimesHtml(metaNow, metaClose)}</div>
@@ -93,7 +104,7 @@ export function ticketsPage(opts: { board: Board; user: UserRow; tickets: MyTick
         <a href="/tickets" aria-current="page">馬券</a><a href="#" id="howto-open">使い方</a><button type="button" id="background-open">背景</button><a href="/logout">ログアウト</a><a href="/admin">管理者</a>
       </div></div>
     </header>
-    <main class="ticket-page"><section class="ticket-hero"><div><span class="ticket-kicker">MY TICKETS</span><h1>自分の馬券</h1><p>${escapeHtml(opts.board.event.title)}の買い目をまとめています。</p></div>
+    <main class="ticket-page"><section class="ticket-hero"><div><span class="ticket-kicker">MY TICKETS</span><h1>自分の馬券</h1><p>${opts.preview ? "管理者確認用の表示です。購入操作はできません。" : `${escapeHtml(opts.board.event.title)}の買い目をまとめています。`}</p></div>
       <div class="ticket-summary"><span>馬券 <b>${summary.count}枚</b></span><span>購入 <b>${escapeHtml(formatPt(summary.amount))}</b></span>${hit ? `<span class="summary-hit">的中 <b>${summary.hitCount}枚・${escapeHtml(formatPt(summary.payoutAmount))}</b></span>` : ""}</div>
     </section>${list}</main>
   </div></div>

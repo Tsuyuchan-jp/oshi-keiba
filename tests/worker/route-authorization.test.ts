@@ -188,9 +188,9 @@ describe("メンバー経路の権限", () => {
     expect(response.headers.get("Location")).toBe("/login");
   });
 
-  test("管理者は閲覧プレビューとして窓口とパドックを開ける", async () => {
+  test("管理者は閲覧プレビューとして窓口・馬券・パドックを開ける", async () => {
     const { cookie } = await loginAdmin();
-    for (const path of ["/bet", "/paddock"]) {
+    for (const path of ["/bet", "/tickets", "/paddock"]) {
       const response = await workerFetch(path, {}, cookie);
       expect(response.status, path).toBe(200);
     }
