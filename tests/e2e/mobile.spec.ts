@@ -94,6 +94,19 @@ test("モバイル幅でも入場・場内・窓口の主要操作が画面内�
   }));
   expect(ticketGlass).toEqual(betGlass);
   await expect(page.locator(".ticket-hero")).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  const ticketBackground = await page.locator(".scene-bg").evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      position: getComputedStyle(element).position,
+      width: rect.width,
+      height: rect.height,
+      viewportWidth: document.documentElement.clientWidth,
+      viewportHeight: document.documentElement.clientHeight,
+    };
+  });
+  expect(ticketBackground.position).toBe("fixed");
+  expect(ticketBackground.width).toBe(ticketBackground.viewportWidth);
+  expect(ticketBackground.height).toBe(ticketBackground.viewportHeight);
   await expectNoHorizontalOverflow(page);
   await expectMemberChromeFits(page);
   expect(pageErrors).toEqual([]);

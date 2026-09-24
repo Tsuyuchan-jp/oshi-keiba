@@ -86,7 +86,7 @@ body { overflow: hidden; }
 @media (max-width: 899px) {
   body { overflow: auto; }
   .scene { min-height: 100dvh; height: auto; }
-  .scene-bg { background-color: #0a1218; }
+  .scene-bg { position: fixed; inset: 0; background-color: #0a1218; }
   .scene .app-shell { min-height: calc(100dvh - 28px); height: auto; overflow: visible; }
   .ticket-page { overflow: visible; }
   .ticket-hero { align-items: stretch; flex-direction: column; }
