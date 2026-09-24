@@ -39,9 +39,17 @@ const SAMPLE_WITH_IDS = {
   effectsFetchedAt: "2026-08-25T00:00:00.000Z",
 };
 
-test("金ドット36コースが入っている", () => {
+test("金ドットの有効スキル対応コースが入っている", () => {
   const list = listScoreCourses();
-  assert.equal(list.length, 36);
+  assert.equal(list.length, 37);
+  const longchamp = getScoreCourse("11203");
+  assert.ok(longchamp);
+  assert.equal(longchamp.label, "ロンシャン 2400m（芝）");
+  assert.equal(longchamp.courseDistance, 2400);
+  assert.equal(longchamp.trackId, 10201);
+  assert.equal(longchamp.rotation, 1);
+  assert.equal(longchamp.groundType, 1);
+  assert.equal(longchamp.distanceType, 3);
   assert.ok(getScoreCourse("10606"));
   assert.equal(getScoreCourse("10606")?.courseDistance, 2400);
   assert.equal(getScoreCourse("10606")?.trackId, 10006);

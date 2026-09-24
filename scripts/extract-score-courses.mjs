@@ -1,5 +1,5 @@
 /**
- * U-tools 金ドット36コースを src/data/score-courses.json にする。
+ * U-tools 金ドットの有効スキル対応コースを src/data/score-courses.json にする。
  * ラベルは inherit-skill-list の courses.json、mdb 値は uma-course-extract の all_courses.json。
  */
 import fs from "node:fs";
@@ -58,7 +58,7 @@ for (const id of ids) {
 }
 
 const payload = {
-  source: "U-tools 金ドット36 + race_course_set + inherit courses.json",
+  source: "U-tools 金ドット有効スキル対応コース + race_course_set + inherit courses.json",
   count: courses.length,
   courses,
 };

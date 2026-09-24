@@ -1,6 +1,6 @@
 /**
  * 開催条件とステ目標値（events.score_setup）。
- * コースは U-tools 金ドット36。mdb 値はマスタから導出。
+ * コースは U-tools 金ドットの有効スキル対応コース。mdb 値はマスタから導出。
  * 有効スキル id は保存時にそのコース×4脚質だけ取得してスナップショットする。
  */
 import coursesJson from "../data/score-courses.json" with { type: "json" };
