@@ -274,7 +274,7 @@ ${MEMBER_OVERLAY_CSS}
 .scene[data-phase="published"] .result-tabs { display: flex; }
 .result-tabs button {
   border: 1px solid #2a4040;
-  background: transparent;
+  background: #071010;
   color: var(--led-dim);
   font: inherit;
   font-size: .68rem;
@@ -942,8 +942,8 @@ ${MEMBER_MOBILE_GLASS_CSS}
   .scene[data-phase="published"] .sheet-wrap {
     overflow: visible;
   }
-  /* 全頭表の行が狭い画面で横に広がっても、枠の外へ罫線を描画しない */
-  .scene[data-phase="published"] .sheet-wrap { overflow-x: clip; }
+  /* 全頭表はグリッドを盤面内に収め、罫線・着順枠を右の外枠まで伸ばさない */
+  .scene[data-phase="published"] .sheet-wrap { overflow-x: hidden; }
   .scene[data-phase="published"] .board,
   .scene[data-phase="published"] .jumbo,
   .scene[data-phase="published"] .cols,
@@ -953,8 +953,13 @@ ${MEMBER_MOBILE_GLASS_CSS}
     min-height: 0;
   }
   .scene[data-phase="published"] .j-fin { width: 100%; }
-  /* 全頭: 脚質を外しオッズを縮めてウマ娘9文字分を確保。PC・投票中は触らない */
-  .scene[data-phase="published"] .sheet { --col-odds: 3.4rem; }
+  /* 全頭: 脚質を外し、名前9文字分と着順枠を両立させる。PC・投票中は触らない */
+  .scene[data-phase="published"] .sheet {
+    --col-num: 1.4rem;
+    --col-runner: 3.2rem;
+    --col-odds: 3.5rem;
+    --col-place: 2.2rem;
+  }
   .scene[data-phase="published"] .c-style { display: none; }
   .scene[data-phase="published"] .sheet-row {
     grid-template-columns:
@@ -963,6 +968,32 @@ ${MEMBER_MOBILE_GLASS_CSS}
       var(--col-runner)
       var(--col-odds)
       var(--col-place);
+    column-gap: .12rem;
+  }
+  /* レース名を先に読ませ、結果表示はオッズ切替と同じ等幅タブにする */
+  .scene[data-phase="published"] .board-head {
+    display: block;
+    margin-bottom: .45rem;
+  }
+  .scene[data-phase="published"] .result-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .28rem;
+    width: 100%;
+    margin: .4rem 0 0;
+  }
+  .scene[data-phase="published"] .result-tabs button {
+    min-width: 0;
+    min-height: 2.1rem;
+    padding: .3rem .2rem;
+    border-color: #31514d;
+    border-bottom-color: #17302e;
+    font-weight: 700;
+  }
+  .scene[data-phase="published"] .result-tabs button[aria-pressed="true"] {
+    border-color: var(--member-accent);
+    border-bottom-color: var(--member-accent);
+    background: rgba(224, 179, 74, .08);
   }
   .odds-preview .board-head { align-items: flex-start; }
   .odds-preview-switcher { overflow: hidden; border-bottom: 0; background: transparent; }

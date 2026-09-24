@@ -901,7 +901,7 @@ export function venueBoardPage(opts: {
         : `<span id="meta-close">締切 <strong>${escapeHtml(closeHm)}</strong></span>`;
   const resultTabs = published
     ? `<div class="result-tabs" role="tablist" aria-label="結果の見方">
-        <button type="button" data-result="show" aria-pressed="true">結果の盤</button>
+        <button type="button" data-result="show" aria-pressed="true">結果</button>
         <button type="button" data-result="field" aria-pressed="false">全頭</button>
       </div>`
     : "";
