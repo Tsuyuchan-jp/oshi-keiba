@@ -133,15 +133,18 @@ export function venueFootHtml(opts: {
   closedHint: string;
   publishedHint: string;
   showUmabashira?: boolean;
-  /** 投票締切中で、購入済みの本人だけに馬券ページを案内する */
+  /** 投票締切中に出す馬券導線。未ログイン時はログインへ向ける */
   showClosedTicketLink?: boolean;
+  closedTicketNeedsLogin?: boolean;
 }): string {
   if (opts.status === "published") {
     return `<div class="foot"><span class="hint" id="phase-hint">${escapeHtml(opts.publishedHint)}</span></div>`;
   }
   if (opts.status === "closed") {
+    const ticketHref = opts.closedTicketNeedsLogin ? "/login" : "/tickets";
+    const ticketLabel = opts.closedTicketNeedsLogin ? "ログインして自分の馬券を見る" : "自分の馬券を見る";
     const actions = opts.showClosedTicketLink
-      ? `<div class="foot-browse closed-ticket-browse">${umabashiraCta(opts.showUmabashira)}<div class="foot-actions closed-ticket-actions">${paddockCta("パドックを見る")}<a class="cta closed-ticket-cta" href="/tickets">自分の馬券を見る</a></div></div>`
+      ? `<div class="foot-browse closed-ticket-browse">${umabashiraCta(opts.showUmabashira)}<div class="foot-actions closed-ticket-actions">${paddockCta("パドックを見る")}<a class="cta closed-ticket-cta" href="${ticketHref}">${ticketLabel}</a></div></div>`
       : `<div class="foot-browse">${umabashiraCta(opts.showUmabashira)}${paddockCta("出走馬をパドックで見る")}</div>`;
     return `<div class="foot"><span class="hint" id="phase-hint">${escapeHtml(opts.closedHint)}</span>${actions}</div>`;
   }

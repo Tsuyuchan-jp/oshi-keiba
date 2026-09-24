@@ -169,6 +169,16 @@ test("場内足元のパドック導線は状態ごとに文言と買うボタ�
   assert.match(closedWithTickets, /ウマ柱を見る/);
   assert.doesNotMatch(closedWithTickets, /出走馬をパドックで見る/);
 
+  const closedGuest = venueFootHtml({
+    status: "closed",
+    ctaHref: "/bet",
+    closedHint: "確定配当です。",
+    publishedHint: "",
+    showClosedTicketLink: true,
+    closedTicketNeedsLogin: true,
+  });
+  assert.match(closedGuest, /href="\/login">ログインして自分の馬券を見る</);
+
   const publishedFoot = venueFootHtml({
     status: "published",
     ctaHref: "/bet",

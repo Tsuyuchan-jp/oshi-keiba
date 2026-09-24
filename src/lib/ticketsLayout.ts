@@ -69,13 +69,20 @@ export function ticketShelfLinkHtml(tickets: MyTicketView[]): string {
   return `<a class="ticket-shelf-link" href="/tickets"><span><small>自分の馬券</small><b>${summary.count}枚・合計 ${escapeHtml(formatPt(summary.amount))}</b></span><strong>馬券を見る →</strong></a>`;
 }
 
-export function venueTicketNoticeHtml(tickets: MyTicketView[]): string {
+export function venueTicketNoticeHtml(tickets: MyTicketView[], opts: { needsLogin?: boolean } = {}): string {
   const summary = ticketSummary(tickets);
-  if (summary.count === 0) return "";
+  const href = opts.needsLogin ? "/login" : "/tickets";
+  const linkLabel = opts.needsLogin ? "ログインして自分の馬券を見る →" : "自分の馬券を見る →";
+  if (summary.count === 0) {
+    return `<section class="ticket-result-notice" aria-label="自分の馬券">
+      <div><span>MY TICKETS</span><b>${opts.needsLogin ? "ログインして馬券を確認" : "購入した馬券はありません"}</b><small>${opts.needsLogin ? "ログインすると購入内容を確認できます" : "購入した馬券は馬券ページに表示されます"}</small></div>
+      <a href="${href}">${linkLabel}</a>
+    </section>`;
+  }
   const hit = summary.hitCount > 0;
   return `<section class="ticket-result-notice${hit ? " is-hit" : ""}" aria-label="馬券の結果">
     <div><span>${hit ? "WINNING TICKET" : "TICKET RESULT"}</span><b>${hit ? "的中馬券があります" : "馬券の結果が確定しました"}</b><small>${hit ? `${summary.hitCount}枚的中・払戻 ${escapeHtml(formatPt(summary.payoutAmount))}` : `${summary.count}枚の結果を見る`}</small></div>
-    <a href="/tickets">自分の馬券を見る →</a>
+    <a href="${href}">${linkLabel}</a>
   </section>`;
 }
 
