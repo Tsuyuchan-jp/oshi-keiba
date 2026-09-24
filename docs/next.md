@@ -23,6 +23,8 @@
 
 ## アーカイブ
 
+- ローカル実機用に、締切を出走と馬券を残したまま投票中へ戻す操作を実装クローズ（2026-09-24。ローカル実機確認OK）。`ALLOW_DEMO_RESET=1` のときだけ逃げ・復旧に出す。結果公開後は戻さない — [playbook.md](operations/playbook.md)
+
 - 自分の購入馬券を一覧で見る `/tickets` を実装クローズ。投票後・確定後の導線、的中スタンプ、賭式ごとの整理、管理者の確認閲覧、スマホ版の共通グラス背景を対応。結果の盤では馬券案内を上部に、全頭表示では一覧下部に配置し、場内の小さな馬券明細は廃止した（2026-09-24）。詳細は [tickets.md](features/tickets.md)。
 
 - 評価点計算を再検討し、金複合回復の通常金スキルは通常の金スキル（+2）へ戻さず、有効スキル +1・準金 +1・実効スタミナへの回復効果反映で確定（2026-09-24）— [score.md](specifications/score.md)・[評価点式の検証レポート](../reports/2026-09-13/membership-special-race-score-formula-analysis.md)・[三仕様比較](../reports/2026-09-14/membership-special-race-three-spec-comparison.html)
