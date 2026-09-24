@@ -177,7 +177,7 @@ test("場内足元のパドック導線は状態ごとに文言と買うボタ�
     showClosedTicketLink: true,
     closedTicketNeedsLogin: true,
   });
-  assert.match(closedGuest, /href="\/login">ログインして自分の馬券を見る</);
+  assert.match(closedGuest, /href="\/login">自分の馬券を見る</);
 
   const publishedFoot = venueFootHtml({
     status: "published",

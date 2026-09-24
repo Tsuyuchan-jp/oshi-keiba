@@ -72,7 +72,7 @@ export function ticketShelfLinkHtml(tickets: MyTicketView[]): string {
 export function venueTicketNoticeHtml(tickets: MyTicketView[], opts: { needsLogin?: boolean } = {}): string {
   const summary = ticketSummary(tickets);
   const href = opts.needsLogin ? "/login" : "/tickets";
-  const linkLabel = opts.needsLogin ? "ログインして自分の馬券を見る →" : "自分の馬券を見る →";
+  const linkLabel = "自分の馬券を見る →";
   if (summary.count === 0) {
     return `<section class="ticket-result-notice" aria-label="自分の馬券">
       <div><span>MY TICKETS</span><b>${opts.needsLogin ? "ログインして馬券を確認" : "購入した馬券はありません"}</b><small>${opts.needsLogin ? "ログインすると購入内容を確認できます" : "購入した馬券は馬券ページに表示されます"}</small></div>

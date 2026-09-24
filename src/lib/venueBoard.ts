@@ -142,7 +142,7 @@ export function venueFootHtml(opts: {
   }
   if (opts.status === "closed") {
     const ticketHref = opts.closedTicketNeedsLogin ? "/login" : "/tickets";
-    const ticketLabel = opts.closedTicketNeedsLogin ? "ログインして自分の馬券を見る" : "自分の馬券を見る";
+    const ticketLabel = "自分の馬券を見る";
     const actions = opts.showClosedTicketLink
       ? `<div class="foot-browse closed-ticket-browse">${umabashiraCta(opts.showUmabashira)}<div class="foot-actions closed-ticket-actions">${paddockCta("パドックを見る")}<a class="cta closed-ticket-cta" href="${ticketHref}">${ticketLabel}</a></div></div>`
       : `<div class="foot-browse">${umabashiraCta(opts.showUmabashira)}${paddockCta("出走馬をパドックで見る")}</div>`;
