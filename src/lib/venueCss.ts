@@ -740,10 +740,10 @@ ${MEMBER_OVERLAY_CSS}
   .foot { display: block; }
   .foot-voting { display: grid; grid-template-columns: 1fr; gap: .45rem; }
   .foot-browse { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.25fr); gap: .45rem; margin-top: .45rem; }
-  .umabashira-cta {
+  .umabashira-cta,
+  .umabashira-cta:hover {
     width: 100%; min-height: 2.55rem;
-    background: rgba(5, 7, 8, var(--glass-control-alpha));
-    -webkit-backdrop-filter: blur(8px) saturate(115%); backdrop-filter: blur(8px) saturate(115%);
+    background: transparent;
   }
   .foot > .paddock-cta {
     display: flex;
