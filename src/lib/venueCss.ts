@@ -744,6 +744,10 @@ ${MEMBER_OVERLAY_CSS}
   .umabashira-cta:hover {
     width: 100%; min-height: 2.55rem;
     background: transparent;
+    border-color: rgba(216, 255, 250, .62);
+    color: #f2fffc;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, .72);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14);
   }
   .foot > .paddock-cta {
     display: flex;
