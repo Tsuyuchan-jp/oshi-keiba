@@ -53,7 +53,6 @@ import { gateLoginPage } from "./gateLayout.ts";
 import {
   resolveVenueSlot,
   venueBoardPage,
-  venueTicketsHtml,
 } from "./venueLayout.ts";
 import { paddockPage } from "./paddockPage.ts";
 import { paddockView } from "./paddockView.ts";
@@ -324,12 +323,10 @@ export async function tryMemberGet(
       ? await listStrategicSkills(env.DB)
       : [];
 
-    let ticketsHtml: string | undefined;
     let ticketNoticeHtml: string | undefined;
     if (board.event.status === "published" && isActiveMember(user)) {
       const bets = await listUserBets(env.DB, board.event.id, user.id);
       const payouts = await listUserPayouts(env.DB, board.event.id, user.id);
-      ticketsHtml = venueTicketsHtml(bets, payouts, board);
       ticketNoticeHtml = venueTicketNoticeHtml(buildMyTickets(board, bets, payouts));
     }
     return html(
@@ -338,7 +335,6 @@ export async function tryMemberGet(
         user,
         flash: m,
         slot: resolveVenueSlot(url.searchParams.get("slot")),
-        ticketsHtml,
         ticketNoticeHtml,
         strategicSkills,
         showUmabashira: canViewUmabashira,

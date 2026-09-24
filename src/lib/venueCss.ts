@@ -293,8 +293,7 @@ ${MEMBER_OVERLAY_CSS}
   gap: 8px;
 }
 .scene[data-phase="published"][data-result="show"] .jumbo { display: flex; }
-.scene[data-phase="published"][data-result="show"] .cols,
-.scene[data-phase="published"][data-result="show"] .tickets { display: none; }
+.scene[data-phase="published"][data-result="show"] .cols { display: none; }
 .j-panel {
   flex: 1;
   min-width: 0;
@@ -493,34 +492,10 @@ ${MEMBER_OVERLAY_CSS}
 .ticket-result-notice.is-hit { border-color: #b43a2c; background: linear-gradient(90deg, rgba(91,18,13,.82), rgba(20,31,27,.9)); }
 .ticket-result-notice.is-hit span, .ticket-result-notice.is-hit small { color: #ffc1b9; }
 .ticket-result-notice.is-hit a { border-color: #ff7565; background: #a9251c; color: #fff8f5; }
+.ticket-notice-field { display: none; }
+.scene[data-phase="published"][data-result="field"] .ticket-notice-top { display: none; }
+.scene[data-phase="published"][data-result="field"] .ticket-notice-field { display: block; flex: 0 0 auto; }
 .scene[data-phase="published"] .foot:not(:has(#phase-hint:not(:empty))) { display: none; }
-.tickets {
-  display: none;
-  flex: 0 0 auto;
-  margin-top: .35rem;
-  padding-top: .3rem;
-  border-top: 1px solid #143230;
-}
-.scene[data-phase="published"][data-result="field"] .tickets { display: block; }
-.tickets-h {
-  font-size: .68rem;
-  letter-spacing: .12em;
-  color: var(--led-dim);
-  margin: 0 0 .2rem;
-}
-.t-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: .55rem;
-  align-items: baseline;
-  font-size: .78rem;
-  padding: .12rem 0;
-  border-bottom: 1px solid #0c1818;
-}
-.t-row .lab { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.t-row .yen { font-variant-numeric: tabular-nums; color: var(--member-table-ink); }
-.t-row .res { color: var(--led-dim); white-space: nowrap; }
-.t-row .res.hit { color: var(--odds); font-weight: 700; }
 @media (max-width: 520px) {
   .ticket-result-notice { align-items: stretch; flex-direction: column; }
   .ticket-result-notice a { text-align: center; }
