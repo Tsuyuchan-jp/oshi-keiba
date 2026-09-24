@@ -16,9 +16,9 @@ body { overflow: hidden; }
   background-image: linear-gradient(180deg, var(--veil-top), var(--veil-bot)), var(--scene-portrait);
   background-position: center bottom; background-size: cover; background-repeat: no-repeat;
 }
-.scene[data-slot="day"] { --veil-top: rgba(18,28,29,.18); --veil-bot: rgba(6,19,16,.38); --scene-portrait: url("/venue/day-9x16.png"); --scene-landscape: url("/venue/day-16x9.png"); }
-.scene[data-slot="dusk"] { --veil-top: rgba(24,12,8,.28); --veil-bot: rgba(10,20,17,.48); --scene-portrait: url("/venue/dusk-9x16.png"); --scene-landscape: url("/venue/dusk-16x9.png"); }
-.scene[data-slot="night"] { --veil-top: rgba(5,6,10,.38); --veil-bot: rgba(5,15,13,.58); --scene-portrait: url("/venue/night-glass-9x16.png"); --scene-landscape: url("/venue/night-16x9.png"); }
+.scene[data-slot="day"] { --veil-top: rgba(20,28,36,.18); --veil-bot: rgba(12,18,16,.28); --scene-portrait: url("/venue/day-9x16.png"); --scene-landscape: url("/venue/day-16x9.png"); }
+.scene[data-slot="dusk"] { --veil-top: rgba(24,12,8,.28); --veil-bot: rgba(18,10,8,.38); --scene-portrait: url("/venue/dusk-9x16.png"); --scene-landscape: url("/venue/dusk-16x9.png"); }
+.scene[data-slot="night"] { --veil-top: rgba(5,6,10,.38); --veil-bot: rgba(5,8,6,.48); --scene-portrait: url("/venue/night-glass-9x16.png"); --scene-landscape: url("/venue/night-16x9.png"); }
 .ticket-chrome .chrome-state { margin-left: auto; }
 .ticket-chrome .chrome-state { display: flex; align-items: center; gap: .4rem; color: var(--member-accent); font-size: .72rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .ticket-chrome .chrome-state strong { color: var(--member-white); }
@@ -87,9 +87,12 @@ body { overflow: hidden; }
   body { overflow: auto; }
   .scene { min-height: 100dvh; height: auto; }
   .scene .app-shell { min-height: calc(100dvh - 28px); height: auto; overflow: visible; }
-  .ticket-page { overflow: visible; }
-  .ticket-hero { align-items: stretch; flex-direction: column; }
+  .ticket-page { overflow: visible; background: transparent; }
+  .ticket-surface { border: 1px solid rgba(216,220,224,.32); }
+  .ticket-hero { align-items: stretch; flex-direction: column; padding: .85rem; }
   .ticket-summary { justify-content: flex-start; }
+  .ticket-kind-group { padding: .75rem; }
+  .ticket-kind-group > h2 { margin-bottom: .65rem; }
   .ticket-grid { grid-template-columns: 1fr; }
   .bet-ticket { grid-template-columns: 3.35rem minmax(0,1fr); min-height: 12.4rem; }
   .ticket-stub { padding-inline: .25rem; }
