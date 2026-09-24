@@ -135,11 +135,11 @@ export function betJoinPage(opts: {
   return pageWrap({
     user: opts.user,
     board: opts.board,
-    bodyInner: `<div class="purse">
+    bodyInner: `<div class="purse member-glass-surface">
         <span class="k">いまの所持</span>
         <div><span class="v">${bal}</span><span class="u">スペ</span></div>
       </div>
-      <div class="desk-plain">
+      <div class="desk-plain member-glass-surface">
         ${flash}
         <h1>窓口</h1>
         <p class="lead">投票中です。参加するとこの開催のスペが入り、馬券を買えます。</p>
@@ -169,11 +169,11 @@ export function betClosedPage(opts: {
   return pageWrap({
     user: opts.user,
     board: opts.board,
-    bodyInner: `<div class="purse">
+    bodyInner: `<div class="purse member-glass-surface">
         <span class="k">いまの所持</span>
         <div><span class="v">${bal}</span><span class="u">スペ</span></div>
       </div>
-      <div class="desk-plain">
+      <div class="desk-plain member-glass-surface">
         ${flash}
         <h1>窓口</h1>
         <p class="lead">いまは投票期間外です。場内でオッズを見てください。</p>
@@ -512,11 +512,11 @@ export function betBuyPage(opts: {
       };
     });
   const candidate = horses.find((horse) => horse.id === opts.candidateHorseId);
-  const bodyInner = `<div class="purse">
+  const bodyInner = `<div class="purse member-glass-surface">
       <span class="k">いまの所持</span>
       <div><span class="v" id="bal">${bal}</span><span class="u">スペ</span></div>
     </div>
-    <form method="post" action="/bet" class="desk" id="bet-form">
+    <form method="post" action="/bet" class="desk member-glass-surface" id="bet-form">
       <input type="hidden" name="kind" value="${opts.kind}">
       <input type="hidden" name="h1" id="h1" value="">
       <input type="hidden" name="h2" id="h2" value="">

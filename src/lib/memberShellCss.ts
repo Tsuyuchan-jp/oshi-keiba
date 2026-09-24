@@ -102,7 +102,7 @@ export const MEMBER_OVERLAY_CSS = `
 }
 `;
 
-/** 場内・窓口・入場だけで使う、スマホ向けの共通グラス面。各画面の CSS の末尾に置く。 */
+/** メンバー画面で使うスマホ向けの共通グラス面。各画面の CSS の末尾に置く。 */
 export const MEMBER_MOBILE_GLASS_CSS = `
 @media (max-width: 899px) {
   .member-glass { --glass-surface-alpha: .36; --glass-control-alpha: .22; }
@@ -115,9 +115,10 @@ export const MEMBER_MOBILE_GLASS_CSS = `
   }
   .member-glass--venue .app-shell { box-shadow: none; }
   .member-glass--venue .chrome, .member-glass--venue .board,
-  .member-glass--bet .chrome, .member-glass--bet .purse, .member-glass--bet .desk,
+  .member-glass--bet .chrome,
   .member-glass--gate .chrome, .member-glass--gate .desk,
-  .member-glass--tickets .chrome, .member-glass--tickets .ticket-surface { background: rgba(5, 7, 8, var(--glass-surface-alpha)); }
+  .member-glass--tickets .chrome,
+  .member-glass .member-glass-surface { background: rgba(5, 7, 8, var(--glass-surface-alpha)); }
   .member-glass--bet .dock { background: transparent; }
   .member-glass--venue .sheet-wrap, .member-glass--venue .sheet-row.head, .member-glass--venue .j-panel { background: transparent; }
   .member-glass--bet .kinds a, .member-glass--bet .kinds span, .member-glass--bet .well,

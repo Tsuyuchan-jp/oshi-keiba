@@ -86,13 +86,11 @@ body { overflow: hidden; }
 @media (max-width: 899px) {
   body { overflow: auto; }
   .scene { min-height: 100dvh; height: auto; }
+  .scene-bg { background-color: #0a1218; }
   .scene .app-shell { min-height: calc(100dvh - 28px); height: auto; overflow: visible; }
-  .ticket-page { overflow: visible; background: transparent; }
-  .ticket-surface { border: 1px solid rgba(216,220,224,.32); }
-  .ticket-hero { align-items: stretch; flex-direction: column; padding: .85rem; }
+  .ticket-page { overflow: visible; }
+  .ticket-hero { align-items: stretch; flex-direction: column; }
   .ticket-summary { justify-content: flex-start; }
-  .ticket-kind-group { padding: .75rem; }
-  .ticket-kind-group > h2 { margin-bottom: .65rem; }
   .ticket-grid { grid-template-columns: 1fr; }
   .bet-ticket { grid-template-columns: 3.35rem minmax(0,1fr); min-height: 12.4rem; }
   .ticket-stub { padding-inline: .25rem; }

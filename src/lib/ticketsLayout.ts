@@ -59,7 +59,7 @@ function ticketGroupsHtml(tickets: MyTicketView[], board: Board): string {
     const grouped = tickets.filter((ticket) => ticket.kind === kind);
     if (grouped.length === 0) return "";
     const cards = grouped.map((ticket) => ticketHtml(ticket, board, index++)).join("");
-    return `<section class="ticket-kind-group ticket-surface"><h2>${escapeHtml(grouped[0]!.kindLabel)}<span>${grouped.length}枚</span></h2><div class="ticket-grid">${cards}</div></section>`;
+    return `<section class="ticket-kind-group"><h2>${escapeHtml(grouped[0]!.kindLabel)}<span>${grouped.length}枚</span></h2><div class="ticket-grid">${cards}</div></section>`;
   }).join("");
 }
 
@@ -104,7 +104,7 @@ export function ticketsPage(opts: { board: Board; user: UserRow; tickets: MyTick
         <a href="/tickets" aria-current="page">馬券</a><a href="#" id="howto-open">使い方</a><button type="button" id="background-open">背景</button><a href="/logout">ログアウト</a><a href="/admin">管理者</a>
       </div></div>
     </header>
-    <main class="ticket-page"><section class="ticket-hero ticket-surface"><div><span class="ticket-kicker">MY TICKETS</span><h1>自分の馬券</h1><p>${opts.preview ? "管理者確認用の表示です。購入操作はできません。" : `${escapeHtml(opts.board.event.title)}の買い目をまとめています。`}</p></div>
+    <main class="ticket-page member-glass-surface"><section class="ticket-hero"><div><span class="ticket-kicker">MY TICKETS</span><h1>自分の馬券</h1><p>${opts.preview ? "管理者確認用の表示です。購入操作はできません。" : `${escapeHtml(opts.board.event.title)}の買い目をまとめています。`}</p></div>
       <div class="ticket-summary"><span>馬券 <b>${summary.count}枚</b></span><span>購入 <b>${escapeHtml(formatPt(summary.amount))}</b></span>${hit ? `<span class="summary-hit">的中 <b>${summary.hitCount}枚・${escapeHtml(formatPt(summary.payoutAmount))}</b></span>` : ""}</div>
     </section>${list}</main>
   </div></div>

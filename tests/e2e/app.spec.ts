@@ -97,6 +97,7 @@ test("メンバーが入場・参加し、画面操作で単勝を購入でき�
   await expect(page.locator(".bet-ticket")).toHaveCount(1);
   await expect(page.locator(".bet-ticket")).toContainText("100 スペ");
   await expect(page.locator(".bet-ticket")).toContainText("スペシャルウィーク");
+  await expect(page.locator(".ticket-page")).toHaveCSS("background-color", "rgba(5, 14, 13, 0.72)");
   expect(pageErrors).toEqual([]);
 });
 
