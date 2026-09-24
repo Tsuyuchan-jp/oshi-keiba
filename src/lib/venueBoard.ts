@@ -133,12 +133,17 @@ export function venueFootHtml(opts: {
   closedHint: string;
   publishedHint: string;
   showUmabashira?: boolean;
+  /** 投票締切中で、購入済みの本人だけに馬券ページを案内する */
+  showClosedTicketLink?: boolean;
 }): string {
   if (opts.status === "published") {
     return `<div class="foot"><span class="hint" id="phase-hint">${escapeHtml(opts.publishedHint)}</span></div>`;
   }
   if (opts.status === "closed") {
-    return `<div class="foot"><span class="hint" id="phase-hint">${escapeHtml(opts.closedHint)}</span><div class="foot-browse">${umabashiraCta(opts.showUmabashira)}${paddockCta("出走馬をパドックで見る")}</div></div>`;
+    const actions = opts.showClosedTicketLink
+      ? `<div class="foot-browse closed-ticket-browse">${umabashiraCta(opts.showUmabashira)}<div class="foot-actions closed-ticket-actions">${paddockCta("パドックを見る")}<a class="cta closed-ticket-cta" href="/tickets">自分の馬券を見る</a></div></div>`
+      : `<div class="foot-browse">${umabashiraCta(opts.showUmabashira)}${paddockCta("出走馬をパドックで見る")}</div>`;
+    return `<div class="foot"><span class="hint" id="phase-hint">${escapeHtml(opts.closedHint)}</span>${actions}</div>`;
   }
   if (opts.status === "setup") {
     return `<div class="foot"><span class="hint" id="phase-hint">投票開始までお待ちください。</span><div class="foot-browse">${umabashiraCta(opts.showUmabashira)}${paddockCta("出走馬をパドックで見る")}</div></div>`;

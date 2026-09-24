@@ -156,6 +156,19 @@ test("場内足元のパドック導線は状態ごとに文言と買うボタ�
   assert.match(closedFoot, /着順はまだ出ません/);
   assert.match(closedFoot, /ウマ柱を見る/);
 
+  const closedWithTickets = venueFootHtml({
+    status: "closed",
+    ctaHref: "/bet",
+    closedHint: "確定配当です。",
+    publishedHint: "",
+    showUmabashira: true,
+    showClosedTicketLink: true,
+  });
+  assert.match(closedWithTickets, /href="\/tickets">自分の馬券を見る</);
+  assert.match(closedWithTickets, /href="\/paddock">パドックを見る</);
+  assert.match(closedWithTickets, /ウマ柱を見る/);
+  assert.doesNotMatch(closedWithTickets, /出走馬をパドックで見る/);
+
   const publishedFoot = venueFootHtml({
     status: "published",
     ctaHref: "/bet",

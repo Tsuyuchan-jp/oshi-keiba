@@ -324,10 +324,15 @@ export async function tryMemberGet(
       : [];
 
     let ticketNoticeHtml: string | undefined;
-    if (board.event.status === "published" && isActiveMember(user)) {
+    let showClosedTicketLink = false;
+    if ((board.event.status === "published" || board.event.status === "closed") && isActiveMember(user)) {
       const bets = await listUserBets(env.DB, board.event.id, user.id);
-      const payouts = await listUserPayouts(env.DB, board.event.id, user.id);
-      ticketNoticeHtml = venueTicketNoticeHtml(buildMyTickets(board, bets, payouts));
+      if (board.event.status === "published") {
+        const payouts = await listUserPayouts(env.DB, board.event.id, user.id);
+        ticketNoticeHtml = venueTicketNoticeHtml(buildMyTickets(board, bets, payouts));
+      } else {
+        showClosedTicketLink = bets.length > 0;
+      }
     }
     return html(
       venueBoardPage({
@@ -336,6 +341,7 @@ export async function tryMemberGet(
         flash: m,
         slot: resolveVenueSlot(url.searchParams.get("slot")),
         ticketNoticeHtml,
+        showClosedTicketLink,
         strategicSkills,
         showUmabashira: canViewUmabashira,
       }),

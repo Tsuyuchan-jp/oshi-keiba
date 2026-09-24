@@ -848,6 +848,8 @@ export function venueBoardPage(opts: {
   scripts?: string;
   /** published 直後に見せる、専用馬券ページへの結果導線。 */
   ticketNoticeHtml?: string;
+  /** 投票締切中で、購入済みの本人だけに出す馬券ページへの導線。 */
+  showClosedTicketLink?: boolean;
   strategicSkills?: readonly StrategicSkillRow[];
   showUmabashira?: boolean;
   /** ローカル限定の表示試作。通常の場内には指定しない。 */
@@ -921,6 +923,7 @@ export function venueBoardPage(opts: {
     closedHint: venueClosedHint(opts.board),
     publishedHint: venuePublishedHint(opts.board),
     showUmabashira: opts.showUmabashira,
+    showClosedTicketLink: opts.showClosedTicketLink,
   });
   const umabashira = opts.showUmabashira
     ? memberUmabashiraModalHtml(opts.board, opts.strategicSkills)

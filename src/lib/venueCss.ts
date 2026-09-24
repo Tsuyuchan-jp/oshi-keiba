@@ -914,6 +914,7 @@ ${MEMBER_MOBILE_CHROME_CSS}
 .scene[data-phase="closed"] .cta,
 .scene[data-phase="published"] .cta,
 .scene[data-phase="setup"] .cta { display: none; }
+.scene[data-phase="closed"] .closed-ticket-cta { display: inline-block; }
 .scene[data-phase="closed"] #meta-now,
 .scene[data-phase="published"] #meta-now { display: none; }
 ${MEMBER_MOBILE_GLASS_CSS}
