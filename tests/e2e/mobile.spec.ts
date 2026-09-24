@@ -85,12 +85,18 @@ test("モバイル幅でも入場・場内・窓口の主要操作が画面内�
   const betGlass = await page.evaluate(() => ({
     chrome: getComputedStyle(document.querySelector(".bet-chrome")!).backgroundColor,
     body: getComputedStyle(document.querySelector(".desk")!).backgroundColor,
+    state: ["font-size", "font-weight", "line-height", "gap"].map((property) => getComputedStyle(document.querySelector(".bet-chrome .chrome-state")!).getPropertyValue(property)),
+    pill: ["font-size", "font-weight", "padding", "gap"].map((property) => getComputedStyle(document.querySelector(".bet-chrome .pill")!).getPropertyValue(property)),
+    dot: ["width", "height"].map((property) => getComputedStyle(document.querySelector(".bet-chrome .pill .dot")!).getPropertyValue(property)),
   }));
   await page.goto("/tickets");
   await expect(page.locator(".bet-ticket")).toBeVisible();
   const ticketGlass = await page.evaluate(() => ({
     chrome: getComputedStyle(document.querySelector(".ticket-chrome")!).backgroundColor,
     body: getComputedStyle(document.querySelector(".ticket-page")!).backgroundColor,
+    state: ["font-size", "font-weight", "line-height", "gap"].map((property) => getComputedStyle(document.querySelector(".ticket-chrome .chrome-state")!).getPropertyValue(property)),
+    pill: ["font-size", "font-weight", "padding", "gap"].map((property) => getComputedStyle(document.querySelector(".ticket-chrome .pill")!).getPropertyValue(property)),
+    dot: ["width", "height"].map((property) => getComputedStyle(document.querySelector(".ticket-chrome .pill .dot")!).getPropertyValue(property)),
   }));
   expect(ticketGlass).toEqual(betGlass);
   await expect(page.locator(".ticket-hero")).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");

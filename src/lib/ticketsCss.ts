@@ -19,11 +19,6 @@ body { overflow: hidden; }
 .scene[data-slot="day"] { --veil-top: rgba(20,28,36,.18); --veil-bot: rgba(12,18,16,.28); --scene-portrait: url("/venue/day-9x16.png"); --scene-landscape: url("/venue/day-16x9.png"); }
 .scene[data-slot="dusk"] { --veil-top: rgba(24,12,8,.28); --veil-bot: rgba(18,10,8,.38); --scene-portrait: url("/venue/dusk-9x16.png"); --scene-landscape: url("/venue/dusk-16x9.png"); }
 .scene[data-slot="night"] { --veil-top: rgba(5,6,10,.38); --veil-bot: rgba(5,8,6,.48); --scene-portrait: url("/venue/night-glass-9x16.png"); --scene-landscape: url("/venue/night-16x9.png"); }
-.ticket-chrome .chrome-state { margin-left: auto; }
-.ticket-chrome .chrome-state { display: flex; align-items: center; gap: .4rem; color: var(--member-accent); font-size: .72rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.ticket-chrome .chrome-state strong { color: var(--member-white); }
-.ticket-chrome .pill { display: inline-flex; align-items: center; gap: .3rem; padding: .2rem .55rem; border-radius: 999px; background: rgba(224,179,74,.15); color: var(--member-accent); font-size: .68rem; font-weight: 700; letter-spacing: .06em; }
-.ticket-chrome .pill .dot { width: .42rem; height: .42rem; border-radius: 50%; background: currentColor; }
 .ticket-nav { display: flex; align-items: center; gap: .65rem; white-space: nowrap; }
 .ticket-nav a { color: var(--member-muted); font-size: .78rem; text-decoration: none; }
 .ticket-page {

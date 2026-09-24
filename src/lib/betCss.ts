@@ -31,21 +31,8 @@ ${MEMBER_MOBILE_CHROME_CSS}
   margin-left: .65rem;
 }
 .nav a.on { color: var(--member-accent); }
-.pill {
-  display: inline-flex; align-items: center; gap: .3rem;
-  padding: .2rem .55rem; border-radius: 999px;
-  background: rgba(224, 179, 74, .15); color: var(--member-accent);
-  font-size: .68rem; font-weight: 700; letter-spacing: .06em;
-}
-.pill .dot {
-  width: .45rem; height: .45rem; border-radius: 50%; background: currentColor;
-  animation: blink 1.2s step-end infinite;
-}
-.pill.idle .dot { animation: none; opacity: .85; }
-.bet-chrome .chrome-state .pill { display: inline-flex; align-items: center; }
 .bet-chrome #meta-now,
 .bet-chrome #meta-close { gap: .25em; }
-@keyframes blink { 50% { opacity: 0; } }
 .purse {
   flex: 0 0 auto;
   display: flex; align-items: baseline; justify-content: space-between; gap: .75rem;

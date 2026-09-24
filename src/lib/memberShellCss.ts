@@ -188,7 +188,7 @@ a { color: inherit; }
   gap: .25rem;
 }
 .chrome-menu { position: relative; }
-.bet-chrome .chrome-state {
+.member-chrome-status {
   display: flex;
   align-items: center;
   gap: .4rem;
@@ -198,7 +198,19 @@ a { color: inherit; }
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.bet-chrome .chrome-state strong { color: var(--member-white); }
+.member-chrome-status strong { color: var(--member-white); }
+.member-chrome-status .pill {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .2rem .55rem; border-radius: 999px;
+  background: rgba(224, 179, 74, .15); color: var(--member-accent);
+  font-size: .68rem; font-weight: 700; letter-spacing: .06em;
+}
+.member-chrome-status .pill .dot {
+  width: .45rem; height: .45rem; border-radius: 50%; background: currentColor;
+  animation: member-chrome-blink 1.2s step-end infinite;
+}
+.member-chrome-status .pill.idle .dot { animation: none; opacity: .85; }
+@keyframes member-chrome-blink { 50% { opacity: 0; } }
 
 @media (min-width: 900px) {
   .scene { display: flex; align-items: center; justify-content: center; }

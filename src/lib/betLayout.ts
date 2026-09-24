@@ -61,7 +61,7 @@ function shellChrome(opts: { user: UserRow; board: Board }): string {
       <a class="brand" href="/">OSHI KEIBA</a>
       <div class="who">${escapeHtml(opts.user.display_name)}</div>
     </div>
-    <div class="chrome-state">${phasePill(status)}${chromeTimesHtml(metaNow, metaClose)}</div>
+    <div class="chrome-state member-chrome-status">${phasePill(status)}${chromeTimesHtml(metaNow, metaClose)}</div>
     <nav class="chrome-nav nav" aria-label="ページ移動">
       <a href="/">場内</a>
       <a class="on" href="/bet">窓口</a>

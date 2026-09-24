@@ -98,7 +98,7 @@ export function ticketsPage(opts: { board: Board; user: UserRow; tickets: MyTick
   <div class="scene member-glass member-glass--tickets" data-slot="night"><div class="scene-bg" aria-hidden="true"></div><div class="app-shell">
     <header class="chrome member-chrome ticket-chrome">
       <div class="chrome-brand"><a class="brand" href="/">OSHI KEIBA</a><div class="who">${escapeHtml(opts.user.display_name)} · ${escapeHtml(formatPt(opts.user.balance))}</div></div>
-      <div class="chrome-state"><span class="pill idle"><span class="dot"></span>${escapeHtml(statusLabel(opts.board.event.status))}</span>${chromeTimesHtml(metaNow, metaClose)}</div>
+      <div class="chrome-state member-chrome-status"><span class="pill idle"><span class="dot"></span>${escapeHtml(statusLabel(opts.board.event.status))}</span>${chromeTimesHtml(metaNow, metaClose)}</div>
       <nav class="chrome-nav ticket-nav" aria-label="ページ移動"><a href="/">場内</a><a href="/bet">窓口</a><a href="/paddock">パドック</a></nav>
       <div class="chrome-menu"><button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button><div class="more-pop" id="more-pop">
         <a href="/tickets" aria-current="page">馬券</a><a href="#" id="howto-open">使い方</a><button type="button" id="background-open">背景</button><a href="/logout">ログアウト</a><a href="/admin">管理者</a>
