@@ -30,12 +30,12 @@ export function memberUmabashiraModalHtml(
 export function memberUmabashiraScript(): string {
   return `<script>
 (() => {
-  const open = document.getElementById("umabashira-open");
+  const openers = [...document.querySelectorAll("[data-umabashira-open]")];
   const modal = document.getElementById("umabashira-modal");
   const close = document.getElementById("umabashira-close");
   const viewport = document.getElementById("umabashira-viewport");
   const canvas = document.getElementById("umabashira-canvas");
-  if (!open || !modal || !viewport || !canvas) return;
+  if (!openers.length || !modal || !viewport || !canvas) return;
 
   const pointers = new Map();
   let scale = 1;
@@ -122,11 +122,18 @@ export function memberUmabashiraScript(): string {
     render();
   }
 
-  open.addEventListener("click", () => {
+  const openModal = () => {
+    const morePop = document.getElementById("more-pop");
+    const moreBtn = document.getElementById("more-btn");
+    if (morePop && moreBtn) {
+      morePop.classList.remove("open");
+      moreBtn.setAttribute("aria-expanded", "false");
+    }
     modal.showModal();
     modal.focus({ preventScroll: true });
     requestAnimationFrame(resetView);
-  });
+  };
+  for (const opener of openers) opener.addEventListener("click", openModal);
   close?.addEventListener("click", () => modal.close());
   modal.addEventListener("click", (e) => {
     if (e.target === modal) modal.close();

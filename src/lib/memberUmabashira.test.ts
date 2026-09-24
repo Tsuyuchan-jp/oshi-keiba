@@ -54,4 +54,6 @@ test("ウマ柱の拡大・移動スクリプトはブラウザで解釈でき�
   assert.match(source, /\(viewportSize - contentSize\) \/ 2/);
   assert.match(source, /viewport\.clientWidth \* 0\.92/);
   assert.match(source, /modal\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(source, /data-umabashira-open/);
+  assert.match(source, /umabashira-menu|more-pop/);
 });

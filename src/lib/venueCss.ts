@@ -3,12 +3,14 @@ import {
   MEMBER_MOBILE_GLASS_CSS,
   MEMBER_MOBILE_CHROME_CSS,
   MEMBER_OVERLAY_CSS,
+  MEMBER_PRIMARY_ACTION_CSS,
   MEMBER_TOKENS_CSS,
 } from "./memberShellCss.ts";
 import { umabashiraPaperCss } from "./adminCss.ts";
 
 export const VENUE_CSS = `
 ${MEMBER_TOKENS_CSS}
+${MEMBER_PRIMARY_ACTION_CSS}
 :root {
   --bg: #070808;
   --led: #00e8d8;
@@ -488,7 +490,7 @@ ${MEMBER_OVERLAY_CSS}
 .ticket-result-notice span { color: var(--led-dim); font: 700 .58rem/1 "Chakra Petch", sans-serif; letter-spacing: .14em; }
 .ticket-result-notice b { color: var(--member-ink-bright); font-size: .88rem; }
 .ticket-result-notice small { color: var(--led-dim); font-size: .68rem; }
-.ticket-result-notice a { flex: 0 0 auto; padding: .5rem .7rem; border: 1px solid var(--member-accent); background: var(--member-accent-bg); color: var(--member-accent); font-size: .72rem; font-weight: 800; text-decoration: none; }
+.ticket-result-notice a { flex: 0 0 auto; --member-primary-pad-block: .5rem; padding-inline: .7rem; border: 1px solid var(--member-accent); background: var(--member-accent-bg); color: var(--member-accent); font-size: .72rem; font-weight: 800; text-decoration: none; }
 .ticket-result-notice.is-hit { border-color: #b43a2c; background: linear-gradient(90deg, rgba(91,18,13,.82), rgba(20,31,27,.9)); }
 .ticket-result-notice.is-hit span, .ticket-result-notice.is-hit small { color: #ffc1b9; }
 .ticket-result-notice.is-hit a { border-color: #ff7565; background: #a9251c; color: #fff8f5; }
@@ -505,13 +507,13 @@ ${MEMBER_OVERLAY_CSS}
   color: var(--member-action-ink);
   border: 0;
   border-radius: 2px;
-  padding: .65rem 1.35rem;
+  --member-primary-pad-block: .65rem;
+  padding-inline: 1.35rem;
   font-size: .95rem;
   font-weight: 800;
   letter-spacing: .12em;
   box-shadow: 0 0 18px rgba(255, 138, 42, .35);
   text-decoration: none;
-  display: inline-block;
   text-align: center;
 }
 .cta:hover { filter: brightness(1.08); }
@@ -759,7 +761,8 @@ ${MEMBER_OVERLAY_CSS}
     display: flex;
     justify-content: center;
     width: 100%;
-    padding: .8rem 1rem;
+    --member-primary-pad-block: .8rem;
+    padding-inline: 1rem;
   }
   .foot-actions .cta { width: auto; }
   .foot-actions .paddock-cta { display: flex; align-items: center; justify-content: center; }
@@ -914,7 +917,30 @@ ${MEMBER_MOBILE_CHROME_CSS}
 .scene[data-phase="closed"] .cta,
 .scene[data-phase="published"] .cta,
 .scene[data-phase="setup"] .cta { display: none; }
-.scene[data-phase="closed"] .closed-ticket-cta { display: inline-block; }
+.scene[data-phase="closed"] .closed-ticket-cta { display: inline-flex; }
+/* 締切中のスマホ足元は、パドックと自分の馬券を1行の左右に置く */
+@media (max-width: 899px) {
+  .scene[data-phase="closed"] .closed-ticket-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    align-items: stretch;
+    gap: .45rem;
+    margin-top: .45rem;
+  }
+  .scene[data-phase="closed"] .closed-ticket-actions > .paddock-cta,
+  .scene[data-phase="closed"] .closed-ticket-actions > .closed-ticket-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding-inline: .4rem;
+    font-size: .78rem;
+    letter-spacing: .02em;
+    white-space: nowrap;
+  }
+}
 .scene[data-phase="closed"] #meta-now,
 .scene[data-phase="published"] #meta-now { display: none; }
 ${MEMBER_MOBILE_GLASS_CSS}

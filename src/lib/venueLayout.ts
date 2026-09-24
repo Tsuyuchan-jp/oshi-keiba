@@ -38,6 +38,7 @@ import {
   venuePayKindClass,
   venueStyleLabel,
   venueFootHtml,
+  venueMoreMenuHtml,
   type VenueSlot,
 } from "./venueBoard.ts";
 import { VENUE_CSS } from "./venueCss.ts";
@@ -865,7 +866,6 @@ export function venueBoardPage(opts: {
   const who = opts.user
     ? `${escapeHtml(opts.user.display_name)} · ${formatPt(opts.user.balance)}`
     : "";
-  const logout = opts.user ? `<a href="/logout">ログアウト</a>` : "";
   const ctaHref = opts.user ? "/bet" : "/login";
   const closeHm = venueCloseHm(opts.board.event.voting_closes_at);
   const flash = opts.flash.text
@@ -987,11 +987,11 @@ export function venueBoardPage(opts: {
         <div class="chrome-menu">
           <button type="button" class="more-btn" id="more-btn" aria-expanded="false" aria-haspopup="true" aria-label="ほか">⋯</button>
           <div class="more-pop" id="more-pop">
-            ${opts.user ? `<a href="/tickets">馬券</a>` : ""}
-            <a href="#" id="howto-open">使い方</a>
-            <button type="button" id="background-open">背景</button>
-            ${logout}
-            <a href="/admin">管理者</a>
+            ${venueMoreMenuHtml({
+              showTickets: Boolean(opts.user),
+              showUmabashira: Boolean(opts.showUmabashira),
+              logout: Boolean(opts.user),
+            })}
           </div>
         </div>
       </header>

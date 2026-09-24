@@ -31,6 +31,19 @@ export const MEMBER_TOKENS_CSS = `
 }
 `;
 
+/** メンバー画面の主ボタン。字面が上に見えないよう、共通の視覚補正を持つ。 */
+export const MEMBER_PRIMARY_ACTION_CSS = `
+.member-primary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.25;
+  --member-primary-pad-block: .65rem;
+  --member-primary-optical-offset: .06em;
+  padding-block: calc(var(--member-primary-pad-block) + var(--member-primary-optical-offset)) calc(var(--member-primary-pad-block) - var(--member-primary-optical-offset));
+}
+`;
+
 /** ⋯・枠外リンク・使い方モーダル（venue / bet / gate 共通） */
 export const MEMBER_OVERLAY_CSS = `
 .more-btn {

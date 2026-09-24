@@ -7,6 +7,7 @@ import {
   venueFinishRowHtml,
   venueFootHtml,
   venueHorseRowHtml,
+  venueMoreMenuHtml,
   venuePayKindClass,
   venuePlaceRoman,
   venueSlotFromClock,
@@ -154,7 +155,7 @@ test("場内足元のパドック導線は状態ごとに文言と買うボタ�
   assert.match(closedFoot, /出走馬をパドックで見る/);
   assert.doesNotMatch(closedFoot, /馬券を買う/);
   assert.match(closedFoot, /着順はまだ出ません/);
-  assert.match(closedFoot, /ウマ柱を見る/);
+  assert.doesNotMatch(closedFoot, /ウマ柱を見る/);
 
   const closedWithTickets = venueFootHtml({
     status: "closed",
@@ -166,7 +167,8 @@ test("場内足元のパドック導線は状態ごとに文言と買うボタ�
   });
   assert.match(closedWithTickets, /href="\/tickets">自分の馬券を見る</);
   assert.match(closedWithTickets, /href="\/paddock">パドックを見る</);
-  assert.match(closedWithTickets, /ウマ柱を見る/);
+  assert.match(closedWithTickets, /class="foot-actions closed-ticket-actions"/);
+  assert.doesNotMatch(closedWithTickets, /ウマ柱を見る/);
   assert.doesNotMatch(closedWithTickets, /出走馬をパドックで見る/);
 
   const closedGuest = venueFootHtml({
@@ -187,6 +189,19 @@ test("場内足元のパドック導線は状態ごとに文言と買うボタ�
   });
   assert.doesNotMatch(publishedFoot, /paddock-cta/);
   assert.doesNotMatch(publishedFoot, /馬券を買う/);
+});
+
+test("場内の⋯は馬券・ウマ柱・使い方・背景の順", () => {
+  const menu = venueMoreMenuHtml({ showTickets: true, showUmabashira: true, logout: true });
+  const order = [">馬券<", ">ウマ柱<", ">使い方<", ">背景<", ">ログアウト<", ">管理者<"].map((label) => menu.indexOf(label));
+  assert.ok(order.every((index) => index >= 0));
+  assert.deepEqual(order, [...order].sort((a, b) => a - b));
+  assert.match(menu, /id="umabashira-menu"/);
+  assert.match(menu, /data-umabashira-open/);
+
+  const guest = venueMoreMenuHtml({ showTickets: false, showUmabashira: false, logout: false });
+  assert.doesNotMatch(guest, /馬券|ウマ柱|ログアウト/);
+  assert.match(guest, />使い方</);
 });
 
 test("場内オッズは上限を9999.9+で表示する", () => {
