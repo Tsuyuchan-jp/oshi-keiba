@@ -987,7 +987,7 @@ ${MEMBER_MOBILE_GLASS_CSS}
     min-height: 2.1rem;
     padding: .3rem .2rem;
     border-color: #31514d;
-    border-bottom-color: #17302e;
+    border-bottom-color: #31514d;
     background: transparent;
     font-weight: 700;
   }
