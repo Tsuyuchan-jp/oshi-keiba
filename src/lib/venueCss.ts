@@ -740,6 +740,12 @@ ${MEMBER_OVERLAY_CSS}
   .foot { display: block; }
   .foot-voting { display: grid; grid-template-columns: 1fr; gap: .45rem; }
   .foot-browse { display: grid; grid-template-columns: 1fr; gap: .45rem; margin-top: .45rem; }
+  /* 足元のボタンが2つなら左右、1つなら全幅。3つある投票中は上段を全幅のままにする */
+  .foot-browse:has(> :nth-child(2)):not(:has(> :nth-child(3))),
+  .foot-actions:has(> :nth-child(2)):not(:has(> :nth-child(3))) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    align-items: stretch;
+  }
   .umabashira-cta { width: 100%; min-height: 2.55rem; }
   /* 昼背景では二重の透過を避け、足元のグラス面に馴染む深緑青で固定する。 */
   .scene[data-slot="day"] .umabashira-cta {
@@ -767,6 +773,18 @@ ${MEMBER_OVERLAY_CSS}
   .foot-actions .cta { width: auto; }
   .foot-actions .paddock-cta { display: flex; align-items: center; justify-content: center; }
   .foot-browse .paddock-cta { display: flex; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; }
+  .foot-browse:has(> :nth-child(2)):not(:has(> :nth-child(3))) > .umabashira-cta,
+  .foot-browse:has(> :nth-child(2)):not(:has(> :nth-child(3))) > .paddock-cta,
+  .foot-actions:has(> :nth-child(2)):not(:has(> :nth-child(3))) > .paddock-cta,
+  .foot-actions:has(> :nth-child(2)):not(:has(> :nth-child(3))) > .cta {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding-inline: .4rem;
+    font-size: .74rem;
+    letter-spacing: .02em;
+    white-space: nowrap;
+  }
   .board-head h1 { display: flex; flex-direction: column; align-items: flex-start; gap: .12rem; }
   .board-head-title,
   .board-head-detail { display: block; }
