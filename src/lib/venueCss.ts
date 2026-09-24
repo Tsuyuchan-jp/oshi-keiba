@@ -956,7 +956,7 @@ ${MEMBER_MOBILE_GLASS_CSS}
   /* 全頭: 脚質を外し、名前9文字分と着順枠を両立させる。PC・投票中は触らない */
   .scene[data-phase="published"] .sheet {
     --col-num: 1.4rem;
-    --col-runner: 3.2rem;
+    --col-runner: 3.6rem;
     --col-odds: 3.5rem;
     --col-place: 2.2rem;
   }
@@ -988,12 +988,17 @@ ${MEMBER_MOBILE_GLASS_CSS}
     padding: .3rem .2rem;
     border-color: #31514d;
     border-bottom-color: #17302e;
+    background: rgba(7, 24, 24, .62);
     font-weight: 700;
   }
   .scene[data-phase="published"] .result-tabs button[aria-pressed="true"] {
     border-color: var(--member-accent);
     border-bottom-color: var(--member-accent);
     background: rgba(224, 179, 74, .08);
+  }
+  @media (max-width: 340px) {
+    /* 極端に狭い端末でも名前・オッズ・着順枠を押し出さない */
+    .scene[data-phase="published"] .sheet { --col-runner: 3.2rem; }
   }
   .odds-preview .board-head { align-items: flex-start; }
   .odds-preview-switcher { overflow: hidden; border-bottom: 0; background: transparent; }
