@@ -85,7 +85,7 @@ export function ticketsPage(opts: { board: Board; user: UserRow; tickets: MyTick
   const list = opts.tickets.length > 0
     ? ticketGroupsHtml(opts.tickets, opts.board)
     : `<section class="ticket-empty"><h2>まだ馬券がありません</h2><p>窓口で買った馬券が、ここに紙券のように並びます。</p><a href="/bet">窓口へ</a></section>`;
-  const metaNow = opts.board.event.status === "voting" ? `<span id="meta-now">いま <strong id="now-clock">--:--</strong></span>` : "";
+  const metaNow = opts.board.event.status === "voting" ? `<span id="meta-now">現在 <strong id="now-clock">--:--</strong></span>` : "";
   const metaClose = opts.board.event.status === "voting"
     ? `<span id="meta-close">締切 <strong>${escapeHtml(closeHm(opts.board.event.voting_closes_at))}</strong></span>`
     : `<span id="meta-close">${escapeHtml(statusLabel(opts.board.event.status))}</span>`;

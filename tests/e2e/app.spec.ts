@@ -94,6 +94,7 @@ test("メンバーが入場・参加し、画面操作で単勝を購入でき�
   await page.locator(".ticket-shelf-link").click();
   await expect(page).toHaveURL(/\/tickets$/);
   await expect(page.getByRole("heading", { name: "自分の馬券" })).toBeVisible();
+  await expect(page.locator("#meta-now")).toContainText("現在");
   await expect(page.locator(".bet-ticket")).toHaveCount(1);
   await expect(page.locator(".bet-ticket")).toContainText("100 スペ");
   await expect(page.locator(".bet-ticket")).toContainText("スペシャルウィーク");
