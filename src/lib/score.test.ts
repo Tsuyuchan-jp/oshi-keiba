@@ -164,9 +164,9 @@ test("スタミナ離散", () => {
   assert.equal(staminaMult(450, { staminaNoTempt: 400, staminaWithTempt: 500, staminaRace: true }), 0.4);
 });
 
-test("余剰スタミナは掛かりあり目標を超えた分の3分の1だけ倍率へ反映する", () => {
+test("余剰スタミナは掛かりあり目標を超えた分の2分の1だけ倍率へ反映する", () => {
   assert.equal(staminaMult(500, { staminaNoTempt: 400, staminaWithTempt: 500, staminaRace: false, staminaSurplus: true }), 1);
-  assert.ok(Math.abs(staminaMult(650, { staminaNoTempt: 400, staminaWithTempt: 500, staminaRace: false, staminaSurplus: true }) - 1.1) < 1e-9);
+  assert.ok(Math.abs(staminaMult(650, { staminaNoTempt: 400, staminaWithTempt: 500, staminaRace: false, staminaSurplus: true }) - 1.15) < 1e-9);
   assert.equal(staminaMult(650, { staminaNoTempt: 400, staminaWithTempt: 500, staminaRace: false, staminaSurplus: false }), 1);
 });
 

@@ -51,7 +51,7 @@ export type RaceRequirements = {
   }>>;
   /** スタミナ勝負コース */
   staminaRace: boolean;
-  /** 掛かりあり目標を超えた実効スタミナの1/3を倍率へ反映する */
+  /** 掛かりあり目標を超えた実効スタミナの1/2を倍率へ反映する */
   staminaSurplus?: boolean;
   power: number;
   guts: number;
@@ -221,11 +221,11 @@ export type SkillBaseOptions = {
 };
 
 /** 投票開始時に運営の事前評価と一緒に記録する評価式の識別子。 */
-export const SCORE_FORMULA_VERSION = "score-v4-stamina-surplus";
+export const SCORE_FORMULA_VERSION = "score-v5-stamina-surplus-half";
 export const SCORE_FORMULA_SUMMARY = "金複合回復：有効 +1／準金 +1／実効スタミナへ回復効果を反映／余剰スタミナは開催設定に従う";
 
 export function scoreFormulaSummary(staminaSurplus: boolean): string {
-  return `${SCORE_FORMULA_SUMMARY}（余剰スタミナ評価：${staminaSurplus ? "反映・掛かりあり目標超過分の1/3" : "反映なし"}）`;
+  return `${SCORE_FORMULA_SUMMARY}（余剰スタミナ評価：${staminaSurplus ? "反映・掛かりあり目標超過分の1/2" : "反映なし"}）`;
 }
 
 function isSkillNameSet(
@@ -331,7 +331,7 @@ export function staminaMult(
   const withT = stamina >= req.staminaWithTempt;
   if (no && withT) {
     if (!req.staminaSurplus || !(req.staminaWithTempt > 0)) return 1;
-    return 1 + (stamina / req.staminaWithTempt - 1) / 3;
+    return 1 + (stamina / req.staminaWithTempt - 1) / 2;
   }
   if (req.staminaRace) {
     if (!no) return 0.2;

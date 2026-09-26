@@ -404,7 +404,7 @@ export function adminProgressPage(opts: {
     ["レース条件", eventScoreSetup(e) ? "設定済み" : "未設定"],
     ["脚質別スタミナ", eventScoreSetup(e)?.requirements.staminaByStyle ? "8項目設定済み" : "未設定"],
     ["スタミナ勝負", eventScoreSetup(e)?.staminaRaceSelected ? (eventScoreSetup(e)?.requirements.staminaRace ? "あり" : "なし") : "未選択"],
-    ["余剰スタミナ評価", eventScoreSetup(e)?.staminaSurplusSelected ? (eventScoreSetup(e)?.requirements.staminaSurplus ? "反映する（1/3）" : "反映しない") : "未選択"],
+    ["余剰スタミナ評価", eventScoreSetup(e)?.staminaSurplusSelected ? (eventScoreSetup(e)?.requirements.staminaSurplus ? "反映する（1/2）" : "反映しない") : "未選択"],
     ["馬券・配布・オッズ", "設定済み"],
   ].map(([label, value]) => `<tr><th scope="row">${label}</th><td>${escapeHtml(value)}</td></tr>`).join("");
   const body = `<section class="hero">
@@ -925,7 +925,7 @@ function staminaExplain(
   const no = stamina >= req.staminaNoTempt;
   const withT = stamina >= req.staminaWithTempt;
   if (no && withT) return req.staminaSurplus
-    ? "掛かりなし・あり達成／余剰スタミナを1/3反映"
+    ? "掛かりなし・あり達成／余剰スタミナを1/2反映"
     : "掛かりなし・あり達成／余剰スタミナは反映しない";
   if (req.staminaRace) {
     if (!no) return "勝負コース・掛かりなし未達";
@@ -1025,7 +1025,7 @@ function pipeHtml(
   const staminaRate = b.staminaSkills;
   const staminaFormula = `（スタ${st.stamina}${gr.stamina ? `${gr.stamina > 0 ? "+" : "−"}緑${Math.abs(gr.stamina)}` : ""}）×（1+回復${fmtPercent(staminaRate.recoveryRate)}−消費${fmtPercent(staminaRate.staminaCostRate)}）=${fmt3(b.effectiveStamina)}　${staminaExplain(b.effectiveStamina, req)}（目標 ${req.staminaNoTempt}/${req.staminaWithTempt}）`;
   const staminaSurplusFormula = req.staminaSurplus && b.effectiveStamina >= req.staminaWithTempt
-    ? `1 + (${fmt3(b.effectiveStamina)} / ${req.staminaWithTempt} − 1) / 3 = ${fmt3(b.ratios.staminaMult)}`
+    ? `1 + (${fmt3(b.effectiveStamina)} / ${req.staminaWithTempt} − 1) / 2 = ${fmt3(b.ratios.staminaMult)}`
     : "";
   const recoveryNames = staminaRate.recoveries.length
     ? staminaRate.recoveries.map((skill) => `${skill.name} +${fmtPercent(skill.rate)}`).join(" / ")
@@ -1613,7 +1613,7 @@ export function adminSettingsPage(
   const skillWeightN = setup?.skillWeightN ?? DEFAULT_SCORE_SKILL_N;
   const skillBaseB = scoreSkillBaseB(setup);
   const staminaCard = `<div class="set-target set-stamina-card">
-    <button type="button" class="set-stamina-open" id="stamina-settings-open"><span class="k">スタミナ</span><strong id="stamina-settings-status">${staminaStatus}</strong><span class="set-stamina-edit">${voting ? "確認 →" : "編集 →"}</span><span class="set-stamina-option-state set-stamina-race-state">スタミナ勝負：${staminaRaceSelected ? (stamOn ? "あり" : "なし") : "未選択"}</span><span class="set-stamina-option-state set-stamina-surplus-state">余剰評価：${staminaSurplusSelected ? (staminaSurplusOn ? "反映する（1/3）" : "反映しない") : "未選択"}</span></button>
+    <button type="button" class="set-stamina-open" id="stamina-settings-open"><span class="k">スタミナ</span><strong id="stamina-settings-status">${staminaStatus}</strong><span class="set-stamina-edit">${voting ? "確認 →" : "編集 →"}</span><span class="set-stamina-option-state set-stamina-race-state">スタミナ勝負：${staminaRaceSelected ? (stamOn ? "あり" : "なし") : "未選択"}</span><span class="set-stamina-option-state set-stamina-surplus-state">余剰評価：${staminaSurplusSelected ? (staminaSurplusOn ? "反映する（1/2）" : "反映しない") : "未選択"}</span></button>
     <input type="hidden" name="score_stamina_race" id="stamina-race" value="${stamOn ? "1" : ""}">
     <input type="hidden" name="score_stamina_race_selected" id="stamina-race-selected" value="${staminaRaceSelected ? "1" : ""}">
     <input type="hidden" name="score_stamina_surplus" id="stamina-surplus" value="${staminaSurplusOn ? "1" : ""}">
@@ -1743,7 +1743,7 @@ export function adminSettingsPage(
         <div class="stamina-modal-toggle stamina-modal-toggle--wide" aria-label="余剰スタミナ評価">
           <span>余剰スタミナ評価</span>
           <button type="button" data-stamina-surplus="0"${!staminaSurplusOn && staminaSurplusSelected ? ` class="on"` : ""}${staminaReadonly}>反映しない</button>
-          <button type="button" data-stamina-surplus="1"${staminaSurplusOn && staminaSurplusSelected ? ` class="on"` : ""}${staminaReadonly}>反映する（1/3）</button>
+          <button type="button" data-stamina-surplus="1"${staminaSurplusOn && staminaSurplusSelected ? ` class="on"` : ""}${staminaReadonly}>反映する（1/2）</button>
         </div>
         <table class="plain stamina-table"><thead><tr><th>脚質</th><th>掛かりなし</th><th>掛かりあり</th></tr></thead><tbody>${staminaInputs}</tbody></table>
         <div class="modal-actions">${canKinds ? `<button type="button" class="admin-action admin-action--primary" id="stamina-settings-done">入力を確認</button>` : ""}<button type="button" class="admin-action admin-action--secondary" id="stamina-settings-cancel">閉じる</button></div>
@@ -1793,7 +1793,7 @@ export function adminSettingsPage(
         if (staminaSurplusSelectedIn) staminaSurplusSelectedIn.value = "1";
         document.querySelectorAll("[data-stamina-surplus]").forEach((x) => x.classList.toggle("on", x === btn));
         const state = document.querySelector(".set-stamina-surplus-state");
-        if (state) state.textContent = "余剰評価：" + (on ? "反映する（1/3）" : "反映しない");
+        if (state) state.textContent = "余剰評価：" + (on ? "反映する（1/2）" : "反映しない");
       });
     });
     const staminaDlg = document.getElementById("stamina-settings-modal");

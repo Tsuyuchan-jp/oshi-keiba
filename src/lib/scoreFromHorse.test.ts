@@ -116,7 +116,7 @@ test("脚質別の掛かりあり目標を基準に余剰スタミナを反映�
   const result = scoreFromHorse(setup, { ...INPUT, stats: { ...INPUT.stats, stamina: 650 } });
   assert.ok(result);
   assert.ok(Math.abs(result.breakdown.rawRatios.stamina - 1.3) < 1e-9);
-  assert.ok(Math.abs(result.breakdown.ratios.staminaMult - 1.1) < 1e-9);
+  assert.ok(Math.abs(result.breakdown.ratios.staminaMult - 1.15) < 1e-9);
 });
 
 test("直置き強制", () => {
