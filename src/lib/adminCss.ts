@@ -985,7 +985,7 @@ body.settings-page .settings-desk .work {
 .stamina-modal { width: min(34rem, calc(100vw - 2rem)); }
 .stamina-table input { width: 100%; min-width: 5.5rem; font: inherit; font-weight: 700; }
 .set-foot { margin: .7rem 0 0; font-size: .75rem; color: var(--admin-muted); }
-.set-metrics { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .5rem; }
+.set-metrics { display: grid; grid-template-columns: repeat(7, minmax(7rem, 1fr)); gap: .5rem; overflow-x: auto; }
 .set-metric { background: var(--admin-surface-muted); border: 1px solid var(--admin-line-subtle); border-radius: 8px; padding: .5rem .6rem .55rem; }
 .set-metric .sym { float: right; font-size: .68rem; font-weight: 800; color: var(--admin-muted-light); letter-spacing: .04em; }
 .set-metric .k { display: block; font-size: .7rem; color: var(--admin-muted); margin-bottom: .15rem; }
@@ -1726,7 +1726,6 @@ body.gougai-page .gougai-desk .work:last-child { overflow: auto; }
   body.settings-page .settings-top { grid-template-columns: 1fr; }
   .set-conds { grid-template-columns: 1fr; }
   .set-targets { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .set-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   body.odds-page .odds-desk {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: minmax(14rem, 1.15fr) minmax(11rem, 1fr) minmax(11rem, 1fr);
@@ -1758,7 +1757,7 @@ body.gougai-page .gougai-desk .work:last-child { overflow: auto; }
   body.settings-page .settings-scroll { overflow: visible; }
   .set-row { grid-template-columns: 1fr; }
   .set-feature-toggle--compact { width: 100%; }
-  .set-targets, .set-metrics { grid-template-columns: 1fr 1fr; }
+  .set-targets { grid-template-columns: 1fr 1fr; }
   .edit-stat-grid, .edit-apt-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   body.odds-page { overflow: auto; }
   body.odds-page .dash { height: auto; min-height: 100dvh; }

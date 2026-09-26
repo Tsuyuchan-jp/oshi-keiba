@@ -17,6 +17,7 @@ import {
 } from "./staminaSkills.ts";
 import type { GreenEvalContext } from "./greenCondition.ts";
 import type { CharacterSpec } from "./utoolsEffects.ts";
+import { SCORE_SKILL_BASE } from "./scoreSetup.ts";
 
 export type HorseStats = {
   speed: number;
@@ -82,6 +83,8 @@ export type ScoreInput = {
   strategicById?: StrategicPointsById;
   /** スキル土台の累乗重み。未指定は現行互換の1。 */
   skillWeightN?: number;
+  /** スキル土台の基準点 b。未指定は既存開催と同じ 90。 */
+  skillBaseB?: number;
   characterSpecs?: readonly CharacterSpec[];
 };
 
@@ -365,8 +368,11 @@ export function computeScore(input: ScoreInput): ScoreBreakdown {
   const req = input.req;
 
   const n = input.skillWeightN ?? 1;
+  const skillBaseB = Number.isFinite(input.skillBaseB) && input.skillBaseB! > 0
+    ? input.skillBaseB!
+    : SCORE_SKILL_BASE;
   let weightedSkillBase = Number.isFinite(n) && n > 0
-    ? 90 * (skill.base / 90) ** n
+    ? skillBaseB * (skill.base / skillBaseB) ** n
     : skill.base;
   const ids = new Set(input.skillIds?.filter((id): id is number => typeof id === "number" && id > 0) ?? []);
   const matched = input.characterSpecs

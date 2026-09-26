@@ -55,6 +55,7 @@ import {
 import { votingStartProblems } from "./storeRace";
 import {
   DEFAULT_SCORE_REQ,
+  scoreSkillBaseB,
   DEFAULT_SCORE_SKILL_N,
   scoreSkillWeightN,
   GROUND_CONDITION_OPTIONS,
@@ -1035,7 +1036,8 @@ function pipeHtml(
     ? `×${fmt3(cs.multiplier)} <span class="pipe-s-calc">(E ${fmt3(cs.totalBab)}バ / R ${fmt3(cs.medianBab)}バ)^0.20 = ${fmt3(cs.multiplier)}</span>`
     : "×1.000 <span class=\"pipe-s-calc\">該当スキルなし</span>";
   const skillWeightN = scoreSkillWeightN(setup);
-  const skillFormula = `90 × (${s.base} / 90)^${skillWeightN} × ${fmt3(cs.multiplier)} = ${fmt3(b.weightedSkillBase)}`;
+  const skillBaseB = scoreSkillBaseB(setup);
+  const skillFormula = `${skillBaseB} × (${s.base} / ${skillBaseB})^${skillWeightN} × ${fmt3(cs.multiplier)} = ${fmt3(b.weightedSkillBase)}`;
   const formula = `スキル点${fmt3(b.weightedSkillBase)} × スピ${fmt3(b.ratios.speed)} × スタ${fmt3(b.ratios.staminaMult)} × パワ${fmt3(b.ratios.power)} × 根性${fmt3(b.ratios.guts)} × 賢さ${fmt3(b.ratios.wisdom)} ＝ ${h.horse.strength}`;
   return `${head}
     <div class="pipe-step"><div class="pipe-k">土台（スキル）</div>
@@ -1600,6 +1602,7 @@ export function adminSettingsPage(
   const stamOn = !!r?.staminaRace;
   const staminaRaceSelected = !!setup?.staminaRaceSelected;
   const skillWeightN = setup?.skillWeightN ?? DEFAULT_SCORE_SKILL_N;
+  const skillBaseB = scoreSkillBaseB(setup);
   const staminaCard = `<div class="set-target set-stamina-card">
     <button type="button" class="set-stamina-open" id="stamina-settings-open"><span class="k">スタミナ</span><strong id="stamina-settings-status">${staminaStatus}</strong><span class="set-stamina-edit">${voting ? "確認 →" : "編集 →"}</span><span class="set-stamina-race-state">スタミナ勝負：${stamOn ? "あり" : "なし"}</span></button>
     <input type="hidden" name="score_stamina_race" id="stamina-race" value="${stamOn ? "1" : ""}">
@@ -1709,6 +1712,12 @@ export function adminSettingsPage(
             <span class="k">スキル重み</span>
             <input name="score_skill_weight_n" type="number" min="1" max="10" step="0.1" value="${skillWeightN}"${setupDisabled}>
             <span class="d">S0の差を強調する累乗</span>
+          </label>
+          <label class="set-metric">
+            <span class="sym">b</span>
+            <span class="k">スキル土台の基準点</span>
+            <input name="score_skill_base_b" type="number" min="1" max="200" step="0.1" value="${skillBaseB}"${setupDisabled}>
+            <span class="d">自動評価点の桁を整える</span>
           </label>
         </div>
       </section>

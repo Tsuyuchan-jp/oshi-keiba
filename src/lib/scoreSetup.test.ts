@@ -6,6 +6,7 @@ import {
   greenCtxFromScoreSetup,
   listScoreCourses,
   parseScoreSetup,
+  scoreSkillBaseB,
   scoreSetupFromForm,
   serializeScoreSetup,
 } from "./scoreSetup.ts";
@@ -163,4 +164,12 @@ test("スキル重み n の往復と範囲検証", () => {
   assert.equal(parsed?.skillWeightN, 4.5);
   assert.equal(parseScoreSetup({ ...SAMPLE, skillWeightN: 0 }), null);
   assert.equal(parseScoreSetup({ ...SAMPLE, skillWeightN: 10.1 }), null);
+});
+
+test("スキル土台の基準点 b の往復・既定値・範囲検証", () => {
+  const parsed = parseScoreSetup({ ...SAMPLE, skillBaseB: 100 });
+  assert.equal(parsed?.skillBaseB, 100);
+  assert.equal(scoreSkillBaseB(parseScoreSetup(SAMPLE)), 90);
+  assert.equal(parseScoreSetup({ ...SAMPLE, skillBaseB: 0 }), null);
+  assert.equal(parseScoreSetup({ ...SAMPLE, skillBaseB: 200.1 }), null);
 });

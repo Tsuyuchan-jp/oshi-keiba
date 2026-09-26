@@ -11,6 +11,7 @@ import {
   effectiveIdsFromScoreSetup,
   getScoreCourse,
   greenCtxFromScoreSetup,
+  scoreSkillBaseB,
   scoreSkillWeightN,
   type EventScoreSetup,
 } from "./scoreSetup.ts";
@@ -117,6 +118,7 @@ export function scoreFromHorse(
     effectiveIds,
     strategicById,
     skillWeightN: scoreSkillWeightN(setup),
+    skillBaseB: scoreSkillBaseB(setup),
     characterSpecs: setup.characterSpecs,
   });
 
