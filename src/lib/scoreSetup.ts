@@ -29,6 +29,8 @@ export type EventScoreSetup = {
   requirements: RaceRequirements;
   /** スタミナ勝負の有無を管理者が明示的に選んだか */
   staminaRaceSelected?: true;
+  /** 余剰スタミナ評価の有無を管理者が明示的に選んだか */
+  staminaSurplusSelected?: true;
   /**
    * 保存時に取った U-tools ranked スキル id（コース×脚質）。
    * 未取得の旧データは undefined（計算時は緑以外全部有効扱い）。
@@ -183,6 +185,8 @@ export function parseScoreSetup(raw: unknown): EventScoreSetup | null {
   const skillBaseB = root.skillBaseB == null ? undefined : Number(root.skillBaseB);
   const staminaRace = Boolean(r.staminaRace);
   const staminaRaceSelected = root.staminaRaceSelected === true;
+  const staminaSurplus = r.staminaSurplus === true;
+  const staminaSurplusSelected = root.staminaSurplusSelected === true;
   const staminaByStyle = parseStaminaByStyle(r.staminaByStyle);
 
   if (
@@ -212,12 +216,14 @@ export function parseScoreSetup(raw: unknown): EventScoreSetup | null {
       staminaWithTempt,
       ...(staminaByStyle ? { staminaByStyle } : {}),
       staminaRace,
+      ...(staminaSurplus ? { staminaSurplus: true } : {}),
       power,
       guts,
       wisdom,
     },
   };
   if (staminaRaceSelected) setup.staminaRaceSelected = true;
+  if (staminaSurplusSelected) setup.staminaSurplusSelected = true;
   if (skillWeightN !== undefined) setup.skillWeightN = skillWeightN;
   if (skillBaseB !== undefined) setup.skillBaseB = skillBaseB;
 
@@ -317,6 +323,8 @@ export function scoreSetupFromForm(
   const skillBaseBRaw = get("score_skill_base_b").trim();
   const staminaRace = get("score_stamina_race") === "1";
   const staminaRaceSelected = get("score_stamina_race_selected") === "1";
+  const staminaSurplus = get("score_stamina_surplus") === "1";
+  const staminaSurplusSelected = get("score_stamina_surplus_selected") === "1";
 
   const any =
     courseKey ||
@@ -330,7 +338,7 @@ export function scoreSetupFromForm(
     wisdomRaw ||
     skillWeightNRaw ||
     skillBaseBRaw ||
-    staminaRace || staminaRaceSelected;
+    staminaRace || staminaRaceSelected || staminaSurplus || staminaSurplusSelected;
 
   /** 初期表示のデフォルトだけ埋まっている状態（コースなし＝直置き） */
   const onlyReqDefaults =
@@ -370,11 +378,13 @@ export function scoreSetupFromForm(
         withTempt: Number(staminaByStyle[style].withTempt),
       }])) } : {}),
       staminaRace,
+      ...(staminaSurplus ? { staminaSurplus: true } : {}),
       power: Number(powerRaw),
       guts: Number(gutsRaw),
       wisdom: Number(wisdomRaw),
     },
     ...(staminaRaceSelected ? { staminaRaceSelected: true } : {}),
+    ...(staminaSurplusSelected ? { staminaSurplusSelected: true } : {}),
     ...(skillWeightNRaw ? { skillWeightN: Number(skillWeightNRaw) } : {}),
     ...(skillBaseBRaw ? { skillBaseB: Number(skillBaseBRaw) } : {}),
   });

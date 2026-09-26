@@ -51,6 +51,8 @@ export type RaceRequirements = {
   }>>;
   /** スタミナ勝負コース */
   staminaRace: boolean;
+  /** 掛かりあり目標を超えた実効スタミナの1/3を倍率へ反映する */
+  staminaSurplus?: boolean;
   power: number;
   guts: number;
   wisdom: number;
@@ -126,9 +128,10 @@ export type ScoreBreakdown = {
   /** 生値＋緑へ回復率・自己消費率を反映した、目標判定用スタミナ。 */
   effectiveStamina: number;
   adjusted: HorseStats;
-  /** 倍率に掛ける前の r（スタミナは離散のため無し） */
+  /** 倍率に掛ける前の r */
   rawRatios: {
     speed: number;
+    stamina: number;
     power: number;
     guts: number;
     wisdom: number;
@@ -218,8 +221,12 @@ export type SkillBaseOptions = {
 };
 
 /** 投票開始時に運営の事前評価と一緒に記録する評価式の識別子。 */
-export const SCORE_FORMULA_VERSION = "score-v3-semi-gold";
-export const SCORE_FORMULA_SUMMARY = "金複合回復：有効 +1／準金 +1／実効スタミナへ回復効果を反映";
+export const SCORE_FORMULA_VERSION = "score-v4-stamina-surplus";
+export const SCORE_FORMULA_SUMMARY = "金複合回復：有効 +1／準金 +1／実効スタミナへ回復効果を反映／余剰スタミナは開催設定に従う";
+
+export function scoreFormulaSummary(staminaSurplus: boolean): string {
+  return `${SCORE_FORMULA_SUMMARY}（余剰スタミナ評価：${staminaSurplus ? "反映・掛かりあり目標超過分の1/3" : "反映なし"}）`;
+}
 
 function isSkillNameSet(
   value: ReadonlySet<string> | SkillBaseOptions,
@@ -318,11 +325,14 @@ export function speedMult(r: number): number {
 
 export function staminaMult(
   stamina: number,
-  req: Pick<RaceRequirements, "staminaNoTempt" | "staminaWithTempt" | "staminaRace">,
+  req: Pick<RaceRequirements, "staminaNoTempt" | "staminaWithTempt" | "staminaRace" | "staminaSurplus">,
 ): number {
   const no = stamina >= req.staminaNoTempt;
   const withT = stamina >= req.staminaWithTempt;
-  if (no && withT) return 1;
+  if (no && withT) {
+    if (!req.staminaSurplus || !(req.staminaWithTempt > 0)) return 1;
+    return 1 + (stamina / req.staminaWithTempt - 1) / 3;
+  }
   if (req.staminaRace) {
     if (!no) return 0.2;
     return 0.4; // 掛かりありのみ未達
@@ -389,6 +399,7 @@ export function computeScore(input: ScoreInput): ScoreBreakdown {
   const mSpeed = speedMult(rSpeed);
   score *= mSpeed;
 
+  const rSta = req.staminaWithTempt > 0 ? effectiveStamina / req.staminaWithTempt : 1;
   const mSta = staminaMult(effectiveStamina, req);
   score *= mSta;
 
@@ -416,6 +427,7 @@ export function computeScore(input: ScoreInput): ScoreBreakdown {
     adjusted,
     rawRatios: {
       speed: rSpeed,
+      stamina: rSta,
       power: rPower,
       guts: rGuts,
       wisdom: rWis,

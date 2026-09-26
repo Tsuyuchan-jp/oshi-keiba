@@ -52,6 +52,7 @@ test("投票開始用のスナップショットは評価式と事前評価を�
   const snapshot = await getPreRaceAssessmentSnapshot(db, event.id);
   assert.equal(snapshot?.captured_at, 123);
   assert.match(snapshot?.formula_summary ?? "", /準金/);
+  assert.match(snapshot?.formula_summary ?? "", /余剰スタミナ評価：反映なし/);
   assert.deepEqual(parsePreRaceAssessmentSnapshot(snapshot), [
     { horseId: horses[0]!.id, rank: 1, memo: "本命" },
   ]);

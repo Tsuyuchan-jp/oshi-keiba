@@ -28,6 +28,7 @@ import {
   reopenClosedToVoting,
   registerMember,
   savePlaces,
+  votingStartProblems,
 } from "./store.ts";
 
 async function refresh(db: D1Database, id: string) {
@@ -56,6 +57,7 @@ async function seedRace(db: D1Database) {
         },
       },
       staminaRaceSelected: true,
+      staminaSurplusSelected: true,
     }), event0.id).run();
   await openVoting(db, await refresh(db, event0.id), null);
   const event = await refresh(db, event0.id);
@@ -73,6 +75,33 @@ test("投票開始: 締切と脚質別スタミナが未設定なら直接呼び
     () => openVoting(db, current, null),
     /投票締切日時.*レース条件/,
   );
+});
+
+test("投票開始: 余剰スタミナ評価が未選択なら開始できない", async () => {
+  const db = createMemoryD1();
+  const event = await ensureEvent(db);
+  const setup = {
+    conditions: { courseKey: "10606", weather: 1, groundCondition: 1, season: 3 },
+    requirements: {
+      speedCap: 1200, staminaNoTempt: 600, staminaWithTempt: 800,
+      staminaRace: false, power: 700, guts: 400, wisdom: 600,
+      staminaByStyle: {
+        runner: { noTempt: 600, withTempt: 800 }, leader: { noTempt: 600, withTempt: 800 },
+        betweener: { noTempt: 600, withTempt: 800 }, chaser: { noTempt: 600, withTempt: 800 },
+      },
+    },
+    staminaRaceSelected: true,
+  };
+  const candidate = {
+    ...event,
+    voting_closes_at: Date.now() + 60_000,
+    score_setup: JSON.stringify(setup),
+  };
+  const horses = [
+    { id: "h1", scratched: 0 },
+    { id: "h2", scratched: 0 },
+  ] as Awaited<ReturnType<typeof listHorses>>;
+  assert.deepEqual(votingStartProblems(candidate, horses).filter((problem) => problem.includes("余剰スタミナ")), ["余剰スタミナ評価の有無を選択してください"]);
 });
 
 test("当選単勝: 付与→投票→締切→着順→公開で残高が払戻どおり増える", async () => {

@@ -73,6 +73,7 @@ export function votingStartProblems(
     );
     if (!staminaComplete) problems.push("脚質別スタミナ8項目をすべて設定してください");
     if (!setup.staminaRaceSelected) problems.push("スタミナ勝負の有無を選択してください");
+    if (!setup.staminaSurplusSelected) problems.push("余剰スタミナ評価の有無を選択してください");
   }
   return problems;
 }

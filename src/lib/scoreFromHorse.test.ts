@@ -99,6 +99,26 @@ test("脚質別スタミナを優先して評価する", () => {
   assert.equal(scoreFromHorse(setup, INPUT)?.breakdown.ratios.staminaMult, 0.4);
 });
 
+test("脚質別の掛かりあり目標を基準に余剰スタミナを反映する", () => {
+  const setup: EventScoreSetup = {
+    ...SETUP,
+    requirements: {
+      ...SETUP.requirements,
+      staminaSurplus: true,
+      staminaByStyle: {
+        runner: { noTempt: 400, withTempt: 500 },
+        leader: { noTempt: 400, withTempt: 600 },
+        betweener: { noTempt: 400, withTempt: 600 },
+        chaser: { noTempt: 400, withTempt: 600 },
+      },
+    },
+  };
+  const result = scoreFromHorse(setup, { ...INPUT, stats: { ...INPUT.stats, stamina: 650 } });
+  assert.ok(result);
+  assert.ok(Math.abs(result.breakdown.rawRatios.stamina - 1.3) < 1e-9);
+  assert.ok(Math.abs(result.breakdown.ratios.staminaMult - 1.1) < 1e-9);
+});
+
 test("直置き強制", () => {
   const r = resolveStrength({
     setup: SETUP,

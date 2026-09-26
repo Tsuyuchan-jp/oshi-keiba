@@ -1,4 +1,5 @@
-import { SCORE_FORMULA_SUMMARY, SCORE_FORMULA_VERSION } from "./score";
+import { SCORE_FORMULA_VERSION, scoreFormulaSummary } from "./score";
+import { parseScoreSetup } from "./scoreSetup";
 import type { EventRow, HorseRow } from "./storeTypes";
 
 export type PreRaceAssessment = {
@@ -87,6 +88,10 @@ export async function preRaceAssessmentSnapshotStatement(
   now: number,
 ): Promise<D1PreparedStatement> {
   const assessments = await listPreRaceAssessments(db, eventId);
+  const event = await db.prepare("SELECT score_setup FROM events WHERE id = ?")
+    .bind(eventId)
+    .first<{ score_setup: string | null }>();
+  const setup = parseScoreSetup(event?.score_setup ?? null);
   const records = assessments.map((assessment) => ({
     horseId: assessment.horse_id,
     rank: assessment.rank,
@@ -100,7 +105,7 @@ export async function preRaceAssessmentSnapshotStatement(
     eventId,
     now,
     SCORE_FORMULA_VERSION,
-    SCORE_FORMULA_SUMMARY,
+    scoreFormulaSummary(!!setup?.requirements.staminaSurplus),
     JSON.stringify(records),
   );
 }

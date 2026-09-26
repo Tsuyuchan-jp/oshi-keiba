@@ -173,3 +173,22 @@ test("スキル土台の基準点 b の往復・既定値・範囲検証", () =>
   assert.equal(parseScoreSetup({ ...SAMPLE, skillBaseB: 0 }), null);
   assert.equal(parseScoreSetup({ ...SAMPLE, skillBaseB: 200.1 }), null);
 });
+
+test("余剰スタミナ評価のONと明示選択を保存する", () => {
+  const parsed = parseScoreSetup({
+    ...SAMPLE,
+    requirements: { ...SAMPLE.requirements, staminaSurplus: true },
+    staminaSurplusSelected: true,
+  });
+  assert.equal(parsed?.requirements.staminaSurplus, true);
+  assert.equal(parsed?.staminaSurplusSelected, true);
+
+  const form = scoreSetupFromForm((name) => ({
+    score_course: "10606", score_weather: "1", score_ground_condition: "1", score_season: "3",
+    score_speed_cap: "1200", score_stamina_no: "600", score_stamina_with: "800",
+    score_power: "700", score_guts: "400", score_wisdom: "600",
+    score_stamina_surplus: "1", score_stamina_surplus_selected: "1",
+  } satisfies Record<string, string>)[name] ?? "");
+  assert.equal(form?.requirements.staminaSurplus, true);
+  assert.equal(form?.staminaSurplusSelected, true);
+});
