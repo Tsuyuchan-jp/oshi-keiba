@@ -2,11 +2,13 @@ import {
   MEMBER_MOBILE_CHROME_CSS,
   MEMBER_MOBILE_GLASS_CSS,
   MEMBER_OVERLAY_CSS,
+  MEMBER_PRIMARY_ACTION_CSS,
   MEMBER_QUIET_FRAME_CSS,
 } from "./memberShellCss.ts";
 
 export const TICKETS_CSS = `
 ${MEMBER_QUIET_FRAME_CSS}
+${MEMBER_PRIMARY_ACTION_CSS}
 ${MEMBER_OVERLAY_CSS}
 ${MEMBER_MOBILE_CHROME_CSS}
 :root { --shell-max: 72rem; }
@@ -73,7 +75,7 @@ body { overflow: hidden; }
 .ticket-empty { max-width: 42rem; margin: 2rem auto; padding: 2rem 1rem; text-align: center; border: 1px solid rgba(118,170,160,.3); background: rgba(7,24,21,.65); color: #b5cbc6; }
 .ticket-empty h2 { margin: 0 0 .45rem; color: #f0f6ef; font-size: 1.1rem; }
 .ticket-empty p { margin: 0 0 1rem; font-size: .82rem; line-height: 1.6; }
-.ticket-empty a, .ticket-back { display: inline-block; padding: .55rem .9rem; background: #e0b34a; color: #171006; font-size: .78rem; font-weight: 800; text-decoration: none; }
+.ticket-empty a, .ticket-back { --member-primary-pad-block: .55rem; padding-inline: .9rem; background: #e0b34a; color: #171006; font-size: .78rem; font-weight: 800; text-decoration: none; }
 @media (min-width: 900px) {
   .scene-bg { background-image: linear-gradient(180deg,var(--veil-top),var(--veil-bot)),var(--scene-landscape); background-position: center; }
   .app-shell { height: calc(100dvh - 3rem); max-height: calc(100dvh - 3rem); }

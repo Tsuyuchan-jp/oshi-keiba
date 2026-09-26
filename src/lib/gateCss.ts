@@ -2,11 +2,13 @@
 import {
   MEMBER_MOBILE_GLASS_CSS,
   MEMBER_OVERLAY_CSS,
+  MEMBER_PRIMARY_ACTION_CSS,
   MEMBER_QUIET_FRAME_CSS,
 } from "./memberShellCss.ts";
 
 export const GATE_CSS = `
 ${MEMBER_QUIET_FRAME_CSS}
+${MEMBER_PRIMARY_ACTION_CSS}
 ${MEMBER_OVERLAY_CSS}
 :root { --shell-max: 26rem; }
 .scene-bg {
@@ -40,7 +42,7 @@ input {
 .go {
   width: 100%; margin-top: .25rem;
   background: var(--member-action); color: var(--member-action-ink); border: 0;
-  padding: .85rem 1rem; font: inherit; font-weight: 800;
+  --member-primary-pad-block: .85rem; padding-inline: 1rem; font: inherit; font-weight: 800;
   letter-spacing: .12em; cursor: pointer;
 }
 .again {

@@ -76,13 +76,13 @@ export function venueTicketNoticeHtml(tickets: MyTicketView[], opts: { needsLogi
   if (summary.count === 0) {
     return `<section class="ticket-result-notice" aria-label="自分の馬券">
       <div><span>MY TICKETS</span><b>${opts.needsLogin ? "ログインして馬券を確認" : "購入した馬券はありません"}</b><small>${opts.needsLogin ? "ログインすると購入内容を確認できます" : "購入した馬券は馬券ページに表示されます"}</small></div>
-      <a href="${href}">${linkLabel}</a>
+      <a class="member-primary-action" href="${href}">${linkLabel}</a>
     </section>`;
   }
   const hit = summary.hitCount > 0;
   return `<section class="ticket-result-notice${hit ? " is-hit" : ""}" aria-label="馬券の結果">
     <div><span>${hit ? "WINNING TICKET" : "TICKET RESULT"}</span><b>${hit ? "的中馬券があります" : "馬券の結果が確定しました"}</b><small>${hit ? `${summary.hitCount}枚的中・払戻 ${escapeHtml(formatPt(summary.payoutAmount))}` : `${summary.count}枚の結果を見る`}</small></div>
-    <a href="${href}">${linkLabel}</a>
+    <a class="member-primary-action" href="${href}">${linkLabel}</a>
   </section>`;
 }
 
@@ -91,7 +91,7 @@ export function ticketsPage(opts: { board: Board; user: UserRow; tickets: MyTick
   const hit = opts.board.event.status === "published" && summary.hitCount > 0;
   const list = opts.tickets.length > 0
     ? ticketGroupsHtml(opts.tickets, opts.board)
-    : `<section class="ticket-empty"><h2>まだ馬券がありません</h2><p>窓口で買った馬券が、ここに紙券のように並びます。</p><a href="/bet">窓口へ</a></section>`;
+    : `<section class="ticket-empty"><h2>まだ馬券がありません</h2><p>窓口で買った馬券が、ここに紙券のように並びます。</p><a class="member-primary-action" href="/bet">窓口へ</a></section>`;
   const metaNow = opts.board.event.status === "voting" ? `<span id="meta-now">現在 <strong id="now-clock">--:--</strong></span>` : "";
   const metaClose = opts.board.event.status === "voting"
     ? `<span id="meta-close">締切 <strong>${escapeHtml(closeHm(opts.board.event.voting_closes_at))}</strong></span>`

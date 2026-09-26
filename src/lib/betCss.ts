@@ -3,11 +3,13 @@ import {
   MEMBER_MOBILE_GLASS_CSS,
   MEMBER_MOBILE_CHROME_CSS,
   MEMBER_OVERLAY_CSS,
+  MEMBER_PRIMARY_ACTION_CSS,
   MEMBER_QUIET_FRAME_CSS,
 } from "./memberShellCss.ts";
 
 export const BET_CSS = `
 ${MEMBER_QUIET_FRAME_CSS}
+${MEMBER_PRIMARY_ACTION_CSS}
 ${MEMBER_OVERLAY_CSS}
 ${MEMBER_MOBILE_CHROME_CSS}
 :root { --shell-max: 36rem; }
@@ -250,13 +252,13 @@ ${MEMBER_MOBILE_CHROME_CSS}
 .buy {
   grid-column: 2; align-self: center; min-height: 44px;
   background: var(--member-action); color: var(--member-action-ink); border: 0;
-  padding: .7rem .9rem; font: inherit; font-weight: 800;
+  --member-primary-pad-block: .7rem; padding-inline: .9rem; font: inherit; font-weight: 800;
   letter-spacing: .1em; cursor: pointer; min-width: 6.25rem;
 }
 .buy:disabled { opacity: .35; cursor: not-allowed; }
 .join-btn {
   width: 100%; background: var(--member-action); color: var(--member-action-ink); border: 0;
-  padding: .85rem 1rem; font: inherit; font-weight: 800; letter-spacing: .12em; cursor: pointer;
+  --member-primary-pad-block: .85rem; padding-inline: 1rem; font: inherit; font-weight: 800; letter-spacing: .12em; cursor: pointer;
 }
 .flash {
   margin: 0 0 .55rem; padding: .45rem .6rem; background: var(--member-accent-bg);

@@ -52,7 +52,7 @@ export function gateLoginPage(opts: {
           <label>共有パス
             <input name="password" type="password" required autocomplete="current-password">
           </label>
-          <button class="go" name="mode" value="register" type="submit">初めて入場</button>
+          <button class="go member-primary-action" name="mode" value="register" type="submit">初めて入場</button>
           <button class="again" name="mode" value="login" type="submit">登録済みでもう一度</button>
         </form>
       </div>

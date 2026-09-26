@@ -147,7 +147,7 @@ export function betJoinPage(opts: {
           <input type="hidden" name="kind" value="${opts.kind}">
           <input type="hidden" name="candidate" value="${escapeHtml(opts.candidateHorseId ?? "")}">
           <input type="hidden" name="slot" value="${escapeHtml(opts.slot ?? "")}">
-          <button type="submit" class="join-btn">${escapeHtml(opts.joinLabel)}</button>
+          <button type="submit" class="join-btn member-primary-action">${escapeHtml(opts.joinLabel)}</button>
         </form>
       </div>`,
   });
@@ -563,7 +563,7 @@ export function betBuyPage(opts: {
             <button type="button" class="amt-reset" data-set="0">リセット</button>
           </div>
         </div>
-        <button type="submit" class="buy" id="buy" aria-describedby="buy-guide" ${opts.preview ? "disabled" : ""}>買う</button>
+        <button type="submit" class="buy member-primary-action" id="buy" aria-describedby="buy-guide" ${opts.preview ? "disabled" : ""}>買う</button>
         <p class="buy-guide" id="buy-guide" aria-live="polite">買い目と購入金額を選んでください。</p>
       </div>
     </form>
