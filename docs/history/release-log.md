@@ -1,5 +1,35 @@
 # 本番リリース記録
 
+## v0.9.0 — 2026-09-27 23:17 JST
+
+- リリース対象コミット: `d8e81a2`（結合テストの開催に余剰スタミナ評価の選択を入れる。版 0.9.0 は `046ea39`）
+- 本番URL: `https://oshi-keiba.tsuyuchan-jp.workers.dev/`
+- リリース前Worker ID: `8da10b69-74b6-4e2d-8e04-fc1f74fe004b`
+- リリース後Worker ID: `dc31f5ba-35e7-45f8-b9e1-df8c372dc421`
+- リリース前D1ブックマーク: `000016e9-00000000-000050f3-f501db4820bb085350837311cec00504`
+- 適用migration: `0020_pre_race_assessments.sql`、`0021_analysis_exotic_archives.sql`
+- Secrets: 必須名（`ADMIN_PASSWORD` / `ADMIN_USER_ID` / `MEMBER_PASSWORD` / `SESSION_SECRET`）の設定を確認
+- R2: `oshi-keiba-shots` 既存
+- 認証: 通常の Wrangler ログイン。API トークンは使っていない
+- 本番vars: `ALLOW_DEMO_RESET=0`
+
+### 公開前検証
+
+- 型検査: 成功
+- Nodeテスト: 214件成功
+- Workerテスト: 113件成功
+- Playwright E2E: 12件成功
+- 適用前の migration 一覧は `0020` と `0021` のみ。適用後は未適用なし
+
+### 公開後確認
+
+- `/login`、`/`、`/admin/login`: HTTP 200
+- 未認証の `/bet`: `/login` へ HTTP 303
+- `/login` で `v0.9.0` の表示を確認
+- `wrangler deployments list` で新Worker IDが100%配信されていることを確認
+
+適用した migration はテーブルと列の追加だけ。既存の投票・残高・払戻は書き換えていない。障害時、画面だけの問題はリリース前Worker IDへ戻せる。D1 の構造は戻らないので、データ障害が確認された場合に限り上記ブックマークを使う。
+
 ## v0.8.6 — 2026-09-14 22:31 JST
 
 - リリース対象コミット: `8b99ffe`（場の会計表示を実装クローズし docs と版を 0.8.6 にする）
