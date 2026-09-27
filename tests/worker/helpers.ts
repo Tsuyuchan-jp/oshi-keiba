@@ -140,6 +140,7 @@ export const VALID_SCORE_SETUP = JSON.stringify({
     },
   },
   staminaRaceSelected: true,
+  staminaSurplusSelected: true,
 });
 
 export async function seedReadyRace(opts: {

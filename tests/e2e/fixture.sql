@@ -16,7 +16,7 @@ INSERT INTO events (
   'e2e-event', 'E2E開催', 'voting', 3000, 100, 500, 1000, 0.2,
   0.1, 1.5, 1893456000000, 4102444800000, NULL,
   NULL, 0, 1893456000000, 'win,umaren,umatan,sanrenpuku,sanrentan', 1,
-  '{"conditions":{"courseKey":"10606","weather":1,"groundCondition":1,"season":3},"requirements":{"speedCap":1200,"staminaNoTempt":600,"staminaWithTempt":800,"staminaRace":false,"power":700,"guts":400,"wisdom":600,"staminaByStyle":{"runner":{"noTempt":600,"withTempt":800},"leader":{"noTempt":600,"withTempt":800},"betweener":{"noTempt":600,"withTempt":800},"chaser":{"noTempt":600,"withTempt":800}}},"staminaRaceSelected":true}'
+  '{"conditions":{"courseKey":"10606","weather":1,"groundCondition":1,"season":3},"requirements":{"speedCap":1200,"staminaNoTempt":600,"staminaWithTempt":800,"staminaRace":false,"power":700,"guts":400,"wisdom":600,"staminaByStyle":{"runner":{"noTempt":600,"withTempt":800},"leader":{"noTempt":600,"withTempt":800},"betweener":{"noTempt":600,"withTempt":800},"chaser":{"noTempt":600,"withTempt":800}}},"staminaRaceSelected":true,"staminaSurplusSelected":true}'
 );
 
 INSERT INTO horses (
