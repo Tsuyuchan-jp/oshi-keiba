@@ -69,11 +69,7 @@ Time Travel が使える D1 は、直近の状態へ復元できる。保持期�
 
 2. `0014_admin_identity.sql` が未適用のリリースでは、`ADMIN_USER_ID` Secret が同ファイルの固定 UUID と一致していることを確認してから、migration を適用する。管理ログインは、このSecretとDBに作られる専用管理者レコードの一致が必須である。
 
-3. migration 一覧で未適用があるときだけ、適用する。未適用がある場合は、**Worker の公開より先に**この操作を完了させる。適用前に Time Travel のブックマークを必ず控える。
-
-   0.9.1 に新しい migration はない。本番 D1 は v0.9.0（2026-09-27）で `0020_pre_race_assessments.sql` と `0021_analysis_exotic_archives.sql` まで適用済み。一覧で未適用が無いことを確認し、再適用しない。このリリースは Worker の辞書とデフォルメ画像の差し替えだけ。既存の投票・残高・払戻は書き換えない。既存開催の有効スキル判定は、公開後に開催設定を保存し直して U-tools の一覧を取得し直すまで変わらない。
-
-   `0014_admin_identity.sql` と `0018_event_settlements.sql` は 0.8.6 以前に適用済み。再実行しない。`0018` は公開済み開催の場への移管を一度だけ記録する migration であり、0.9.0 では対象外だった。
+3. migration 一覧で未適用があるときだけ、適用する。未適用がなければ再適用しない。未適用がある場合は、**Worker の公開より先に**この操作を完了させる。適用前に Time Travel のブックマークを必ず控える。どの版で何を適用したかは [release-log.md](../history/release-log.md) を見る。
 
    ```powershell
    npx wrangler d1 migrations apply oshi-keiba --remote
