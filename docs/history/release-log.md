@@ -1,5 +1,39 @@
 # 本番リリース記録
 
+## v0.9.1 — 2026-10-01 16:33 JST
+
+- リリース対象コミット: `d8a4b00`（リリース手順から今回限りの migration 注記を外す。版 0.9.1 の文書確定は `b78dfa3`）
+- 本番URL: `https://oshi-keiba.tsuyuchan-jp.workers.dev/`
+- リリース前Worker ID: `dc31f5ba-35e7-45f8-b9e1-df8c372dc421`
+- リリース後Worker ID: `135bd653-98c5-4017-babb-3eb6221fb534`
+- リリース前D1ブックマーク: `0000170d-00000000-000050f7-9e6af9cc4284aded8276e54c83ac258f`（2026-10-01 16:28 JST）
+- 適用migration: なし（本番に未適用migrationなし）
+- Secrets: 必須名（`ADMIN_PASSWORD` / `ADMIN_USER_ID` / `MEMBER_PASSWORD` / `SESSION_SECRET`）の設定を確認
+- R2: `oshi-keiba-shots` 既存
+- 認証: 通常の Wrangler ログイン。API トークンは使っていない
+- 本番vars: `ALLOW_DEMO_RESET=0`
+- 公開範囲: deploy 結果に出たURLは `https://oshi-keiba.tsuyuchan-jp.workers.dev` のみ。`wrangler.jsonc` に独自ドメインの Route はない
+
+### 公開前検証
+
+- 型検査: 成功
+- Nodeテスト: 216件成功
+- Workerテスト: 113件成功
+- Playwright E2E: 12件成功（初回はPlaywright Chromium未導入で失敗したため `npx playwright install chromium` のあと再実行）
+- Wrangler dry-run: 成功。D1 `oshi-keiba`、R2 `oshi-keiba-shots`、本番用vars `ALLOW_DEMO_RESET=0` を確認
+- `npm run deploy` の直前にも同じ自動テストが成功した
+
+### 公開後確認
+
+- `/login`、`/`、`/admin/login`: HTTP 200
+- 未認証の `/bet`: `/login` へ HTTP 303
+- `/login` で `v0.9.1` の表示を確認
+- `wrangler deployments status` で新Worker IDが100%配信されていることを確認
+- 新Worker IDのエラーログを短時間監視し、上記URLへの確認アクセス中にエラーは出なかった
+- パスワードを使うログインと、管理画面の開催・出走・台帳の目視は未実施
+
+今回のリリースではWorkerコードと静的アセットだけを更新し、D1とR2のデータ変更は行っていない。障害時はリリース前Worker IDへ戻し、D1データ障害が確認された場合に限り上記ブックマークを使う。
+
 ## v0.9.0 — 2026-09-27 23:17 JST
 
 - リリース対象コミット: `d8e81a2`（結合テストの開催に余剰スタミナ評価の選択を入れる。版 0.9.0 は `046ea39`）
