@@ -28,9 +28,11 @@ npm.cmd run extract:greens -- --mdb D:\DMM\umamusumeDMM\Umamusume\umamusume_Data
 npm.cmd run extract:stamina-skills -- --mdb D:\DMM\umamusumeDMM\Umamusume\umamusume_Data\Persistent\master\master.mdb
 ```
 
-前者はOCR照合用の育成ウマ娘・衣装カタログを更新する。残る3コマンドは順に、総合スキル辞書、緑スキルの評価値、回復率と自己スタミナ消費率を更新する。Windows PowerShell では実行ポリシーの影響を避けるため `npm.cmd` を使う。
+前者はOCR照合用の育成ウマ娘・衣装カタログを更新する。残る3コマンドは順に、総合スキル辞書、緑スキルの評価値、回復率と自己スタミナ消費率を更新する。Windows PowerShell では実行ポリシーの影響を避けるため `npm.cmd` を使う。衣装カタログは `public/images/umamusume/petit/` に `petit_{chara}_{dress}_0010.png` がある衣装だけを載せる。新規衣装は、調査リポでライブ `meta` を復号し、petit の `0010` と `0011` を抽出してこのフォルダへコピーしてから上のコマンドを実行する。
 
-2026-09-12 にゲーム更新後の `master.mdb`（更新日時 2026-09-11）から再生成済み。`skill-catalog.json` は2,177件、`green-skills.json` は227件、`stamina-skills.json` は315件。新規スキルが自動評価の有効判定にも反映されるのは、該当開催のイベント設定を保存し直して U-tools の有効スキル一覧を再取得した後。
+総合スキル辞書の新規IDは、生成後に次を目視で直す。レアリティ1・カテゴリ5で ID が9で始まる継承は `inherit`（自動分類は `white`）。カテゴリ0の緑適性は既存と同じ `normal`（自動分類は `green`）。既存IDの種別は生成スクリプトが維持する。
+
+2026-10-01 にゲーム更新後の `master.mdb`（更新日時 2026-10-01）から再生成済み。`uma-dress-catalog.json` は270件（新規はローズキングダム、ファレノプシスと、既存4人の新衣装）。`skill-catalog.json` は2,194件、`green-skills.json` は228件、`stamina-skills.json` は316件。新規スキルが自動評価の有効判定にも反映されるのは、該当開催のイベント設定を保存し直して U-tools の有効スキル一覧を再取得した後。
 
 本戦出走のステータス画面などから、評価点の材料を読む。予選はアプリに載せないので、OCR も本戦のみ。
 
