@@ -1,4 +1,4 @@
-import { mkdir, rm } from "node:fs/promises";
+import { mkdir, readdir, rm } from "node:fs/promises";
 import path from "node:path";
 import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -7,9 +7,12 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const wrangler = path.join(root, "node_modules", "wrangler", "bin", "wrangler.js");
 const config = path.join(root, "wrangler.e2e.jsonc");
 const fixture = path.join(root, "tests", "e2e", "fixture.sql");
-const persistence = path.join(root, ".wrangler", "e2e-state");
-await rm(persistence, { recursive: true, force: true });
+const persistenceRoot = path.join(root, ".wrangler", "e2e-state");
+// 起動のたびに空のディレクトリを使う。前回の workerd が sqlite を掴んだままでも、
+// 共有ディレクトリの削除失敗で今回の起動が止まらないようにする。
+const persistence = path.join(persistenceRoot, `run-${process.pid}-${Date.now()}`);
 await mkdir(persistence, { recursive: true });
+await removeUnlocked(persistenceRoot, persistence);
 const childEnv = {
   ...process.env,
   CI: "1",
@@ -27,13 +30,53 @@ function runWrangler(args) {
   }
 }
 
+function isFileLock(error) {
+  const code = error && typeof error === "object" ? error.code : "";
+  return code === "EPERM" || code === "EBUSY" || code === "ENOTEMPTY" || code === "EACCES";
+}
+
+/** ロックされていない前回分だけ消す。使用中のディレクトリは警告して次へ進む。 */
+async function removeUnlocked(parent, current) {
+  let names = [];
+  try {
+    names = await readdir(parent);
+  } catch (error) {
+    if (error && error.code === "ENOENT") return;
+    throw error;
+  }
+  for (const name of names) {
+    const target = path.join(parent, name);
+    if (target === current) continue;
+    try {
+      await rm(target, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 });
+    } catch (error) {
+      if (!isFileLock(error)) throw error;
+      console.warn(`前回のE2E状態を削除できませんでした。今回のテストは別ディレクトリで続行します: ${target}`);
+    }
+  }
+}
+
+function stopServer(server) {
+  if (!server?.pid || server.exitCode != null) return;
+  if (process.platform === "win32") {
+    spawnSync("taskkill", ["/PID", String(server.pid), "/T", "/F"], { stdio: "ignore" });
+    return;
+  }
+  server.kill();
+}
+
 let server;
 let closing = false;
 async function close(exitCode = 0) {
   if (closing) return;
   closing = true;
-  server?.kill();
-  await rm(persistence, { recursive: true, force: true });
+  stopServer(server);
+  try {
+    await rm(persistence, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+  } catch (error) {
+    if (!isFileLock(error)) throw error;
+    console.warn(`今回のE2E状態を削除できませんでした。次回起動は別ディレクトリを使います: ${persistence}`);
+  }
   process.exit(exitCode);
 }
 
