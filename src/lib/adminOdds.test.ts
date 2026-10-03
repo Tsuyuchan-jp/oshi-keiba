@@ -95,14 +95,14 @@ function board(): Board {
   };
 }
 
-test("投票中のオッズタブは実票のある買い目だけ参考と実票を並べる", () => {
+test("投票中のオッズタブは単勝を全頭、連勝を実票のある買い目だけ並べる", () => {
   const html = adminOddsPage(board());
   const win = html.slice(html.indexOf("odds-panel-win"), html.indexOf("odds-panel-q"));
   assert.match(win, /<th class="num">参考<\/th><th class="num">実票<\/th>/);
   assert.match(win, /一番/);
   assert.match(win, /4\.2倍/);
   assert.match(win, /3\.2倍/);
-  assert.doesNotMatch(win, /無投票/);
+  assert.match(win, /無投票<\/td><td><\/td><td class="num">8\.0倍<\/td><td class="num">—<\/td>/);
 
   const umaren = html.slice(html.indexOf("odds-panel-q"), html.indexOf("odds-panel-e"));
   const reference = exoticReferenceOdds({

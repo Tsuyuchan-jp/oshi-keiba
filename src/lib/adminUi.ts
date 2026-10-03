@@ -1505,7 +1505,7 @@ function oddsKindPanel(
   let table = "";
   if (kind === "win") {
     const live = board.horses.filter((h) => !h.horse.scratched);
-    const rows = (ref ? live.filter((h) => h.real > 0) : live)
+    const rows = live
       .map((h) => {
         const p = horseSheetParts(h.horse);
         if (ref) {
@@ -1514,11 +1514,10 @@ function oddsKindPanel(
         return `<tr><td>${h.number}</td><td>${escapeHtml(p.umaName)}</td><td>${escapeHtml(p.runnerName)}</td><td class="num">${oddsMoneyCell(voided, h.confirmedOdds)}</td></tr>`;
       })
       .join("");
-    meta = ref ? `${live.filter((h) => h.real > 0).length}頭 · 実票あり` : `${live.length}頭 · 全頭`;
+    meta = `${live.length}頭 · 全頭`;
     table = ref
       ? `<table class="plain"><thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th class="num">参考</th><th class="num">実票</th></tr></thead><tbody>${rows}</tbody></table>`
       : `<table class="plain"><thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th class="num">${col}</th></tr></thead><tbody>${rows}</tbody></table>`;
-    if (ref && !rows) table = `<p class="note">実票のある買い目はありません</p>`;
   } else {
     const combos = pool?.combos ?? [];
     meta = ref ? `${combos.length}組 · 実票あり` : `${combos.length}組 · 実票のみ`;
