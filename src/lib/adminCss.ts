@@ -342,6 +342,7 @@ body.odds-page .odds-desk .work {
   background: #f8eee4; color: #8a4b12; font-size: .72rem; font-weight: 700;
 }
 .odds-panel .work-head h2 { font-size: .95rem; }
+.odds-panel table.plain th.num { white-space: nowrap; }
 .table-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; }
 .table-scroll thead th { position: sticky; top: 0; background: var(--admin-surface); z-index: 1; }
 table.plain { width: 100%; border-collapse: collapse; font-size: .82rem; }

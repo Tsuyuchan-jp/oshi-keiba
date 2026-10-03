@@ -5,7 +5,7 @@ import { findUmaDress, umaDressCatalogJsonForPage } from "./umaDress";
 import { staminaRequirementsForStyle } from "./score";
 import { scoreFromHorse } from "./scoreFromHorse";
 import { eventScoreSetup, numberByHorseId } from "./store";
-import type { Board, EventRow, HorseBoard, UserRow, BetRow, TreasuryDashboard } from "./store";
+import type { Board, EventRow, HorseBoard, PoolCombo, UserRow, BetRow, TreasuryDashboard } from "./store";
 import { effectiveIdsFromScoreSetup } from "./scoreSetup";
 import greenJson from "../data/green-skills.json" with { type: "json" };
 import {
@@ -42,7 +42,7 @@ import {
   settleBet,
   type BetKind,
 } from "./bets";
-import { parimutuelOdds } from "./odds";
+import { exoticReferenceOdds, parimutuelOdds } from "./odds";
 import {
   ANALYSIS_ARCHIVE_WARNING_BYTES,
   analysisCauseLabel,
@@ -1454,6 +1454,33 @@ export function adminAnalysisPage(opts: {
     </section>`;
 }
 
+function oddsMoneyCell(voided: boolean, odds: number | null): string {
+  return voided ? "特払い" : formatOddsWithUnit(odds);
+}
+
+/** 投票中の連勝参考オッズ。実票のある買い目だけ、場内と同じ式で出す。 */
+function comboReferenceOdds(
+  board: Board,
+  kind: Exclude<BetKind, "win">,
+  combo: PoolCombo,
+): number | null {
+  const live = board.horses.filter((entry) => !entry.horse.scratched && entry.number > 0);
+  const indexById = new Map(live.map((entry, index) => [entry.horse.id, index]));
+  const ids = [combo.horse_1, combo.horse_2, combo.horse_3].filter((id): id is string => !!id);
+  if (ids.some((id) => !indexById.has(id))) return null;
+  const pool = board.pools.find((entry) => entry.kind === kind);
+  return exoticReferenceOdds({
+    kind,
+    strengths: live.map((entry) => entry.horse.strength),
+    selection: ids.map((id) => indexById.get(id)!),
+    seedPool: board.event.seed_pool_s,
+    timeWeight: board.wTime,
+    realTotal: pool?.realTotal ?? 0,
+    selectionReal: combo.real,
+    takeoutD: board.event.takeout_d,
+  });
+}
+
 function oddsKindPanel(
   board: Board,
   kind: BetKind,
@@ -1471,41 +1498,54 @@ function oddsKindPanel(
     : "";
   if (!on) {
     return `<section class="work odds-panel odds-panel-${area}">
-      <div class="work-head"><h2>${label} · ${col}</h2><span class="odds-meta">使わない</span></div>
+      <div class="work-head"><h2>${label}</h2><span class="odds-meta">使わない</span></div>
       <div class="table-scroll"></div></section>`;
   }
   let meta = "";
   let table = "";
   if (kind === "win") {
     const live = board.horses.filter((h) => !h.horse.scratched);
-    meta = `${live.length}頭 · 全頭`;
-    const rows = live
+    const rows = (ref ? live.filter((h) => h.real > 0) : live)
       .map((h) => {
         const p = horseSheetParts(h.horse);
-        const odds = ref ? h.referenceOdds : h.confirmedOdds;
-        const cell = voided ? "特払い" : formatOddsWithUnit(odds);
-        return `<tr><td>${h.number}</td><td>${escapeHtml(p.umaName)}</td><td>${escapeHtml(p.runnerName)}</td><td class="num">${cell}</td></tr>`;
+        if (ref) {
+          return `<tr><td>${h.number}</td><td>${escapeHtml(p.umaName)}</td><td>${escapeHtml(p.runnerName)}</td><td class="num">${formatOddsWithUnit(h.referenceOdds)}</td><td class="num">${formatOddsWithUnit(h.confirmedOdds)}</td></tr>`;
+        }
+        return `<tr><td>${h.number}</td><td>${escapeHtml(p.umaName)}</td><td>${escapeHtml(p.runnerName)}</td><td class="num">${oddsMoneyCell(voided, h.confirmedOdds)}</td></tr>`;
       })
       .join("");
-    table = `<table class="plain"><thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th class="num">${col}</th></tr></thead><tbody>${rows}</tbody></table>`;
+    meta = ref ? `${live.filter((h) => h.real > 0).length}頭 · 実票あり` : `${live.length}頭 · 全頭`;
+    table = ref
+      ? `<table class="plain"><thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th class="num">参考</th><th class="num">実票</th></tr></thead><tbody>${rows}</tbody></table>`
+      : `<table class="plain"><thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th class="num">${col}</th></tr></thead><tbody>${rows}</tbody></table>`;
+    if (ref && !rows) table = `<p class="note">実票のある買い目はありません</p>`;
   } else {
     const combos = pool?.combos ?? [];
-    meta = `${combos.length}組 · 実票のみ`;
+    meta = ref ? `${combos.length}組 · 実票あり` : `${combos.length}組 · 実票のみ`;
     if (combos.length === 0) {
-      table = `<p class="note">—</p>`;
+      table = `<p class="note">${ref ? "実票のある買い目はありません" : "—"}</p>`;
+    } else if (ref) {
+      const rows = combos
+        .map((c) => {
+          const lab = formatSelectionLabel(kind, c.horse_1, c.horse_2, c.horse_3, nums);
+          const reference = comboReferenceOdds(board, kind, c);
+          return `<tr><td>${escapeHtml(lab)}</td><td class="num">${formatOddsWithUnit(reference)}</td><td class="num">${formatOddsWithUnit(c.odds)}</td></tr>`;
+        })
+        .join("");
+      table = `<table class="plain"><thead><tr><th>買い目</th><th class="num">参考</th><th class="num">実票</th></tr></thead><tbody>${rows}</tbody></table>`;
     } else {
       const rows = combos
         .map((c) => {
           const lab = formatSelectionLabel(kind, c.horse_1, c.horse_2, c.horse_3, nums);
-          const cell = voided ? "特払い" : formatOddsWithUnit(c.odds);
-          return `<tr><td>${escapeHtml(lab)}</td><td class="num">${cell}</td></tr>`;
+          return `<tr><td>${escapeHtml(lab)}</td><td class="num">${oddsMoneyCell(voided, c.odds)}</td></tr>`;
         })
         .join("");
       table = `<table class="plain"><thead><tr><th>買い目</th><th class="num">${col}</th></tr></thead><tbody>${rows}</tbody></table>`;
     }
   }
+  const heading = ref ? label : `${label} · ${col}`;
   return `<section class="work odds-panel odds-panel-${area}">
-      <div class="work-head"><h2>${label} · ${col}</h2><span class="odds-meta">${meta}</span></div>
+      <div class="work-head"><h2>${heading}</h2><span class="odds-meta">${meta}</span></div>
       ${banner}
       <div class="table-scroll">${table}</div></section>`;
 }
