@@ -23,11 +23,15 @@ export const DEFAULTS = {
 /** 連勝を単勝参考へ乗せる係数。管理画面では触らない */
 export const IMPUTED_LAMBDA = 1;
 
-/** 連勝 Seed 用。賭式ごとに実票で薄める基準額（docs/specifications/exotic-seed.md）。 */
+/**
+ * 連勝 Seed 用。賭式ごとに実票で薄める基準額（docs/specifications/exotic-seed.md）。
+ * 第2回の投票中、馬連・3連複の実票が試用値に達して参考オッズの Seed が消えたため、
+ * 馬連 50,000・3連複 40,000 へ引き上げた。馬単・3連単は試用値のまま。
+ */
 export const EXOTIC_PULL_E: Record<Exclude<BetKind, "win">, number> = {
-  umaren: 25_000,
+  umaren: 50_000,
   umatan: 7_000,
-  sanrenpuku: 7_000,
+  sanrenpuku: 40_000,
   sanrentan: 7_000,
 };
 
