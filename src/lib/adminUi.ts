@@ -5,7 +5,7 @@ import { findUmaDress, umaDressCatalogJsonForPage } from "./umaDress";
 import { staminaRequirementsForStyle } from "./score";
 import { scoreFromHorse } from "./scoreFromHorse";
 import { eventScoreSetup, numberByHorseId } from "./store";
-import type { Board, EventRow, HorseBoard, PoolCombo, UserRow, BetRow, TreasuryDashboard } from "./store";
+import type { Board, EventRow, HorseBoard, UserRow, BetRow, TreasuryDashboard } from "./store";
 import { effectiveIdsFromScoreSetup } from "./scoreSetup";
 import greenJson from "../data/green-skills.json" with { type: "json" };
 import {
@@ -42,7 +42,7 @@ import {
   settleBet,
   type BetKind,
 } from "./bets";
-import { exoticReferenceOdds, parimutuelOdds } from "./odds";
+import { isOddsV4, parimutuelOdds, SEED_RATIOS } from "./odds";
 import {
   ANALYSIS_ARCHIVE_WARNING_BYTES,
   analysisCauseLabel,
@@ -1221,12 +1221,13 @@ export function adminLedgerPage(opts: {
     <div class="ledger-desk">
       <div class="ledger-side">
         <section class="work ledger-treasury">
-          <div class="work-head"><div><h2>場の会計</h2><p class="ledger-caption">有効投票と払戻はやり直し・出走取消を含まない。場への移管は全額返還込みの差額</p></div></div>
+          <div class="work-head"><div><h2>場の会計</h2><p class="ledger-caption">有効投票と払戻はやり直し・出走取消を含まない。移管の負の値は、その開催で新規発行したスペ</p></div></div>
           <div class="treasury-kpis">
-            <div class="kpi treasury-primary"><span class="k">場の管理スペ残高</span><span class="v">${formatPt(opts.treasury.adminBalance)}</span></div>
-            <div class="kpi"><span class="k">総発行スペ</span><span class="v">${formatPt(opts.treasury.totalIssued)}</span></div>
+            <div class="kpi treasury-primary"><span class="k">総発行スペ</span><span class="v">${formatPt(opts.treasury.totalIssued)}</span></div>
+            <div class="kpi"><span class="k">総払戻スペ</span><span class="v">${formatPt(opts.treasury.prizePayoutTotal)}</span></div>
             <div class="kpi"><span class="k">メンバー所持合計</span><span class="v">${formatPt(opts.treasury.memberBalanceTotal)}</span></div>
             <div class="kpi"><span class="k">未精算プール</span><span class="v">${formatPt(opts.treasury.unsettledPoolTotal)}</span></div>
+            <div class="kpi"><span class="k">場の管理スペ残高</span><span class="v">${formatPt(opts.treasury.adminBalance)}</span></div>
           </div>
           <div class="treasury-current" aria-label="現在の開催の会計">
             <span><small>有効投票</small><strong>${formatPt(opts.treasury.currentEffectiveBetTotal)}</strong></span>
@@ -1234,11 +1235,11 @@ export function adminLedgerPage(opts: {
             <span><small>純還元率</small><strong>${currentRate}</strong></span>
             <span><small>やり直し</small><strong>${formatPt(opts.treasury.currentRedoTotal)}</strong></span>
             <span><small>出走取消</small><strong>${formatPt(opts.treasury.currentScratchRefundTotal)}</strong></span>
-            <span><small>場への移管</small><strong>${currentRetained}</strong></span>
+            <span><small>移管</small><strong>${currentRetained}</strong></span>
           </div>
           <h3 class="settlement-heading">開催別の精算</h3>
           <div class="table-scroll settlement-scroll">
-            <table class="plain settlement-table"><thead><tr><th>開催</th><th>公開日</th><th class="num">有効投票</th><th class="num">払戻</th><th class="num">還元率</th><th class="num">全額返還</th><th class="num">場へ</th></tr></thead>
+            <table class="plain settlement-table"><thead><tr><th>開催</th><th>公開日</th><th class="num">有効投票</th><th class="num">払戻</th><th class="num">還元率</th><th class="num">全額返還</th><th class="num">移管</th></tr></thead>
               <tbody>${settlementRows || `<tr><td colspan="7" class="muted">精算済みの開催はありません</td></tr>`}</tbody></table>
           </div>
         </section>
@@ -1345,7 +1346,7 @@ export function adminLedgerPage(opts: {
 export function adminOddsPage(board: Board): string {
   const ref =
     board.event.status === "voting" || board.event.status === "setup";
-  const col = ref ? "参考" : "確定";
+  const col = ref ? "オッズ" : "確定";
   const kinds: { kind: BetKind; area: string }[] = [
     { kind: "win", area: "win" },
     { kind: "umaren", area: "q" },
@@ -1431,7 +1432,7 @@ export function adminAnalysisPage(opts: {
       <div class="kpis analysis-kpis">
         <div class="kpi"><span class="k">記録件数</span><span class="v">${snapshots.length}</span></div>
         <div class="kpi"><span class="k">最終記録</span><span class="v analysis-time">${latest ? escapeHtml(toJstInput(latest.captured_at).replace("T", " ")) : "—"}</span></div>
-        <div class="kpi"><span class="k">現在の設定 S / E / D</span><span class="v analysis-param">${formatPt(event.seed_pool_s)} / ${formatPt(event.pull_e)} / ${Math.round(event.takeout_d * 100)}%</span></div>
+        <div class="kpi"><span class="k">現在の設定 S / D</span><span class="v analysis-param">${formatPt(event.seed_pool_s)} / ${Math.round(event.takeout_d * 100)}%</span></div>
         <div class="kpi${analysisState?.last_archive_error ? " analysis-failure-kpi" : ""}"><span class="k">未退避データ / 自動退避基準</span><span class="v analysis-param">${sizeText} / ${(ANALYSIS_ARCHIVE_WARNING_BYTES / 1024 / 1024).toFixed(0)} MiB</span></div>
         <div class="kpi"><span class="k">R2自動退避</span><span class="v">${archives.length}回</span></div>
         <div class="kpi${analysisState?.skipped_snapshot_count ? " analysis-failure-kpi" : ""}"><span class="k">容量保護で省略</span><span class="v">${analysisState?.skipped_snapshot_count ?? 0}件</span></div>
@@ -1458,29 +1459,6 @@ function oddsMoneyCell(voided: boolean, odds: number | null): string {
   return voided ? "特払い" : formatOddsWithUnit(odds);
 }
 
-/** 投票中の連勝参考オッズ。実票のある買い目だけ、場内と同じ式で出す。 */
-function comboReferenceOdds(
-  board: Board,
-  kind: Exclude<BetKind, "win">,
-  combo: PoolCombo,
-): number | null {
-  const live = board.horses.filter((entry) => !entry.horse.scratched && entry.number > 0);
-  const indexById = new Map(live.map((entry, index) => [entry.horse.id, index]));
-  const ids = [combo.horse_1, combo.horse_2, combo.horse_3].filter((id): id is string => !!id);
-  if (ids.some((id) => !indexById.has(id))) return null;
-  const pool = board.pools.find((entry) => entry.kind === kind);
-  return exoticReferenceOdds({
-    kind,
-    strengths: live.map((entry) => entry.horse.strength),
-    selection: ids.map((id) => indexById.get(id)!),
-    seedPool: board.event.seed_pool_s,
-    timeWeight: board.wTime,
-    realTotal: pool?.realTotal ?? 0,
-    selectionReal: combo.real,
-    takeoutD: board.event.takeout_d,
-  });
-}
-
 function oddsKindPanel(
   board: Board,
   kind: BetKind,
@@ -1492,7 +1470,7 @@ function oddsKindPanel(
   const label = BET_KIND_LABEL[kind];
   const on = kindIsEnabled(board.event.enabled_kinds, kind);
   const pool = board.pools.find((p) => p.kind === kind);
-  const voided = !ref && !!pool?.voidSpecial;
+  const voided = !ref && !!pool?.voidSpecial && !isOddsV4(board.event);
   const banner = voided
     ? `<p class="odds-void">特払い · 当たりに実票ゼロ · 8割戻し</p>`
     : "";
@@ -1508,30 +1486,17 @@ function oddsKindPanel(
     const rows = live
       .map((h) => {
         const p = horseSheetParts(h.horse);
-        if (ref) {
-          return `<tr><td>${h.number}</td><td>${escapeHtml(p.umaName)}</td><td>${escapeHtml(p.runnerName)}</td><td class="num">${formatOddsWithUnit(h.referenceOdds)}</td><td class="num">${formatOddsWithUnit(h.confirmedOdds)}</td></tr>`;
-        }
-        return `<tr><td>${h.number}</td><td>${escapeHtml(p.umaName)}</td><td>${escapeHtml(p.runnerName)}</td><td class="num">${oddsMoneyCell(voided, h.confirmedOdds)}</td></tr>`;
+        const shown = ref ? h.referenceOdds : h.confirmedOdds;
+        return `<tr><td>${h.number}</td><td>${escapeHtml(p.umaName)}</td><td>${escapeHtml(p.runnerName)}</td><td class="num">${oddsMoneyCell(voided, shown)}</td></tr>`;
       })
       .join("");
     meta = `${live.length}頭 · 全頭`;
-    table = ref
-      ? `<table class="plain"><thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th class="num">参考</th><th class="num">実票</th></tr></thead><tbody>${rows}</tbody></table>`
-      : `<table class="plain"><thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th class="num">${col}</th></tr></thead><tbody>${rows}</tbody></table>`;
+    table = `<table class="plain"><thead><tr><th>#</th><th>ウマ娘</th><th>出走者</th><th class="num">${col}</th></tr></thead><tbody>${rows}</tbody></table>`;
   } else {
-    const combos = pool?.combos ?? [];
-    meta = ref ? `${combos.length}組 · 実票あり` : `${combos.length}組 · 実票のみ`;
+    const combos = (pool?.combos ?? []).filter((combo) => ref ? combo.real > 0 : true);
+    meta = `${combos.length}組`;
     if (combos.length === 0) {
       table = `<p class="note">${ref ? "実票のある買い目はありません" : "—"}</p>`;
-    } else if (ref) {
-      const rows = combos
-        .map((c) => {
-          const lab = formatSelectionLabel(kind, c.horse_1, c.horse_2, c.horse_3, nums);
-          const reference = comboReferenceOdds(board, kind, c);
-          return `<tr><td>${escapeHtml(lab)}</td><td class="num">${formatOddsWithUnit(reference)}</td><td class="num">${formatOddsWithUnit(c.odds)}</td></tr>`;
-        })
-        .join("");
-      table = `<table class="plain"><thead><tr><th>買い目</th><th class="num">参考</th><th class="num">実票</th></tr></thead><tbody>${rows}</tbody></table>`;
     } else {
       const rows = combos
         .map((c) => {
@@ -1582,7 +1547,7 @@ export function adminSettingsPage(
   const staminaReadonly = canKinds ? "" : " disabled";
   const saveConfirmLabel = voting ? "この内容で保存" : "この内容で保存・再計算";
   const votingMeta = voting
-    ? `<span class="page-hero-meta">変更可：イベント名・締切・S・E・D・w時</span>`
+    ? `<span class="page-hero-meta">変更可：イベント名・締切</span>`
     : "";
   const enabled = new Set(parseEnabledKinds(e.enabled_kinds));
   const kindsNote = canKinds
@@ -1726,36 +1691,41 @@ export function adminSettingsPage(
       </section>
       <section class="work settings-bot">
         <div class="work-head">
-          <h2>参考オッズの数字</h2>
+          <h2>オッズの数字</h2>
         </div>
         <div class="set-metrics">
           <label class="set-metric">
             <span class="sym">S</span>
-            <span class="k">Seed の山</span>
-            <input name="seed_pool_s" type="number" min="0" value="${e.seed_pool_s}">
-            <span class="d">評価点の比で配る</span>
+            <span class="k">単勝</span>
+            <input name="seed_pool_s" id="seed-win" type="number" min="0" step="1" value="${e.seed_pool_s}"${setupDisabled}>
+            <span class="d">投票開始前だけ変えられる</span>
           </label>
           <label class="set-metric">
-            <span class="sym">E</span>
-            <span class="k">票量の目安</span>
-            <input name="pull_e" type="number" min="0" value="${e.pull_e}">
-            <span class="d">票量が近づくと Seed が薄くなる</span>
+            <span class="sym">馬連</span>
+            <span class="k">自動 ×${SEED_RATIOS.umaren}</span>
+            <input id="seed-umaren" type="text" value="${e.seed_umaren}" disabled>
+            <span class="d">単勝Sから計算。手入力しない</span>
+          </label>
+          <label class="set-metric">
+            <span class="sym">馬単</span>
+            <span class="k">自動 ×${SEED_RATIOS.umatan}</span>
+            <input id="seed-umatan" type="text" value="${e.seed_umatan}" disabled>
+          </label>
+          <label class="set-metric">
+            <span class="sym">3連複</span>
+            <span class="k">自動 ×${SEED_RATIOS.sanrenpuku}</span>
+            <input id="seed-sanrenpuku" type="text" value="${e.seed_sanrenpuku}" disabled>
+          </label>
+          <label class="set-metric">
+            <span class="sym">3連単</span>
+            <span class="k">自動 ×${SEED_RATIOS.sanrentan}</span>
+            <input id="seed-sanrentan" type="text" value="${e.seed_sanrentan}" disabled>
           </label>
           <label class="set-metric">
             <span class="sym">D</span>
             <span class="k">控除（0〜0.99）</span>
-            <input name="takeout_d" type="number" min="0" max="0.99" step="0.01" value="${e.takeout_d}">
-            <span class="d">参考も確定も同じ率</span>
-          </label>
-          <label class="set-metric">
-            <span class="sym">w時</span>
-            <span class="k">時間の下限</span>
-            <input name="w_time_floor" type="number" min="0" max="0.99" step="0.05" value="${e.w_time_floor}">
-          </label>
-          <label class="set-metric">
-            <span class="sym">指数</span>
-            <span class="k">時間の曲線</span>
-            <input name="w_time_exp" type="number" min="0.2" max="4" step="0.1" value="${e.w_time_exp}">
+            <input name="takeout_d" type="number" min="0" max="0.99" step="0.01" value="${e.takeout_d}"${setupDisabled}>
+            <span class="d">投票中も確定も同じ率</span>
           </label>
           <label class="set-metric">
             <span class="sym">n</span>
@@ -1801,6 +1771,17 @@ export function adminSettingsPage(
     </form>`;
   const scripts = `<script>
     const SETTINGS_CAN_RECOMPUTE = ${canKinds ? "true" : "false"};
+    const seedWin = document.getElementById("seed-win");
+    const seedRatios = { umaren: ${SEED_RATIOS.umaren}, umatan: ${SEED_RATIOS.umatan}, sanrenpuku: ${SEED_RATIOS.sanrenpuku}, sanrentan: ${SEED_RATIOS.sanrentan} };
+    const syncSeeds = () => {
+      const win = Number(seedWin && "value" in seedWin ? seedWin.value : "");
+      if (!Number.isFinite(win)) return;
+      for (const [kind, ratio] of Object.entries(seedRatios)) {
+        const field = document.getElementById("seed-" + kind);
+        if (field && "value" in field) field.value = String(Math.round(win * ratio));
+      }
+    };
+    seedWin?.addEventListener("input", syncSeeds);
     document.querySelectorAll(".set-seg").forEach((seg) => {
       seg.querySelectorAll("button").forEach((b) => {
         b.addEventListener("click", () => {
@@ -1978,7 +1959,7 @@ export function betRowHtml(
     status: e.status,
     payout: payByBet.get(b.id) ?? null,
     comboOdds: combo?.odds ?? null,
-    kindVoid: pool?.voidSpecial ?? null,
+    kindVoid: isOddsV4(e) ? false : (pool?.voidSpecial ?? null),
   });
   let res = "pending";
   if (b.refunded) res = "refund";

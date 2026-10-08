@@ -144,6 +144,7 @@ export async function loadTreasuryDashboard(
     memberBalanceTotal,
     unsettledPoolTotal,
     totalIssued: adminBalance + memberBalanceTotal + unsettledPoolTotal,
+    prizePayoutTotal: settlements.reduce((sum, row) => sum + row.prize_payout_total, 0),
     currentBetTotal: current.betTotal,
     currentPayoutTotal: current.prizePayoutTotal + current.redoTotal + current.scratchRefundTotal,
     currentEffectiveBetTotal: current.effectiveBetTotal,

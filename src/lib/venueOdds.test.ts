@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { normalizeSelection, type BetKind } from "./bets.ts";
+import { exoticSeedsFromWin, FORMULA_V4 } from "./odds.ts";
 import { buildBoard } from "./storeBoard.ts";
 import type { BetRow, EventRow, HorseRow } from "./storeTypes.ts";
 import { venueOddsResponse } from "./venueOdds.ts";
@@ -12,7 +13,12 @@ function event(status: EventRow["status"] = "setup", enabledKinds = "win,umaren,
     status,
     grant_g: 3000,
     bet_unit: 100,
-    seed_pool_s: 80000,
+    seed_pool_s: 135000,
+    seed_umaren: exoticSeedsFromWin(135000).umaren,
+    seed_umatan: exoticSeedsFromWin(135000).umatan,
+    seed_sanrenpuku: exoticSeedsFromWin(135000).sanrenpuku,
+    seed_sanrentan: exoticSeedsFromWin(135000).sanrentan,
+    formula_version: FORMULA_V4,
     pull_e: 100000,
     takeout_d: 0.2,
     w_time_floor: 0.8,
@@ -89,19 +95,20 @@ test("順不同は馬番順の全組、順序ありは逆順を別買い目と�
   assert.notEqual(forward.odds, reverse.odds);
 });
 
-test("締切後は連勝Seedを混ぜず実票だけの確定配当を返す", () => {
+test("締切後も投票中と同じ Seed 込みのオッズを返す", () => {
   const hs = horses([100, 50, 10]);
   const bets = [
     bet("b1", "umaren", [hs[0]!.id, hs[1]!.id], 100, 1000),
     bet("b2", "umaren", [hs[0]!.id, hs[2]!.id], 300, 2000),
   ];
-  const board = buildBoard(event("closed"), hs, bets, 3000);
-  const response = venueOddsResponse(board, "umaren");
-  assert.equal(response.view, "umaren");
-  assert.equal(response.items.find((item) => item.label === "1-2")!.odds, 3.2);
-  assert.equal(response.items.find((item) => item.label === "2-3")!.odds, null);
-  const pool = board.pools.find((item) => item.kind === "umaren")!;
-  assert.equal(response.items.find((item) => item.label === "1-3")!.odds, pool.combos.find((item) => item.real === 300)!.odds);
+  const open = venueOddsResponse(buildBoard(event("voting"), hs, bets, 2000), "umaren");
+  const closed = venueOddsResponse(buildBoard(event("closed"), hs, bets, 3000), "umaren");
+  assert.equal(closed.view, "umaren");
+  for (const label of ["1-2", "1-3", "2-3"]) {
+    const voted = closed.items.find((item) => item.label === label)!;
+    assert.ok(voted.odds != null);
+    assert.equal(open.items.find((item) => item.label === label)!.odds, voted.odds);
+  }
 });
 
 test("無効賭式はタブ用の空応答として残す", () => {

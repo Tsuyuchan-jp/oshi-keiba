@@ -990,7 +990,7 @@ body.settings-page .settings-desk .work {
   .stamina-modal-toggle--wide button { width: 100%; padding-inline: .3rem; }
 }
 .set-foot { margin: .7rem 0 0; font-size: .75rem; color: var(--admin-muted); }
-.set-metrics { display: grid; grid-template-columns: repeat(7, minmax(7rem, 1fr)); gap: .5rem; overflow-x: auto; }
+.set-metrics { display: grid; grid-template-columns: repeat(8, minmax(6.5rem, 1fr)); gap: .5rem; overflow-x: auto; }
 .set-metric { background: var(--admin-surface-muted); border: 1px solid var(--admin-line-subtle); border-radius: 8px; padding: .5rem .6rem .55rem; }
 .set-metric .sym { float: right; font-size: .68rem; font-weight: 800; color: var(--admin-muted-light); letter-spacing: .04em; }
 .set-metric .k { display: block; font-size: .7rem; color: var(--admin-muted); margin-bottom: .15rem; }

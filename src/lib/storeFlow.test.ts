@@ -4,7 +4,7 @@
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { DEFAULTS, payoutAmount, parimutuelOdds, specialPayoutAmount } from "./odds.ts";
+import { DEFAULTS, payoutAmount } from "./odds.ts";
 import { createMemoryD1 } from "./testD1.ts";
 import {
   addHorse,
@@ -14,6 +14,8 @@ import {
   getEventById,
   getUser,
   joinEvent,
+  buildBoard,
+  listActiveBets,
   listAllBets,
   listEventPayouts,
   listMembers,
@@ -31,6 +33,14 @@ import {
   savePlaces,
   votingStartProblems,
 } from "./store.ts";
+
+async function horseOdds(db: D1Database, eventId: string, horseId: string) {
+  const event = await refresh(db, eventId);
+  const board = buildBoard(event, await listHorses(db, eventId), await listActiveBets(db, eventId));
+  const row = board.horses.find((horse) => horse.horse.id === horseId);
+  assert.ok(row?.confirmedOdds != null);
+  return row.confirmedOdds;
+}
 
 async function refresh(db: D1Database, id: string) {
   const e = await getEventById(db, id);
@@ -129,9 +139,7 @@ test("当選単勝: 付与→投票→締切→着順→公開で残高が払戻
   assert.equal(published.status, "published");
   assert.equal(published.payouts_applied, 1);
 
-  // 単独票なら odds = 1 - D
-  const odds = parimutuelOdds(amount, amount, event.takeout_d);
-  assert.ok(odds != null);
+  const odds = await horseOdds(db, event.id, h1);
   const pay = payoutAmount(amount, odds);
   const final = await getUser(db, joined.id);
   assert.ok(final);
@@ -139,7 +147,7 @@ test("当選単勝: 付与→投票→締切→着順→公開で残高が払戻
   assert.ok(final.balance >= 0);
 });
 
-test("特払い: 当たり票がない賭式は控除後を戻し、当たりのある賭式は通常配当のまま", async () => {
+test("当たり実票ゼロの賭式は戻さず、当たりのある賭式は Seed 込みで払う", async () => {
   const db = createMemoryD1();
   const event0 = await ensureEvent(db);
   const h1 = await addHorse(db, event0, "テスト一着", "A", { strength: 20 });
@@ -163,7 +171,7 @@ test("特払い: 当たり票がない賭式は控除後を戻し、当たりの
   const event = await refresh(db, event0.id);
 
   const winner = await joinEvent(db, event, await registerMember(db, "単勝的中"));
-  const special = await joinEvent(db, event, await registerMember(db, "馬連特払い"));
+  const special = await joinEvent(db, event, await registerMember(db, "馬連外れ"));
   const winStake = 500;
   const specialStake = 500;
   await placeBet(db, event, winner, "win", [h1], winStake);
@@ -177,28 +185,49 @@ test("特払い: 当たり票がない賭式は控除後を戻し、当たりの
   ]);
   await publishResults(db, await refresh(db, event.id));
 
-  const winOdds = parimutuelOdds(winStake, winStake, event.takeout_d);
-  assert.ok(winOdds != null);
+  const winOdds = await horseOdds(db, event.id, h1);
   const winPay = payoutAmount(winStake, winOdds);
-  const specialPay = specialPayoutAmount(specialStake, event.takeout_d);
-  assert.equal(specialPay, 400);
   assert.equal((await getUser(db, winner.id))?.balance, DEFAULTS.grantG - winStake + winPay);
-  assert.equal((await getUser(db, special.id))?.balance, DEFAULTS.grantG - specialStake + specialPay);
+  assert.equal((await getUser(db, special.id))?.balance, DEFAULTS.grantG - specialStake);
 
   const payouts = await db.prepare(
     "SELECT user_id, amount, kind FROM payouts WHERE event_id = ? ORDER BY kind",
   ).bind(event.id).all<{ user_id: string; amount: number; kind: string }>();
   assert.deepEqual((payouts.results ?? []).map((row) => ({ ...row })), [
-    { user_id: special.id, amount: specialPay, kind: "special" },
     { user_id: winner.id, amount: winPay, kind: "win" },
   ]);
   const tickets = await db.prepare(
     "SELECT user_id, refunded FROM bets WHERE event_id = ? ORDER BY kind",
   ).bind(event.id).all<{ user_id: string; refunded: number }>();
   assert.deepEqual((tickets.results ?? []).map((row) => ({ ...row })), [
-    { user_id: special.id, refunded: 1 },
+    { user_id: special.id, refunded: 0 },
     { user_id: winner.id, refunded: 0 },
   ]);
+  const saved = await db.prepare(
+    "SELECT kind, payout_total FROM event_kind_results WHERE event_id = ? AND kind = 'umaren'",
+  ).bind(event.id).first<{ kind: string; payout_total: number }>();
+  assert.equal(saved?.payout_total, 0);
+});
+
+test("払戻が投票を超えても管理者残高は減らない", async () => {
+  const db = createMemoryD1();
+  const { event, h1, h2 } = await seedRace(db);
+  const user = await joinEvent(db, event, await registerMember(db, "穴狙い"));
+  const stake = 100;
+  await placeBet(db, event, user, "win", [h2], stake);
+  await forceClose(db, await refresh(db, event.id));
+  await savePlaces(db, await refresh(db, event.id), [
+    { horseId: h2, place: 1 },
+    { horseId: h1, place: 2 },
+  ]);
+  await publishResults(db, await refresh(db, event.id));
+  const pay = payoutAmount(stake, await horseOdds(db, event.id, h2));
+  assert.ok(pay > stake);
+  const treasury = await loadTreasuryDashboard(db, event.id, "9f0cdb75-82dd-4d4e-b7b7-97f7e1ea8c44");
+  assert.equal(treasury.adminBalance, 0);
+  assert.equal(treasury.settlements[0]?.retained_amount, stake - pay);
+  assert.equal(treasury.totalIssued, DEFAULTS.grantG + (pay - stake));
+  assert.equal((await getUser(db, user.id))?.balance, DEFAULTS.grantG - stake + pay);
 });
 
 test("外れ単勝: 当たりに実票があれば払戻なし（特払いしない）", async () => {
@@ -319,8 +348,7 @@ test("二人投票: 総付与と残高・控除の関係が崩れない", async 
   ]);
   await publishResults(db, await refresh(db, event.id));
 
-  const odds = parimutuelOdds(aw, aw + al, event.takeout_d);
-  assert.ok(odds != null);
+  const odds = await horseOdds(db, event.id, h1);
   const pay = payoutAmount(aw, odds);
   const ua = await getUser(db, a.id);
   const ub = await getUser(db, b.id);
@@ -338,10 +366,11 @@ test("二人投票: 総付与と残高・控除の関係が崩れない", async 
     event.id,
     "9f0cdb75-82dd-4d4e-b7b7-97f7e1ea8c44",
   );
-  assert.equal(treasury.adminBalance, poolLeft);
+  assert.equal(treasury.adminBalance, Math.max(0, poolLeft));
   assert.equal(treasury.memberBalanceTotal, ua.balance + ub.balance);
   assert.equal(treasury.unsettledPoolTotal, 0);
-  assert.equal(treasury.totalIssued, grants);
+  assert.equal(treasury.totalIssued, grants + Math.max(0, -poolLeft));
+  assert.equal(treasury.prizePayoutTotal, pay);
   assert.deepEqual(treasury.settlements.map((x) => ({
     bet: x.bet_total,
     payout: x.payout_total,
@@ -379,8 +408,7 @@ test("場の会計: やり直しは有効投票から除き、払戻は的中だ
     { horseId: h2, place: 2 },
   ]);
   await publishResults(db, await refresh(db, event.id));
-  const odds = parimutuelOdds(500, 500, event.takeout_d);
-  assert.ok(odds != null);
+  const odds = await horseOdds(db, event.id, h1);
   const pay = payoutAmount(500, odds);
   const treasury = await loadTreasuryDashboard(
     db,
@@ -416,8 +444,7 @@ test("結果公開を同時に再送しても、払戻と残高加算は一度�
   ]);
 
   assert.deepEqual(results.sort(), ["already_published", "published"]);
-  const odds = parimutuelOdds(amount, amount, event.takeout_d);
-  assert.ok(odds != null);
+  const odds = await horseOdds(db, event.id, h1);
   const userAfter = await getUser(db, user.id);
   assert.ok(userAfter);
   assert.equal(userAfter.balance, DEFAULTS.grantG - amount + payoutAmount(amount, odds));

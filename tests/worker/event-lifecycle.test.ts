@@ -39,12 +39,12 @@ describe("開催ライフサイクルのHTTP結合", () => {
       "SELECT cause, tv, w, formula_version, schema_version FROM analysis_snapshots WHERE event_id = ? ORDER BY id",
     ).bind(eventId).all<{ cause: string; tv: number; w: number; formula_version: string; schema_version: string }>();
     expect(opened.results).toHaveLength(1);
-    expect(opened.results[0]).toMatchObject({ cause: "voting_open", tv: 0, formula_version: "odds-v3", schema_version: "analysis-log-v2" });
+    expect(opened.results[0]).toMatchObject({ cause: "voting_open", tv: 0, formula_version: "odds-v4", schema_version: "analysis-log-v2" });
     const openedMarkets = await env.DB.prepare(
       "SELECT kind, gamma, strength_floor FROM analysis_snapshot_markets WHERE snapshot_id = (SELECT id FROM analysis_snapshots WHERE event_id = ? ORDER BY id LIMIT 1)",
     ).bind(eventId).all<{ kind: string; gamma: number; strength_floor: number }>();
     expect(openedMarkets.results).toHaveLength(4);
-    expect(openedMarkets.results).toContainEqual({ kind: "umaren", gamma: 2, strength_floor: 70 });
+    expect(openedMarkets.results).toContainEqual({ kind: "umaren", gamma: 2, strength_floor: 0 });
     const openedExotic = await env.DB.prepare(
       "SELECT COUNT(*) AS n FROM analysis_snapshot_odds WHERE snapshot_id = (SELECT id FROM analysis_snapshots WHERE event_id = ? ORDER BY id LIMIT 1) AND kind <> 'win' AND seed IS NOT NULL AND popular_rank IS NOT NULL",
     ).bind(eventId).first<{ n: number }>();
@@ -261,9 +261,11 @@ describe("開催ライフサイクルのHTTP結合", () => {
     ).bind(eventId).first<{ bet_total: number; payout_total: number; retained_amount: number; source: string }>();
     expect(settlement).toMatchObject({ bet_total: 500, source: "publish" });
     expect(settlement?.retained_amount).toBe(500 - (settlement?.payout_total ?? 0));
+    const retained = settlement?.retained_amount ?? 0;
+    expect(retained).toBeLessThan(0);
     expect((await env.DB.prepare(
       "SELECT balance FROM users WHERE role = 'admin'",
-    ).first<{ balance: number }>())?.balance).toBe(settlement?.retained_amount);
+    ).first<{ balance: number }>())?.balance).toBe(0);
     const paidBets = await env.DB.prepare(
       `SELECT b.kind AS bet_kind
        FROM payouts p JOIN bets b ON b.id = p.bet_id

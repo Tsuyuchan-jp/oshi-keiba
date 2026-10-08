@@ -20,7 +20,7 @@ import {
   parseEnabledKinds,
   type BetKind,
 } from "./bets.ts";
-import { exoticReferenceOdds } from "./odds.ts";
+import { shownExoticOdds } from "./venueOdds.ts";
 import { escapeHtml, bounce, html, json, readForm, redirect } from "./http.ts";
 import {
   getUser,
@@ -95,23 +95,13 @@ function exoticReferencePreview(
   const nums = numberByHorseId(board);
   const item = (ids: string[]) => {
     const normalized = normalizeSelection(kind, ids);
-    const selection = ids.map((id) => indexById.get(id)!);
     const displayIds = kind === "umaren" || kind === "sanrenpuku"
       ? [...ids].sort((a, b) => (nums.get(a) ?? 0) - (nums.get(b) ?? 0))
       : ids;
     return {
       key: normalized.selection_key,
       label: formatSelectionLabel(kind, displayIds[0]!, displayIds[1] ?? null, displayIds[2] ?? null, nums),
-      odds: exoticReferenceOdds({
-        kind,
-        strengths: live.map((entry) => entry.horse.strength),
-        selection,
-        seedPool: board.event.seed_pool_s,
-        timeWeight: board.wTime,
-        realTotal: pool.realTotal,
-        selectionReal: realByKey.get(normalized.selection_key) ?? 0,
-        takeoutD: board.event.takeout_d,
-      }),
+      odds: shownExoticOdds(board, kind, ids, realByKey.get(normalized.selection_key) ?? 0),
     };
   };
   if (pickedIds.length === need) {

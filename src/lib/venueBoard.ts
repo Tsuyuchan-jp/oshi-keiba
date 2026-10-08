@@ -19,7 +19,6 @@ export type VenueSlot = "day" | "dusk" | "night";
 
 function formatOdds(n: number | null): string {
   if (n == null || !Number.isFinite(n)) return "—";
-  if (n >= 9999.9) return "9999.9+";
   return n.toFixed(1);
 }
 
@@ -66,7 +65,7 @@ export function venueHorseRowHtml(opts: {
     <span class="c-name" role="cell" title="${escapeHtml(opts.umaName)}">${escapeHtml(opts.umaName)}</span>
     <span class="c-runner" role="cell" title="${escapeHtml(opts.runnerName)}">${escapeHtml(opts.runnerName)}</span>
     <span class="c-style" role="cell">${escapeHtml(opts.styleLabel)}</span>
-    <span class="c-odds" role="cell"><span class="odds-now">${formatOdds(opts.odds)}</span></span>
+    <span class="c-odds" role="cell"><span class="odds-now${opts.odds != null && opts.odds >= 10000 ? " odds-long" : ""}">${formatOdds(opts.odds)}</span></span>
     <span class="c-place${podium}" role="cell">${placeText}</span>
   </div>`;
 }

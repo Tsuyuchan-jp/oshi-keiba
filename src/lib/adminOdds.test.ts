@@ -1,8 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { adminOddsPage } from "./adminUi.ts";
-import { exoticReferenceOdds } from "./odds.ts";
-import { formatOddsWithUnit } from "./ui.ts";
+import { FORMULA_V4 } from "./odds.ts";
 import type { Board, EventRow, HorseBoard, KindPool } from "./storeTypes.ts";
 
 function event(status: EventRow["status"]): EventRow {
@@ -12,7 +11,12 @@ function event(status: EventRow["status"]): EventRow {
     status,
     grant_g: 3000,
     bet_unit: 100,
-    seed_pool_s: 80_000,
+    seed_pool_s: 135_000,
+    seed_umaren: 184_950,
+    seed_umatan: 79_650,
+    seed_sanrenpuku: 351_000,
+    seed_sanrentan: 363_150,
+    formula_version: FORMULA_V4,
     pull_e: 100_000,
     takeout_d: 0.2,
     w_time_floor: 0.8,
@@ -98,25 +102,15 @@ function board(): Board {
 test("投票中のオッズタブは単勝を全頭、連勝を実票のある買い目だけ並べる", () => {
   const html = adminOddsPage(board());
   const win = html.slice(html.indexOf("odds-panel-win"), html.indexOf("odds-panel-q"));
-  assert.match(win, /<th class="num">参考<\/th><th class="num">実票<\/th>/);
+  assert.match(win, /<th class="num">オッズ<\/th>/);
+  assert.doesNotMatch(win, /実票/);
   assert.match(win, /一番/);
   assert.match(win, /4\.2倍/);
-  assert.match(win, /3\.2倍/);
-  assert.match(win, /無投票<\/td><td><\/td><td class="num">8\.0倍<\/td><td class="num">—<\/td>/);
+  assert.doesNotMatch(win, /3\.2倍/);
+  assert.match(win, /無投票<\/td><td><\/td><td class="num">8\.0倍<\/td>/);
 
   const umaren = html.slice(html.indexOf("odds-panel-q"), html.indexOf("odds-panel-e"));
-  const reference = exoticReferenceOdds({
-    kind: "umaren",
-    strengths: [100, 100],
-    selection: [0, 1],
-    seedPool: 80_000,
-    timeWeight: 1,
-    realTotal: 300,
-    selectionReal: 300,
-    takeoutD: 0.2,
-  });
   assert.match(umaren, /1-2/);
-  assert.match(umaren, new RegExp(formatOddsWithUnit(reference).replace(".", "\\.")));
   assert.match(umaren, /0\.8倍/);
   assert.match(html, /odds-panel-t[\s\S]*実票のある買い目はありません/);
 });

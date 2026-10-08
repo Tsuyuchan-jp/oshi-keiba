@@ -11,6 +11,7 @@ import {
 import { newId } from "./auth";
 import { clawbackBalance } from "./lifecycle";
 import {
+  isOddsV4,
   parimutuelOdds,
   payoutAmount,
   specialPayoutAmount,
@@ -54,10 +55,7 @@ export function votingStartProblems(
   if (!Number.isInteger(event.grant_g) || event.grant_g < 0) problems.push("配布Gを設定してください");
   if (!Number.isInteger(event.bet_unit) || event.bet_unit < 1) problems.push("馬券単位を設定してください");
   if (!Number.isFinite(event.seed_pool_s) || event.seed_pool_s < 0 ||
-      !Number.isFinite(event.pull_e) || event.pull_e < 0 ||
-      !Number.isFinite(event.takeout_d) || event.takeout_d < 0 || event.takeout_d > .99 ||
-      !Number.isFinite(event.w_time_floor) || event.w_time_floor < 0 || event.w_time_floor > .99 ||
-      !Number.isFinite(event.w_time_exp) || event.w_time_exp < .2 || event.w_time_exp > 4) {
+      !Number.isFinite(event.takeout_d) || event.takeout_d < 0 || event.takeout_d > .99) {
     problems.push("オッズ設定を正しく入力してください");
   }
   if (!parseEnabledKinds(event.enabled_kinds).length) problems.push("賭式を1つ以上有効にしてください");
@@ -423,13 +421,29 @@ export async function publishResults(
   const now = Date.now();
   const payoutGuard = "EXISTS (SELECT 1 FROM events WHERE id = ? AND status = 'closed' AND payouts_applied = 0)";
   const stmts: D1PreparedStatement[] = [];
+  const v4 = isOddsV4(current);
+  const enabled = new Set(parseEnabledKinds(current.enabled_kinds));
 
   for (const pool of board.pools) {
+    if (!enabled.has(pool.kind)) continue;
     const kindBets = bets.filter((b) => b.kind === pool.kind);
-    if (kindBets.length === 0) continue;
-    if (pool.voidSpecial) {
+    const winKey = pool.winningKey;
+    if (!winKey) {
+      if (kindBets.length > 0) throw new Error(`${pool.kind} の当選キーがありません`);
+      continue;
+    }
+    const winner = pool.combos.find((c) => c.selection_key === winKey);
+    const winnerReal = winner?.real ?? 0;
+    const odds = v4
+      ? (winner?.odds ?? (pool.kind === "win"
+        ? board.horses.find((h) => h.horse.id === winKey)?.confirmedOdds ?? null
+        : null))
+      : parimutuelOdds(winnerReal, pool.realTotal, current.takeout_d);
+    let kindPayout = 0;
+    if (!v4 && pool.voidSpecial) {
       for (const b of kindBets) {
         const pay = specialPayoutAmount(b.amount, current.takeout_d);
+        kindPayout += pay;
         stmts.push(
           db.prepare(`UPDATE bets SET refunded = 1 WHERE id = ? AND ${payoutGuard}`).bind(b.id, current.id),
           db
@@ -443,18 +457,14 @@ export async function publishResults(
             .bind(newId(), current.id, b.user_id, b.id, pay, now, current.id),
         );
       }
-      continue;
-    }
-    const winKey = pool.winningKey;
-    if (!winKey) throw new Error(`${pool.kind} の当選キーがありません`);
-    const winnerReal = pool.combos.find((c) => c.selection_key === winKey)?.real ?? 0;
-    const odds = parimutuelOdds(winnerReal, pool.realTotal, current.takeout_d);
-    if (odds == null) throw new Error(`${pool.kind} の確定配当を計算できません`);
-    for (const b of kindBets) {
-      if (b.selection_key !== winKey) continue;
-      const pay = payoutAmount(b.amount, odds);
-      stmts.push(
-        db
+    } else if (winnerReal > 0) {
+      if (odds == null) throw new Error(`${pool.kind} の確定配当を計算できません`);
+      for (const b of kindBets) {
+        if (b.selection_key !== winKey) continue;
+        const pay = payoutAmount(b.amount, odds);
+        kindPayout += pay;
+        stmts.push(
+          db
             .prepare(
               `INSERT INTO payouts (id, event_id, user_id, bet_id, amount, kind, created_at)
                SELECT ?, ?, ?, ?, ?, 'win', ? WHERE ${payoutGuard}`,
@@ -463,6 +473,15 @@ export async function publishResults(
           db
             .prepare(`UPDATE users SET balance = balance + ? WHERE id = ? AND ${payoutGuard}`)
             .bind(pay, b.user_id, current.id),
+        );
+      }
+    }
+    if (v4) {
+      stmts.push(
+        db.prepare(
+          `INSERT INTO event_kind_results (event_id, kind, winning_key, odds, payout_total)
+           SELECT ?, ?, ?, ?, ? WHERE ${payoutGuard}`,
+        ).bind(current.id, pool.kind, winKey, odds, kindPayout, current.id),
       );
     }
   }
@@ -484,7 +503,8 @@ export async function publishResults(
     db.prepare(
       `UPDATE users
        SET balance = balance + COALESCE((
-         SELECT retained_amount FROM event_settlements
+         SELECT CASE WHEN retained_amount > 0 THEN retained_amount ELSE 0 END
+         FROM event_settlements
          WHERE event_id = ? AND credited_at IS NULL
        ), 0)
        WHERE id = ? AND role = 'admin' AND ${payoutGuard}`,

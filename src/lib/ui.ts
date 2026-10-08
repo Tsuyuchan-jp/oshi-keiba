@@ -11,17 +11,15 @@ import type {
   HorseBoard,
 } from "./store";
 import { numberByHorseId } from "./store";
-import { IMPUTED_LAMBDA } from "./odds";
+import { IMPUTED_LAMBDA, isOddsV4, seedForKind } from "./odds";
 
 export function formatOdds(n: number | null): string {
   if (n == null || !Number.isFinite(n)) return "—";
-  if (n >= 9999.9) return "9999.9+";
   return n.toFixed(1);
 }
 
 export function formatOddsWithUnit(n: number | null): string {
   if (n == null || !Number.isFinite(n)) return "—";
-  if (n >= 9999.9) return "9999.9+倍";
   return `${n.toFixed(1)}倍`;
 }
 
@@ -107,31 +105,33 @@ export function howToModal(): string {
     <h2>使い方</h2>
     <section class="howto-sec">
       <h3>スペ</h3>
-      <p>仮想のポイント「スペ」で馬券を買います。開催の投票が始まったあと、「参加する」でその回のスペが入ります。買う単位は 100 スペです。前回からの残りは持ち越されます。</p>
+      <p>ここでのお金は「スペ」です。投票が始まってから「参加する」を押すと、その開催のスペが入ります。入場しただけでは入りません。使い切らなかったスペは、次の開催へ持ち越されます。馬券は 100 スペ単位で買います。</p>
     </section>
     <section class="howto-sec">
-      <h3>場内と投票</h3>
-      <p>場内では出走表と単勝のオッズを見ます。馬券を買うときは「馬券を買う」から窓口へ進んでください。まだ参加していないときは、窓口で開催への参加だけ出ます。投票が始まる前は、場内でお待ちください。</p>
+      <h3>場内とパドック</h3>
+      <p>場内では、出走表とオッズを見ます。馬券を買うときは「馬券を買う」から窓口へ進んでください。投票が始まる前は、場内で待っていれば大丈夫です。</p>
+      <p>パドックでは、出走するウマ娘を脚質ごとに見て、1頭の詳しい情報を開けます。気になる子は、窓口の最初の枠へ引き継げます。</p>
     </section>
     <section class="howto-sec">
       <h3>番号</h3>
-      <p>表の番号は、このアプリの通し番号です。ゲームの枠番ではありません。買うときはこの番号を選びます。</p>
+      <p>表の番号は、このアプリの番号です。ゲーム内の枠番ではありません。買うときは、この番号で選びます。</p>
     </section>
     <section class="howto-sec">
       <h3>オッズ</h3>
-      <p>オッズは投票中も動きます。締切のあと、実際に買われた票だけで払いが決まります。単勝の投票中は目安が乗っています。馬連・馬単・3連複・3連単は、その組み合わせに実際の投票があるときだけ数字が出ます。無いときは「—」です。</p>
+      <p>オッズは、誰かが馬券を買うたびに動きます。見えている数字が、的中したときに使われる倍率です。投票が締め切られたあとも、この数字はそのまま「確定配当」になります。締切の瞬間に別の数字へ飛びません。</p>
+      <p>単勝、馬連、馬単、3連複、3連単のどれも、まだ誰も買っていなくても数字が出ます。</p>
     </section>
     <section class="howto-sec">
       <h3>買い方</h3>
-      <p>賭式はタブで切り替えます。一度に買えるのは 1 点です。同じウマ娘を、同じ買い目の中で二度は選べません。買う前に確認が出ます。締切までは、やりなおしで自分の馬券を全部取り消せます。残高に戻ります。</p>
+      <p>賭式はタブで切り替えます。一度に買えるのは1点です。同じ買い目の中で、同じウマ娘を二度は選べません。金額を入れて、確認が出てから購入が決まります。</p>
+      <p>締切までは「やりなおし」ができます。自分の馬券がすべて取り消され、使ったスペが戻ります。</p>
     </section>
     <section class="howto-sec">
-      <h3>特払い</h3>
-      <p>人数が少ないと、3連単などは当たりの組み合わせに投票が1件もないことがあります。そのときは『特払い』になり、その賭式に使ったスペの8割が戻ります。</p>
-    </section>
-    <section class="howto-sec">
-      <h3>取消と結果</h3>
-      <p>出走取消になったウマ娘を含む馬券は、全額が戻ります。結果と着順は、公開されてから出ます。他人が何を買ったかは見えません。</p>
+      <h3>結果</h3>
+      <p>結果と着順は、公開されてから出ます。自分の馬券は「自分の馬券」で、的中、外れ、返還がわかります。</p>
+      <p>的中した馬券は、賭けたスペに確定配当を掛けた額（端数は切り捨て）が戻ります。選んだ買い目が当たっていなければ、そのスペは戻りません。</p>
+      <p>当たりの買い目を、誰も買っていなかった賭式は、その賭式の馬券がすべて外れになります。一部が戻ることはありません。</p>
+      <p>出走取消になったウマ娘を含む馬券は、使ったスペが全額戻ります。他人が何を買ったかは見えません。</p>
     </section>
     <form method="dialog"><button type="submit">閉じる</button></form>
   </dialog>`;
@@ -233,7 +233,7 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
       if (!cell || !key) continue;
       // 馬一覧・場内の行は常に単勝参考オッズ。連勝の買い目行だけ賭式別の値を使う。
       const odds = tr.matches(".chip, .sheet-row") ? winNext.get(key) : next.get(key);
-      const text = (odds == null || !Number.isFinite(odds)) ? "—" : Number(odds) >= 9999.9 ? "9999.9+" : Number(odds).toFixed(1);
+      const text = (odds == null || !Number.isFinite(odds)) ? "—" : Number(odds).toFixed(1);
       const old = prev.has(key) ? prev.get(key) : parseShown(cell.textContent);
       cell.textContent = text;
       if (old != null && odds != null && Math.abs(odds - old) >= 0.1) {
@@ -259,7 +259,7 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
           tr.innerHTML = '<td></td><td class="num odds-cell"><span class="odds-now"></span><span class="odds-delta" hidden></span></td>';
           tr.children[0].textContent = it.label;
           tr.querySelector(".odds-now").textContent =
-            (it.odds == null || !Number.isFinite(it.odds)) ? "—" : Number(it.odds) >= 9999.9 ? "9999.9+" : Number(it.odds).toFixed(1);
+            (it.odds == null || !Number.isFinite(it.odds)) ? "—" : Number(it.odds).toFixed(1);
           tbody.appendChild(tr);
         }
       }
@@ -282,7 +282,7 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
           const od = document.createElement("span");
           od.className = "odds-now";
           od.textContent =
-            (it.odds == null || !Number.isFinite(it.odds)) ? "—" : Number(it.odds) >= 9999.9 ? "9999.9+" : Number(it.odds).toFixed(1);
+            (it.odds == null || !Number.isFinite(it.odds)) ? "—" : Number(it.odds).toFixed(1);
           row.append(lab, od);
           mini.appendChild(row);
         }
@@ -320,6 +320,10 @@ export function livePollScript(apiPath: string, kind: BetKind): string {
 }
 
 export function wCaption(board: Board): string {
+  if (isOddsV4(board.event)) {
+    const e = board.event;
+    return `単勝S=${formatPt(seedForKind(e, "win"))}　馬連=${formatPt(seedForKind(e, "umaren"))}　馬単=${formatPt(seedForKind(e, "umatan"))}　3連複=${formatPt(seedForKind(e, "sanrenpuku"))}　3連単=${formatPt(seedForKind(e, "sanrentan"))}　D=${Math.round(e.takeout_d * 100)}%`;
+  }
   return `w=${board.w.toFixed(2)}（時間 ${board.wTime.toFixed(2)} × 票量 ${board.wVolume.toFixed(2)}）　TV=${formatPt(board.tv)}（単勝 ${formatPt(board.realTotal)} ＋ λ×連勝 ${formatPt(board.exoticTotal)}）　λ=${IMPUTED_LAMBDA}　S=${board.event.seed_pool_s}　E=${board.event.pull_e}　D=${Math.round(board.event.takeout_d * 100)}%`;
 }
 
@@ -352,60 +356,48 @@ export function adminOpsGuide(board: Board): { now: string; next: string } {
 
 /** 管理画面: 定義 → 物語 → 式 */
 export function formulaPanel(board: Board): string {
+  const legacy = !isOddsV4(board.event);
   return `<div class="formula-box">
     <p class="note">いま: ${escapeHtml(wCaption(board))}</p>
+    ${legacy ? `<p class="note">この開催は以前の式で確定済みです。倍率は再計算しません。下は次の開催の式です。</p>` : ""}
     <details class="terms-box">
-      <summary>定義表（参考）</summary>
+      <summary>定義表</summary>
       <table class="terms">
       <thead>
         <tr><th>記号</th><th>画面で言うこと</th><th>何の数字か</th></tr>
       </thead>
       <tbody>
-        <tr><td>残高</td><td>仮想のユーザー所持額</td><td>今持っているスペ</td></tr>
-        <tr><td>G</td><td>毎週配る仮想ポイント</td><td>その開催に参加した人へ1回。口座に足す。オッズの式には入らない。G を変えても S と E は動かない</td></tr>
-        <tr><td>単位</td><td>投票の刻み</td><td>一度に賭けられる最小のスペ</td></tr>
-        <tr><td>評価点</td><td>相対評価点</td><td>単勝 Seed の比。連勝には載せない。メンバーには出さない</td></tr>
-        <tr><td>Seed</td><td>単勝の仮想初期投票額</td><td>投票中の参考だけ。確定には入れない</td></tr>
-        <tr><td>S</td><td>仮想の初期投票額の合計</td><td>単勝参考用。連勝には配らない</td></tr>
-        <tr><td>Real</td><td>単勝の実際の投票額</td><td>確定の単勝はこの額だけ</td></tr>
-        <tr><td>Imputed</td><td>連勝から単勝参考へ割り振った額</td><td>確定には入れない。λ=${IMPUTED_LAMBDA}</td></tr>
-        <tr><td>TV</td><td>単勝参考の寄せに使う実票相当</td><td>単勝実票合計 ＋ λ × 連勝実票合計</td></tr>
-        <tr><td>w</td><td>初期投票額をどれだけ残すか</td><td>単勝参考のみ。1 に近いほど仮想が残る</td></tr>
-        <tr><td>D</td><td>控除</td><td>特払いも同じ（100→80、切り捨て）</td></tr>
+        <tr><td>G</td><td>参加で配るスペ</td><td>投票中の初回参加で1回。オッズの式には入らない</td></tr>
+        <tr><td>評価点</td><td>相対評価点</td><td>Seed の配分。メンバーには出さない</td></tr>
+        <tr><td>S</td><td>賭式ごとの Seed 合計</td><td>単勝だけ入力する。他の4賭式は固定比</td></tr>
+        <tr><td>Seed</td><td>買い目の仮想票</td><td>確定配当と払戻に残る</td></tr>
+        <tr><td>Real</td><td>その買い目の実票</td><td>Seed に足す。連勝の実票は単勝を動かさない</td></tr>
+        <tr><td>D</td><td>控除</td><td>投票中も確定も払戻も同じ率。投票開始後は変えない</td></tr>
       </tbody>
     </table>
     </details>
     <div class="flow">
     <div class="flow-step">
-      <div class="flow-k">払いの約束①</div>
-      <div class="story"><p>確定配当は実票だけの山分け。Seed と Imputed は単勝の投票中参考にだけ混ぜる。不成立は特払い B（その賭式の8割戻し）。出走取消は全額返還。連勝は実票が無ければ「—」。</p></div>
+      <div class="flow-k">払いの約束</div>
+      <div class="story"><p>投票中のオッズと締切後の確定配当は同じ数字です。払戻は賭け額×そのオッズで、投票額を超えても払います。当たりの買い目に実票が無い賭式は外れで、一部は戻しません。出走取消とやりなおしは全額返還です。</p></div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step">
-      <div class="flow-k">1　単勝の仮想初期投票額</div>
-      <div class="eq">Seed<sub>i</sub> = S × Strength<sub>i</sub> / Σ Strength</div>
+      <div class="flow-k">1　単勝</div>
+      <div class="eq">Seed<sub>i</sub> = S<sub>単勝</sub> × 評価点<sub>i</sub> / Σ 評価点</div>
+      <div class="eq">オッズ<sub>i</sub> = (S<sub>単勝</sub> + 単勝実票合計) × (1 − D) / (Seed<sub>i</sub> + その馬の実票)</div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step">
-      <div class="flow-k">2　参考オッズの寄せ（単勝のみ。w）</div>
-      <div class="eq">TV = 単勝実票合計 + λ × 連勝実票合計</div>
-      <div class="eq">w<sub>時</sub> = 下限 + (1 − 下限) × 残り<sup>指数</sup></div>
-      <div class="eq">w<sub>票</sub> = max(0, 1 − TV / E)</div>
-      <div class="eq">w = w<sub>時</sub> × w<sub>票</sub></div>
+      <div class="flow-k">2　連勝（馬連・馬単・3連複・3連単）</div>
+      <div class="eq">Seed<sub>c</sub> = S<sub>賭式</sub> × P(c)　γ = 2。評価点の下限は掛けない</div>
+      <div class="eq">オッズ<sub>c</sub> = (S<sub>賭式</sub> + その賭式の実票合計) × (1 − D) / (Seed<sub>c</sub> + その買い目の実票)</div>
     </div>
     <div class="flow-arrow">↓</div>
     <div class="flow-step">
-      <div class="flow-k">3　単勝の参考オッズ（投票中。確定ではない）</div>
-      <div class="eq">Display<sub>i</sub> = Seed<sub>i</sub> × w + 単勝Real<sub>i</sub> + Imputed<sub>i</sub></div>
-      <div class="eq">参考オッズ<sub>i</sub> = (Σ Display × (1 − D)) / Display<sub>i</sub></div>
-    </div>
-    <div class="flow-arrow">↓</div>
-    <div class="flow-step">
-      <div class="flow-k">4　確定配当（賭式ごと。実票のみ）</div>
-      <div class="eq">払戻しの原資 = その賭式の実票合計 × (1 − D)</div>
-      <div class="eq">確定配当 = 払戻しの原資 / 当選の実票</div>
+      <div class="flow-k">3　払戻</div>
       <div class="eq">払戻 = ⌊ 賭け額 × 確定配当 ⌋</div>
-      <div class="eq">特払い = ⌊ 賭け額 × (1 − D) ⌋</div>
+      <div class="eq">移管 = その開催の全投票 − その開催の全払戻・返還</div>
     </div>
   </div>
   </div>`;

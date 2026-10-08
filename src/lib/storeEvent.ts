@@ -8,7 +8,7 @@ import {
   serializeEnabledKinds,
 } from "./bets";
 import { newId } from "./auth";
-import { DEFAULTS } from "./odds";
+import { DEFAULTS, exoticSeedsFromWin, FORMULA_V4 } from "./odds";
 import { captureAnalysisSnapshotSafely } from "./analysisLog";
 import {
   parseScoreSetup,
@@ -29,6 +29,11 @@ function normalizeEvent(row: EventRow): EventRow {
     is_current: Number(row.is_current) ? 1 : 0,
     paddock_comments_enabled: Number(row.paddock_comments_enabled) ? 1 : 0,
     score_setup: serializeScoreSetup(setup),
+    formula_version: row.formula_version === FORMULA_V4 ? FORMULA_V4 : "odds-v3",
+    seed_umaren: Number(row.seed_umaren) || 0,
+    seed_umatan: Number(row.seed_umatan) || 0,
+    seed_sanrenpuku: Number(row.seed_sanrenpuku) || 0,
+    seed_sanrentan: Number(row.seed_sanrentan) || 0,
   };
 }
 
@@ -39,8 +44,9 @@ export function eventScoreSetup(event: EventRow): EventScoreSetup | null {
 
 const INSERT_EVENT_SQL = `INSERT INTO events (
         id, title, status, grant_g, bet_unit, seed_pool_s, pull_e, takeout_d,
-        w_time_floor, w_time_exp, enabled_kinds, created_at, is_current
-      ) VALUES (?, ?, 'setup', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        w_time_floor, w_time_exp, enabled_kinds, created_at, is_current,
+        formula_version, seed_umaren, seed_umatan, seed_sanrenpuku, seed_sanrentan
+      ) VALUES (?, ?, 'setup', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
 export async function insertBlankEvent(
   db: D1Database,
@@ -49,6 +55,7 @@ export async function insertBlankEvent(
 ): Promise<string> {
   const id = newId();
   const now = Date.now();
+  const seeds = exoticSeedsFromWin(DEFAULTS.seedPoolS);
   await db
     .prepare(INSERT_EVENT_SQL)
     .bind(
@@ -64,6 +71,11 @@ export async function insertBlankEvent(
       DEFAULT_ENABLED_KINDS,
       now,
       current ? 1 : 0,
+      FORMULA_V4,
+      seeds.umaren,
+      seeds.umatan,
+      seeds.sanrenpuku,
+      seeds.sanrentan,
     )
     .run();
   return id;
@@ -134,9 +146,9 @@ export async function updateParams(
   patch: {
     grant_g?: number;
     bet_unit?: number;
-    seed_pool_s?: number;
+    seed_pool_s?: number | null;
     pull_e?: number;
-    takeout_d?: number;
+    takeout_d?: number | null;
     w_time_floor?: number;
     w_time_exp?: number;
     title?: string;
@@ -159,6 +171,19 @@ export async function updateParams(
   const paddockCommentsEnabled = event.status === "setup" && patch.paddock_comments_enabled != null
     ? (Number(patch.paddock_comments_enabled) ? 1 : 0)
     : event.paddock_comments_enabled;
+  const nextSeed = patch.seed_pool_s == null ? event.seed_pool_s : patch.seed_pool_s;
+  const nextTakeout = patch.takeout_d == null ? event.takeout_d : patch.takeout_d;
+  if (event.status !== "setup" && (nextSeed !== event.seed_pool_s || nextTakeout !== event.takeout_d)) {
+    throw new Error("投票開始後は単勝の S と控除を変えられません");
+  }
+  const seeds = event.status === "setup"
+    ? exoticSeedsFromWin(nextSeed)
+    : {
+        umaren: event.seed_umaren,
+        umatan: event.seed_umatan,
+        sanrenpuku: event.seed_sanrenpuku,
+        sanrentan: event.seed_sanrentan,
+      };
   const update = db
     .prepare(
       `UPDATE events SET
@@ -173,24 +198,32 @@ export async function updateParams(
         voting_closes_at = ?,
         enabled_kinds = ?,
         score_setup = ?,
-        paddock_comments_enabled = ?
+        paddock_comments_enabled = ?,
+        seed_umaren = ?,
+        seed_umatan = ?,
+        seed_sanrenpuku = ?,
+        seed_sanrentan = ?
       WHERE id = ?`,
     )
     .bind(
       patch.title ?? event.title,
       patch.grant_g ?? event.grant_g,
       patch.bet_unit ?? event.bet_unit,
-      patch.seed_pool_s ?? event.seed_pool_s,
-      patch.pull_e ?? event.pull_e,
-      patch.takeout_d ?? event.takeout_d,
-      patch.w_time_floor ?? event.w_time_floor,
-      patch.w_time_exp ?? event.w_time_exp,
+      nextSeed,
+      event.pull_e,
+      nextTakeout,
+      event.w_time_floor,
+      event.w_time_exp,
       patch.voting_closes_at === undefined
         ? event.voting_closes_at
         : patch.voting_closes_at,
       kinds,
       scoreSetupJson,
       paddockCommentsEnabled,
+      seeds.umaren,
+      seeds.umatan,
+      seeds.sanrenpuku,
+      seeds.sanrentan,
       event.id,
     )
     ;

@@ -15,6 +15,7 @@ import {
   exoticReferenceOdds,
   exoticSelectionProbability,
   EXOTIC_STRENGTH_FLOOR,
+  exoticSeedsFromWin,
   IMPUTED_LAMBDA,
   parimutuelOdds,
   payoutAmount,
@@ -44,10 +45,10 @@ test("有効賭式: 空は全部オン、単勝は外せない", () => {
   );
 });
 
-test("開催デフォルトは第2回案 B", () => {
+test("開催の初期値は単勝Sが135000、控除が20%", () => {
   assert.equal(DEFAULTS.grantG, 3000);
   assert.equal(DEFAULTS.betUnit, 100);
-  assert.equal(DEFAULTS.seedPoolS, 80000);
+  assert.equal(DEFAULTS.seedPoolS, 135000);
   assert.equal(DEFAULTS.pullE, 100000);
   assert.equal(DEFAULTS.wTimeFloor, 0.8);
   assert.equal(DEFAULTS.wTimeExp, 1);
@@ -160,14 +161,26 @@ test("連勝 Seed は順序と順不同を分け、実票なしなら確率か�
   })! - 4.8) < 1e-12);
 });
 
-test("連勝 Seed は暫定下限70を評価点へ適用する", () => {
+test("連勝の確率は評価点の下限を掛けない", () => {
   assert.equal(EXOTIC_STRENGTH_FLOOR, 70);
   const rawStrengths = [0.5, 20, 70, 140];
   const flooredStrengths = [70, 70, 70, 140];
   const rawProbability = exoticSelectionProbability("umatan", rawStrengths, [0, 3]);
-  const flooredProbability = exoticSelectionProbability("umatan", flooredStrengths, [0, 3]);
+  const flooredProbability = exoticSelectionProbability("umatan", flooredStrengths, [0, 3], 2, EXOTIC_STRENGTH_FLOOR);
   assert.ok(rawProbability != null && flooredProbability != null);
-  assert.ok(Math.abs(rawProbability - flooredProbability) < 1e-12);
+  assert.ok(Math.abs(rawProbability - flooredProbability) > 1e-6);
+});
+
+test("単勝Sは10倍が3000スペで8倍になる", () => {
+  const probability = 0.08;
+  const seed = DEFAULTS.seedPoolS * probability;
+  const after = parimutuelOdds(seed + 3000, DEFAULTS.seedPoolS + 3000, 0.2);
+  assert.ok(after != null);
+  assert.ok(Math.abs(after - 8) < 1e-9);
+  assert.equal(exoticSeedsFromWin(135000).umaren, 184950);
+  assert.equal(exoticSeedsFromWin(135000).umatan, 79650);
+  assert.equal(exoticSeedsFromWin(135000).sanrenpuku, 351000);
+  assert.equal(exoticSeedsFromWin(135000).sanrentan, 363150);
 });
 
 test("払戻は切り捨て。不成立は 0", () => {

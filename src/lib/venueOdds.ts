@@ -3,7 +3,7 @@ import {
   parseEnabledKinds,
   type BetKind,
 } from "./bets";
-import { exoticReferenceOdds, parimutuelOdds } from "./odds";
+import { exoticOddsQuote, exoticReferenceOdds, isOddsV4, parimutuelOdds, seedForKind } from "./odds";
 import type { Board, PoolCombo } from "./storeTypes";
 
 export type VenueOddsItem = {
@@ -98,30 +98,54 @@ function compareNumbers(a: readonly number[], b: readonly number[]): number {
   return 0;
 }
 
+export function shownExoticOdds(
+  board: Board,
+  kind: Exclude<BetKind, "win">,
+  ids: string[],
+  selectionReal: number,
+): number | null {
+  const live = liveEntries(board);
+  const indexById = new Map(live.map((entry, index) => [entry.horse.id, index]));
+  if (ids.some((id) => !indexById.has(id))) return null;
+  const pool = board.pools.find((entry) => entry.kind === kind);
+  const realTotal = pool?.realTotal ?? 0;
+  const strengths = live.map((item) => item.horse.strength);
+  const selection = ids.map((id) => indexById.get(id)!);
+  if (isOddsV4(board.event)) {
+    return exoticOddsQuote({
+      kind,
+      strengths,
+      selection,
+      seedPool: seedForKind(board.event, kind),
+      realTotal,
+      selectionReal,
+      takeoutD: board.event.takeout_d,
+    })?.odds ?? null;
+  }
+  const votingLike = board.event.status === "setup" || board.event.status === "voting";
+  if (!votingLike) return parimutuelOdds(selectionReal, realTotal, board.event.takeout_d);
+  return exoticReferenceOdds({
+    kind,
+    strengths,
+    selection,
+    seedPool: board.event.seed_pool_s,
+    timeWeight: board.wTime,
+    realTotal,
+    selectionReal,
+    takeoutD: board.event.takeout_d,
+  });
+}
+
 function itemsFor(
   board: Board,
   kind: Exclude<BetKind, "win">,
   candidates: ExoticCandidate[],
 ): Array<VenueOddsItem & { lastBetAt: number | null }> {
-  const live = liveEntries(board);
-  const indexById = new Map(live.map((entry, index) => [entry.horse.id, index]));
   const pool = board.pools.find((entry) => entry.kind === kind);
   const comboByKey = new Map<string, PoolCombo>(pool?.combos.map((combo) => [combo.selection_key, combo]) ?? []);
-  const votingLike = board.event.status === "setup" || board.event.status === "voting";
   return candidates.map((entry) => {
     const combo = comboByKey.get(entry.key);
-    const odds = votingLike
-      ? exoticReferenceOdds({
-          kind,
-          strengths: live.map((item) => item.horse.strength),
-          selection: entry.ids.map((id) => indexById.get(id)!),
-          seedPool: board.event.seed_pool_s,
-          timeWeight: board.wTime,
-          realTotal: pool?.realTotal ?? 0,
-          selectionReal: combo?.real ?? 0,
-          takeoutD: board.event.takeout_d,
-        })
-      : parimutuelOdds(combo?.real ?? 0, pool?.realTotal ?? 0, board.event.takeout_d);
+    const odds = shownExoticOdds(board, kind, entry.ids, combo?.real ?? 0);
     return {
       key: entry.key,
       label: entry.label,

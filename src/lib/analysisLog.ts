@@ -5,8 +5,12 @@ import {
   EXOTIC_GAMMA,
   EXOTIC_PULL_E,
   EXOTIC_STRENGTH_FLOOR,
+  exoticOddsQuote,
   exoticReferenceQuote,
+  FORMULA_V4,
   IMPUTED_LAMBDA,
+  isOddsV4,
+  seedForKind,
   wVolume,
 } from "./odds";
 import { buildBoard, numberByHorseId } from "./storeBoard";
@@ -18,7 +22,7 @@ import { exoticCandidatesFor } from "./venueOdds";
 export type AnalysisCause = "voting_open" | "bet" | "redo" | "scratch" | "pre_close" | "close";
 
 /** 式の意味を変えるときだけ上げる。値だけの変更では上げない。 */
-export const ANALYSIS_FORMULA_VERSION = "odds-v3";
+export const ANALYSIS_FORMULA_VERSION = FORMULA_V4;
 /** CSV列の意味・構造を変えるときだけ上げる。 */
 export const ANALYSIS_SCHEMA_VERSION = "analysis-log-v2";
 
@@ -182,7 +186,8 @@ function oddsRows(board: Board, snapshotId: number): {
     const realByKey = new Map((pool?.combos ?? []).map((combo) => [combo.selection_key, combo]));
     const live = board.horses.filter((entry) => !entry.horse.scratched && entry.number > 0);
     const indexById = new Map(live.map((entry, index) => [entry.horse.id, index]));
-    const candidates = votingLike
+    const v4 = isOddsV4(board.event);
+    const candidates = v4 || votingLike
       ? exoticCandidatesFor(board, kind)
       : (pool?.combos ?? []).map((combo) => ({
           ids: [combo.horse_1, combo.horse_2, combo.horse_3].filter((id): id is string => id != null),
@@ -194,24 +199,35 @@ function oddsRows(board: Board, snapshotId: number): {
         }));
     const calculated = candidates.map((entry) => {
       const combo = realByKey.get(entry.key);
-      const quote = votingLike
-        ? exoticReferenceQuote({
+      const selectionReal = combo?.real ?? 0;
+      const quote = v4
+        ? exoticOddsQuote({
             kind,
             strengths: live.map((item) => item.horse.strength),
             selection: entry.ids.map((id) => indexById.get(id)!),
-            seedPool: board.event.seed_pool_s,
-            timeWeight: board.wTime,
+            seedPool: seedForKind(board.event, kind),
             realTotal: pool?.realTotal ?? 0,
-            selectionReal: combo?.real ?? 0,
+            selectionReal,
             takeoutD: board.event.takeout_d,
           })
-        : null;
+        : votingLike
+          ? exoticReferenceQuote({
+              kind,
+              strengths: live.map((item) => item.horse.strength),
+              selection: entry.ids.map((id) => indexById.get(id)!),
+              seedPool: board.event.seed_pool_s,
+              timeWeight: board.wTime,
+              realTotal: pool?.realTotal ?? 0,
+              selectionReal,
+              takeoutD: board.event.takeout_d,
+            })
+          : null;
       return {
         entry,
         combo,
-        shownOdds: votingLike ? (quote?.odds ?? null) : (combo?.odds ?? null),
+        shownOdds: v4 || votingLike ? (quote?.odds ?? null) : (combo?.odds ?? null),
         seed: quote?.seed ?? null,
-        display: quote?.display ?? null,
+        display: v4 && quote && "share" in quote ? quote.share : (quote && "display" in quote ? quote.display : null),
       };
     });
     const popular = [...calculated]
@@ -248,18 +264,18 @@ function oddsRows(board: Board, snapshotId: number): {
         popular_rank: popularRank.get(item.entry.key) ?? null,
       });
     }
-    const volumeWeight = wVolume(pool?.realTotal ?? 0, EXOTIC_PULL_E[kind]);
+    const volumeWeight = v4 ? 0 : wVolume(pool?.realTotal ?? 0, EXOTIC_PULL_E[kind]);
     markets.push({
       snapshot_id: snapshotId,
       kind,
       real_total: pool?.realTotal ?? 0,
-      pull_e: EXOTIC_PULL_E[kind],
-      seed_pool_s: board.event.seed_pool_s,
+      pull_e: v4 ? 0 : EXOTIC_PULL_E[kind],
+      seed_pool_s: v4 ? seedForKind(board.event, kind) : board.event.seed_pool_s,
       gamma: EXOTIC_GAMMA,
-      strength_floor: EXOTIC_STRENGTH_FLOOR,
-      w_time: board.wTime,
+      strength_floor: v4 ? 0 : EXOTIC_STRENGTH_FLOOR,
+      w_time: v4 ? 0 : board.wTime,
       w_volume: volumeWeight,
-      w: board.wTime * volumeWeight,
+      w: v4 ? 0 : board.wTime * volumeWeight,
     });
   }
   return { odds: rows, markets };
@@ -297,6 +313,7 @@ export async function captureAnalysisSnapshot(
     countSnapshotMembers(db, event.id),
   ]);
   const board = buildBoard(event, horses, bets, now);
+  const v4 = isOddsV4(event);
   const result = await db.prepare(
     `INSERT INTO analysis_snapshots (
       event_id, captured_at, cause, seed_pool_s, pull_e, takeout_d, w_time_floor, w_time_exp, lambda, formula_version, schema_version,
@@ -304,9 +321,11 @@ export async function captureAnalysisSnapshot(
       joined_count, bettor_count, active_bet_count, live_horse_count, log_complete
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
   ).bind(
-    event.id, now, cause, event.seed_pool_s, event.pull_e, event.takeout_d,
-    event.w_time_floor, event.w_time_exp, IMPUTED_LAMBDA, ANALYSIS_FORMULA_VERSION, ANALYSIS_SCHEMA_VERSION,
-    board.wTime, board.wVolume, board.w, board.realTotal, board.exoticTotal, board.tv,
+    event.id, now, cause, event.seed_pool_s, v4 ? 0 : event.pull_e, event.takeout_d,
+    v4 ? 0 : event.w_time_floor, v4 ? 0 : event.w_time_exp, v4 ? 0 : IMPUTED_LAMBDA,
+    v4 ? FORMULA_V4 : "odds-v3", ANALYSIS_SCHEMA_VERSION,
+    v4 ? 0 : board.wTime, v4 ? 0 : board.wVolume, v4 ? 0 : board.w,
+    board.realTotal, board.exoticTotal, v4 ? 0 : board.tv,
     counts.joined, counts.bettors, counts.activeBets, board.horses.filter((h) => !h.horse.scratched).length,
   ).run();
   const snapshotId = Number(result.meta.last_row_id);
@@ -316,19 +335,19 @@ export async function captureAnalysisSnapshot(
     captured_at: now,
     cause,
     seed_pool_s: event.seed_pool_s,
-    pull_e: event.pull_e,
+    pull_e: v4 ? 0 : event.pull_e,
     takeout_d: event.takeout_d,
-    w_time_floor: event.w_time_floor,
-    w_time_exp: event.w_time_exp,
-    lambda: IMPUTED_LAMBDA,
-    formula_version: ANALYSIS_FORMULA_VERSION,
+    w_time_floor: v4 ? 0 : event.w_time_floor,
+    w_time_exp: v4 ? 0 : event.w_time_exp,
+    lambda: v4 ? 0 : IMPUTED_LAMBDA,
+    formula_version: v4 ? FORMULA_V4 : "odds-v3",
     schema_version: ANALYSIS_SCHEMA_VERSION,
-    w_time: board.wTime,
-    w_volume: board.wVolume,
-    w: board.w,
+    w_time: v4 ? 0 : board.wTime,
+    w_volume: v4 ? 0 : board.wVolume,
+    w: v4 ? 0 : board.w,
     win_real_total: board.realTotal,
     exotic_real_total: board.exoticTotal,
-    tv: board.tv,
+    tv: v4 ? 0 : board.tv,
     joined_count: counts.joined,
     bettor_count: counts.bettors,
     active_bet_count: counts.activeBets,

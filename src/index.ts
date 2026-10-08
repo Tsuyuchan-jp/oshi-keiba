@@ -244,7 +244,9 @@ export default {
           if (board.event.status !== "setup" && board.event.status !== "voting") {
             throw new Error("締切後の開催設定は変更できません");
           }
-          const params = adminParamsFromForm((name) => String(form.get(name) ?? ""));
+          const params = adminParamsFromForm((name) => String(form.get(name) ?? ""), {
+            requireSeed: board.event.status === "setup",
+          });
           assertVotingCloseIsFuture(board.event.status, params.voting_closes_at);
           const nextSetup = await (async () => {
             if (board.event.status !== "setup") return undefined;
@@ -275,10 +277,7 @@ export default {
                 title: params.title,
                 voting_closes_at: params.voting_closes_at,
                 seed_pool_s: params.seed_pool_s,
-                pull_e: params.pull_e,
                 takeout_d: params.takeout_d,
-                w_time_floor: params.w_time_floor,
-                w_time_exp: params.w_time_exp,
               };
           await updateParams(env.DB, board.event, patch, changes);
           return bounce("/admin/settings", `レースイベント設定を保存しました。自動評価点 ${changes.length}頭を再計算しました`);

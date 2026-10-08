@@ -1,8 +1,12 @@
 import { parseJstInput } from "./ui.ts";
 
 export type AdminParamsInput = {
-  title: string; grant_g: number; bet_unit: number; seed_pool_s: number;
-  pull_e: number; takeout_d: number; w_time_floor: number; w_time_exp: number;
+  title: string;
+  grant_g: number;
+  bet_unit: number;
+  /** 空欄は変更しない。出走登録中は必須 */
+  seed_pool_s: number | null;
+  takeout_d: number | null;
   voting_closes_at: number | null;
 };
 
@@ -35,19 +39,38 @@ function numberInRange(get: (name: string) => string, name: string, min: number,
   return value;
 }
 
+function optionalNumber(
+  get: (name: string) => string,
+  name: string,
+  min: number,
+  max: number,
+  required: boolean,
+): number | null {
+  const raw = get(name).trim();
+  if (!raw) {
+    if (required) throw new Error(`${name} を入力してください`);
+    return null;
+  }
+  return numberInRange(get, name, min, max);
+}
+
 /** 管理設定POSTの基本項目をサーバー側で検証して正規化する。 */
-export function adminParamsFromForm(get: (name: string) => string): AdminParamsInput {
+export function adminParamsFromForm(
+  get: (name: string) => string,
+  opts: { requireSeed?: boolean } = {},
+): AdminParamsInput {
   const title = get("title").trim();
   if (!title) throw new Error("イベント名を入力してください");
   const closesRaw = get("closes_at").trim();
   const voting_closes_at = parseJstInput(closesRaw);
   if (closesRaw && voting_closes_at == null) throw new Error("締切日時の形式が正しくありません");
+  const requireSeed = opts.requireSeed !== false;
   return {
-    title, grant_g: integerAtLeast(get, "grant_g", 0), bet_unit: integerAtLeast(get, "bet_unit", 1),
-    seed_pool_s: numberInRange(get, "seed_pool_s", 0, Number.MAX_VALUE),
-    pull_e: numberInRange(get, "pull_e", 0, Number.MAX_VALUE),
-    takeout_d: numberInRange(get, "takeout_d", 0, 0.99),
-    w_time_floor: numberInRange(get, "w_time_floor", 0, 0.99),
-    w_time_exp: numberInRange(get, "w_time_exp", 0.2, 4), voting_closes_at,
+    title,
+    grant_g: integerAtLeast(get, "grant_g", 0),
+    bet_unit: integerAtLeast(get, "bet_unit", 1),
+    seed_pool_s: optionalNumber(get, "seed_pool_s", 0, Number.MAX_VALUE, requireSeed),
+    takeout_d: optionalNumber(get, "takeout_d", 0, 0.99, requireSeed),
+    voting_closes_at,
   };
 }

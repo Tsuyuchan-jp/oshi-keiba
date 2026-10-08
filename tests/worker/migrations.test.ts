@@ -24,6 +24,7 @@ const EXPECTED_MIGRATIONS = [
   "0019_event_paddock_comments.sql",
   "0020_pre_race_assessments.sql",
   "0021_analysis_exotic_archives.sql",
+  "0022_odds_v4.sql",
 ];
 
 async function tableNames(db: D1Database): Promise<string[]> {
@@ -34,7 +35,7 @@ async function tableNames(db: D1Database): Promise<string[]> {
 }
 
 describe("D1マイグレーション", () => {
-  test("空のD1へ全20本を適用すると本番用スキーマと初期データが揃う", async () => {
+  test("空のD1へ全21本を適用すると本番用スキーマと初期データが揃う", async () => {
     expect(env.TEST_MIGRATIONS.map((migration) => migration.name)).toEqual(EXPECTED_MIGRATIONS);
     await applyD1Migrations(env.MIGRATION_DB, env.TEST_MIGRATIONS);
 
@@ -48,6 +49,7 @@ describe("D1マイグレーション", () => {
       "analysis_log_failures",
       "bets",
       "events",
+      "event_kind_results",
       "event_settlements",
       "grants",
       "horses",
@@ -115,13 +117,14 @@ describe("D1マイグレーション", () => {
     await applyD1Migrations(db, env.TEST_MIGRATIONS.slice(5));
 
     expect(await db.prepare(
-      "SELECT title, enabled_kinds, is_current, score_setup, paddock_comments_enabled FROM events WHERE id = 'legacy-event'",
+      "SELECT title, enabled_kinds, is_current, score_setup, paddock_comments_enabled, formula_version FROM events WHERE id = 'legacy-event'",
     ).first()).toEqual({
       title: "旧開催",
       enabled_kinds: "win,umaren,umatan,sanrenpuku,sanrentan",
       is_current: 1,
       score_setup: null,
       paddock_comments_enabled: 0,
+      formula_version: "odds-v3",
     });
     expect(await db.prepare(
       `SELECT kind, selection_key, horse_1, horse_2, horse_3, operation_id

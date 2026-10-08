@@ -225,7 +225,7 @@ function candidateBarHtml(opts: {
 function referenceOddsHtml(kind: BetKind): string {
   if (kind === "win") return "";
   return `<section class="reference-odds" id="reference-odds" hidden aria-live="polite">
-    <div class="reference-odds-head"><h2>参考オッズ</h2><span>投票中の目安</span></div>
+    <div class="reference-odds-head"><h2>オッズ</h2><span>的中したときに使う倍率</span></div>
     <div class="reference-odds-scroll">
       <div class="reference-odds-body" id="reference-odds-body"></div>
       <span class="reference-odds-scroll-hint" aria-hidden="true">↓ 下へスクロール</span>
@@ -358,7 +358,7 @@ function markCardScript(opts: {
       const h = n != null ? byNum.get(n) : null;
       const odds =
         h && kind === "win" && h.odds != null
-          ? \`<span class="o">\${Number(h.odds) >= 9999.9 ? "9999.9+" : Number(h.odds).toFixed(1)}倍</span>\`
+          ? \`<span class="o">\${Number(h.odds).toFixed(1)}倍</span>\`
           : "";
       return \`<button type="button" class="well\${h ? " fill" : ""}" data-well="\${i}">
         <span class="k">\${name}</span>
@@ -368,7 +368,7 @@ function markCardScript(opts: {
     }).join("");
     board.innerHTML = displayHorses.map((h) => {
       const on = picks.includes(h.number);
-      const od = h.odds == null || !Number.isFinite(h.odds) ? "—" : Number(h.odds) >= 9999.9 ? "9999.9+" : Number(h.odds).toFixed(1);
+      const od = h.odds == null || !Number.isFinite(h.odds) ? "—" : Number(h.odds).toFixed(1);
       return \`<button type="button" class="chip\${on ? " on" : ""}" data-n="\${h.number}" data-sel="\${h.id}" data-horse-id="\${h.id}">
         <span class="n">\${h.number}</span><span class="uma">\${h.umaName}</span><span class="od odds-now">\${od}</span>
       </button>\`;
@@ -380,7 +380,7 @@ function markCardScript(opts: {
   }
   function formatReferenceOdds(odds) {
     if (odds == null || !Number.isFinite(odds)) return "—";
-    return odds >= 9999.9 ? "9999.9+" : Number(odds).toFixed(1) + "倍";
+    return Number(odds).toFixed(1) + "倍";
   }
   async function refreshReferenceOdds() {
     if (!referenceOdds || !referenceOddsBody || kind === "win") return;
@@ -410,7 +410,7 @@ function markCardScript(opts: {
       ).join("");
       referenceOdds.hidden = false;
       if (isCandidateStage && referenceOddsCandidates && referenceOddsCandidatesText) {
-        referenceOddsCandidatesText.textContent = "参考オッズ：候補" + items.length + "件";
+        referenceOddsCandidatesText.textContent = "オッズ：候補" + items.length + "件";
         referenceOddsCandidates.hidden = referenceOddsSeen;
         if (referenceOddsSelected) referenceOddsSelected.hidden = true;
       } else if (isSelected && referenceOddsSelected && referenceOddsSelectedText) {
@@ -550,7 +550,7 @@ export function betBuyPage(opts: {
               <span class="rest">買うと残り <b id="rest">${bal}</b></span>
             </div>
           </div>
-          <div class="dock-reference-selected" id="reference-odds-selected" hidden aria-live="polite"><span class="k">買い目・参考オッズ</span><b id="reference-odds-selected-text"></b></div>
+          <div class="dock-reference-selected" id="reference-odds-selected" hidden aria-live="polite"><span class="k">買い目・オッズ</span><b id="reference-odds-selected-text"></b></div>
         </div>
         <div class="amt-controls">
           <div class="amt-row">

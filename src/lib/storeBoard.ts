@@ -2,14 +2,17 @@
  * store ボード（参考・確定オッズ集計）
  */
 
-import { winningKey, type BetKind } from "./bets";
+import { normalizeSelection, winningKey, type BetKind } from "./bets";
 import {
   allocateSeed,
   displayPool,
   addImputed,
+  exoticOddsQuote,
   IMPUTED_LAMBDA,
+  isOddsV4,
   parimutuelOdds,
   referenceTv,
+  seedForKind,
   wCombined,
   wTime,
   wVolume,
@@ -79,7 +82,214 @@ function buildKindPool(
   return { kind, realTotal, combos, winningKey: winKey, voidSpecial };
 }
 
-export function buildBoard(
+function winningIds(kind: BetKind, horses: HorseRow[]): string[] | null {
+  const byPlace = new Map<number, string>();
+  for (const horse of horses) {
+    if (horse.scratched || horse.finish_place == null) continue;
+    byPlace.set(horse.finish_place, horse.id);
+  }
+  const first = byPlace.get(1);
+  if (!first) return null;
+  if (kind === "win") return [first];
+  const second = byPlace.get(2);
+  if (!second) return null;
+  if (kind === "umaren" || kind === "umatan") return [first, second];
+  const third = byPlace.get(3);
+  if (!third) return null;
+  return [first, second, third];
+}
+
+function v4SelectionOdds(
+  kind: BetKind,
+  horses: HorseRow[],
+  ids: string[],
+  real: number,
+  realTotal: number,
+  event: EventRow,
+): number | null {
+  const live = horses.filter((horse) => horse.scratched === 0);
+  if (kind === "win") {
+    const seeds = allocateSeed(live.map((horse) => horse.strength), event.seed_pool_s);
+    const index = live.findIndex((horse) => horse.id === ids[0]);
+    const seed = index >= 0 ? seeds[index]! : 0;
+    return parimutuelOdds(seed + real, event.seed_pool_s + realTotal, event.takeout_d);
+  }
+  const indexById = new Map(live.map((horse, index) => [horse.id, index]));
+  if (ids.some((id) => !indexById.has(id))) return null;
+  return exoticOddsQuote({
+    kind,
+    strengths: live.map((horse) => horse.strength),
+    selection: ids.map((id) => indexById.get(id)!),
+    seedPool: seedForKind(event, kind),
+    realTotal,
+    selectionReal: real,
+    takeoutD: event.takeout_d,
+  })?.odds ?? null;
+}
+
+function buildBoardV4(
+  event: EventRow,
+  horses: HorseRow[],
+  bets: BetRow[],
+): Board {
+  const live = horses.filter((horse) => horse.scratched === 0);
+  const winBets = bets.filter((bet) => !bet.refunded && bet.kind === "win");
+  const realByHorse = new Map<string, number>();
+  for (const bet of winBets) {
+    realByHorse.set(bet.horse_1, (realByHorse.get(bet.horse_1) ?? 0) + bet.amount);
+  }
+  const realLive = live.map((horse) => realByHorse.get(horse.id) ?? 0);
+  const realTotal = realLive.reduce((sum, amount) => sum + amount, 0);
+  const seeds = allocateSeed(live.map((horse) => horse.strength), event.seed_pool_s);
+  const seedById = new Map<string, number>();
+  live.forEach((horse, index) => seedById.set(horse.id, seeds[index] ?? 0));
+  let exoticTotal = 0;
+  for (const bet of bets) {
+    if (bet.refunded || bet.kind === "win") continue;
+    exoticTotal += bet.amount;
+  }
+
+  let number = 0;
+  const rows: HorseBoard[] = horses.map((horse) => {
+    if (!horse.scratched) number += 1;
+    const real = realByHorse.get(horse.id) ?? 0;
+    if (horse.scratched) {
+      return {
+        horse,
+        number: 0,
+        real,
+        imputed: 0,
+        seed: 0,
+        display: 0,
+        referenceOdds: null,
+        confirmedOdds: null,
+      };
+    }
+    const seed = seedById.get(horse.id) ?? 0;
+    const odds = parimutuelOdds(seed + real, event.seed_pool_s + realTotal, event.takeout_d);
+    return {
+      horse,
+      number,
+      real,
+      imputed: 0,
+      seed,
+      display: seed + real,
+      referenceOdds: odds,
+      confirmedOdds: odds,
+    };
+  });
+
+  const pools = (["win", "umaren", "umatan", "sanrenpuku", "sanrentan"] as BetKind[]).map((kind) => {
+    const kindBets = bets.filter((bet) => !bet.refunded && bet.kind === kind);
+    const byKey = new Map<string, PoolCombo>();
+    for (const bet of kindBets) {
+      const current = byKey.get(bet.selection_key);
+      if (current) {
+        current.real += bet.amount;
+        current.lastBetAt = Math.max(current.lastBetAt ?? 0, bet.created_at);
+      } else {
+        byKey.set(bet.selection_key, {
+          selection_key: bet.selection_key,
+          horse_1: bet.horse_1,
+          horse_2: bet.horse_2,
+          horse_3: bet.horse_3,
+          real: bet.amount,
+          lastBetAt: bet.created_at,
+          odds: null,
+        });
+      }
+    }
+    const ids = winningIds(kind, horses);
+    if (ids) {
+      const picked = normalizeSelection(kind, ids);
+      if (!byKey.has(picked.selection_key)) {
+        byKey.set(picked.selection_key, {
+          selection_key: picked.selection_key,
+          horse_1: picked.horse_1,
+          horse_2: picked.horse_2,
+          horse_3: picked.horse_3,
+          real: 0,
+          lastBetAt: null,
+          odds: null,
+        });
+      }
+    }
+    const realKindTotal = [...byKey.values()].reduce((sum, combo) => sum + combo.real, 0);
+    const combos = [...byKey.values()].map((combo) => {
+      const picked = [combo.horse_1, combo.horse_2, combo.horse_3].filter((id): id is string => id != null);
+      return {
+        ...combo,
+        odds: kind === "win"
+          ? rows.find((row) => row.horse.id === combo.horse_1)?.confirmedOdds ?? null
+          : v4SelectionOdds(kind, horses, picked, combo.real, realKindTotal, event),
+      };
+    }).sort((a, b) => b.real - a.real);
+    const winKey = ids ? normalizeSelection(kind, ids).selection_key : null;
+    if (kind === "win") {
+      const listed = new Set(combos.map((combo) => combo.selection_key));
+      for (const row of rows) {
+        if (row.horse.scratched || listed.has(row.horse.id)) continue;
+        combos.push({
+          selection_key: row.horse.id,
+          horse_1: row.horse.id,
+          horse_2: null,
+          horse_3: null,
+          real: row.real,
+          lastBetAt: null,
+          odds: row.confirmedOdds,
+        });
+      }
+    }
+    return {
+      kind,
+      realTotal: realKindTotal,
+      combos,
+      winningKey: winKey,
+      voidSpecial: winKey == null ? null : false,
+    };
+  });
+
+  return {
+    event,
+    wTime: 1,
+    wVolume: 1,
+    w: 1,
+    realTotal,
+    exoticTotal,
+    tv: realTotal,
+    seedTotal: event.seed_pool_s,
+    displayTotal: event.seed_pool_s + realTotal,
+    horses: rows,
+    pools,
+  };
+}
+
+export type PublishedKindResult = {
+  kind: string;
+  winning_key: string;
+  odds: number | null;
+  payout_total: number;
+};
+
+/** 公開後は、保存した当たり倍率を板へ戻す。後から式を変えても払った数字は動かさない。 */
+export function applyPublishedKindResults(board: Board, rows: readonly PublishedKindResult[]): void {
+  for (const saved of rows) {
+    const pool = board.pools.find((item) => item.kind === saved.kind);
+    if (!pool || saved.odds == null) continue;
+    pool.winningKey = saved.winning_key;
+    const combo = pool.combos.find((item) => item.selection_key === saved.winning_key);
+    if (combo) combo.odds = saved.odds;
+    if (saved.kind === "win") {
+      const horse = board.horses.find((item) => item.horse.id === saved.winning_key);
+      if (horse) {
+        horse.referenceOdds = saved.odds;
+        horse.confirmedOdds = saved.odds;
+      }
+    }
+  }
+}
+
+function buildLegacyBoard(
   event: EventRow,
   horses: HorseRow[],
   bets: BetRow[],
@@ -217,6 +427,15 @@ export function buildBoard(
   };
 }
 
+export function buildBoard(
+  event: EventRow,
+  horses: HorseRow[],
+  bets: BetRow[],
+  now = Date.now(),
+): Board {
+  return isOddsV4(event) ? buildBoardV4(event, horses, bets) : buildLegacyBoard(event, horses, bets, now);
+}
+
 export async function loadBoard(
   db: D1Database,
   archiveBucket?: R2Bucket,
@@ -228,7 +447,15 @@ export async function loadBoard(
     listHorses(db, event.id),
     listActiveBets(db, event.id),
   ]);
-  return buildBoard(event, horses, bets, now);
+  const board = buildBoard(event, horses, bets, now);
+  if (event.status === "published" && isOddsV4(event)) {
+    const saved = await db
+      .prepare("SELECT kind, winning_key, odds, payout_total FROM event_kind_results WHERE event_id = ?")
+      .bind(event.id)
+      .all<PublishedKindResult>();
+    applyPublishedKindResults(board, saved.results ?? []);
+  }
+  return board;
 }
 
 export function numberByHorseId(board: Board): Map<string, number> {

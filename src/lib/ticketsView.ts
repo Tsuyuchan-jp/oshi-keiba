@@ -3,6 +3,7 @@ import {
   formatSelectionLabel,
   type BetKind,
 } from "./bets.ts";
+import { isOddsV4 } from "./odds.ts";
 import { numberByHorseId, type BetRow, type Board } from "./store.ts";
 
 export type UserPayout = { bet_id: string; amount: number; kind: string };
@@ -89,7 +90,7 @@ export function buildMyTickets(
         confirmedOdds: board.event.status === "closed" || board.event.status === "published"
           ? confirmedOdds(board, first.kind, first.selection_key)
           : null,
-        specialPending: board.pools.find((pool) => pool.kind === first.kind)?.voidSpecial === true,
+        specialPending: !isOddsV4(board.event) && board.pools.find((pool) => pool.kind === first.kind)?.voidSpecial === true,
         payoutAmount: group.payouts
           .filter((payout) => payout.kind !== "redo")
           .reduce((sum, payout) => sum + payout.amount, 0),

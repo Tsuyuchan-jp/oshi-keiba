@@ -13,6 +13,13 @@ export type EventRow = {
   grant_g: number;
   bet_unit: number;
   seed_pool_s: number;
+  /** 単勝 S を保存したときの馬連・馬単・3連複・3連単。odds-v3 は 0 */
+  seed_umaren: number;
+  seed_umatan: number;
+  seed_sanrenpuku: number;
+  seed_sanrentan: number;
+  /** odds-v4 は Seed 込みの確定配当。odds-v3 は以前の式 */
+  formula_version: string;
   pull_e: number;
   takeout_d: number;
   w_time_floor: number;
@@ -84,6 +91,8 @@ export type TreasuryDashboard = {
   memberBalanceTotal: number;
   unsettledPoolTotal: number;
   totalIssued: number;
+  /** 公開済み開催の的中払戻と、過去に残っている特払いの累計 */
+  prizePayoutTotal: number;
   currentBetTotal: number;
   currentPayoutTotal: number;
   currentEffectiveBetTotal: number;

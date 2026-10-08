@@ -202,7 +202,7 @@ test("場内の⋯は馬券・ウマ柱・使い方・背景の順", () => {
   assert.match(guest, />使い方</);
 });
 
-test("場内オッズは上限を9999.9+で表示する", () => {
+test("場内オッズは上限を掛けず、大きい数字は縮める", () => {
   const html = venueHorseRowHtml({
     id: "h1",
     number: 1,
@@ -211,5 +211,5 @@ test("場内オッズは上限を9999.9+で表示する", () => {
     styleLabel: "逃げ",
     odds: 12_000,
   });
-  assert.match(html, /class="odds-now">9999\.9\+</);
+  assert.match(html, /class="odds-now odds-long">12000\.0</);
 });

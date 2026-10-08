@@ -471,6 +471,7 @@ ${MEMBER_OVERLAY_CSS}
   white-space: nowrap;
 }
 .pay-amt.void { color: var(--led); font-size: .92em; }
+.odds-now.odds-long, .pay-amt.odds-long { font-size: .72em; letter-spacing: -0.04em; }
 .jumbo-hint {
   display: none;
   flex: 0 0 auto;

@@ -1,3 +1,4 @@
+DELETE FROM event_kind_results;
 DELETE FROM event_settlements;
 DELETE FROM member_operations;
 DELETE FROM payouts;
